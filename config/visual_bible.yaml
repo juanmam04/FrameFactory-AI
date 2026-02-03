@@ -1,0 +1,31 @@
+# FASE 1–2: Biblia visual y estilo base
+# Reglas de iluminación, cámara y atmósfera para coherencia
+
+estilo_base: "stickman 2D cinematográfico, estilo limpio, líneas negras sobre fondo suave"
+
+iluminacion:
+  - "luz suave y direccional"
+  - "sombras definidas pero no duras"
+  - "sin reflejos excesivos"
+
+camara:
+  variedad_planos:
+    - "plano general"
+    - "plano medio"
+    - "primer plano"
+    - "plano detalle"
+  reglas:
+    - "evitar repetición del mismo plano en escenas consecutivas"
+    - "ángulo de cámara bajo para momentos dramáticos"
+    - "ángulo neutro para narración"
+
+atmosfera:
+  - "ambiente minimalista"
+  - "fondos simples que no distraigan"
+  - "paleta limitada y coherente"
+
+duracion_por_imagen_segundos: 5
+formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
+
+# Negative prompt fijo para evitar desvíos de estilo (Plan v3)
+negative_prompt: "blurry, low quality, distorted, text, watermark, 3D, realistic, photo, cartoon color, messy lines, cluttered background"

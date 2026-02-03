@@ -1,0 +1,16 @@
+venv/
+.venv/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+output/guiones/
+output/imagenes/
+output/audio/
+output/videos/
+output/meta/
+*.mp4
+*.mp3
+*.wav
+*.png
+!output/.gitkeep

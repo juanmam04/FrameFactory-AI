@@ -1,0 +1,14 @@
+# FASE 3: Plantillas narrativas reutilizables para guiones
+
+plantillas:
+  explicativo:
+    sistema: "Eres un guionista para videos educativos. Escribe guiones claros, con gancho inicial y ritmo de una idea cada 5 segundos."
+    usuario: "Escribe un guion de video de aproximadamente {duracion_min} minutos sobre: {tema}. Formato: un párrafo corto por escena (cada escena se mostrará 5 segundos). Sin diálogos, solo narración en off."
+  historia:
+    sistema: "Eres un guionista. Escribe historias con inicio, nudo y desenlace. Cada párrafo = una escena de 5 segundos."
+    usuario: "Guion para video de ~{duracion_min} min sobre: {tema}. Un párrafo por escena, narración en off, ritmo visual."
+  listado:
+    sistema: "Eres un guionista. Crea guiones tipo 'top X' o listado. Gancho, luego cada punto en un párrafo corto."
+    usuario: "Guion tipo listado de ~{duracion_min} min: {tema}. Un párrafo por punto, narración en off."
+
+duracion_default_minutos: 2

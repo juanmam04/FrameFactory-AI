@@ -1,0 +1,11 @@
+# Reglas narrativas permanentes (Plan v3)
+# POV, ritmo, sin moralejas explícitas, eventos concretos
+
+pov: "Segunda persona o narrador objetivo. Tono informativo y directo."
+ritmo: "Una idea o evento por escena (5 segundos). Sin relleno. Gancho en los primeros 10 segundos."
+sin_moralejas: "No cerrar con moralejas explícitas ni 'en conclusión' forzado. Dejar que los hechos hablen."
+eventos_concretos: "Usar eventos, datos o ejemplos concretos. Evitar abstracciones vagas."
+formato: "Un párrafo corto por escena. Sin diálogos. Solo narración en off."
+
+system_extra: |
+  Reglas fijas: POV claro, ritmo de una idea cada 5 segundos, sin moralejas explícitas al final, eventos concretos en cada escena.
