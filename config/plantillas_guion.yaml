@@ -1,14 +1,136 @@
-# FASE 3: Plantillas narrativas reutilizables para guiones
-
+duracion_default_minutos: 2
 plantillas:
   explicativo:
-    sistema: "Eres un guionista para videos educativos. Escribe guiones claros, con gancho inicial y ritmo de una idea cada 5 segundos."
-    usuario: "Escribe un guion de video de aproximadamente {duracion_min} minutos sobre: {tema}. Formato: un párrafo corto por escena (cada escena se mostrará 5 segundos). Sin diálogos, solo narración en off."
-  historia:
-    sistema: "Eres un guionista. Escribe historias con inicio, nudo y desenlace. Cada párrafo = una escena de 5 segundos."
-    usuario: "Guion para video de ~{duracion_min} min sobre: {tema}. Un párrafo por escena, narración en off, ritmo visual."
-  listado:
-    sistema: "Eres un guionista. Crea guiones tipo 'top X' o listado. Gancho, luego cada punto en un párrafo corto."
-    usuario: "Guion tipo listado de ~{duracion_min} min: {tema}. Un párrafo por punto, narración en off."
+    sistema: 'Estructura obligatoria del guion:
 
-duracion_default_minutos: 2
+
+      ACTO 0 — Apertura
+
+      - Comienza SIEMPRE con “Este eres tú.” (o variante directa).
+
+      - Muy corto.
+
+      - Funciona como mini-spoiler o gancho.
+
+      - Muestra una situación tensa, decisiva o simbólica.
+
+      - No explicar todo el contexto.
+
+
+      ACTOS PRINCIPALES (cantidad flexible)
+
+      - Actos largos y desarrollados.
+
+      - Cada acto tiene un objetivo narrativo claro.
+
+      - Siempre ocurre algo concreto (decisión, error, logro, traición, caída, giro).
+
+      - No abusar de frases ultra cortas tipo poema.
+
+      - Escenas continuas, cinematográficas y específicas.
+
+
+      ACTO FINAL
+
+      - Resolución potente.
+
+      - Sin moralejas explícitas.
+
+      - El cierre debe sentirse inevitable, no explicado.'
+    usuario: 'Quiero un guion profesional estilo mini-película POV para YouTube sobre:
+      {tema}. Duración: entre {duracion_min} y {duracion_max} minutos (objetivo: {duracion_min} min, máximo: {duracion_max} min).
+
+
+      Reglas obligatorias:
+
+
+      Debe estar narrado en segunda persona (le hablas al espectador: “tú”).
+
+
+      Español neutro.
+
+
+      Tiene que sentirse cine, no poema: hechos concretos, acciones, decisiones, consecuencias.
+
+
+      Ritmo con tensión: cada escena empuja la historia; nada de relleno.
+
+
+      Sé crudo y específico cuando haga falta: menciona cifras, nombres, lugares,
+      marcas, clubes, plataformas, etc., pero solo cuando sume morbo/realismo (sin
+      meterlos porque sí).
+
+
+      Sin moralejas ni cierres explicativos. El final es una escena potente y punto.
+
+
+      Evita frases vacías y metáforas “IA”. Quiero detalles reales: sonidos, gestos,
+      objetos, horarios, mensajes, llamadas, titulares, etc.
+
+
+      Estructura por ACTOS (pueden ser 5 o los que necesites para que quede 10/10).
+
+
+      El Acto 0 debe ser corto, concreto, y enganchar fuerte (mini spoiler controlado).
+
+
+      El guion siempre empieza con la misma frase exacta:
+
+      “Este eres tú.”
+
+
+      Mantén el estilo de frases cortas cuando suba la tensión, pero sin volverlo
+      “dos palabras por párrafo”: equilibrio.
+
+
+      Entregable:
+
+
+      Escribe el guion completo sin títulos de este estilo:
+
+      ACTO 0 — …, ACTO 1 — …, etc, ya que quedan mal para la narracion, pero que la
+      historia en si este separada por capitulos. Dejalo listo para narrar.
+
+
+      No incluyas instrucciones de edición, ni notas para el narrador: solo el guion
+      listo para TTS.
+
+      '
+  historia:
+    sistema: Eres un guionista profesional. Escribe historias con inicio, nudo y desenlace.
+      Cada párrafo = una escena de 5 segundos. Enfócate en eventos concretos y visualizables.
+    usuario: 'Guion narrativo para video de ~{duracion_min} minutos sobre: {tema}
+
+
+      REQUISITOS:
+
+      - Estructura: inicio (gancho), nudo (desarrollo), desenlace (cierre natural)
+
+      - Un párrafo por escena (5 segundos cada una)
+
+      - Eventos concretos y visualizables
+
+      - Narración en off, sin diálogos
+
+      - Ritmo visual y fluido
+
+      '
+  listado:
+    sistema: Eres un guionista profesional. Crea guiones tipo 'top X' o listado. Gancho
+      potente, luego cada punto en un párrafo corto y visualizable.
+    usuario: 'Guion tipo listado de ~{duracion_min} minutos: {tema}
+
+
+      REQUISITOS:
+
+      - GANCHO: Primeros 10 segundos deben captar atención
+
+      - LISTADO: Cada punto en un párrafo corto (5 segundos)
+
+      - VISUAL: Cada punto debe ser visualizable y concreto
+
+      - ORDEN: De menos a más importante o cronológico
+
+      - Narración en off, sin diálogos
+
+      '

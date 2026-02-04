@@ -1,6 +1,6 @@
 """FASE 5: Conversión de escenas a prompts visuales (acción + estilo + cámara)."""
 import random
-from .config_loader import get_visual_bible
+from .config_loader import get_visual_bible, get_instrucciones_imagenes
 from .scene_splitter import Escena
 
 
@@ -8,6 +8,7 @@ def construir_prompt(escena: Escena, indice_plan: int | None = None) -> str:
     """
     Combina acción de la escena + estilo base + reglas de cámara.
     Varía el plano según el índice para evitar repetición.
+    Usa el template configurado en instrucciones_imagenes.yaml
     """
     vb = get_visual_bible()
     estilo = vb.get("estilo_base", "stickman 2D cinematográfico")
@@ -18,7 +19,12 @@ def construir_prompt(escena: Escena, indice_plan: int | None = None) -> str:
     plano = planos[idx]
     # Acción descriptiva para la imagen (resumir escena en una frase visual)
     accion = escena.texto[:200].replace("\n", " ")
-    return f"{plano}, {accion}, {estilo}, luz suave, fondo simple, alta calidad"
+    
+    # Usar template configurado o fallback
+    instrucciones = get_instrucciones_imagenes()
+    template = instrucciones.get("prompt_template", "{plano}, {accion}, {estilo}, luz suave, fondo simple, alta calidad")
+    
+    return template.format(plano=plano, accion=accion, estilo=estilo)
 
 
 def prompts_para_escenas(escenas: list[Escena], shuffle_planos: bool = False) -> list[tuple[Escena, str]]:

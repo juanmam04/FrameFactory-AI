@@ -51,3 +51,18 @@ def get_background_music_path() -> Path | None:
         return None
     path = Path(p)
     return path if path.is_absolute() else BASE / path
+
+
+def get_instrucciones_descripcion() -> dict:
+    """Carga instrucciones para generar descripción de YouTube."""
+    return load_yaml("instrucciones_descripcion.yaml")
+
+
+def get_instrucciones_miniatura() -> dict:
+    """Carga instrucciones para generar prompt de miniatura."""
+    return load_yaml("instrucciones_miniatura.yaml")
+
+
+def get_instrucciones_imagenes() -> dict:
+    """Carga instrucciones para generación masiva de imágenes."""
+    return load_yaml("instrucciones_imagenes.yaml")

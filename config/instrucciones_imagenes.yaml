@@ -1,0 +1,31 @@
+parametros_sd:
+  cfg_scale: 7.0
+  height: 1080
+  steps: 25
+  width: 1920
+prompt_template: 'Ilustración 2D estilo stickman plano, cinematográfico.
+
+  Personaje stickman consistente (mismo protagonista).
+
+  Plano: {plano} (prohibido repetir el plano anterior).
+
+  Acción coherente con la escena: {accion}.
+
+  Emoción acorde a la fase psicológica: {emocion}.
+
+  Fase psicológica actual: {fase_psicologica}.
+
+  Contexto narrativo claro: {momento_de_la_historia}.
+
+  Estilo simple, sin realismo, sin 3D, sin textura.
+
+  Iluminación coherente con el estado emocional.
+
+  Formato 16:9, encuadre claro, sin necesidad de zoom.
+
+  Sin texto innecesario.
+
+  '
+reintentos:
+  max_reintentos: 3
+  pausa_segundos: 5
