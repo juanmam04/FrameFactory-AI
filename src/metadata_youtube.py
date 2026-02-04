@@ -129,7 +129,7 @@ def generar_metadata_completa(
     escenas: list[Escena],
     guion_texto: str,
     usar_ia_descripcion: bool = True,
-    generar_miniatura: bool = True,
+    generar_miniatura_flag: bool = True,
 ) -> tuple[Path, Path | None]:
     """
     Genera descripción + capítulos + miniatura y los guarda.
@@ -148,7 +148,7 @@ def generar_metadata_completa(
     
     # Generar miniatura si está habilitado
     ruta_miniatura = None
-    if generar_miniatura:
+    if generar_miniatura_flag:
         ruta_miniatura = generar_miniatura(
             nombre_proyecto=nombre_proyecto,
             titulo=titulo,

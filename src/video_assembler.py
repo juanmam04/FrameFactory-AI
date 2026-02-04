@@ -26,6 +26,7 @@ def montar_video(
     nombre_salida: str = "video_final",
     width: int = 1920,
     height: int = 1080,
+    duracion_maxima_segundos: float | None = None,
 ) -> Path:
     """
     Une imágenes en secuencia (duración por imagen configurable),
@@ -125,13 +126,21 @@ def montar_video(
         else:
             audio_final = audio_narracion
 
+        # Limitar duración si se especifica
         cmd_final = [
             "ffmpeg", "-y",
             "-i", str(video_solo),
             "-i", str(audio_final),
-            "-c:v", "copy", "-c:a", "aac", "-shortest",
-            str(out),
+            "-c:v", "copy", "-c:a", "aac",
         ]
+        
+        # Si hay duración máxima, limitar el video
+        if duracion_maxima_segundos is not None:
+            cmd_final.extend(["-t", str(duracion_maxima_segundos)])
+        else:
+            cmd_final.append("-shortest")
+        
+        cmd_final.append(str(out))
         subprocess.run(cmd_final, check=True, capture_output=True)
     else:
         # Si no hay audio, copiar el video solo (negro o con imágenes)
