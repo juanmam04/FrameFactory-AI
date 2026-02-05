@@ -1,5 +1,6 @@
 """FASE 3: Generador de guiones automático con API de modelo de lenguaje."""
 import os
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -9,250 +10,290 @@ from .config_loader import get_plantillas_guion, get_narrative_rules, BASE
 load_dotenv(BASE / ".env")
 
 
+def count_words(text: str) -> int:
+    """
+    Cuenta palabras de forma robusta.
+    - Trim
+    - Split por espacios múltiples / saltos de línea
+    - Ignora strings vacías
+    """
+    if not text or not text.strip():
+        return 0
+    # Normalizar espacios y saltos de línea
+    text = re.sub(r'\s+', ' ', text.strip())
+    # Split por espacios y filtrar vacíos
+    words = [w for w in text.split() if w.strip()]
+    return len(words)
+
+
 def generar_guion(
     tema: str,
-    duracion_min: int | None = None,
-    duracion_max: int | None = None,
+    target_words: int,
+    min_words: int | None = None,
+    max_words: int | None = None,
     plantilla: str = "explicativo",
     segundos_por_imagen: float = 5.0,
-) -> str:
+) -> tuple[str, int, float]:
     """
-    Genera un guion largo a partir de un tema usando la API configurada.
-    Recorta automáticamente el guion para respetar la duración exacta.
+    Genera un guion con un número objetivo de palabras usando generación en 2 pasos.
+    
+    Args:
+        tema: Tema o idea del video
+        target_words: Número objetivo de palabras (requerido)
+        min_words: Mínimo de palabras (opcional, por defecto 80% de target_words)
+        max_words: Máximo de palabras (opcional, por defecto 120% de target_words)
+        plantilla: Plantilla de guion a usar
+        segundos_por_imagen: Segundos por imagen/escena
+    
+    Returns:
+        tuple[str, int, float]: (guion_texto, word_count, estimated_minutes)
     """
-    from .config_loader import get_duracion_por_imagen
+    # Validar target_words
+    if target_words < 80:
+        target_words = 80
+    if target_words > 3000:
+        target_words = 3000
+    
+    # Calcular min/max si no se proporcionan
+    if min_words is None:
+        min_words = int(target_words * 0.8)
+    if max_words is None:
+        max_words = int(target_words * 1.2)
+    
+    # Asegurar que min <= target <= max
+    if min_words > target_words:
+        min_words = target_words
+    if max_words < target_words:
+        max_words = target_words
     
     plantillas = get_plantillas_guion()
     templates = plantillas.get("plantillas", {})
     t = templates.get(plantilla, templates.get("explicativo", {}))
-    duracion_min = duracion_min or plantillas.get("duracion_default_minutos", 2)
-    
-    # Si no se especifica duracion_max, usar duracion_min como máximo (duración exacta)
-    if duracion_max is None:
-        duracion_max = duracion_min
-    if duracion_max < duracion_min:
-        duracion_max = duracion_min
-    
-    # Calcular número exacto de escenas necesarias
-    seg_por_imagen = segundos_por_imagen or get_duracion_por_imagen()
-    escenas_objetivo = int((duracion_max * 60) / seg_por_imagen)
-    escenas_objetivo = max(1, escenas_objetivo)  # Mínimo 1 escena
-    
-    # Calcular palabras objetivo (aproximadamente 150 palabras por minuto de narración)
-    palabras_por_minuto = 150
-    palabras_objetivo = int(duracion_max * palabras_por_minuto)
-    palabras_por_escena = int(palabras_objetivo / escenas_objetivo) if escenas_objetivo > 0 else palabras_objetivo
-    
-    # Calcular max_tokens ANTES de usarlo en el prompt
-    # Aproximadamente 1.3 tokens por palabra en español
-    max_tokens_estimado = int(palabras_objetivo * 1.1 * 1.3)  # Solo 10% de margen - muy restrictivo
-    max_tokens_estimado = max(100, min(max_tokens_estimado, 4000))  # Entre 100 y 4000 tokens
-    
-    # Formatear prompt con ambas duraciones y número exacto de escenas
-    prompt_template = t.get("usuario", "")
-    try:
-        # Intentar formatear con duracion_max si está en el template
-        prompt_usuario = prompt_template.format(
-            tema=tema, 
-            duracion_min=duracion_min,
-            duracion_max=duracion_max
-        )
-    except KeyError:
-        # Si el template no tiene duracion_max, usar solo duracion_min
-        prompt_usuario = prompt_template.format(
-            tema=tema, 
-            duracion_min=duracion_min
-        )
-    
-    # Agregar instrucciones MUY específicas con cálculos exactos
-    minuto_texto = "minuto" if duracion_min == 1 else "minutos"
-    if duracion_min == duracion_max:
-        prompt_usuario += f"\n\n" + "="*60 + "\n"
-        prompt_usuario += f"⚠️ DURACIÓN EXACTA REQUERIDA - LEE CON ATENCIÓN:\n"
-        prompt_usuario += "="*60 + "\n"
-        prompt_usuario += f"OBJETIVO: El video DEBE durar EXACTAMENTE {duracion_min} {minuto_texto} ({duracion_min * 60} segundos).\n\n"
-        prompt_usuario += f"CÁLCULOS EXACTOS:\n"
-        prompt_usuario += f"- Número de escenas/párrafos: EXACTAMENTE {escenas_objetivo} párrafos\n"
-        prompt_usuario += f"- Duración por párrafo: {seg_por_imagen} segundos cada uno\n"
-        prompt_usuario += f"- Palabras objetivo totales: aproximadamente {palabras_objetivo} palabras\n"
-        prompt_usuario += f"- Palabras por párrafo: aproximadamente {palabras_por_escena} palabras por párrafo\n\n"
-        prompt_usuario += f"REGLAS CRÍTICAS (OBLIGATORIAS - NO IGNORAR):\n"
-        prompt_usuario += f"1. ⚠️⚠️⚠️ Escribe EXACTAMENTE {escenas_objetivo} párrafos. NI MÁS, NI MENOS. Esto es CRÍTICO y NO NEGOCIABLE.\n"
-        prompt_usuario += f"2. ⚠️⚠️⚠️ Cada párrafo debe tener aproximadamente {palabras_por_escena} palabras (total: ~{palabras_objetivo} palabras).\n"
-        prompt_usuario += f"3. ⚠️⚠️⚠️ Debes contar la historia COMPLETA (inicio + desarrollo + final) en esos {escenas_objetivo} párrafos.\n"
-        prompt_usuario += f"4. ⚠️⚠️⚠️ Ajusta el DETALLE, NO la CANTIDAD de párrafos:\n"
-        prompt_usuario += f"   - Si es 1 minuto: historia completa pero MUY breve (solo eventos esenciales, sin detalles)\n"
-        prompt_usuario += f"   - Si es 5 minutos: historia completa con más detalle (desarrolla escenas clave)\n"
-        prompt_usuario += f"   - Si es 20 minutos: historia completa con MUCHO detalle (desarrolla cada momento)\n"
-        prompt_usuario += f"5. ⚠️⚠️⚠️ NO agregues párrafos extra bajo ninguna circunstancia. Si necesitas más espacio, aumenta palabras por párrafo.\n"
-        prompt_usuario += f"6. ⚠️⚠️⚠️ NO cortes la historia. Debe tener inicio, desarrollo y final completo.\n"
-        prompt_usuario += f"7. ⚠️⚠️⚠️ La respuesta está limitada a {max_tokens_estimado} tokens. Usa ese límite sabiamente para escribir EXACTAMENTE {escenas_objetivo} párrafos.\n\n"
-        prompt_usuario += f"EJEMPLO para {duracion_min} minuto{'s' if duracion_min != 1 else ''}:\n"
-        prompt_usuario += f"- Párrafo 1: Inicio (gancho) - ~{palabras_por_escena} palabras\n"
-        prompt_usuario += f"- Párrafos 2-{max(2, escenas_objetivo-1)}: Desarrollo - ~{palabras_por_escena} palabras cada uno\n"
-        prompt_usuario += f"- Párrafo {escenas_objetivo}: Final - ~{palabras_por_escena} palabras\n"
-        prompt_usuario += "="*60 + "\n"
-    else:
-        prompt_usuario += f"\n\n⚠️ DURACIÓN Y HISTORIA COMPLETA:\n"
-        prompt_usuario += f"- El video debe durar entre {duracion_min} y {duracion_max} minutos.\n"
-        prompt_usuario += f"- Escribe entre {int((duracion_min * 60) / seg_por_imagen)} y {escenas_objetivo} párrafos (escenas).\n"
-        prompt_usuario += f"- Palabras objetivo: aproximadamente {palabras_objetivo} palabras totales.\n"
-        prompt_usuario += f"- Debes contar la historia COMPLETA desde el inicio hasta el final.\n"
-        prompt_usuario += f"- Ajusta el nivel de detalle según la duración disponible.\n"
-        prompt_usuario += f"- NO cortes la historia. La historia debe tener inicio, desarrollo y final completo.\n"
-        prompt_usuario += f"- NO excedas los {escenas_objetivo} párrafos."
     
     rules = get_narrative_rules()
-    system_base = t.get("sistema", "Eres un guionista para videos. Un párrafo por escena de 5 segundos.")
+    system_base = t.get("sistema", "Eres un guionista para videos. Narración continua, concreta, sin poesía ni moralejas explícitas.")
     system_extra = (rules.get("system_extra") or "").strip()
     
-    # Agregar instrucciones críticas al system prompt también
-    system_critico = ""
-    if duracion_min == duracion_max:
-        system_critico = f"\n\n⚠️ REGLA CRÍTICA: Debes escribir EXACTAMENTE {escenas_objetivo} párrafos para una duración de {duracion_min} minutos. "
-        system_critico += f"Cada párrafo debe tener aproximadamente {palabras_por_escena} palabras. "
-        system_critico += f"NO escribas más párrafos. Ajusta el nivel de detalle, no la cantidad de párrafos. "
-        system_critico += f"La historia debe ser COMPLETA (inicio + desarrollo + final) pero ajustada a esta duración exacta."
+    # Agregar instrucciones de estilo al system prompt
+    style_instructions = """
+Narración continua, concreta, sin poesía ni moralejas explícitas.
+POV en segunda persona hablándole al espectador.
+Tono cinematográfico, oscuro y tenso cuando aplique.
+Hechos específicos (no generalidades tipo "ganas campeonatos" sin describir).
+"""
     
-    system = f"{system_base}\n\n{system_extra}{system_critico}" if system_extra or system_critico else system_base
-
+    system = f"{system_base}\n\n{system_extra}\n\n{style_instructions}" if system_extra else f"{system_base}\n\n{style_instructions}"
+    
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        return _guion_fallback(tema, duracion_min, escenas_objetivo)
-
+        guion_fallback = _guion_fallback_words(tema, target_words)
+        word_count = count_words(guion_fallback)
+        estimated_minutes = word_count / 140.0
+        return guion_fallback, word_count, estimated_minutes
+    
     try:
         from openai import OpenAI
         client = OpenAI(api_key=api_key)
         
-        # Usar max_tokens para limitar FÍSICAMENTE la longitud de la respuesta
+        # ─── PASO 1: Generar borrador completo ───────────────────────────────────
+        print(f"📝 Paso 1: Generando borrador completo (objetivo: ~{target_words} palabras)...")
+        
+        prompt_borrador = f"""Escribe una historia COMPLETA con inicio, desarrollo y final. Debe sentirse cerrada.
+Narración continua, concreta, sin poesía, sin moralejas explícitas.
+POV en segunda persona hablándole al espectador.
+Si el límite de palabras es bajo, simplifica eventos y reduce descripciones, pero termina la historia con un final claro.
+Objetivo: acercarte a {target_words} palabras, sin excederlo.
+No uses encabezados ni listas; solo texto fluido.
+
+Tema: {tema}"""
+        
+        # Calcular max_tokens para el borrador (más permisivo)
         # Aproximadamente 1.3 tokens por palabra en español
-        # Usar un margen MUY pequeño para forzar la duración exacta
-        max_tokens_estimado = int(palabras_objetivo * 1.1 * 1.3)  # Solo 10% de margen - muy restrictivo
-        max_tokens_estimado = max(100, min(max_tokens_estimado, 4000))  # Entre 100 y 4000 tokens
+        max_tokens_borrador = int(target_words * 1.5 * 1.3)  # 50% de margen para asegurar que no se corte
+        max_tokens_borrador = max(500, min(max_tokens_borrador, 8000))  # Mínimo 500, máximo 8000
         
-        print(f"🔒 Limitando respuesta a {max_tokens_estimado} tokens (objetivo: ~{int(palabras_objetivo * 1.3)} tokens)")
-        
-        r = client.chat.completions.create(
+        r1 = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
             messages=[
                 {"role": "system", "content": system},
-                {"role": "user", "content": prompt_usuario},
+                {"role": "user", "content": prompt_borrador},
             ],
-            max_tokens=max_tokens_estimado,  # Limitar tokens para forzar duración exacta
-            temperature=0.3,  # Temperatura muy baja para máxima precisión y menos creatividad
+            max_tokens=max_tokens_borrador,
+            temperature=0.7,  # Más creatividad en el borrador
         )
-        guion_generado = (r.choices[0].message.content or "").strip()
+        borrador = (r1.choices[0].message.content or "").strip()
+        word_count_borrador = count_words(borrador)
         
-        # Validar y contar escenas generadas (solo para logging, NO recortar)
-        escenas_generadas = len([p for p in guion_generado.split("\n\n") if p.strip()])
-        palabras_generadas = len(guion_generado.split())
+        print(f"📊 Borrador generado: {word_count_borrador} palabras (objetivo: {target_words})")
         
-        print(f"📊 Guion generado: {escenas_generadas} escenas (objetivo: {escenas_objetivo}), {palabras_generadas} palabras (objetivo: ~{palabras_objetivo})")
+        # ─── PASO 2: Ajustar solo si es necesario (más flexible) ──────────────────
+        print(f"✂️ Paso 2: Verificando ajuste (objetivo: ~{target_words} palabras)...")
         
-        # NO recortar - confiar en que la IA generó el tamaño correcto
-        # Si excede mucho, solo advertir pero no cortar
-        if escenas_generadas > escenas_objetivo * 1.2:
-            print(f"⚠️ ADVERTENCIA: Guion tiene {escenas_generadas} escenas, objetivo: {escenas_objetivo}. La IA debería haber generado el tamaño correcto.")
+        # Determinar si necesitamos expandir o reducir
+        necesita_expandir = word_count_borrador < min_words
+        necesita_reducir = word_count_borrador > max_words
         
-        return guion_generado
+        # Solo ajustar si está FUERA del rango aceptable o muy lejos del objetivo
+        # No forzar ajustes pequeños que arruinen el guion
+        diferencia_objetivo = abs(word_count_borrador - target_words)
+        necesita_ajustar = False
+        
+        if necesita_expandir or necesita_reducir:
+            # Fuera del rango, definitivamente ajustar
+            necesita_ajustar = True
+            print(f"   📊 Borrador fuera de rango ({word_count_borrador} palabras, rango: {min_words}-{max_words})")
+        elif diferencia_objetivo > 100:  # Solo ajustar si está a más de 100 palabras del objetivo
+            # Muy lejos del objetivo, ajustar suavemente
+            necesita_ajustar = True
+            print(f"   📊 Borrador lejos del objetivo ({word_count_borrador} vs {target_words}, diferencia: {diferencia_objetivo})")
+        else:
+            # Está cerca del objetivo, no ajustar para no arruinar el guion
+            necesita_ajustar = False
+            print(f"   ✅ Borrador está cerca del objetivo ({word_count_borrador} palabras, diferencia: {diferencia_objetivo}), no se ajustará")
+        
+        if necesita_ajustar:
+            # Ajuste más flexible: apuntar cerca del objetivo, no exacto
+            objetivo_ajuste = target_words
+            if diferencia_objetivo > 200:
+                # Si está muy lejos, ajustar más agresivamente
+                objetivo_ajuste = target_words
+            else:
+                # Si está cerca, solo ajustar suavemente hacia el objetivo
+                objetivo_ajuste = int((word_count_borrador + target_words) / 2)
+            
+            prompt_ajuste = f"""Reescribe la historia siguiente para que tenga aproximadamente {objetivo_ajuste} palabras (entre {min_words} y {max_words}).
+Debe mantener coherencia total, historia completa y final claro.
+NO fuerces palabras solo para llegar al número - la calidad del guion es más importante.
+Si necesitas acortar, elimina detalles y escenas secundarias, pero conserva el desenlace.
+Si necesitas expandir, agrega detalles concretos y tensión sin inventar subtramas largas.
+Devuelve solo el texto final.
+
+HISTORIA ORIGINAL:
+{borrador}"""
+            
+            # Calcular max_tokens para el ajuste (más restrictivo pero suficiente)
+            max_tokens_ajuste = int(target_words * 1.2 * 1.3)  # 20% de margen para evitar cortes
+            max_tokens_ajuste = max(500, min(max_tokens_ajuste, 8000))  # Mínimo 500, máximo 8000
+            
+            r2 = client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                messages=[
+                    {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias a números exactos de palabras manteniendo coherencia y final completo."},
+                    {"role": "user", "content": prompt_ajuste},
+                ],
+                max_tokens=max_tokens_ajuste,
+                temperature=0.3,  # Muy baja temperatura para precisión
+            )
+            guion_ajustado = (r2.choices[0].message.content or "").strip()
+            word_count_ajustado = count_words(guion_ajustado)
+            
+            print(f"📊 Guion ajustado: {word_count_ajustado} palabras (objetivo: {target_words})")
+            
+            # Validar resultado
+            if word_count_ajustado > max_words:
+                # Reintentar con instrucción más estricta (máximo 2 intentos)
+                print(f"⚠️ Guion excede {max_words} palabras. Reintentando con instrucción más estricta...")
+                prompt_ajuste_estricto = f"""Reescribe la historia siguiente para que tenga EXACTAMENTE {target_words} palabras (MÁXIMO {max_words}, NO MÁS).
+Debe mantener coherencia total, historia completa y final claro.
+Si necesitas acortar, elimina detalles y escenas secundarias, pero conserva el desenlace.
+Devuelve solo el texto final.
+
+HISTORIA ORIGINAL:
+{borrador}"""
+                
+                r3 = client.chat.completions.create(
+                    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                    messages=[
+                        {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias a números exactos de palabras manteniendo coherencia y final completo."},
+                        {"role": "user", "content": prompt_ajuste_estricto},
+                    ],
+                    max_tokens=int(target_words * 1.15 * 1.3),  # 15% de margen para evitar cortes
+                    temperature=0.2,  # Temperatura aún más baja
+                )
+                guion_final = (r3.choices[0].message.content or "").strip()
+                word_count_final = count_words(guion_final)
+                
+                if word_count_final <= max_words:
+                    guion_ajustado = guion_final
+                    word_count_ajustado = word_count_final
+                    print(f"✅ Guion ajustado correctamente: {word_count_ajustado} palabras")
+                else:
+                    print(f"⚠️ Guion aún excede {max_words} palabras ({word_count_ajustado}). Usando versión anterior.")
+            
+            # Validar que no quede muy corto y se pierda el cierre
+            if word_count_ajustado < min_words:
+                # Reintentar pidiendo expandir manteniendo final
+                print(f"⚠️ Guion queda muy corto ({word_count_ajustado} palabras). Reintentando para expandir manteniendo final...")
+                prompt_expandir = f"""Reescribe la historia siguiente para que tenga al menos {min_words} palabras (objetivo: {target_words}).
+Debe mantener coherencia total, historia completa y final claro.
+Agrega detalles concretos y tensión sin inventar subtramas largas.
+MANTÉN el final completo.
+Devuelve solo el texto final.
+
+HISTORIA ORIGINAL:
+{borrador}"""
+                
+                r4 = client.chat.completions.create(
+                    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                    messages=[
+                        {"role": "system", "content": "Eres un editor de guiones experto. Expandes historias manteniendo coherencia y final completo."},
+                        {"role": "user", "content": prompt_expandir},
+                    ],
+                    max_tokens=int(target_words * 1.3 * 1.3),  # 30% de margen para expansión
+                    temperature=0.4,
+                )
+                guion_expandido = (r4.choices[0].message.content or "").strip()
+                word_count_expandido = count_words(guion_expandido)
+                
+                if word_count_expandido >= min_words:
+                    guion_ajustado = guion_expandido
+                    word_count_ajustado = word_count_expandido
+                    print(f"✅ Guion expandido correctamente: {word_count_ajustado} palabras")
+            
+            guion_final = guion_ajustado
+            word_count_final = word_count_ajustado
+        else:
+            guion_final = borrador
+            word_count_final = word_count_borrador
+        
+        # Calcular minutos estimados (base, sin velocidad)
+        words_per_minute = 140
+        estimated_minutes = word_count_final / words_per_minute
+        
+        # Verificar que el guion no esté cortado
+        if len(guion_final.strip()) < 100:
+            print(f"⚠️ ADVERTENCIA: Guion parece muy corto ({len(guion_final)} caracteres)")
+        
+        # Verificar que termine con punto o signo de puntuación
+        if guion_final.strip() and not guion_final.strip()[-1] in ".!?":
+            print(f"⚠️ ADVERTENCIA: Guion puede estar cortado (no termina con puntuación)")
+        
+        print(f"✅ Guion final: {word_count_final} palabras, ≈ {estimated_minutes:.1f} minutos (base, sin velocidad)")
+        print(f"   Longitud del texto: {len(guion_final)} caracteres")
+        
+        return guion_final, word_count_final, estimated_minutes
+        
     except Exception as e:
         print(f"⚠️ Error al generar guion: {e}")
-        return _guion_fallback(tema, duracion_min, escenas_objetivo)
+        guion_fallback = _guion_fallback_words(tema, target_words)
+        word_count = count_words(guion_fallback)
+        estimated_minutes = word_count / 140.0
+        return guion_fallback, word_count, estimated_minutes
 
 
-def _ajustar_guion_con_ia(
-    client, guion_original: str, escenas_objetivo: int, palabras_objetivo: int, 
-    palabras_por_escena: int, duracion_min: int
-) -> str | None:
-    """
-    Pide a la IA que ajuste el guion a la duración exacta manteniendo la historia completa.
-    """
-    try:
-        prompt_ajuste = f"""El siguiente guion es demasiado largo. Necesito que lo ajustes a EXACTAMENTE {escenas_objetivo} párrafos manteniendo la historia COMPLETA.
-
-GUION ORIGINAL:
-{guion_original}
-
-INSTRUCCIONES:
-1. Mantén la historia COMPLETA (inicio + desarrollo + final)
-2. Reduce a EXACTAMENTE {escenas_objetivo} párrafos
-3. Cada párrafo debe tener aproximadamente {palabras_por_escena} palabras
-4. Ajusta el nivel de detalle, no cortes la historia
-5. Si es 1 minuto: cuenta breve pero completa
-6. Si es más tiempo: puedes mantener más detalle
-
-Escribe SOLO el guion ajustado, sin explicaciones."""
-        
-        r = client.chat.completions.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            messages=[
-                {"role": "system", "content": "Eres un editor de guiones experto. Ajustas guiones a duraciones exactas manteniendo la historia completa."},
-                {"role": "user", "content": prompt_ajuste},
-            ],
-            max_tokens=int(palabras_objetivo * 1.2 * 1.3),
-            temperature=0.3,  # Muy baja temperatura para precisión
-        )
-        guion_ajustado = (r.choices[0].message.content or "").strip()
-        
-        # Validar que el ajuste sea mejor
-        escenas_ajustadas = len([p for p in guion_ajustado.split("\n\n") if p.strip()])
-        if abs(escenas_ajustadas - escenas_objetivo) < abs(len([p for p in guion_original.split("\n\n") if p.strip()]) - escenas_objetivo):
-            print(f"✅ Guion ajustado: {escenas_ajustadas} escenas (objetivo: {escenas_objetivo})")
-            return guion_ajustado
-        
-        return None
-    except Exception as e:
-        print(f"⚠️ Error al ajustar guion con IA: {e}")
-        return None
-    except Exception:
-        return _guion_fallback(tema, duracion_min, escenas_objetivo)
-
-
-def _recortar_guion_por_duracion(guion: str, duracion_max_minutos: int, segundos_por_imagen: float) -> str:
-    """
-    Recorta el guion para que no exceda la duración máxima.
-    Divide por párrafos y elimina los que excedan.
-    """
-    from .scene_splitter import dividir_en_escenas
-    
-    # Dividir en escenas
-    escenas = dividir_en_escenas(guion, segundos_por_imagen)
-    
-    # Calcular duración máxima en segundos
-    duracion_max_segundos = duracion_max_minutos * 60
-    
-    # Calcular duración acumulada y encontrar el punto de corte
-    duracion_acumulada = 0.0
-    escenas_finales = []
-    
-    for escena in escenas:
-        if duracion_acumulada + escena.duracion_segundos <= duracion_max_segundos:
-            escenas_finales.append(escena)
-            duracion_acumulada += escena.duracion_segundos
-        else:
-            # Si agregar esta escena excedería, no la incluimos
-            break
-    
-    # Si no hay escenas, al menos devolver la primera
-    if not escenas_finales and escenas:
-        escenas_finales = [escenas[0]]
-    
-    # Reconstruir el guion desde las escenas seleccionadas
-    return "\n\n".join(e.texto for e in escenas_finales)
-
-
-def _guion_fallback(tema: str, duracion_min: int, escenas_objetivo: int | None = None) -> str:
+def _guion_fallback_words(tema: str, target_words: int) -> str:
     """Guion de ejemplo cuando no hay API configurada."""
-    if escenas_objetivo is None:
-        escenas_objetivo = max(1, (duracion_min * 60) // 5)
+    palabras_por_parrafo = 50
+    num_parrafos = max(1, target_words // palabras_por_parrafo)
+    
     lineas = [
         f"En este video hablaremos sobre: {tema}.",
         "La idea central es muy importante para entender el tema.",
         "Veamos los puntos clave uno por uno.",
     ]
-    while len(lineas) < escenas_objetivo:
+    while len(lineas) < num_parrafos:
         lineas.append(f"Aquí desarrollamos otro aspecto de {tema}.")
-    return "\n\n".join(lineas[:escenas_objetivo])
+    return "\n\n".join(lineas[:num_parrafos])
 
 
 def guardar_guion(contenido: str, nombre: str = "guion") -> Path:

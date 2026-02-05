@@ -10,7 +10,7 @@ try:
 except ImportError:
     def get_background_music_path():
         return None
-from .script_generator import generar_guion, guardar_guion
+from .script_generator import generar_guion, guardar_guion, count_words
 from .scene_splitter import dividir_en_escenas, escenas_a_texto_continuo
 from .prompt_builder import prompts_para_escenas
 from .image_generator import generar_lote, OUTPUT_IMAGES
@@ -18,6 +18,7 @@ from .voice_generator import generar_voz
 from .video_assembler import montar_video
 from .regeneration import guardar_prompts_por_escena
 from .metadata_youtube import generar_metadata_completa
+from .history import guardar_en_historial
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -75,8 +76,9 @@ def sanitizar_nombre_proyecto(nombre: str) -> str:
 def run(
     tema: str | None = None,
     guion_path: Path | None = None,
-    duracion_min: int = 2,
-    duracion_max: int | None = None,
+    target_words: int | None = None,
+    min_words: int | None = None,
+    max_words: int | None = None,
     plantilla: str = "explicativo",
     nombre_proyecto: str | None = None,
     skip_imagenes: bool = False,
@@ -88,26 +90,45 @@ def run(
     width: int = 1920,
     height: int = 1080,
     skip_miniatura: bool = False,
-) -> tuple[Path, Path | None]:
+    # Parámetros legacy (deprecated, usar target_words)
+    duracion_min: int | None = None,
+    duracion_max: int | None = None,
+) -> tuple[Path, Path | None, Path | None, dict]:
     """
     Pipeline completo:
     Entrada: tema (para generar guion) o ruta a guion existente.
-    Salida: (video_path, metadata_path). metadata_path es None si generar_metadata=False.
+    Salida: (video_path, metadata_path, thumbnail_path, info_dict)
+    - info_dict contiene: word_count, estimated_minutes
     """
+    # Compatibilidad con parámetros legacy: convertir duración a palabras
+    if target_words is None:
+        if duracion_min is not None:
+            # Convertir minutos a palabras objetivo (140 palabras por minuto)
+            words_per_minute = 140
+            target_words = int(duracion_min * words_per_minute)
+            if duracion_max is not None and duracion_max != duracion_min:
+                max_words = int(duracion_max * words_per_minute)
+        else:
+            # Default: 280 palabras (2 minutos)
+            target_words = 280
+    
+    if target_words < 80:
+        target_words = 80
+    if target_words > 3000:
+        target_words = 3000
+    
+    # Obtener segundos por imagen
+    seg_por_img = segundos_por_imagen or 5.0
+    
+    word_count = 0
+    estimated_minutes = 0.0
+    
     if tema:
-        # Asegurar que duracion_max >= duracion_min
-        if duracion_max is None:
-            duracion_max = duracion_min  # Por defecto, duración exacta
-        if duracion_max < duracion_min:
-            duracion_max = duracion_min
-        
-        # Obtener segundos por imagen para calcular escenas exactas
-        seg_por_img = segundos_por_imagen or 5.0
-        
-        guion_texto = generar_guion(
+        guion_texto, word_count, estimated_minutes = generar_guion(
             tema, 
-            duracion_min=duracion_min, 
-            duracion_max=duracion_max,
+            target_words=target_words,
+            min_words=min_words,
+            max_words=max_words,
             plantilla=plantilla,
             segundos_por_imagen=seg_por_img,
         )
@@ -116,21 +137,14 @@ def run(
         guardar_guion(guion_texto, proy)
     elif guion_path and guion_path.exists():
         guion_texto = guion_path.read_text(encoding="utf-8")
+        word_count = count_words(guion_texto)
+        estimated_minutes = word_count / 140.0
         proy = nombre_proyecto or guion_path.stem
         proy = sanitizar_nombre_proyecto(proy)
     else:
         raise ValueError("Indica --tema o --guion con un archivo existente.")
 
     escenas = dividir_en_escenas(guion_texto, segundos_por_imagen=seg_por_img)
-    
-    # NO recortar escenas - la IA debe generar la duración correcta
-    # Solo validar y advertir si es muy diferente
-    if tema and duracion_max is not None:
-        duracion_max_segundos = duracion_max * 60
-        duracion_total = sum(e.duracion_segundos for e in escenas)
-        
-        if duracion_total > duracion_max_segundos * 1.2:
-            print(f"⚠️ ADVERTENCIA: Guion tiene {duracion_total:.1f}s, objetivo: {duracion_max_segundos:.1f}s. La IA debería haber generado el tamaño correcto.")
     
     escenas_con_prompts = prompts_para_escenas(escenas)
     guardar_prompts_por_escena(escenas_con_prompts, proy)
@@ -140,10 +154,70 @@ def run(
     lista_imagenes = sorted((OUTPUT_IMAGES / proy).glob("escena_*.png"))
 
     texto_narracion = escenas_a_texto_continuo(escenas)
+    
+    # Verificar que el texto de narración no esté vacío o cortado
+    if not texto_narracion or len(texto_narracion.strip()) < 50:
+        print(f"⚠️ ADVERTENCIA: Texto de narración muy corto ({len(texto_narracion)} caracteres)")
+        print(f"   Guion original: {len(guion_texto)} caracteres")
+        print(f"   Número de escenas: {len(escenas)}")
+        print(f"   Primeros 200 caracteres del guion: {guion_texto[:200]}")
+        print(f"   Últimos 200 caracteres del guion: {guion_texto[-200:]}")
+    
+    # Verificar que el texto de narración coincida con el guion
+    palabras_narracion = len(texto_narracion.split())
+    palabras_guion = len(guion_texto.split())
+    
+    print(f"📊 Comparación de texto:")
+    print(f"   Guion original: {palabras_guion} palabras, {len(guion_texto)} caracteres")
+    print(f"   Texto narración: {palabras_narracion} palabras, {len(texto_narracion)} caracteres")
+    
+    if abs(palabras_narracion - word_count) > 50:
+        print(f"⚠️ ADVERTENCIA: Diferencia grande entre palabras del guion ({word_count}) y narración ({palabras_narracion})")
+    
+    if abs(palabras_narracion - palabras_guion) > 50:
+        print(f"⚠️ ADVERTENCIA CRÍTICA: El texto de narración tiene {palabras_narracion} palabras pero el guion tiene {palabras_guion} palabras")
+        print(f"   Esto significa que parte del guion NO se está usando para generar el audio")
+        print(f"   Verificando escenas...")
+        for i, escena in enumerate(escenas):
+            print(f"   Escena {escena.numero}: {len(escena.texto)} caracteres, {len(escena.texto.split())} palabras")
+            print(f"      Texto: {escena.texto[:100]}...")
+    
     audio_path = None
+    duracion_audio_segundos = None
     if not skip_voz:
+        print(f"🔊 Generando voz con {len(texto_narracion)} caracteres, {palabras_narracion} palabras estimadas")
         audio_path = generar_voz(texto_narracion, nombre_archivo=proy, velocidad=velocidad_voz)
         if audio_path.exists() and audio_path.stat().st_size > 0:
+            # Obtener duración real del audio
+            import subprocess
+            import shutil
+            if shutil.which("ffprobe"):
+                try:
+                    cmd_probe = [
+                        "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                        "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path)
+                    ]
+                    result = subprocess.run(cmd_probe, capture_output=True, text=True, check=True)
+                    duracion_audio_segundos = float(result.stdout.strip())
+                    duracion_audio_min = duracion_audio_segundos / 60.0
+                    print(f"🔊 Duración real del audio: {duracion_audio_segundos:.1f} segundos ({duracion_audio_min:.1f} minutos)")
+                    
+                    # Comparar con estimado
+                    estimated_audio_min = palabras_narracion / 140.0 / velocidad_voz
+                    diferencia_audio = duracion_audio_min - estimated_audio_min
+                    print(f"   📊 Comparación:")
+                    print(f"      Estimado: {estimated_audio_min:.1f} min ({estimated_audio_min*60:.0f}s)")
+                    print(f"      Real: {duracion_audio_min:.1f} min ({duracion_audio_segundos:.0f}s)")
+                    print(f"      Diferencia: {diferencia_audio:+.1f} min ({diferencia_audio*60:+.0f}s)")
+                    
+                    if abs(diferencia_audio) > 1.0:
+                        print(f"   ⚠️ ADVERTENCIA: Gran diferencia entre audio estimado y real")
+                        print(f"      Posibles causas:")
+                        print(f"      - El TTS habla más rápido/lento que 140 palabras/min")
+                        print(f"      - El texto se cortó al generar el audio")
+                        print(f"      - Problemas con la velocidad aplicada")
+                except Exception as e:
+                    print(f"⚠️ No se pudo obtener duración del audio: {e}")
             # NO recortar audio - el guion debe ser del tamaño correcto
             # Solo validar duración del audio
             if tema and duracion_max is not None:
@@ -190,8 +264,61 @@ def run(
             usar_ia_descripcion=True,
             generar_miniatura_flag=not skip_miniatura,  # Generar miniatura si no se salta (usa DALL-E, no necesita Stable Diffusion)
         )
+    
+    # Obtener duración real del video
+    duracion_real_segundos = None
+    if video_path.exists():
+        import subprocess
+        import shutil
+        if shutil.which("ffprobe"):
+            try:
+                cmd_probe = [
+                    "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1", str(video_path)
+                ]
+                result = subprocess.run(cmd_probe, capture_output=True, text=True, check=True)
+                duracion_real_segundos = float(result.stdout.strip())
+                print(f"📹 Duración real del video: {duracion_real_segundos:.1f} segundos ({duracion_real_segundos/60:.1f} minutos)")
+            except Exception as e:
+                print(f"⚠️ No se pudo obtener duración del video: {e}")
+    
+    # Calcular duración estimada ajustada por velocidad
+    estimated_minutes_ajustado = estimated_minutes / velocidad_voz if velocidad_voz > 0 else estimated_minutes
+    
+    # Información adicional sobre el guion generado
+    info_dict = {
+        "word_count": word_count,
+        "estimated_minutes": estimated_minutes,
+        "estimated_minutes_ajustado": estimated_minutes_ajustado,
+        "target_words": target_words,
+        "duracion_real_segundos": duracion_real_segundos,
+        "duracion_audio_segundos": duracion_audio_segundos,
+        "velocidad_voz_usada": velocidad_voz,
+        "palabras_narracion": palabras_narracion,
+    }
+    
+    # Guardar en historial (con guion completo, no cortado)
+    try:
+        guardar_en_historial(
+            nombre_proyecto=proy,
+            tema=tema or proy,
+            guion_texto=guion_texto,  # Guion completo, sin cortar
+            video_path=video_path,
+            metadata_path=metadata_path,
+            thumbnail_path=thumbnail_path,
+            audio_path=audio_path,
+            word_count=word_count,
+            estimated_minutes=estimated_minutes_ajustado,
+            target_words=target_words,
+            width=width,
+            height=height,
+            velocidad_voz=velocidad_voz,
+            segundos_por_imagen=seg_por_img,
+        )
+    except Exception as e:
+        print(f"⚠️ Error al guardar en historial: {e}")
 
-    return video_path, metadata_path, thumbnail_path
+    return video_path, metadata_path, thumbnail_path, info_dict
 
 
 def main():

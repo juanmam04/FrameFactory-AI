@@ -38,11 +38,22 @@ Crea un archivo `.env` en la raíz del proyecto con este contenido:
 # Obtén tu key en: https://platform.openai.com/api-keys
 OPENAI_API_KEY=sk-tu-api-key-aqui
 
-# Stable Diffusion API URL
+# ============================================
+# OPCIONALES - Generación de Imágenes
+# ============================================
+
+# Opción 1: Stable Diffusion API (local o remota)
 # Si usas Automatic1111 local: http://127.0.0.1:7860
 # Si usas ComfyUI: http://127.0.0.1:8188
 # Si usas API en la nube: https://tu-api-sd.com
-SD_API_URL=http://127.0.0.1:7860
+# SD_API_URL=http://127.0.0.1:7860
+
+# Opción 2: Hugging Face Inference API (GRATIS con token)
+# Obtén tu token en: https://huggingface.co/settings/tokens
+# HUGGINGFACE_API_KEY=tu-token-huggingface
+
+# Opción 3: Pollinations.ai (GRATIS, sin token)
+# No necesitas configurar nada - se usa automáticamente si no hay otras opciones
 
 # ============================================
 # OPCIONALES - Voz
@@ -70,23 +81,43 @@ OPENAI_MODEL=gpt-4o-mini
 # BACKGROUND_MUSIC_PATH=path/to/musica.mp3
 ```
 
-### 4. **Configurar Stable Diffusion**
+### 4. **Configurar Generador de Imágenes**
 
-Tienes 3 opciones:
+Tienes 4 opciones (de más fácil a más avanzado):
 
-**Opción A: Automatic1111 (local)**
+**Opción A: Pollinations.ai (GRATIS, sin configuración) ⭐ RECOMENDADO PARA EMPEZAR**
+- ✅ **100% gratis, sin token, sin instalación**
+- ✅ Funciona automáticamente si no configuras nada más
+- ⚠️ Límite: máximo 1024x1024 píxeles
+- ⚠️ Puede ser más lento que otras opciones
+- **No necesitas configurar nada en `.env`** - se usa automáticamente como fallback
+
+**Opción B: Hugging Face Inference API (GRATIS con token)**
+1. Crea una cuenta gratuita en: https://huggingface.co/
+2. Ve a Settings → Access Tokens y crea un token
+3. En `.env` agrega: `HUGGINGFACE_API_KEY=tu-token-aqui`
+- ✅ Gratis con límites razonables
+- ✅ Buena calidad
+- ⚠️ Requiere token (gratis)
+
+**Opción C: Automatic1111 (local)**
 1. Instala Automatic1111: https://github.com/AUTOMATIC1111/stable-diffusion-webui
 2. Inicia el servidor: `python webui.py --api`
 3. En `.env` usa: `SD_API_URL=http://127.0.0.1:7860`
+- ✅ Control total, sin límites
+- ⚠️ Requiere GPU y instalación local
 
-**Opción B: ComfyUI (local)**
+**Opción D: ComfyUI (local)**
 1. Instala ComfyUI: https://github.com/comfyanonymous/ComfyUI
 2. Inicia con API habilitada
 3. En `.env` usa: `SD_API_URL=http://127.0.0.1:8188`
+- ✅ Control total, sin límites
+- ⚠️ Requiere GPU y instalación local
 
-**Opción C: API en la nube**
-- Usa un servicio como Replicate, Stability AI, etc.
-- En `.env` pon la URL de la API
+**Orden de prioridad automático:**
+1. Si `SD_API_URL` está configurado → usa Stable Diffusion API
+2. Si `HUGGINGFACE_API_KEY` está configurado → usa Hugging Face
+3. Si nada está configurado → usa Pollinations.ai (gratis)
 
 ## 🎬 Crear tu primer video
 

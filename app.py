@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 
 from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes
 from src.pipeline import run, sanitizar_nombre_proyecto
+from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
+from src.script_generator import guardar_guion
 import yaml
 
 load_dotenv(BASE / ".env")
@@ -85,6 +87,9 @@ for key, default in [
     ("video_name", None),
     ("metadata_path", None),
     ("metadata_text", None),
+    ("word_count", None),
+    ("estimated_minutes", None),
+    ("target_words", None),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -96,6 +101,9 @@ def clear_result():
     st.session_state.video_name = None
     st.session_state.metadata_path = None
     st.session_state.metadata_text = None
+    st.session_state.word_count = None
+    st.session_state.estimated_minutes = None
+    st.session_state.target_words = None
 
 
 # ─── Estilos ─────────────────────────────────────────────────────────────────
@@ -166,24 +174,31 @@ nombre_proyecto = st.text_input("Nombre del proyecto (opcional)", placeholder="P
 # Configuración del video
 col1, col2, col3 = st.columns(3)
 with col1:
-    duracion_min = st.number_input(
-        "Duración mínima (minutos)",
-        min_value=1,
-        max_value=30,
-        value=2,
-        help="Duración mínima del video. El guion se generará para esta duración como mínimo.",
-        key="duracion_min_todo"
+    target_words = st.number_input(
+        "Palabras objetivo",
+        min_value=80,
+        max_value=3000,
+        value=280,
+        step=10,
+        help="Número objetivo de palabras para el guion. La historia será completa pero ajustada a este límite.",
+        key="target_words_todo"
     )
+    
+    # Calcular y mostrar estimado de minutos en tiempo real (considerando velocidad de voz)
+    words_per_minute = 140
+    estimated_minutes_base = target_words / words_per_minute
+    # Usar velocidad de voz del session state o valor por defecto
+    velocidad_voz_default = st.session_state.get("velocidad_voz_todo", 1.2)
+    estimated_minutes_ajustado = estimated_minutes_base / velocidad_voz_default
+    estimated_seconds = int((estimated_minutes_ajustado % 1) * 60)
+    estimated_minutes_int = int(estimated_minutes_ajustado)
+    
+    if estimated_minutes_ajustado < 2:
+        st.caption(f"≈ {estimated_minutes_int} min {estimated_seconds} s")
+    else:
+        st.caption(f"≈ {estimated_minutes_ajustado:.1f} min")
+
 with col2:
-    duracion_max = st.number_input(
-        "Duración máxima (minutos)",
-        min_value=1,
-        max_value=60,
-        value=5,
-        help="Duración máxima del video. El guion no excederá esta duración.",
-        key="duracion_max_todo"
-    )
-with col3:
     velocidad_voz = st.slider(
         "Velocidad de la voz",
         min_value=0.5,
@@ -193,11 +208,42 @@ with col3:
         help="1.0 = normal, 1.2 = 20% más rápido, 0.8 = 20% más lento",
         key="velocidad_voz_todo"
     )
+    
+    # Recalcular y mostrar estimado actualizado con la velocidad seleccionada
+    if velocidad_voz != velocidad_voz_default:
+        estimated_minutes_ajustado_actual = estimated_minutes_base / velocidad_voz
+        estimated_seconds_actual = int((estimated_minutes_ajustado_actual % 1) * 60)
+        estimated_minutes_int_actual = int(estimated_minutes_ajustado_actual)
+        if estimated_minutes_ajustado_actual < 2:
+            st.caption(f"≈ {estimated_minutes_int_actual} min {estimated_seconds_actual} s (con velocidad {velocidad_voz}x)")
+        else:
+            st.caption(f"≈ {estimated_minutes_ajustado_actual:.1f} min (con velocidad {velocidad_voz}x)")
 
-# Validar que duracion_max >= duracion_min
-if duracion_max < duracion_min:
-    st.warning(f"⚠️ La duración máxima ({duracion_max} min) debe ser mayor o igual a la mínima ({duracion_min} min). Se ajustará automáticamente.")
-    duracion_max = duracion_min
+with col3:
+    # Opcional: rango de palabras (colapsado por defecto)
+    show_range = st.checkbox("Mostrar rango de palabras (opcional)", value=False, key="show_range_todo")
+    if show_range:
+        min_words = st.number_input(
+            "Mín palabras",
+            min_value=80,
+            max_value=3000,
+            value=int(target_words * 0.8),
+            step=10,
+            help="Mínimo de palabras aceptable (por defecto 80% del objetivo)",
+            key="min_words_todo"
+        )
+        max_words = st.number_input(
+            "Máx palabras",
+            min_value=80,
+            max_value=3000,
+            value=int(target_words * 1.2),
+            step=10,
+            help="Máximo de palabras aceptable (por defecto 120% del objetivo)",
+            key="max_words_todo"
+        )
+    else:
+        min_words = None
+        max_words = None
 
 # Formato del video
 st.markdown("**📐 Formato del video:**")
@@ -294,10 +340,11 @@ if generar:
         mensaje_spinner += " → voz → video → metadata YouTube"
         with st.spinner(mensaje_spinner):
             try:
-                video_path, metadata_path, thumbnail_path = run(
+                video_path, metadata_path, thumbnail_path, info_dict = run(
                     tema=tema.strip(),
-                    duracion_min=duracion_min,
-                    duracion_max=duracion_max,
+                    target_words=target_words,
+                    min_words=min_words,
+                    max_words=max_words,
                     plantilla="explicativo",
                     nombre_proyecto=(nombre_proyecto or "").strip() or None,
                     skip_imagenes=skip_imagenes,
@@ -314,6 +361,28 @@ if generar:
                 st.session_state.video_path = video_path
                 st.session_state.video_bytes = video_path.read_bytes()
                 st.session_state.video_name = video_path.name
+                st.session_state.word_count = info_dict.get("word_count", 0)
+                st.session_state.estimated_minutes = info_dict.get("estimated_minutes", 0.0)
+                st.session_state.estimated_minutes_ajustado = info_dict.get("estimated_minutes_ajustado", 0.0)
+                st.session_state.target_words = info_dict.get("target_words", target_words)
+                st.session_state.duracion_real_segundos = info_dict.get("duracion_real_segundos", None)
+                st.session_state.duracion_audio_segundos = info_dict.get("duracion_audio_segundos", None)
+                st.session_state.velocidad_voz_usada = velocidad_voz
+                st.session_state.palabras_narracion = info_dict.get("palabras_narracion", st.session_state.get("word_count", 0))
+                
+                # Guardar guion en session state para mostrarlo (desde el archivo guardado, completo)
+                nombre_proy = (nombre_proyecto or tema[:30].replace(" ", "_")).strip() or None
+                nombre_proy = sanitizar_nombre_proyecto(nombre_proy) if nombre_proy else sanitizar_nombre_proyecto(tema[:30].replace(" ", "_"))
+                guion_path = BASE / "output" / "guiones" / f"{nombre_proy}.txt"
+                if guion_path.exists():
+                    guion_completo = guion_path.read_text(encoding="utf-8")
+                    st.session_state.guion_completo = guion_completo
+                    # Verificar que el guion no esté cortado
+                    if len(guion_completo.strip()) < 100:
+                        st.warning("⚠️ El guion guardado parece muy corto. Puede estar incompleto.")
+                else:
+                    st.warning(f"⚠️ No se encontró el archivo de guion en: {guion_path}")
+                
                 if metadata_path and metadata_path.exists():
                     st.session_state.metadata_path = metadata_path
                     st.session_state.metadata_text = metadata_path.read_text(encoding="utf-8")
@@ -326,41 +395,284 @@ if generar:
 
 # ─── Resultado: video + metadata ──────────────────────────────────────────────
 if st.session_state.video_path and st.session_state.video_bytes:
-    st.success("Video listo para subir.")
+    st.success("✅ Video generado exitosamente")
+    
+    # Mostrar información del guion generado
+    if st.session_state.get("word_count") is not None:
+        word_count = st.session_state.word_count
+        target_words = st.session_state.get("target_words", word_count)
+        estimated_minutes_base = st.session_state.get("estimated_minutes", 0.0)
+        
+        # Obtener velocidad de voz usada (si está disponible)
+        velocidad_usada = st.session_state.get("velocidad_voz_usada", 1.2)
+        estimated_minutes_real = estimated_minutes_base / velocidad_usada
+        
+        # Obtener duración real del video si está disponible
+        duracion_real_segundos = st.session_state.get("duracion_real_segundos", None)
+        
+        col_info1, col_info2, col_info3, col_info4 = st.columns(4)
+        with col_info1:
+            st.metric("Palabras generadas", f"{word_count} / {target_words}")
+        with col_info2:
+            if duracion_real_segundos:
+                duracion_real_min = duracion_real_segundos / 60.0
+                st.metric("Duración real", f"{duracion_real_segundos:.0f}s ({duracion_real_min:.1f} min)")
+            else:
+                st.metric("Duración estimada", f"≈ {estimated_minutes_real:.1f} min")
+        with col_info3:
+            diferencia = word_count - target_words
+            if abs(diferencia) <= 20:
+                st.metric("Estado", "✅ Objetivo cumplido", delta=None)
+            elif diferencia > 20:
+                st.metric("Estado", f"⚠️ +{diferencia} palabras", delta=f"+{diferencia}")
+            else:
+                st.metric("Estado", f"⚠️ {diferencia} palabras", delta=diferencia)
+        with col_info4:
+            duracion_audio_segundos = st.session_state.get("duracion_audio_segundos", None)
+            if duracion_real_segundos and estimated_minutes_base > 0:
+                diferencia_duracion = (duracion_real_segundos / 60.0) - estimated_minutes_real
+                if abs(diferencia_duracion) > 0.5:
+                    st.metric("⚠️ Duración", f"Desviación: {diferencia_duracion:+.1f} min", delta=f"{diferencia_duracion:+.1f}")
+                    # Mostrar información adicional si hay gran diferencia
+                    if abs(diferencia_duracion) > 2.0:
+                        palabras_narracion = st.session_state.get("palabras_narracion", word_count)
+                        if duracion_audio_segundos:
+                            palabras_por_min_real = (palabras_narracion / duracion_audio_segundos) * 60
+                            st.caption(f"⚠️ Audio: {duracion_audio_segundos/60:.1f} min")
+                            st.caption(f"📊 Velocidad real: {palabras_por_min_real:.0f} palabras/min")
+                            st.caption(f"📊 Esperado: 140 palabras/min × {velocidad_usada:.1f}x = {140*velocidad_usada:.0f} palabras/min")
+                else:
+                    st.metric("✅ Duración", "Correcta", delta=None)
+    
+    # Video
+    st.subheader("🎬 Video generado")
     st.video(st.session_state.video_path)
     st.download_button(
-        "Descargar MP4",
+        "📥 Descargar video (MP4)",
         data=st.session_state.video_bytes,
         file_name=st.session_state.video_name or "video.mp4",
         mime="video/mp4",
         key="dl_video",
     )
     
-    # Mostrar miniatura si se generó
-    if st.session_state.get("thumbnail_path") and st.session_state.get("thumbnail_bytes"):
-        st.subheader("🖼️ Miniatura generada")
-        st.image(st.session_state.thumbnail_bytes, caption="Miniatura del video")
-        st.download_button(
-            "Descargar miniatura",
-            data=st.session_state.thumbnail_bytes,
-            file_name=st.session_state.thumbnail_path.name if st.session_state.get("thumbnail_path") else "thumbnail.png",
-            mime="image/png",
-            key="dl_thumbnail",
-        )
+    # Archivos generados - Tabs para organizar mejor
+    st.subheader("📁 Archivos generados")
+    tabs_archivos = st.tabs(["📝 Guion", "🖼️ Miniatura", "📄 Metadata YouTube", "📂 Todos los archivos"])
     
-    if st.session_state.metadata_text:
-        st.subheader("Metadata para YouTube")
-        st.text_area("Descripción y capítulos (copiá a YouTube)", value=st.session_state.metadata_text, height=280, key="meta_display")
-        st.download_button(
-            "Descargar metadata (.txt)",
-            data=st.session_state.metadata_text,
-            file_name=(Path(st.session_state.metadata_path).name if st.session_state.metadata_path else "youtube_metadata.txt"),
-            mime="text/plain",
-            key="dl_meta",
-        )
-    if st.button("Generar otro video", key="btn_otro"):
+    with tabs_archivos[0]:  # Guion
+        if st.session_state.get("guion_completo"):
+            st.markdown("**Guion completo generado:**")
+            st.text_area(
+                "Guion",
+                value=st.session_state.guion_completo,
+                height=400,
+                key="guion_completo_display",
+                label_visibility="collapsed"
+            )
+            st.download_button(
+                "📥 Descargar guion completo (.txt)",
+                data=st.session_state.guion_completo,
+                file_name=f"{st.session_state.video_name.replace('.mp4', '')}_guion.txt",
+                mime="text/plain",
+                key="dl_guion_completo"
+            )
+            
+            # Información del archivo guardado
+            nombre_proy = st.session_state.video_name.replace('.mp4', '')
+            guion_path = BASE / "output" / "guiones" / f"{nombre_proy}.txt"
+            if guion_path.exists():
+                st.caption(f"💾 Guardado en: `{guion_path.relative_to(BASE)}`")
+        else:
+            st.info("El guion no está disponible en la sesión actual.")
+    
+    with tabs_archivos[1]:  # Miniatura
+        if st.session_state.get("thumbnail_path") and st.session_state.get("thumbnail_bytes"):
+            st.markdown("**Miniatura generada:**")
+            st.image(st.session_state.thumbnail_bytes, caption="Miniatura del video", use_container_width=True)
+            st.download_button(
+                "📥 Descargar miniatura (PNG)",
+                data=st.session_state.thumbnail_bytes,
+                file_name=st.session_state.thumbnail_path.name if st.session_state.get("thumbnail_path") else "thumbnail.png",
+                mime="image/png",
+                key="dl_thumbnail",
+            )
+            if st.session_state.get("thumbnail_path"):
+                st.caption(f"💾 Guardado en: `{Path(st.session_state.thumbnail_path).relative_to(BASE)}`")
+        else:
+            st.info("No se generó miniatura para este video.")
+    
+    with tabs_archivos[2]:  # Metadata
+        if st.session_state.metadata_text:
+            st.markdown("**Metadata para YouTube (descripción y capítulos):**")
+            st.text_area(
+                "Descripción y capítulos",
+                value=st.session_state.metadata_text,
+                height=400,
+                key="meta_display",
+                label_visibility="collapsed",
+                help="Copiá este texto y pegalo en la descripción de YouTube"
+            )
+            st.download_button(
+                "📥 Descargar metadata (.txt)",
+                data=st.session_state.metadata_text,
+                file_name=(Path(st.session_state.metadata_path).name if st.session_state.metadata_path else "youtube_metadata.txt"),
+                mime="text/plain",
+                key="dl_meta",
+            )
+            if st.session_state.metadata_path:
+                st.caption(f"💾 Guardado en: `{Path(st.session_state.metadata_path).relative_to(BASE)}`")
+        else:
+            st.info("No se generó metadata para este video.")
+    
+    with tabs_archivos[3]:  # Todos los archivos
+        st.markdown("**Ubicación de todos los archivos generados:**")
+        
+        nombre_proy = st.session_state.video_name.replace('.mp4', '')
+        nombre_proy_sanitizado = sanitizar_nombre_proyecto(nombre_proy)
+        
+        # Listar archivos generados
+        archivos_info = []
+        
+        # Video
+        if st.session_state.video_path:
+            archivos_info.append(("🎬 Video", st.session_state.video_path.relative_to(BASE), "MP4"))
+        
+        # Guion
+        guion_path = BASE / "output" / "guiones" / f"{nombre_proy_sanitizado}.txt"
+        if guion_path.exists():
+            archivos_info.append(("📝 Guion", guion_path.relative_to(BASE), "TXT"))
+        
+        # Miniatura
+        if st.session_state.get("thumbnail_path"):
+            archivos_info.append(("🖼️ Miniatura", Path(st.session_state.thumbnail_path).relative_to(BASE), "PNG"))
+        
+        # Metadata
+        if st.session_state.metadata_path:
+            archivos_info.append(("📄 Metadata", Path(st.session_state.metadata_path).relative_to(BASE), "TXT"))
+        
+        # Audio
+        audio_path = BASE / "output" / "audio" / f"{nombre_proy_sanitizado}.mp3"
+        if audio_path.exists():
+            archivos_info.append(("🔊 Audio", audio_path.relative_to(BASE), "MP3"))
+        
+        # Imágenes
+        imagenes_dir = BASE / "output" / "imagenes" / nombre_proy_sanitizado
+        if imagenes_dir.exists():
+            imagenes = list(imagenes_dir.glob("escena_*.png"))
+            if imagenes:
+                archivos_info.append(("🎨 Imágenes", f"{imagenes_dir.relative_to(BASE)} ({len(imagenes)} archivos)", "PNG"))
+        
+        if archivos_info:
+            for icono_nombre, ruta, tipo in archivos_info:
+                st.markdown(f"**{icono_nombre}** - `{ruta}` ({tipo})")
+        else:
+            st.info("No se encontraron archivos adicionales.")
+        
+        st.markdown("---")
+        st.markdown(f"**📂 Carpeta base del proyecto:** `output/{nombre_proy_sanitizado}/`")
+    
+    # Botón para generar otro video
+    st.markdown("---")
+    if st.button("🔄 Generar otro video", key="btn_otro", type="primary"):
         clear_result()
         st.rerun()
+
+# ─── Historial de Videos ────────────────────────────────────────────────────
+st.markdown("---")
+with st.expander("📚 Historial de Videos Generados"):
+    historial = cargar_historial()
+    
+    if not historial:
+        st.info("Aún no has generado ningún video. ¡Crea tu primer video arriba!")
+    else:
+        st.markdown(f"**Total de videos generados: {len(historial)}**")
+        
+        # Filtros
+        col_filtro1, col_filtro2 = st.columns(2)
+        with col_filtro1:
+            buscar_tema = st.text_input("🔍 Buscar por tema", key="historial_buscar", placeholder="Escribe para filtrar...")
+        with col_filtro2:
+            ordenar_por = st.selectbox("Ordenar por", ["Más reciente", "Más antiguo", "Tema (A-Z)"], key="historial_ordenar")
+        
+        # Filtrar y ordenar
+        historial_filtrado = historial
+        if buscar_tema:
+            historial_filtrado = [h for h in historial_filtrado if buscar_tema.lower() in h.get("tema", "").lower() or buscar_tema.lower() in h.get("nombre_proyecto", "").lower()]
+        
+        if ordenar_por == "Más antiguo":
+            historial_filtrado = list(reversed(historial_filtrado))
+        elif ordenar_por == "Tema (A-Z)":
+            historial_filtrado = sorted(historial_filtrado, key=lambda x: x.get("tema", "").lower())
+        
+        if not historial_filtrado:
+            st.warning("No se encontraron videos con ese criterio de búsqueda.")
+        else:
+            st.markdown(f"**Mostrando {len(historial_filtrado)} de {len(historial)} videos**")
+            
+            # Mostrar cada video
+            for idx, video in enumerate(historial_filtrado):
+                with st.container():
+                    col1, col2, col3 = st.columns([3, 1, 1])
+                    
+                    with col1:
+                        fecha = video.get("fecha", "")
+                        if fecha:
+                            try:
+                                from datetime import datetime
+                                fecha_obj = datetime.fromisoformat(fecha)
+                                fecha_formateada = fecha_obj.strftime("%d/%m/%Y %H:%M")
+                            except:
+                                fecha_formateada = fecha[:16]
+                        else:
+                            fecha_formateada = "Fecha desconocida"
+                        
+                        st.markdown(f"### {video.get('nombre_proyecto', 'Sin nombre')}")
+                        st.caption(f"📅 {fecha_formateada} | 🎯 {video.get('tema', 'Sin tema')}")
+                        st.caption(f"📊 {video.get('word_count', 0)} palabras | ⏱️ ≈ {video.get('estimated_minutes', 0):.1f} min")
+                    
+                    with col2:
+                        video_path_str = video.get("video_path")
+                        if video_path_str and Path(video_path_str).exists():
+                            if st.button("▶️ Ver", key=f"ver_{video.get('id')}_{idx}"):
+                                st.session_state.video_path = Path(video_path_str)
+                                st.session_state.video_bytes = Path(video_path_str).read_bytes()
+                                st.session_state.video_name = Path(video_path_str).name
+                                # Cargar guion
+                                guion_texto = video.get("guion_texto", "")
+                                if guion_texto:
+                                    st.session_state.guion_completo = guion_texto
+                                st.rerun()
+                        else:
+                            st.caption("⚠️ Video no encontrado")
+                    
+                    with col3:
+                        if st.button("🗑️ Eliminar", key=f"eliminar_{video.get('id')}_{idx}"):
+                            if eliminar_del_historial(video.get("id")):
+                                st.success("Video eliminado del historial")
+                                st.rerun()
+                            else:
+                                st.error("Error al eliminar")
+                    
+                    # Mostrar guion si está disponible
+                    guion_texto = video.get("guion_texto", "")
+                    if guion_texto:
+                        with st.expander(f"📝 Ver guion completo - {video.get('nombre_proyecto', 'Sin nombre')}"):
+                            st.text_area(
+                                "Guion",
+                                value=guion_texto,
+                                height=200,
+                                key=f"guion_text_{video.get('id')}_{idx}",
+                                label_visibility="collapsed"
+                            )
+                            st.download_button(
+                                "📥 Descargar guion",
+                                data=guion_texto,
+                                file_name=f"{video.get('nombre_proyecto', 'guion')}_guion.txt",
+                                mime="text/plain",
+                                key=f"dl_guion_{video.get('id')}_{idx}"
+                            )
+                    
+                    st.markdown("---")
 
 # ─── Editor de Instrucciones ────────────────────────────────────────────────
 st.markdown("---")
@@ -503,15 +815,17 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas → Voz → Vide
         modo = st.radio("Modo", ["Por tema", "Pegar guion"], horizontal=True, label_visibility="collapsed", key="ma_modo")
         if modo == "Por tema":
             t = st.text_input("Tema", key="ma_tema")
-            d = st.number_input("Duración (min)", 1, 15, 2, key="ma_duracion")
+            tw = st.number_input("Palabras objetivo", 80, 3000, 280, 10, key="ma_target_words")
             if st.button("Generar guion", key="ma_btn_guion") and t:
                 with st.spinner("Generando..."):
-                    texto = generar_guion(t.strip(), duracion_min=d)
+                    texto, word_count, estimated_minutes = generar_guion(t.strip(), target_words=tw)
                     st.session_state.guion_texto = texto
+                    st.session_state.word_count_ma = word_count
+                    st.session_state.estimated_minutes_ma = estimated_minutes
                     nombre_temp = (t[:30].replace(" ", "_"))
                     st.session_state.nombre_proyecto = sanitizar_nombre_proyecto(nombre_temp)
                     guardar_guion(texto, st.session_state.nombre_proyecto)
-                st.success("Listo. Pasá a Escenas.")
+                st.success(f"Listo. {word_count} palabras, ≈ {estimated_minutes:.1f} min. Pasá a Escenas.")
         else:
             g = st.text_area("Guion", value=st.session_state.get("guion_texto", ""), height=180, key="ma_guion")
             f = st.file_uploader("O .txt", type=["txt"], key="ma_file")

@@ -126,22 +126,199 @@ def montar_video(
         else:
             audio_final = audio_narracion
 
+        # Obtener duración del audio para asegurar que el video tenga esa duración
+        duracion_audio_final = None
+        print(f"🔍 Obteniendo duración del audio final...")
+        if verificar_ffprobe():
+            try:
+                cmd_probe_audio = [
+                    "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1", str(audio_final)
+                ]
+                result_audio = subprocess.run(cmd_probe_audio, capture_output=True, text=True, check=True)
+                duracion_audio_final = float(result_audio.stdout.strip())
+                print(f"📊 Duración del audio final: {duracion_audio_final:.1f} segundos ({duracion_audio_final/60:.1f} minutos)")
+            except Exception as e:
+                print(f"⚠️ No se pudo obtener duración del audio final: {e}")
+                print(f"   Intentando método alternativo...")
+                # Método alternativo: calcular desde el tamaño del archivo (aproximado)
+                if audio_final.exists():
+                    size_mb = audio_final.stat().st_size / (1024 * 1024)
+                    # Estimación aproximada: 1 MB ≈ 1 minuto de audio MP3
+                    duracion_audio_final = size_mb * 60
+                    print(f"   Estimación aproximada: {duracion_audio_final:.1f} segundos")
+        else:
+            print(f"⚠️ ffprobe no disponible, no se puede obtener duración exacta del audio")
+        
+        # Obtener duración del video de imágenes
+        duracion_video_imagenes = None
+        print(f"🔍 Obteniendo duración del video de imágenes...")
+        if verificar_ffprobe():
+            try:
+                cmd_probe_video = [
+                    "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1", str(video_solo)
+                ]
+                result_video = subprocess.run(cmd_probe_video, capture_output=True, text=True, check=True)
+                duracion_video_imagenes = float(result_video.stdout.strip())
+                print(f"📊 Duración del video de imágenes: {duracion_video_imagenes:.1f} segundos ({duracion_video_imagenes/60:.1f} minutos)")
+            except Exception as e:
+                print(f"⚠️ No se pudo obtener duración del video: {e}")
+                # Calcular duración estimada desde imágenes
+                num_imagenes = len([p for p in lista_imagenes if p.exists()]) if lista_imagenes else 0
+                duracion_video_imagenes = num_imagenes * seg
+                print(f"   Estimación desde imágenes: {num_imagenes} imágenes × {seg}s = {duracion_video_imagenes:.1f} segundos")
+        else:
+            # Calcular duración estimada desde imágenes
+            num_imagenes = len([p for p in lista_imagenes if p.exists()]) if lista_imagenes else 0
+            duracion_video_imagenes = num_imagenes * seg
+            print(f"📊 Duración estimada del video (sin ffprobe): {num_imagenes} imágenes × {seg}s = {duracion_video_imagenes:.1f} segundos")
+        
+        # Asegurar que siempre tengamos ambas duraciones antes de comparar
+        if not duracion_video_imagenes and lista_imagenes:
+            num_imagenes = len([p for p in lista_imagenes if p.exists()])
+            duracion_video_imagenes = num_imagenes * seg
+            print(f"📊 Duración estimada del video (fallback): {num_imagenes} imágenes × {seg}s = {duracion_video_imagenes:.1f}s")
+        
+        # Si el video es más corto que el audio, extenderlo
+        print(f"🔍 Comparando duraciones:")
+        print(f"   Video de imágenes: {duracion_video_imagenes}")
+        print(f"   Audio final: {duracion_audio_final}")
+        
+        if duracion_audio_final and duracion_video_imagenes:
+            diferencia = duracion_audio_final - duracion_video_imagenes
+            print(f"   Diferencia: {diferencia:.1f} segundos")
+            if duracion_video_imagenes < duracion_audio_final:
+                print(f"⚠️ El video de imágenes ({duracion_video_imagenes:.1f}s) es más corto que el audio ({duracion_audio_final:.1f}s)")
+                print(f"   Extendiendo el video para que coincida con el audio...")
+                
+                # Extender el video repitiendo el último frame
+                video_extendido = out.with_stem(out.stem + "_extendido")
+                
+                # Usar loop del video existente y limitar a la duración del audio
+                cmd_extend = [
+                    "ffmpeg", "-y",
+                    "-stream_loop", "-1",  # Loop infinito
+                    "-i", str(video_solo),
+                    "-t", str(duracion_audio_final),  # Limitar a la duración del audio
+                    "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+                    "-pix_fmt", "yuv420p",
+                    "-avoid_negative_ts", "make_zero",
+                    str(video_extendido)
+                ]
+                result_extend = subprocess.run(cmd_extend, capture_output=True, text=True)
+                if result_extend.returncode != 0:
+                    print(f"⚠️ Error al extender video: {result_extend.stderr}")
+                    print(f"   Intentando método alternativo...")
+                    # Método alternativo: concatenar el video consigo mismo
+                    list_loop = out.with_suffix(".loop.txt")
+                    num_loops = int(duracion_audio_final / duracion_video_imagenes) + 1
+                    with open(list_loop, "w") as f:
+                        for _ in range(num_loops):
+                            f.write(f"file '{video_solo.absolute()}'\n")
+                    cmd_concat = [
+                        "ffmpeg", "-y", "-f", "concat", "-safe", "0",
+                        "-i", str(list_loop),
+                        "-t", str(duracion_audio_final),
+                        "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+                        "-pix_fmt", "yuv420p",
+                        str(video_extendido)
+                    ]
+                    subprocess.run(cmd_concat, check=True, capture_output=True)
+                    if list_loop.exists():
+                        list_loop.unlink()
+                else:
+                    print(f"   ✅ Video extendido a {duracion_audio_final:.1f} segundos")
+                
+                # Verificar que el video extendido existe y tiene la duración correcta
+                if video_extendido.exists():
+                    video_solo = video_extendido
+                    # Verificar duración del video extendido
+                    if verificar_ffprobe():
+                        try:
+                            cmd_check = [
+                                "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                                "-of", "default=noprint_wrappers=1:nokey=1", str(video_extendido)
+                            ]
+                            result_check = subprocess.run(cmd_check, capture_output=True, text=True, check=True)
+                            duracion_extendido = float(result_check.stdout.strip())
+                            print(f"   ✅ Video extendido verificado: {duracion_extendido:.1f}s (objetivo: {duracion_audio_final:.1f}s)")
+                        except:
+                            pass
+        
         # Limitar duración si se especifica
         cmd_final = [
             "ffmpeg", "-y",
             "-i", str(video_solo),
             "-i", str(audio_final),
-            "-c:v", "copy", "-c:a", "aac",
+            "-c:v", "libx264", "-preset", "fast", "-crf", "23",  # Re-encodear video para mejor control
+            "-c:a", "aac", "-b:a", "192k",
         ]
         
-        # Si hay duración máxima, limitar el video
+        # NUNCA usar -shortest porque puede cortar el audio
+        # Siempre usar la duración del audio como referencia
+        print(f"🔧 Configurando duración final del video...")
+        print(f"   duracion_audio_final: {duracion_audio_final}")
+        print(f"   duracion_maxima_segundos: {duracion_maxima_segundos}")
+        
+        # Asegurar que siempre tengamos la duración del audio
+        if not duracion_audio_final:
+            print(f"⚠️ No se obtuvo duración del audio antes, obteniéndola ahora...")
+            if verificar_ffprobe():
+                try:
+                    cmd_probe_ahora = [
+                        "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                        "-of", "default=noprint_wrappers=1:nokey=1", str(audio_final)
+                    ]
+                    result_ahora = subprocess.run(cmd_probe_ahora, capture_output=True, text=True, check=True)
+                    duracion_audio_final = float(result_ahora.stdout.strip())
+                    print(f"   ✅ Duración del audio obtenida: {duracion_audio_final:.1f} segundos")
+                except Exception as e:
+                    print(f"   ⚠️ Error al obtener duración: {e}")
+                    # Estimar desde tamaño del archivo
+                    if audio_final.exists():
+                        size_mb = audio_final.stat().st_size / (1024 * 1024)
+                        duracion_audio_final = size_mb * 60  # 1 MB ≈ 1 minuto
+                        print(f"   📊 Estimación desde tamaño: {duracion_audio_final:.1f} segundos")
+        
         if duracion_maxima_segundos is not None:
-            cmd_final.extend(["-t", str(duracion_maxima_segundos)])
+            # Si hay límite máximo, usar el menor entre audio y límite
+            duracion_final = min(duracion_audio_final or float('inf'), duracion_maxima_segundos)
+            cmd_final.extend(["-t", str(duracion_final)])
+            print(f"📹 Limitando video a {duracion_final:.1f} segundos (máximo especificado)")
+        elif duracion_audio_final:
+            # Usar la duración del audio como referencia
+            cmd_final.extend(["-t", str(duracion_audio_final)])
+            print(f"📹 Combinando video y audio con duración: {duracion_audio_final:.1f} segundos ({duracion_audio_final/60:.1f} minutos)")
+            print(f"   ⚠️ IMPORTANTE: El video se limitará a esta duración. Si el video es más corto, debería haberse extendido antes.")
         else:
-            cmd_final.append("-shortest")
+            # Último recurso: usar duración muy larga para no cortar
+            print(f"⚠️ ADVERTENCIA CRÍTICA: No se puede determinar duración del audio")
+            print(f"   Usando 10 minutos (600s) como seguridad para NO cortar el audio")
+            cmd_final.extend(["-t", "600"])  # 10 minutos como seguridad
         
         cmd_final.append(str(out))
-        subprocess.run(cmd_final, check=True, capture_output=True)
+        print(f"🔧 Comando FFmpeg: {' '.join(cmd_final)}")
+        result = subprocess.run(cmd_final, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"⚠️ Error al combinar video y audio:")
+            print(f"   {result.stderr}")
+            raise RuntimeError(f"Error al montar video: {result.stderr}")
+        
+        # Verificar duración final del video
+        if verificar_ffprobe() and out.exists():
+            try:
+                cmd_verify = [
+                    "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1", str(out)
+                ]
+                result_verify = subprocess.run(cmd_verify, capture_output=True, text=True, check=True)
+                duracion_final_video = float(result_verify.stdout.strip())
+                print(f"✅ Video final generado: {duracion_final_video:.1f} segundos")
+                if duracion_audio_final and abs(duracion_final_video - duracion_audio_final) > 2.0:
+                    print(f"⚠️ ADVERTENCIA: Duración del video ({duracion_final_video:.1f}s) no coincide con audio ({duracion_audio_final:.1f}s)")
+            except:
+                pass
     else:
         # Si no hay audio, copiar el video solo (negro o con imágenes)
         out.write_bytes(video_solo.read_bytes())
