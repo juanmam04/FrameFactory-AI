@@ -13,6 +13,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes
+from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto
 from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
 from src.script_generator import guardar_guion
@@ -44,8 +45,8 @@ def mensaje_credenciales():
         faltan.append("OPENAI_API_KEY (guiones)")
     if not os.getenv("ELEVENLABS_API_KEY", "").strip() and not os.getenv("OPENAI_API_KEY", "").strip():
         faltan.append("ELEVENLABS_API_KEY o OPENAI_API_KEY (voz)")
-    if not os.getenv("SD_API_URL", "").strip():
-        faltan.append("SD_API_URL (Stable Diffusion)")
+    if not os.getenv("COMFYUI_URL", "").strip() and not os.getenv("SD_API_URL", "").strip():
+        faltan.append("COMFYUI_URL (ej. http://127.0.0.1:8188) para generar imágenes")
     return faltan
 
 
@@ -157,12 +158,13 @@ if faltan:
 
 # ─── Aviso si falta FFmpeg ──────────────────────────────────────────────────
 if not verificar_ffmpeg():
+    _ffmpeg_cmd = "brew install ffmpeg" if sys.platform == "darwin" else "winget install ffmpeg o choco install ffmpeg"
     st.markdown(
         '<div class="cred-warn"><strong>⚠️ FFmpeg no está instalado</strong><br>'
-        'FFmpeg es necesario para montar los videos. Instalalo desde: '
-        '<a href="https://ffmpeg.org/download.html" target="_blank">https://ffmpeg.org/download.html</a><br>'
-        'O usa: <code>winget install ffmpeg</code> o <code>choco install ffmpeg</code><br>'
-        '<strong>IMPORTANTE:</strong> Agrega FFmpeg al PATH del sistema y reinicia la aplicación.</div>',
+        'FFmpeg es necesario para montar los videos.<br>'
+        f'<strong>En esta PC:</strong> <code>{_ffmpeg_cmd}</code><br>'
+        'O descargá desde: <a href="https://ffmpeg.org/download.html" target="_blank">ffmpeg.org</a>. '
+        'Reiniciá la aplicación después de instalar.</div>',
         unsafe_allow_html=True,
     )
 
@@ -300,7 +302,7 @@ with st.expander("⚙️ Opciones avanzadas"):
     skip_imagenes = st.checkbox(
         "Saltar generación de imágenes (video negro con voz)",
         value=False,
-        help="Útil para probar el pipeline sin Stable Diffusion. Genera un video negro con la narración.",
+        help="Desactivado = usar Stable Diffusion para generar imágenes. Necesitás tener Automatic1111 (u otro) corriendo; ver README o SETUP.",
         key="skip_imgs_todo"
     )
     
@@ -324,6 +326,17 @@ with st.expander("⚙️ Opciones avanzadas"):
         key="skip_thumb_todo"
     )
 
+if not skip_imagenes:
+    comfy_ok = _comfyui_disponible()
+    if comfy_ok:
+        donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
+        st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarán con IA — {COMFY_URL}")
+    else:
+        st.error(
+            "ComfyUI no está corriendo. Inicialo en el puerto 8188 (local o RunPod) y poné COMFYUI_URL en .env. "
+            "Sin ComfyUI no se generan imágenes reales; podés marcar «Saltar generación de imágenes» para video con voz."
+        )
+
 col1, col2 = st.columns([1, 2])
 with col1:
     generar = st.button("Generar video completo", type="primary", key="btn_generar_todo")
@@ -333,6 +346,8 @@ if generar:
         st.error("Escribí un tema o idea.")
     elif faltan:
         st.error("Completá las credenciales en .env y volvé a intentar.")
+    elif not skip_imagenes and not _comfyui_disponible():
+        st.error("Iniciá ComfyUI antes de generar (local en :8188 o RunPod con COMFYUI_URL en .env).")
     else:
         mensaje_spinner = "Generando… guion → escenas"
         if not skip_imagenes:

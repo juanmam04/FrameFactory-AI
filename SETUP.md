@@ -81,43 +81,36 @@ OPENAI_MODEL=gpt-4o-mini
 # BACKGROUND_MUSIC_PATH=path/to/musica.mp3
 ```
 
-### 4. **Configurar Generador de Imágenes**
+### 4. **Configurar generación de imágenes (ComfyUI)**
 
-Tienes 4 opciones (de más fácil a más avanzado):
+La app usa **ComfyUI** para generar las imágenes. Tenés que tener ComfyUI corriendo **antes** de generar el video.
 
-**Opción A: Pollinations.ai (GRATIS, sin configuración) ⭐ RECOMENDADO PARA EMPEZAR**
-- ✅ **100% gratis, sin token, sin instalación**
-- ✅ Funciona automáticamente si no configuras nada más
-- ⚠️ Límite: máximo 1024x1024 píxeles
-- ⚠️ Puede ser más lento que otras opciones
-- **No necesitas configurar nada en `.env`** - se usa automáticamente como fallback
+#### Opción A: Automatic1111 en Mac (alternativa)
 
-**Opción B: Hugging Face Inference API (GRATIS con token)**
-1. Crea una cuenta gratuita en: https://huggingface.co/
-2. Ve a Settings → Access Tokens y crea un token
-3. En `.env` agrega: `HUGGINGFACE_API_KEY=tu-token-aqui`
-- ✅ Gratis con límites razonables
-- ✅ Buena calidad
-- ⚠️ Requiere token (gratis)
+1. **Requisitos:** Python 3.10+, Xcode Command Line Tools (`xcode-select --install`), y bastante espacio (modelos ~4–7 GB).
+2. Cloná e instalá Automatic1111, arrancalo con `./webui.sh --api`.
+3. En `.env`: `SD_API_URL=http://127.0.0.1:7860` (la app prioriza ComfyUI si está `COMFYUI_URL`).
 
-**Opción C: Automatic1111 (local)**
-1. Instala Automatic1111: https://github.com/AUTOMATIC1111/stable-diffusion-webui
-2. Inicia el servidor: `python webui.py --api`
-3. En `.env` usa: `SD_API_URL=http://127.0.0.1:7860`
-- ✅ Control total, sin límites
-- ⚠️ Requiere GPU y instalación local
+#### Opción B: ComfyUI (local)
 
-**Opción D: ComfyUI (local)**
-1. Instala ComfyUI: https://github.com/comfyanonymous/ComfyUI
-2. Inicia con API habilitada
-3. En `.env` usa: `SD_API_URL=http://127.0.0.1:8188`
-- ✅ Control total, sin límites
-- ⚠️ Requiere GPU y instalación local
+1. Instalá ComfyUI y arrancalo (por defecto escucha en el puerto 8188).
+2. En `.env`: `COMFYUI_URL=http://127.0.0.1:8188`.
 
-**Orden de prioridad automático:**
-1. Si `SD_API_URL` está configurado → usa Stable Diffusion API
-2. Si `HUGGINGFACE_API_KEY` está configurado → usa Hugging Face
-3. Si nada está configurado → usa Pollinations.ai (gratis)
+#### Opción B2: ComfyUI en RunPod (GPU en la nube)
+
+1. Creá un Pod en [RunPod](https://runpod.io) con GPU (ej. con template que incluya ComfyUI o instalalo por SSH).
+2. En el Pod, arrancá ComfyUI y dejalo escuchando en el puerto **8188**.
+3. En el dashboard de RunPod, **exponé el puerto 8188** (TCP): te darán una URL tipo `https://TU_POD_ID-8188.proxy.runpod.net` o una IP:puerto.
+4. En tu `.env` (en tu Mac, donde corre FrameFactory):
+   ```env
+   COMFYUI_URL=https://TU_POD_ID-8188.proxy.runpod.net
+   ```
+   o bien `COMFYUI_URL=http://IP:8188` si usás conexión directa.
+5. Si el proxy usa HTTPS y da error de certificado: `COMFYUI_VERIFY_SSL=false` en `.env`.
+
+#### Opción C: API en la nube
+
+- Replicate, Stability AI, etc. Poné en `.env` la URL que te den (la app usa ComfyUI si `COMFYUI_URL` está definido).
 
 ## 🎬 Crear tu primer video
 
