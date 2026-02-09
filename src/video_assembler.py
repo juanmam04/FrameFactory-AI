@@ -1,6 +1,7 @@
 """FASE 9: Montaje automático de video con FFmpeg (imágenes + narración + música opcional)."""
 import subprocess
 import shutil
+import sys
 from pathlib import Path
 
 from .config_loader import BASE, get_duracion_por_imagen
@@ -39,14 +40,12 @@ def montar_video(
 
     # Verificar FFmpeg antes de continuar
     if not verificar_ffmpeg():
+        cmd = "brew install ffmpeg" if sys.platform == "darwin" else "winget install ffmpeg o choco install ffmpeg"
         raise RuntimeError(
             "FFmpeg no está instalado o no está en el PATH del sistema.\n\n"
-            "Para instalar FFmpeg en Windows:\n"
-            "1. Descarga desde: https://ffmpeg.org/download.html\n"
-            "2. O usa: winget install ffmpeg\n"
-            "3. O usa: choco install ffmpeg\n"
-            "4. IMPORTANTE: Agrega FFmpeg al PATH del sistema\n\n"
-            "Después de instalar, reinicia la aplicación."
+            f"Para instalar: {cmd}\n"
+            "O descargá desde: https://ffmpeg.org/download.html\n\n"
+            "Después de instalar, reiniciá la aplicación."
         )
     
     # Calcular duración del audio para video negro

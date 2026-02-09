@@ -15,10 +15,10 @@ pydub>=0.25.0
 # Frontend
 streamlit>=1.28.0
 
-# Opcional: control de calidad de imágenes (necesario para placeholders)
+# Imágenes (ComfyUI output, miniatura)
 Pillow>=10.0.0
-# numpy>=1.24.0
 
-# Testing
-pytest>=7.4.0
+# Tests
+pytest>=7.0.0
+pytest-timeout>=2.0.0
 pytest-cov>=4.1.0

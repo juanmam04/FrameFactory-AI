@@ -1,5 +1,4 @@
-"""FASE 6: Generación masiva de imágenes con Stable Diffusion (API local/cloud) o servicios gratuitos."""
-import base64
+"""FASE 6: Generación masiva de imágenes con ComfyUI. Sin placeholders: si ComfyUI no está, falla claro."""
 import os
 import time
 from pathlib import Path
@@ -12,399 +11,286 @@ from .scene_splitter import Escena
 
 load_dotenv(BASE / ".env")
 
-
-def _generar_imagen_placeholder(prompt: str, width: int, height: int, escena_num: int) -> bytes:
-    """
-    Genera una imagen placeholder simple (imagen negra con texto) como último recurso.
-    Usa PIL si está disponible, sino genera una imagen PNG básica.
-    """
-    try:
-        # Intentar usar PIL (Pillow) si está disponible
-        from PIL import Image, ImageDraw, ImageFont
-        
-        # Crear imagen negra
-        img = Image.new("RGB", (width, height), color="black")
-        draw = ImageDraw.Draw(img)
-        
-        # Intentar usar una fuente, sino usar default
-        try:
-            # Intentar fuente más grande
-            font_size = min(width // 20, 48)
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            try:
-                font = ImageFont.load_default()
-            except:
-                font = None
-        
-        # Texto a mostrar
-        texto = f"Escena {escena_num}\n{prompt[:50]}..."
-        
-        # Calcular posición centrada
-        if font:
-            bbox = draw.textbbox((0, 0), texto, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
-        else:
-            text_width = len(texto) * 10
-            text_height = 40
-        
-        x = (width - text_width) // 2
-        y = (height - text_height) // 2
-        
-        # Dibujar texto blanco
-        draw.text((x, y), texto, fill="white", font=font)
-        
-        # Convertir a bytes
-        import io
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, format="PNG")
-        return img_bytes.getvalue()
-        
-    except ImportError:
-        # Si PIL no está disponible, generar PNG básico (imagen negra simple)
-        # PNG header + datos mínimos
-        # Esto es un PNG válido de 1x1 pixel negro, escalado conceptualmente
-        # En realidad, mejor generar una imagen negra más grande
-        print(f"   ⚠️ PIL no disponible, generando placeholder básico...")
-        
-        # Generar un PNG simple: imagen negra de width x height
-        # Usar una librería básica o crear PNG manualmente
-        # Por ahora, vamos a usar una aproximación simple
-        try:
-            # Intentar con otra librería o método
-            import struct
-            
-            # Crear un PNG básico (esto es complejo, mejor usar otra opción)
-            # Por ahora, retornar None y dejar que el sistema maneje el fallback
-            return None
-        except:
-            return None
-    except Exception as e:
-        print(f"   ⚠️ Error al generar placeholder: {e}")
-        return None
-
 OUTPUT_IMAGES = BASE / "output" / "imagenes"
-MAX_REINTENTOS = 3  # Default, se carga dinámicamente
-PAUSA_REINTENTO = 5  # Default, se carga dinámicamente
+COMFY_URL = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188").rstrip("/")
+COMFY_CHECKPOINT_DEFAULT = "v1-5-pruned-emaonly.safetensors"
+_resolved_checkpoint: str | None = None
+
+# Timeouts: más largos cuando ComfyUI está en la nube (RunPod, etc.)
+def _is_remote_comfy() -> bool:
+    u = (os.getenv("COMFYUI_URL") or "").strip().lower()
+    if not u:
+        return False
+    return "127.0.0.1" not in u and "localhost" not in u
+
+def _comfy_timeout_connect() -> int:
+    return int(os.getenv("COMFYUI_TIMEOUT_CONNECT", "15" if _is_remote_comfy() else "5"))
+
+def _comfy_timeout_post() -> int:
+    return int(os.getenv("COMFYUI_TIMEOUT_POST", "90" if _is_remote_comfy() else "30"))
+
+def _comfy_timeout_poll() -> int:
+    return int(os.getenv("COMFYUI_TIMEOUT_POLL", "300" if _is_remote_comfy() else "120"))
+
+def _comfy_timeout_view() -> int:
+    return int(os.getenv("COMFYUI_TIMEOUT_VIEW", "60" if _is_remote_comfy() else "30"))
+
+# Verificación SSL (para proxies RunPod con HTTPS; poner COMFYUI_VERIFY_SSL=false solo si hay problemas de cert)
+COMFY_VERIFY_SSL = os.getenv("COMFYUI_VERIFY_SSL", "true").strip().lower() not in ("0", "false", "no")
+
+MAX_REINTENTOS = 3
+PAUSA_REINTENTO = 5
+
+COMFYUI_ERROR_MSG = (
+    f"ComfyUI no está corriendo en {COMFY_URL}. "
+    "Inicialo en otra terminal (ej. python main.py) o revisá COMFYUI_URL en .env si usás RunPod/nube."
+)
 
 
-def _generar_imagen_pollinations(prompt: str, width: int, height: int) -> bytes | None:
-    """
-    Genera imagen usando Pollinations.ai (GRATIS, sin token).
-    Prueba múltiples endpoints en caso de que uno falle.
-    """
-    # Limpiar prompt para URL (eliminar caracteres especiales)
-    import urllib.parse
-    prompt_encoded = urllib.parse.quote(prompt)
-    
-    # Intentar múltiples endpoints de Pollinations
-    endpoints = [
-        {
-            "url": "https://image.pollinations.ai/prompt/",
-            "method": "get",
-            "params": {
-                "prompt": prompt,
-                "width": width,
-                "height": height,
-                "nologo": "true",
-                "enhance": "true",
-            }
-        },
-        {
-            "url": f"https://pollinations.ai/prompt/{prompt_encoded}",
-            "method": "get",
-            "params": {
-                "width": width,
-                "height": height,
-                "nologo": "true",
-            }
-        },
-    ]
-    
-    for idx, endpoint in enumerate(endpoints):
-        try:
-            if endpoint["method"] == "get":
-                r = requests.get(
-                    endpoint["url"], 
-                    params=endpoint.get("params", {}),
-                    timeout=90, 
-                    allow_redirects=True,
-                    headers={"User-Agent": "Mozilla/5.0"}
-                )
-            else:
-                continue
-                
-            r.raise_for_status()
-            
-            # Verificar que la respuesta sea una imagen válida
-            content_type = r.headers.get("content-type", "").lower()
-            
-            # Algunos servidores devuelven "text/html" pero la imagen está en el body
-            # Verificar por el contenido, no solo por content-type
-            if r.content.startswith(b"<!DOCTYPE") or r.content.startswith(b"<html") or r.content.startswith(b"<?xml"):
-                if idx < len(endpoints) - 1:
-                    print(f"⚠️ Endpoint {idx+1} devolvió HTML, probando siguiente...")
-                    continue
-                print(f"⚠️ Pollinations devolvió HTML en lugar de imagen")
-                return None
-            
-            # Verificar tamaño mínimo (imágenes válidas suelen ser > 1KB)
-            if len(r.content) < 1000:
-                if idx < len(endpoints) - 1:
-                    print(f"⚠️ Endpoint {idx+1} devolvió respuesta muy pequeña, probando siguiente...")
-                    continue
-                print(f"⚠️ Pollinations devolvió respuesta muy pequeña ({len(r.content)} bytes)")
-                return None
-            
-            # Verificar que empiece con magic bytes de imagen (PNG, JPEG, etc.)
-            if not (r.content.startswith(b"\x89PNG") or r.content.startswith(b"\xff\xd8") or r.content.startswith(b"GIF")):
-                if idx < len(endpoints) - 1:
-                    print(f"⚠️ Endpoint {idx+1} no devolvió imagen válida, probando siguiente...")
-                    continue
-                print(f"⚠️ Pollinations no devolvió formato de imagen válido")
-                return None
-            
-            print(f"✅ Pollinations funcionó con endpoint {idx+1}")
-            return r.content
-            
-        except requests.exceptions.Timeout:
-            if idx < len(endpoints) - 1:
-                print(f"⚠️ Endpoint {idx+1} timeout, probando siguiente...")
-                continue
-            print(f"⚠️ Pollinations: Timeout (el servicio puede estar lento)")
-            return None
-        except requests.exceptions.RequestException as e:
-            if idx < len(endpoints) - 1:
-                print(f"⚠️ Endpoint {idx+1} falló: {e}, probando siguiente...")
-                continue
-            print(f"⚠️ Error con Pollinations: {e}")
-            return None
-        except Exception as e:
-            if idx < len(endpoints) - 1:
-                print(f"⚠️ Endpoint {idx+1} error inesperado: {e}, probando siguiente...")
-                continue
-            print(f"⚠️ Error inesperado con Pollinations: {e}")
-            return None
-    
-    return None
-
-
-def _generar_imagen_huggingface(prompt: str, width: int, height: int, negative_prompt: str = "") -> bytes | None:
-    """
-    Genera imagen usando Hugging Face Inference API (GRATIS con token).
-    Requiere HUGGINGFACE_API_KEY en .env
-    """
-    api_key = os.getenv("HUGGINGFACE_API_KEY")
-    if not api_key:
-        return None
-    
+def _get_checkpoint() -> str:
+    """Usa COMFYUI_CHECKPOINT si está definido; si no, obtiene el primer checkpoint de ComfyUI /object_info."""
+    global _resolved_checkpoint
+    env_ckpt = (os.getenv("COMFYUI_CHECKPOINT") or "").strip()
+    if env_ckpt:
+        return env_ckpt
+    if _resolved_checkpoint is not None:
+        return _resolved_checkpoint
     try:
-        # Modelo Stable Diffusion XL en Hugging Face
-        model = "stabilityai/stable-diffusion-xl-base-1.0"
-        url = f"https://api-inference.huggingface.co/models/{model}"
-        headers = {"Authorization": f"Bearer {api_key}"}
-        
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "negative_prompt": negative_prompt,
-                "width": width,
-                "height": height,
-            }
-        }
-        
-        r = requests.post(url, headers=headers, json=payload, timeout=120)
-        r.raise_for_status()
-        return r.content
-    except Exception as e:
-        print(f"⚠️ Error con Hugging Face: {e}")
-        return None
-
-
-def _generar_imagen_stable_diffusion_api(prompt: str, width: int, height: int, negative_prompt: str, params: dict) -> bytes | None:
-    """
-    Genera imagen usando Stable Diffusion API (Automatic1111/ComfyUI).
-    """
-    url = os.getenv("SD_API_URL", "http://127.0.0.1:7860").rstrip("/")
-    endpoint = f"{url}/sdapi/v1/txt2img"
-    
-    payload = {
-        "prompt": prompt,
-        "negative_prompt": negative_prompt,
-        "steps": params.get("steps", 25),
-        "width": width,
-        "height": height,
-        "cfg_scale": params.get("cfg_scale", 7),
-    }
-    
-    try:
-        r = requests.post(endpoint, json=payload, timeout=120)
-        
-        # Mostrar más detalles del error
+        r = requests.get(f"{COMFY_URL}/object_info", timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
         if r.status_code != 200:
-            print(f"   ⚠️ Stable Diffusion API respondió con código {r.status_code}")
+            _resolved_checkpoint = COMFY_CHECKPOINT_DEFAULT
+            return _resolved_checkpoint
+        data = r.json()
+        loader = (data or {}).get("CheckpointLoaderSimple") or {}
+        required = (loader.get("input") or {}).get("required") or {}
+        ckpt_name = required.get("ckpt_name")
+        if ckpt_name is not None and isinstance(ckpt_name, list):
+            if len(ckpt_name) == 0:
+                raise RuntimeError(
+                    "ComfyUI no tiene ningún checkpoint en models/checkpoints. "
+                    "Añadí al menos un .safetensors o .ckpt ahí, o configurá COMFYUI_CHECKPOINT en .env con el nombre exacto."
+                )
+            first = ckpt_name[0]
+            if isinstance(first, list) and len(first) > 0:
+                name = first[0]
+            elif isinstance(first, str):
+                name = first
+            else:
+                name = None
+            if name and isinstance(name, str):
+                _resolved_checkpoint = name
+                return _resolved_checkpoint
+    except RuntimeError:
+        raise
+    except Exception:
+        pass
+    _resolved_checkpoint = COMFY_CHECKPOINT_DEFAULT
+    return _resolved_checkpoint
+
+
+def _workflow_comfyui(prompt_text: str, negative: str, width: int, height: int, seed: int | None = None):
+    """Workflow ComfyUI. width/height se redondean a múltiplos de 8."""
+    import random
+    seed = seed if seed is not None else random.randint(0, 999999)
+    w, h = (width // 8) * 8, (height // 8) * 8
+    if w < 64:
+        w = 64
+    if h < 64:
+        h = 64
+    return {
+        "3": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {"ckpt_name": _get_checkpoint()},
+        },
+        "4": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {"text": prompt_text, "clip": ["3", 1]},
+        },
+        "5": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {"text": negative or "blurry, low quality, bad anatomy", "clip": ["3", 1]},
+        },
+        "6": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {"width": w, "height": h, "batch_size": 1},
+        },
+        "7": {
+            "class_type": "KSampler",
+            "inputs": {
+                "model": ["3", 0],
+                "positive": ["4", 0],
+                "negative": ["5", 0],
+                "latent_image": ["6", 0],
+                "seed": seed,
+                "steps": 15,
+                "cfg": 8,
+                "sampler_name": "euler",
+                "scheduler": "normal",
+                "denoise": 1.0,
+            },
+        },
+        "8": {
+            "class_type": "VAEDecode",
+            "inputs": {"samples": ["7", 0], "vae": ["3", 2]},
+        },
+        "9": {
+            "class_type": "SaveImage",
+            "inputs": {"filename_prefix": "api_gen", "images": ["8", 0]},
+        },
+    }
+
+
+def _comfyui_disponible() -> bool:
+    """Comprueba si ComfyUI responde (endpoint /queue)."""
+    try:
+        r = requests.get(f"{COMFY_URL}/queue", timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
+        return r.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def comfyui_es_remoto() -> bool:
+    """True si COMFYUI_URL apunta a un host remoto (ej. RunPod), no localhost."""
+    return _is_remote_comfy()
+
+
+def _generar_imagen_comfyui(
+    prompt_text: str,
+    negative: str,
+    carpeta: Path,
+    escena_num: int,
+    width: int,
+    height: int,
+    timeout_post: int | None = None,
+    timeout_poll: int | None = None,
+) -> Path | None:
+    """Envía prompt a ComfyUI, espera resultado y guarda la imagen en carpeta/escena_XXXX.png."""
+    timeout_post = timeout_post if timeout_post is not None else _comfy_timeout_post()
+    timeout_poll = timeout_poll if timeout_poll is not None else _comfy_timeout_poll()
+    workflow = _workflow_comfyui(prompt_text, negative, width, height)
+    try:
+        r = requests.post(
+            f"{COMFY_URL}/prompt",
+            json={"prompt": workflow},
+            timeout=timeout_post,
+            verify=COMFY_VERIFY_SSL,
+        )
+        if r.status_code == 400:
             try:
-                error_data = r.json()
-                print(f"   ⚠️ Error: {error_data}")
-            except:
-                print(f"   ⚠️ Respuesta: {r.text[:200]}")
-        
+                body = r.json()
+                err = body.get("error") or {}
+                msg = err.get("message", "Prompt outputs failed validation") if isinstance(err, dict) else str(err)
+                extra = (err.get("extra_info") or {}) if isinstance(err, dict) else {}
+                node_errors = extra.get("node_errors") or body.get("node_errors") or {}
+                if node_errors:
+                    parts = [f"{n}: {'; '.join(msgs)}" for n, msgs in node_errors.items() if isinstance(msgs, list)]
+                    if parts:
+                        msg = msg + ". Detalle: " + " | ".join(parts)
+                details = (err.get("details") or "").strip() if isinstance(err, dict) else ""
+                if details:
+                    msg = msg + ". " + details[:400]
+            except Exception:
+                msg = (r.text or f"HTTP {r.status_code}")[:500]
+            raise RuntimeError(
+                f"ComfyUI rechazó el workflow (400). Revisá COMFYUI_CHECKPOINT en .env "
+                f"(debe existir en ComfyUI/models/checkpoints). {msg}"
+            )
         r.raise_for_status()
         data = r.json()
-        img_b64 = data.get("images", [None])[0]
-        if not img_b64:
-            print(f"   ⚠️ Stable Diffusion API no devolvió imagen en la respuesta")
+        prompt_id = data.get("prompt_id")
+        if not prompt_id:
             return None
-        return base64.b64decode(img_b64)
-    except requests.exceptions.ConnectionError as e:
-        print(f"   ⚠️ Error de conexión con Stable Diffusion API: {e}")
-        return None
-    except requests.exceptions.Timeout as e:
-        print(f"   ⚠️ Timeout con Stable Diffusion API: {e}")
-        return None
-    except Exception as e:
-        print(f"   ⚠️ Error con Stable Diffusion API: {type(e).__name__}: {e}")
-        return None
+    except RuntimeError:
+        raise
+    except requests.RequestException as e:
+        raise RuntimeError(COMFYUI_ERROR_MSG + f" Detalle: {e}") from e
 
-
-def generar_imagen(prompt: str, escena_num: int, carpeta: Path, width: int | None = None, height: int | None = None) -> Path | None:
-    """
-    Genera una imagen usando el servicio configurado.
-    Orden de prioridad:
-    1. Stable Diffusion API (SD_API_URL) si está configurado
-    2. Hugging Face (HUGGINGFACE_API_KEY) si está configurado
-    3. Pollinations.ai (gratis, sin token) como fallback
-    
-    Reintentos automáticos si falla.
-    width/height: Si se proporcionan, sobrescriben la configuración.
-    """
-    # Cargar parámetros desde configuración
-    instrucciones = get_instrucciones_imagenes()
-    params = instrucciones.get("parametros_sd", {})
-    reintentos_config = instrucciones.get("reintentos", {})
-    max_reintentos = reintentos_config.get("max_reintentos", MAX_REINTENTOS)
-    pausa_reintento = reintentos_config.get("pausa_segundos", PAUSA_REINTENTO)
-    
-    # Usar width/height proporcionados o los de la configuración
-    img_width = width if width is not None else params.get("width", 1024)
-    img_height = height if height is not None else params.get("height", 576)
-    
-    # Limitar dimensiones para servicios gratuitos (algunos tienen límites)
-    img_width = min(img_width, 1024)
-    img_height = min(img_height, 1024)
-    
-    negative_prompt = get_negative_prompt()
-    carpeta.mkdir(parents=True, exist_ok=True)
-    nombre = f"escena_{escena_num:04d}.png"
-    path = carpeta / nombre
-
-    # Determinar qué servicio usar
-    sd_api_url = os.getenv("SD_API_URL", "").strip()
-    hf_api_key = os.getenv("HUGGINGFACE_API_KEY", "").strip()
-    
-    print(f"\n🎨 Generando imagen para escena {escena_num}...")
-    print(f"   Dimensiones: {img_width}x{img_height}")
-    print(f"   Prompt: {prompt[:80]}...")
-    
-    for intento in range(max_reintentos):
+    # Poll history until job is done. Usar /history/{prompt_id} para solo nuestro job (más rápido).
+    deadline = time.time() + timeout_poll
+    view_timeout = _comfy_timeout_view()
+    save_node_id = "9"  # SaveImage en nuestro workflow
+    history_url = f"{COMFY_URL}/history/{prompt_id}"
+    while time.time() < deadline:
         try:
-            img_bytes = None
-            servicio_usado = None
-            
-            # Prioridad 1: Stable Diffusion API (local o remota)
-            if sd_api_url:
-                print(f"   🔄 Intento {intento + 1}: Probando Stable Diffusion API...")
-                # Si es local, verificar que esté disponible
-                if sd_api_url.startswith("http://127.0.0.1") or sd_api_url.startswith("http://localhost"):
-                    if _verificar_sd_local():
-                        img_bytes = _generar_imagen_stable_diffusion_api(prompt, img_width, img_height, negative_prompt, params)
-                        if img_bytes:
-                            servicio_usado = "Stable Diffusion API (local)"
-                    else:
-                        print(f"   ⚠️ Stable Diffusion local no disponible")
-                else:
-                    # API remota, intentar directamente
-                    img_bytes = _generar_imagen_stable_diffusion_api(prompt, img_width, img_height, negative_prompt, params)
-                    if img_bytes:
-                        servicio_usado = "Stable Diffusion API (remota)"
-            
-            # Prioridad 2: Hugging Face (si no funcionó SD o no está configurado)
-            if not img_bytes and hf_api_key:
-                print(f"   🔄 Intento {intento + 1}: Probando Hugging Face...")
-                img_bytes = _generar_imagen_huggingface(prompt, img_width, img_height, negative_prompt)
-                if img_bytes:
-                    servicio_usado = "Hugging Face"
-            
-            # Prioridad 3: Pollinations.ai (gratis, sin token)
-            if not img_bytes:
-                print(f"   🔄 Intento {intento + 1}: Probando Pollinations.ai (gratis)...")
-                img_bytes = _generar_imagen_pollinations(prompt, img_width, img_height)
-                if img_bytes:
-                    servicio_usado = "Pollinations.ai"
-            
-            if img_bytes:
-                # Verificar que sea una imagen válida antes de guardar
-                if len(img_bytes) < 1000:
-                    print(f"   ⚠️ Imagen muy pequeña ({len(img_bytes)} bytes), puede ser inválida")
-                    if intento < max_reintentos - 1:
-                        continue
-                    raise ValueError(f"Imagen inválida: solo {len(img_bytes)} bytes")
-                
-                path.write_bytes(img_bytes)
-                print(f"   ✅ Imagen generada con {servicio_usado}: {nombre} ({len(img_bytes)} bytes)")
+            hist = requests.get(history_url, timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
+            hist.raise_for_status()
+            h = hist.json()
+            if not h or prompt_id not in h:
+                time.sleep(0.8)
+                continue
+            entry = h[prompt_id]
+            # Si el job terminó con error, salir ya (evita polling infinito)
+            status = entry.get("status") or {}
+            if isinstance(status, dict) and status.get("status_str") == "error":
+                msgs = status.get("messages") or []
+                raise RuntimeError(
+                    f"ComfyUI falló al generar la imagen. {msgs[:3] if msgs else status}"
+                )
+            outputs = entry.get("outputs", {})
+            # Aceptar node "9" o 9 (por si el servidor devuelve claves int)
+            node_out = outputs.get(save_node_id) or outputs.get(9, {})
+            images = (node_out or {}).get("images", [])
+            # Si no hay imágenes en "9", buscar en cualquier nodo (por compatibilidad)
+            if not images and outputs:
+                for _nid, node_data in outputs.items():
+                    imgs = (node_data or {}).get("images", [])
+                    if imgs:
+                        images = imgs
+                        break
+            if images:
+                info = images[0]
+                filename = info.get("filename", "")
+                subfolder = info.get("subfolder", "")
+                type_out = info.get("type", "output")
+                params = {"filename": filename, "subfolder": subfolder, "type": type_out}
+                view = requests.get(f"{COMFY_URL}/view", params=params, timeout=view_timeout, verify=COMFY_VERIFY_SSL)
+                view.raise_for_status()
+                path = carpeta / f"escena_{escena_num:04d}.png"
+                carpeta.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(view.content)
                 return path
-            else:
-                # Mostrar qué servicios se intentaron
-                servicios_intentados = []
-                if sd_api_url:
-                    servicios_intentados.append("Stable Diffusion API")
-                if hf_api_key:
-                    servicios_intentados.append("Hugging Face")
-                servicios_intentados.append("Pollinations.ai")
-                
-                if intento < max_reintentos - 1:
-                    print(f"   ⚠️ Ningún servicio funcionó en este intento. Reintentando...")
-                else:
-                    # Último recurso: generar placeholder
-                    print(f"   ⚠️ Todos los servicios fallaron. Generando imagen placeholder...")
-                    img_bytes = _generar_imagen_placeholder(prompt, img_width, img_height, escena_num)
-                    if img_bytes:
-                        servicio_usado = "Placeholder (fallback)"
-                        path.write_bytes(img_bytes)
-                        print(f"   ⚠️ Imagen placeholder generada: {nombre} (todos los servicios fallaron)")
-                        return path
-                    else:
-                        raise ValueError(f"No se pudo generar imagen con ningún servicio después de {max_reintentos} intentos. Servicios intentados: {', '.join(servicios_intentados)}")
-                
-        except Exception as e:
-            if intento < max_reintentos - 1:
-                print(f"⚠️ Intento {intento + 1}/{max_reintentos} falló: {e}, reintentando en {pausa_reintento}s...")
-                time.sleep(pausa_reintento)
-            else:
-                # Último intento: generar placeholder
-                print(f"   ⚠️ Todos los intentos fallaron. Generando imagen placeholder como último recurso...")
-                try:
-                    img_bytes = _generar_imagen_placeholder(prompt, img_width, img_height, escena_num)
-                    if img_bytes:
-                        path.write_bytes(img_bytes)
-                        print(f"   ⚠️ Imagen placeholder generada: {nombre}")
-                        return path
-                except Exception as placeholder_error:
-                    print(f"   ❌ Error al generar placeholder: {placeholder_error}")
-                
-                raise RuntimeError(f"Falló generación escena {escena_num}: {e}") from e
+        except RuntimeError:
+            raise
+        except requests.RequestException:
+            pass
+        time.sleep(0.8)
     return None
 
 
-def _verificar_sd_local() -> bool:
-    """Verifica si Stable Diffusion local está disponible."""
-    try:
-        url = os.getenv("SD_API_URL", "http://127.0.0.1:7860").rstrip("/")
-        r = requests.get(f"{url}/sdapi/v1/options", timeout=5)
-        return r.status_code == 200
-    except:
-        return False
+def generar_imagen(
+    prompt: str,
+    escena_num: int,
+    carpeta: Path,
+    width: int | None = None,
+    height: int | None = None,
+) -> Path | None:
+    """Genera una imagen con ComfyUI. Si no está disponible, lanza error (sin placeholders)."""
+    instrucciones = get_instrucciones_imagenes()
+    params = instrucciones.get("parametros_sd", {})
+    img_width = width if width is not None else params.get("width", 1024)
+    img_height = height if height is not None else params.get("height", 576)
+    negative = get_negative_prompt()
+
+    for intento in range(MAX_REINTENTOS):
+        try:
+            path = _generar_imagen_comfyui(
+                prompt,
+                negative,
+                carpeta,
+                escena_num,
+                img_width,
+                img_height,
+            )
+            if path:
+                return path
+        except RuntimeError:
+            raise
+        except Exception as e:
+            if intento < MAX_REINTENTOS - 1:
+                time.sleep(PAUSA_REINTENTO)
+            else:
+                raise RuntimeError(f"Falló generación escena {escena_num}: {e}") from e
+    raise RuntimeError(COMFYUI_ERROR_MSG)
 
 
 def generar_lote(
@@ -413,7 +299,9 @@ def generar_lote(
     width: int | None = None,
     height: int | None = None,
 ) -> list[Path]:
-    """Genera todas las imágenes y las guarda con nombre de escena."""
+    """Genera todas las imágenes con ComfyUI. Falla al inicio si ComfyUI no está."""
+    if not _comfyui_disponible():
+        raise RuntimeError(COMFYUI_ERROR_MSG)
     carpeta = OUTPUT_IMAGES / subcarpeta
     rutas = []
     for escena, prompt in escenas_con_prompts:
