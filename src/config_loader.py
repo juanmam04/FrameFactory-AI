@@ -66,3 +66,8 @@ def get_instrucciones_miniatura() -> dict:
 def get_instrucciones_imagenes() -> dict:
     """Carga instrucciones para generación masiva de imágenes."""
     return load_yaml("instrucciones_imagenes.yaml")
+
+
+def get_prompt_maestro() -> dict:
+    """Carga el prompt maestro (objetivo de cada imagen, estilo, variedad cámara)."""
+    return load_yaml("prompt_maestro.yaml")

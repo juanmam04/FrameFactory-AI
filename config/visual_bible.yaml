@@ -1,7 +1,7 @@
-# FASE 1–2: Biblia visual y estilo base
-# Reglas de iluminación, cámara y atmósfera para coherencia
+# FASE 1–2: Biblia visual
+# Estilo fijo: stickman (cuerpo blanco, contorno negro, cabeza redonda, ojos de punto). La escena y el personaje se adaptan al guion: narco, futbolista, lo que sea.
 
-estilo_base: "stickman 2D cinematográfico, estilo limpio, líneas negras sobre fondo suave"
+estilo_base: "stickman style: dark outline, round head, dot eyes, simple 2D cartoon, clean lines, simple flat colors limited palette. Character and setting must match the scene."
 
 iluminacion:
   - "luz suave y direccional"
@@ -27,5 +27,5 @@ atmosfera:
 duracion_por_imagen_segundos: 5
 formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
 
-# Negative prompt fijo para evitar desvíos de estilo (Plan v3)
-negative_prompt: "blurry, low quality, distorted, text, watermark, 3D, realistic, photo, cartoon color, messy lines, cluttered background"
+# Negative: evita realismo, 3D y el "laberinto" de líneas/edificios que genera SD 1.5
+negative_prompt: "dense pattern, maze, architecture, buildings, cityscape, crowded lines, abstract lines, multiple overlapping figures, realistic, photograph, 3D render, shaded, realistic skin, detailed anatomy, blurry, distorted, deformed, extra limbs, fused fingers, ugly, watermark, messy background, out of frame, text"

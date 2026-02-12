@@ -23,40 +23,30 @@ def generar_voz(texto: str, nombre_archivo: str = "narracion", formato: str = "m
     # Generar audio base
     audio_base = None
     
-    # ElevenLabs (con fallback a OpenAI si falla)
-    api_key = os.getenv("ELEVENLABS_API_KEY")
-    voice_id = os.getenv("ELEVENLABS_VOICE_ID", "21m00Tcm4TlvDq8ikWAM")
-    
-    # Verificar si el texto es muy largo para ElevenLabs
-    # ElevenLabs puede tener problemas con textos muy largos (>5000 caracteres)
+    # ElevenLabs: si tenés API key y voz configurada, siempre se usa esa voz (incluso textos largos, por chunks)
+    api_key = (os.getenv("ELEVENLABS_API_KEY") or "").strip()
+    voice_id = (os.getenv("ELEVENLABS_VOICE_ID") or "21m00Tcm4TlvDq8ikWAM").strip() or "21m00Tcm4TlvDq8ikWAM"
+    solo_elevenlabs = os.getenv("ELEVENLABS_SOLO", "").strip().lower() in ("1", "true", "yes")
     caracteres = len(texto)
-    usar_elevenlabs = api_key and caracteres < 5000  # Usar ElevenLabs solo si el texto es razonable
     
-    if api_key and usar_elevenlabs:
+    if api_key:
         try:
             audio_base = _elevenlabs(texto, path, api_key, voice_id)
         except Exception as e:
-            # Si ElevenLabs falla (timeout, pago requerido, etc.), usar OpenAI como fallback
+            if solo_elevenlabs:
+                raise RuntimeError(
+                    f"ElevenLabs falló y tenés ELEVENLABS_SOLO: se usa solo la voz de ElevenLabs. Error: {e}"
+                ) from e
+            # Fallback opcional a OpenAI solo si no está ELEVENLABS_SOLO
             print(f"⚠️ ElevenLabs falló ({e})")
-            if "timeout" in str(e).lower() or caracteres > 3000:
-                print(f"   💡 Texto muy largo ({caracteres} caracteres), usando OpenAI TTS directamente...")
-            else:
-                print(f"   💡 Usando OpenAI TTS como alternativa...")
+            print(f"   💡 Usando OpenAI TTS como alternativa...")
             openai_key = os.getenv("OPENAI_API_KEY")
             if openai_key:
                 audio_base = _openai_tts(texto, path, formato)
             else:
                 audio_base = None
-    elif api_key and not usar_elevenlabs:
-        # Texto muy largo, usar OpenAI TTS directamente
-        print(f"💡 Texto muy largo ({caracteres} caracteres), usando OpenAI TTS en lugar de ElevenLabs...")
-        openai_key = os.getenv("OPENAI_API_KEY")
-        if openai_key:
-            audio_base = _openai_tts(texto, path, formato)
-        else:
-            audio_base = None
     else:
-        # OpenAI TTS
+        # Sin ElevenLabs: OpenAI TTS
         openai_key = os.getenv("OPENAI_API_KEY")
         if openai_key:
             audio_base = _openai_tts(texto, path, formato)

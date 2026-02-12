@@ -92,13 +92,13 @@ def montar_video(
                 # Última entrada sin duration para que FFmpeg calcule bien
                 f.write(f"file '{lista_imagenes[-1].absolute()}'\n")
 
-        # Video solo desde imágenes
+        # Video solo desde imágenes: escalar para LLENAR el frame (sin barras negras)
         video_solo = out.with_stem(out.stem + "_solo_video")
         cmd_video = [
             "ffmpeg", "-y", "-f", "concat", "-safe", "0",
             "-i", str(list_file),
-            "-vf", f"scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2",
-            "-r", "24",  # 24 fps; cada imagen dura seg segundos
+            "-vf", f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height}",
+            "-r", "24",
             "-pix_fmt", "yuv420p",
             str(video_solo),
         ]

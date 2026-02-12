@@ -1,0 +1,51 @@
+{
+  "3": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": { "ckpt_name": "v1-5-pruned-emaonly.safetensors" }
+  },
+  "10": {
+    "class_type": "LoraLoader",
+    "inputs": {
+      "lora_name": "stickman_jm_cine.safetensors",
+      "strength_model": 0.9,
+      "strength_clip": 0.9,
+      "model": ["3", 0],
+      "clip": ["3", 1]
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "text": "stickmain_jm, jm_cine_stick, 2D flat, cinematic, medium shot, 16:9", "clip": ["10", 1] }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "text": "3D, anime, realistic, text, watermark, blurry, deformed", "clip": ["10", 1] }
+  },
+  "6": {
+    "class_type": "EmptyLatentImage",
+    "inputs": { "width": 1280, "height": 720, "batch_size": 1 }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["10", 0],
+      "positive": ["4", 0],
+      "negative": ["5", 0],
+      "latent_image": ["6", 0],
+      "seed": 42,
+      "steps": 25,
+      "cfg": 7.5,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["7", 0], "vae": ["3", 2] }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": { "filename_prefix": "frame", "images": ["8", 0] }
+  }
+}

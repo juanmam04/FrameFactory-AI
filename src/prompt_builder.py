@@ -1,32 +1,34 @@
-"""FASE 5: Conversión de escenas a prompts visuales (acción + estilo + cámara)."""
+"""FASE 5: Conversión de escenas a prompts visuales (acción + estilo + cámara).
+Usa el Prompt Maestro: stickman 2D plano, cámara distinta cada imagen, escena = guion."""
 import random
-from .config_loader import get_visual_bible, get_instrucciones_imagenes
+from .config_loader import get_visual_bible, get_instrucciones_imagenes, get_prompt_maestro
 from .scene_splitter import Escena
 
 
 def construir_prompt(escena: Escena, indice_plan: int | None = None) -> str:
     """
-    Combina acción de la escena + estilo base + reglas de cámara.
-    Varía el plano según el índice para evitar repetición.
-    Usa el template configurado en instrucciones_imagenes.yaml
+    Combina Prompt Maestro + cámara (distinta por escena) + acción de la escena + estilo.
+    Cada imagen: misma cámara prohibida que la anterior; escena = lo que dice el guion.
     """
     vb = get_visual_bible()
     estilo = vb.get("estilo_base", "stickman 2D cinematográfico")
-    planos = vb.get("camara", {}).get("variedad_planos") or [
-        "plano general", "plano medio", "primer plano", "plano detalle"
-    ]
-    idx = (indice_plan if indice_plan is not None else escena.numero - 1) % len(planos)
-    plano = planos[idx]
-    # Acción descriptiva para la imagen (resumir escena en una frase visual)
+    maestro = get_prompt_maestro()
+    variedad_camara = maestro.get("variedad_camara") or []
+    if not variedad_camara:
+        planos = vb.get("camara", {}).get("variedad_planos") or [
+            "plano general", "plano medio", "primer plano", "plano detalle"
+        ]
+        variedad_camara = planos
+    idx = (indice_plan if indice_plan is not None else escena.numero - 1) % len(variedad_camara)
+    camera_esta_imagen = variedad_camara[idx]
     accion = escena.texto[:200].replace("\n", " ")
-    
-    # Usar template configurado o fallback
+    prefijo = (maestro.get("prefijo_prompt") or "").strip()
+    objetivo = (maestro.get("objetivo") or "Frame claro, acción visible, emoción coherente.").strip()
+
     instrucciones = get_instrucciones_imagenes()
-    template = instrucciones.get("prompt_template", "{plano}, {accion}, {estilo}, luz suave, fondo simple, alta calidad")
-    
-    # Variables base requeridas
+    template = instrucciones.get("prompt_template", "{plano}, {accion}, {estilo}, 16:9.")
     variables = {
-        "plano": plano,
+        "plano": camera_esta_imagen,
         "accion": accion,
         "estilo": estilo,
     }
@@ -58,23 +60,26 @@ def construir_prompt(escena: Escena, indice_plan: int | None = None) -> str:
         momento_idx = (escena.numero - 1) % len(momentos_posibles)
         variables["momento_de_la_historia"] = momentos_posibles[momento_idx]
     
-    # Formatear el template con las variables disponibles
     try:
-        return template.format(**variables)
-    except KeyError as e:
-        # Si falta alguna variable, usar el template simple
-        return f"{plano}, {accion}, {estilo}, luz suave, fondo simple, alta calidad"
+        cuerpo = template.format(**variables)
+    except KeyError:
+        cuerpo = f"{camera_esta_imagen}, {accion}, {estilo}, 16:9."
+    if prefijo:
+        cuerpo = f"{prefijo} {camera_esta_imagen}. {cuerpo} {objetivo}"
+    return cuerpo
 
 
 def prompts_para_escenas(escenas: list[Escena], shuffle_planos: bool = False) -> list[tuple[Escena, str]]:
-    """Genera un prompt por escena con variedad de planos."""
-    vb = get_visual_bible()
-    planos = vb.get("camara", {}).get("variedad_planos") or []
-    n_planos = len(planos) or 4
-    orden = list(range(n_planos)) * (len(escenas) // n_planos + 1)
+    """Un prompt por escena; cámara distinta cada vez (variedad_camara del Prompt Maestro)."""
+    maestro = get_prompt_maestro()
+    n_camaras = len(maestro.get("variedad_camara") or [])
+    if not n_camaras:
+        vb = get_visual_bible()
+        n_camaras = len(vb.get("camara", {}).get("variedad_planos") or ["p"]) or 4
+    indices = list(range(n_camaras)) * (len(escenas) // n_camaras + 1)
     if shuffle_planos:
-        random.shuffle(orden)
+        random.shuffle(indices)
     return [
-        (e, construir_prompt(e, orden[i]))
+        (e, construir_prompt(e, indices[i]))
         for i, e in enumerate(escenas)
     ]

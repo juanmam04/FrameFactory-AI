@@ -13,7 +13,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes
-from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto
+from src.image_generator import _get_comfy_url, _comfyui_disponible, comfyui_es_remoto, _get_image_backend
 from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
 from src.script_generator import guardar_guion
@@ -45,8 +45,12 @@ def mensaje_credenciales():
         faltan.append("OPENAI_API_KEY (guiones)")
     if not os.getenv("ELEVENLABS_API_KEY", "").strip() and not os.getenv("OPENAI_API_KEY", "").strip():
         faltan.append("ELEVENLABS_API_KEY o OPENAI_API_KEY (voz)")
-    if not os.getenv("COMFYUI_URL", "").strip() and not os.getenv("SD_API_URL", "").strip():
+    backend = (os.getenv("IMAGE_BACKEND") or "openai").strip().lower()
+    if backend == "comfyui" and not os.getenv("COMFYUI_URL", "").strip() and not os.getenv("SD_API_URL", "").strip():
         faltan.append("COMFYUI_URL (ej. http://127.0.0.1:8188) para generar imágenes")
+    if backend == "openai" and not os.getenv("OPENAI_API_KEY", "").strip():
+        # OPENAI_API_KEY ya se pide para guiones; si solo quieren imágenes con DALL-E, igual lo necesitan
+        pass  # ya listado como OPENAI_API_KEY (guiones)
     return faltan
 
 
@@ -125,7 +129,7 @@ st.markdown("""
     .stApp { background: var(--bg); font-family: 'DM Sans', system-ui, sans-serif; }
     header[data-testid="stHeader"] { background: transparent !important; }
     #MainMenu, footer { visibility: hidden; }
-    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; max-width: 720px; }
+    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; max-width: 1200px; padding-left: 2rem; padding-right: 2rem; }
     .hero { font-size: 1.75rem !important; color: var(--text) !important; margin-bottom: 0.25rem !important; }
     .tagline { color: var(--muted) !important; font-size: 0.9rem !important; margin-bottom: 1.5rem !important; }
     .one-click { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
@@ -327,32 +331,62 @@ with st.expander("⚙️ Opciones avanzadas"):
     )
 
 if not skip_imagenes:
-    comfy_ok = _comfyui_disponible()
-    if comfy_ok:
-        donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
-        st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarán con IA — {COMFY_URL}")
+    backend_img = _get_image_backend()
+    if backend_img == "placeholder":
+        st.info("Imágenes: **placeholder** (sin servicios externos). El video se arma con imágenes de prueba.")
+    elif backend_img == "openai":
+        if os.getenv("OPENAI_API_KEY", "").strip():
+            st.success("Imágenes: **DALL-E 3** (OpenAI). Mejor para stickman y contexto de escena que ComfyUI/SD 1.5.")
+        else:
+            st.warning("Imágenes: DALL-E pedido pero falta OPENAI_API_KEY en .env.")
     else:
-        st.error(
-            "ComfyUI no está corriendo. Inicialo en el puerto 8188 (local o RunPod) y poné COMFYUI_URL en .env. "
-            "Sin ComfyUI no se generan imágenes reales; podés marcar «Saltar generación de imágenes» para video con voz."
-        )
+        comfy_ok = _comfyui_disponible()
+        if comfy_ok:
+            donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
+            st.success(f"Imágenes: **ComfyUI** ({donde}) — {_get_comfy_url()}")
+            if comfyui_es_remoto():
+                st.caption("Para imágenes bien hechas en RunPod: tené **SDXL** en ComfyUI (models/checkpoints). Si está, se usa solo. Opcional en .env: COMFYUI_CHECKPOINT=sdXL_v10.safetensors, COMFYUI_SDXL=true, COMFYUI_PARALLEL=3.")
+        else:
+            st.error(
+                "ComfyUI no está corriendo. Poné IMAGE_BACKEND=openai en .env para usar DALL-E, "
+                "o IMAGE_BACKEND=placeholder para no usar ningún servicio de imágenes."
+            )
 
 col1, col2 = st.columns([1, 2])
 with col1:
     generar = st.button("Generar video completo", type="primary", key="btn_generar_todo")
 
 if generar:
+    bloqueado = False
     if not tema or not tema.strip():
         st.error("Escribí un tema o idea.")
+        bloqueado = True
     elif faltan:
         st.error("Completá las credenciales en .env y volvé a intentar.")
-    elif not skip_imagenes and not _comfyui_disponible():
-        st.error("Iniciá ComfyUI antes de generar (local en :8188 o RunPod con COMFYUI_URL en .env).")
-    else:
+        bloqueado = True
+    elif not skip_imagenes:
+        backend_img = _get_image_backend()
+        if backend_img == "comfyui" and not _comfyui_disponible():
+            st.error("Iniciá ComfyUI o poné IMAGE_BACKEND=openai / IMAGE_BACKEND=placeholder en .env.")
+            bloqueado = True
+        elif backend_img == "openai" and not os.getenv("OPENAI_API_KEY", "").strip():
+            st.error("Para imágenes con DALL-E hace falta OPENAI_API_KEY en .env.")
+            bloqueado = True
+    if not bloqueado:
         mensaje_spinner = "Generando… guion → escenas"
         if not skip_imagenes:
             mensaje_spinner += " → imágenes"
         mensaje_spinner += " → voz → video → metadata YouTube"
+        # Barra de progreso para imágenes (así se ve que avanza y no está trancado)
+        progress_bar = st.progress(0) if not skip_imagenes else None
+        progress_status = st.empty() if not skip_imagenes else None
+
+        def on_progress_imagenes(current: int, total: int):
+            if progress_bar is not None:
+                progress_bar.progress(current / total if total else 0)
+            if progress_status is not None:
+                progress_status.caption(f"Generando imagen **{current}** de **{total}**… (cada una puede tardar 20–60 s)")
+
         with st.spinner(mensaje_spinner):
             try:
                 video_path, metadata_path, thumbnail_path, info_dict = run(
@@ -371,6 +405,7 @@ if generar:
                     width=video_width,
                     height=video_height,
                     skip_miniatura=skip_miniatura,
+                    on_progress_imagenes=on_progress_imagenes if not skip_imagenes else None,
                 )
                 clear_result()
                 st.session_state.video_path = video_path
@@ -893,9 +928,16 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas → Voz → Vide
                 escenas = dividir_en_escenas(st.session_state.guion_texto)
                 escenas_con_prompts = prompts_para_escenas(escenas)
                 guardar_prompts_por_escena(escenas_con_prompts, nombre)
+                # Limpiar imágenes viejas de este proyecto; una por escena
+                carpeta_imgs = OUTPUT_IMAGES / nombre
+                if carpeta_imgs.exists():
+                    for f in carpeta_imgs.glob("escena_*.png"):
+                        try:
+                            f.unlink()
+                        except OSError:
+                            pass
                 with st.spinner("Imágenes..."):
-                    generar_lote(escenas_con_prompts, subcarpeta=nombre)
-                imgs = sorted((OUTPUT_IMAGES / nombre).glob("escena_*.png"))
+                    imgs = generar_lote(escenas_con_prompts, subcarpeta=nombre)
                 audio_p = st.session_state.get("audio_path")
                 if audio_p:
                     audio_p = Path(audio_p) if isinstance(audio_p, str) else audio_p

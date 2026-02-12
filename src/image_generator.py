@@ -1,7 +1,13 @@
-"""FASE 6: Generación masiva de imágenes con ComfyUI. Sin placeholders: si ComfyUI no está, falla claro."""
+"""FASE 6: Generación de imágenes para cada escena.
+Backends: OpenAI DALL-E (por defecto), ComfyUI (SD), o placeholder.
+IMAGE_BACKEND=openai | comfyui | placeholder.
+Con openai, DALL_E_PARALLEL (ej. 3) genera varias imágenes a la vez para ir más rápido.
+"""
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Callable
 
 import requests
 from dotenv import load_dotenv
@@ -11,14 +17,33 @@ from .scene_splitter import Escena
 
 load_dotenv(BASE / ".env")
 
+# Backend de imágenes: openai (DALL-E 3, por defecto y recomendado), comfyui (SD), placeholder
+def _get_image_backend() -> str:
+    load_dotenv(BASE / ".env")
+    backend = (os.getenv("IMAGE_BACKEND") or "openai").strip().lower()
+    if backend not in ("comfyui", "openai", "placeholder"):
+        return "openai"
+    return backend
+
 OUTPUT_IMAGES = BASE / "output" / "imagenes"
-COMFY_URL = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188").rstrip("/")
 COMFY_CHECKPOINT_DEFAULT = "v1-5-pruned-emaonly.safetensors"
 _resolved_checkpoint: str | None = None
 
+
+def _get_comfy_url() -> str:
+    """Lee COMFYUI_URL del entorno cada vez (evita caché de Streamlit/import)."""
+    load_dotenv(BASE / ".env")
+    return (os.getenv("COMFYUI_URL") or "http://127.0.0.1:8188").strip().rstrip("/")
+
+
+# Compatibilidad: variable usada en varios sitios
+# Para compatibilidad con app/tests: usar COMFY_URL() para obtener la URL actual
+COMFY_URL = _get_comfy_url
+
+
 # Timeouts: más largos cuando ComfyUI está en la nube (RunPod, etc.)
 def _is_remote_comfy() -> bool:
-    u = (os.getenv("COMFYUI_URL") or "").strip().lower()
+    u = _get_comfy_url().lower()
     if not u:
         return False
     return "127.0.0.1" not in u and "localhost" not in u
@@ -41,45 +66,59 @@ COMFY_VERIFY_SSL = os.getenv("COMFYUI_VERIFY_SSL", "true").strip().lower() not i
 MAX_REINTENTOS = 3
 PAUSA_REINTENTO = 5
 
-COMFYUI_ERROR_MSG = (
-    f"ComfyUI no está corriendo en {COMFY_URL}. "
-    "Inicialo en otra terminal (ej. python main.py) o revisá COMFYUI_URL en .env si usás RunPod/nube."
-)
+def _comfyui_error_msg() -> str:
+    return (
+        f"ComfyUI no está corriendo en {_get_comfy_url()}. "
+        "Inicialo en otra terminal (ej. python main.py) o revisá COMFYUI_URL en .env si usás RunPod/nube."
+    )
+
+
+def _lista_checkpoints_comfyui() -> list[str]:
+    """Obtiene la lista de nombres de checkpoints desde ComfyUI /object_info."""
+    r = requests.get(f"{_get_comfy_url()}/object_info", timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
+    if r.status_code != 200:
+        return []
+    data = r.json()
+    loader = (data or {}).get("CheckpointLoaderSimple") or {}
+    required = (loader.get("input") or {}).get("required") or {}
+    ckpt_name = required.get("ckpt_name")
+    if not isinstance(ckpt_name, list) or len(ckpt_name) == 0:
+        return []
+    names: list[str] = []
+    for item in ckpt_name:
+        if isinstance(item, str) and item.strip():
+            names.append(item.strip())
+        elif isinstance(item, list) and len(item) > 0:
+            n = item[0] if isinstance(item[0], str) else (item[0][0] if isinstance(item[0], list) and item[0] else None)
+            if n and isinstance(n, str):
+                names.append(n)
+    return names
 
 
 def _get_checkpoint() -> str:
-    """Usa COMFYUI_CHECKPOINT si está definido; si no, obtiene el primer checkpoint de ComfyUI /object_info."""
+    """Usa COMFYUI_CHECKPOINT si está definido. Si no, prefiere SDXL en RunPod para imágenes bien hechas."""
     global _resolved_checkpoint
     env_ckpt = (os.getenv("COMFYUI_CHECKPOINT") or "").strip()
     if env_ckpt:
+        _resolved_checkpoint = env_ckpt
         return env_ckpt
     if _resolved_checkpoint is not None:
         return _resolved_checkpoint
     try:
-        r = requests.get(f"{COMFY_URL}/object_info", timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
-        if r.status_code != 200:
-            _resolved_checkpoint = COMFY_CHECKPOINT_DEFAULT
-            return _resolved_checkpoint
-        data = r.json()
-        loader = (data or {}).get("CheckpointLoaderSimple") or {}
-        required = (loader.get("input") or {}).get("required") or {}
-        ckpt_name = required.get("ckpt_name")
-        if ckpt_name is not None and isinstance(ckpt_name, list):
-            if len(ckpt_name) == 0:
-                raise RuntimeError(
-                    "ComfyUI no tiene ningún checkpoint en models/checkpoints. "
-                    "Añadí al menos un .safetensors o .ckpt ahí, o configurá COMFYUI_CHECKPOINT en .env con el nombre exacto."
-                )
-            first = ckpt_name[0]
-            if isinstance(first, list) and len(first) > 0:
-                name = first[0]
-            elif isinstance(first, str):
-                name = first
-            else:
-                name = None
-            if name and isinstance(name, str):
-                _resolved_checkpoint = name
+        names = _lista_checkpoints_comfyui()
+        if not names:
+            raise RuntimeError(
+                "ComfyUI no tiene ningún checkpoint en models/checkpoints. "
+                "Añadí SDXL (ej. sdXL_v10.safetensors) o configurá COMFYUI_CHECKPOINT en .env."
+            )
+        # Preferir SDXL para calidad (stickman, escenas); si no hay, el primero
+        lower = [n.lower() for n in names]
+        for i, n in enumerate(lower):
+            if "sdxl" in n or "sd_xl" in n or "_xl_" in n or n.endswith("xl.safetensors"):
+                _resolved_checkpoint = names[i]
                 return _resolved_checkpoint
+        _resolved_checkpoint = names[0]
+        return _resolved_checkpoint
     except RuntimeError:
         raise
     except Exception:
@@ -88,15 +127,30 @@ def _get_checkpoint() -> str:
     return _resolved_checkpoint
 
 
+def _comfyui_es_sdxl() -> bool:
+    """True si hay que usar resolución SDXL (1024)."""
+    if os.getenv("COMFYUI_SDXL", "").strip().lower() in ("1", "true", "yes"):
+        return True
+    ckpt = (_get_checkpoint() or "").lower()
+    return "sdxl" in ckpt or "sd_xl" in ckpt or "_xl_" in ckpt
+
+
 def _workflow_comfyui(prompt_text: str, negative: str, width: int, height: int, seed: int | None = None):
-    """Workflow ComfyUI. width/height se redondean a múltiplos de 8."""
+    """Workflow ComfyUI. SDXL usa 1024x1024 y prompts reforzados para calidad."""
     import random
     seed = seed if seed is not None else random.randint(0, 999999)
-    w, h = (width // 8) * 8, (height // 8) * 8
+    if _comfyui_es_sdxl():
+        prompt_text = "high quality, clear composition, " + (prompt_text[:3800] if len(prompt_text) > 3800 else prompt_text)
+        w, h = 1024, 1024
+    else:
+        w, h = (width // 8) * 8, (height // 8) * 8
     if w < 64:
         w = 64
     if h < 64:
         h = 64
+    steps_env = os.getenv("COMFYUI_STEPS", "").strip()
+    steps = int(steps_env) if steps_env.isdigit() else (28 if _comfyui_es_sdxl() else 25)
+    steps = max(15, min(50, steps))
     return {
         "3": {
             "class_type": "CheckpointLoaderSimple",
@@ -122,8 +176,8 @@ def _workflow_comfyui(prompt_text: str, negative: str, width: int, height: int, 
                 "negative": ["5", 0],
                 "latent_image": ["6", 0],
                 "seed": seed,
-                "steps": 15,
-                "cfg": 8,
+                "steps": steps,
+                "cfg": 7.5 if _comfyui_es_sdxl() else 8,
                 "sampler_name": "euler",
                 "scheduler": "normal",
                 "denoise": 1.0,
@@ -143,7 +197,7 @@ def _workflow_comfyui(prompt_text: str, negative: str, width: int, height: int, 
 def _comfyui_disponible() -> bool:
     """Comprueba si ComfyUI responde (endpoint /queue)."""
     try:
-        r = requests.get(f"{COMFY_URL}/queue", timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
+        r = requests.get(f"{_get_comfy_url()}/queue", timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
         return r.status_code == 200
     except requests.RequestException:
         return False
@@ -170,7 +224,7 @@ def _generar_imagen_comfyui(
     workflow = _workflow_comfyui(prompt_text, negative, width, height)
     try:
         r = requests.post(
-            f"{COMFY_URL}/prompt",
+            f"{_get_comfy_url()}/prompt",
             json={"prompt": workflow},
             timeout=timeout_post,
             verify=COMFY_VERIFY_SSL,
@@ -203,13 +257,13 @@ def _generar_imagen_comfyui(
     except RuntimeError:
         raise
     except requests.RequestException as e:
-        raise RuntimeError(COMFYUI_ERROR_MSG + f" Detalle: {e}") from e
+        raise RuntimeError(_comfyui_error_msg() + f" Detalle: {e}") from e
 
     # Poll history until job is done. Usar /history/{prompt_id} para solo nuestro job (más rápido).
     deadline = time.time() + timeout_poll
     view_timeout = _comfy_timeout_view()
     save_node_id = "9"  # SaveImage en nuestro workflow
-    history_url = f"{COMFY_URL}/history/{prompt_id}"
+    history_url = f"{_get_comfy_url()}/history/{prompt_id}"
     while time.time() < deadline:
         try:
             hist = requests.get(history_url, timeout=_comfy_timeout_connect(), verify=COMFY_VERIFY_SSL)
@@ -243,7 +297,7 @@ def _generar_imagen_comfyui(
                 subfolder = info.get("subfolder", "")
                 type_out = info.get("type", "output")
                 params = {"filename": filename, "subfolder": subfolder, "type": type_out}
-                view = requests.get(f"{COMFY_URL}/view", params=params, timeout=view_timeout, verify=COMFY_VERIFY_SSL)
+                view = requests.get(f"{_get_comfy_url()}/view", params=params, timeout=view_timeout, verify=COMFY_VERIFY_SSL)
                 view.raise_for_status()
                 path = carpeta / f"escena_{escena_num:04d}.png"
                 carpeta.mkdir(parents=True, exist_ok=True)
@@ -257,6 +311,101 @@ def _generar_imagen_comfyui(
     return None
 
 
+def _generar_imagen_placeholder(
+    carpeta: Path,
+    escena_num: int,
+    width: int,
+    height: int,
+) -> Path:
+    """Genera una imagen placeholder (color + texto Escena N). No usa ningún servicio externo."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        raise RuntimeError("Pillow (PIL) es necesario para el backend 'placeholder'. pip install Pillow")
+    carpeta.mkdir(parents=True, exist_ok=True)
+    path = carpeta / f"escena_{escena_num:04d}.png"
+    img = Image.new("RGB", (width, height), color=(40, 44, 52))
+    draw = ImageDraw.Draw(img)
+    text = f"Escena {escena_num}"
+    try:
+        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", min(width, height) // 15)
+    except (OSError, TypeError):
+        font = ImageFont.load_default()
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    x = (width - tw) // 2
+    y = (height - th) // 2
+    draw.text((x, y), text, fill=(200, 200, 200), font=font)
+    img.save(path)
+    return path
+
+
+def _generar_imagen_openai(
+    prompt: str,
+    carpeta: Path,
+    escena_num: int,
+    width: int,
+    height: int,
+) -> Path | None:
+    """Genera una imagen con DALL-E 3. Sigue mejor las instrucciones (ej. stickman + contexto) que SD 1.5."""
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError(
+            "IMAGE_BACKEND=openai requiere OPENAI_API_KEY en .env. "
+            "Sin clave no se pueden generar imágenes con DALL-E."
+        )
+    # DALL-E 3 tamaños: 1024x1024, 1792x1024, 1024x1792
+    if width >= height and width / max(height, 1) >= 1.5:
+        size = "1792x1024"
+    elif height > width and height / max(width, 1) >= 1.5:
+        size = "1024x1792"
+    else:
+        size = "1024x1024"
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=prompt[:4000],
+            size=size,
+            quality="standard",
+            n=1,
+        )
+        image_url = response.data[0].url
+        r = requests.get(image_url, timeout=60)
+        r.raise_for_status()
+        carpeta.mkdir(parents=True, exist_ok=True)
+        path = carpeta / f"escena_{escena_num:04d}.png"
+        path.write_bytes(r.content)
+        # DALL-E solo devuelve 1024x1024, 1792x1024 o 1024x1792. Llevar exactamente a (width, height):
+        # recortar a 16:9 si hace falta y luego redimensionar, para no deformar ni dejar barras.
+        if (width, height) not in ((1792, 1024), (1024, 1024), (1024, 1792)):
+            try:
+                from PIL import Image
+                img = Image.open(path).convert("RGB")
+                w, h = img.size
+                target_ratio = width / height
+                current_ratio = w / h
+                if abs(current_ratio - target_ratio) > 0.01:
+                    # Recortar centro al aspect ratio pedido (ej. 16:9)
+                    if current_ratio > target_ratio:
+                        new_w = int(h * target_ratio)
+                        left = (w - new_w) // 2
+                        img = img.crop((left, 0, left + new_w, h))
+                    else:
+                        new_h = int(w / target_ratio)
+                        top = (h - new_h) // 2
+                        img = img.crop((0, top, w, top + new_h))
+                resample = getattr(Image, "Resampling", Image).LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
+                img = img.resize((width, height), resample)
+                img.save(path, "PNG")
+            except Exception:
+                pass
+        return path
+    except Exception as e:
+        raise RuntimeError(f"DALL-E falló para escena {escena_num}: {e}") from e
+
+
 def generar_imagen(
     prompt: str,
     escena_num: int,
@@ -264,13 +413,21 @@ def generar_imagen(
     width: int | None = None,
     height: int | None = None,
 ) -> Path | None:
-    """Genera una imagen con ComfyUI. Si no está disponible, lanza error (sin placeholders)."""
+    """Genera una imagen según IMAGE_BACKEND: comfyui, openai (DALL-E) o placeholder."""
     instrucciones = get_instrucciones_imagenes()
     params = instrucciones.get("parametros_sd", {})
     img_width = width if width is not None else params.get("width", 1024)
     img_height = height if height is not None else params.get("height", 576)
-    negative = get_negative_prompt()
+    backend = _get_image_backend()
 
+    if backend == "placeholder":
+        return _generar_imagen_placeholder(carpeta, escena_num, img_width, img_height)
+
+    if backend == "openai":
+        return _generar_imagen_openai(prompt, carpeta, escena_num, img_width, img_height)
+
+    # comfyui
+    negative = get_negative_prompt()
     for intento in range(MAX_REINTENTOS):
         try:
             path = _generar_imagen_comfyui(
@@ -290,7 +447,19 @@ def generar_imagen(
                 time.sleep(PAUSA_REINTENTO)
             else:
                 raise RuntimeError(f"Falló generación escena {escena_num}: {e}") from e
-    raise RuntimeError(COMFYUI_ERROR_MSG)
+    raise RuntimeError(_comfyui_error_msg())
+
+
+def _generar_una_escena(
+    item: tuple[Escena, str],
+    carpeta: Path,
+    width: int | None,
+    height: int | None,
+) -> tuple[int, Path | None]:
+    """Helper para paralelo: (numero_escena, path o None)."""
+    escena, prompt = item
+    path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
+    return (escena.numero, path)
 
 
 def generar_lote(
@@ -298,13 +467,60 @@ def generar_lote(
     subcarpeta: str = "default",
     width: int | None = None,
     height: int | None = None,
+    on_progress: Callable[[int, int], None] | None = None,
 ) -> list[Path]:
-    """Genera todas las imágenes con ComfyUI. Falla al inicio si ComfyUI no está."""
-    if not _comfyui_disponible():
-        raise RuntimeError(COMFYUI_ERROR_MSG)
+    """Genera todas las imágenes según IMAGE_BACKEND.
+    Con openai, usa DALL_E_PARALLEL (ej. 3) para generar varias a la vez.
+    on_progress(opcional): callback(current_1based, total).
+    """
+    backend = _get_image_backend()
+    if backend == "comfyui" and not _comfyui_disponible():
+        raise RuntimeError(_comfyui_error_msg())
+    if backend == "openai" and not os.getenv("OPENAI_API_KEY", "").strip():
+        raise RuntimeError(
+            "IMAGE_BACKEND=openai requiere OPENAI_API_KEY en .env para generar imágenes con DALL-E."
+        )
     carpeta = OUTPUT_IMAGES / subcarpeta
+    total = len(escenas_con_prompts)
+    instrucciones = get_instrucciones_imagenes()
+    params = instrucciones.get("parametros_sd", {})
+    w = width if width is not None else params.get("width", 1024)
+    h = height if height is not None else params.get("height", 576)
+
+    # Paralelo: varias imágenes a la vez (OpenAI o ComfyUI)
+    parallel = 1
+    if backend == "openai":
+        try:
+            parallel = max(1, min(5, int(os.getenv("DALL_E_PARALLEL", "2"))))
+        except (TypeError, ValueError):
+            parallel = 1
+    elif backend == "comfyui":
+        try:
+            parallel = max(1, min(6, int(os.getenv("COMFYUI_PARALLEL", "3"))))
+        except (TypeError, ValueError):
+            parallel = 1
+
+    if parallel > 1 and total > 1:
+        rutas_por_num: dict[int, Path] = {}
+        completed = 0
+        with ThreadPoolExecutor(max_workers=parallel) as executor:
+            futures = {
+                executor.submit(_generar_una_escena, item, carpeta, w, h): item
+                for item in escenas_con_prompts
+            }
+            for fut in as_completed(futures):
+                num, path = fut.result()
+                if path:
+                    rutas_por_num[num] = path
+                completed += 1
+                if on_progress:
+                    on_progress(completed, total)
+        return [rutas_por_num[n] for n in sorted(rutas_por_num)]
+
     rutas = []
-    for escena, prompt in escenas_con_prompts:
+    for i, (escena, prompt) in enumerate(escenas_con_prompts):
+        if on_progress:
+            on_progress(i + 1, total)
         path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
         if path:
             rutas.append(path)

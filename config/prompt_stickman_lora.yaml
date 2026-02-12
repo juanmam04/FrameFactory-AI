@@ -1,0 +1,24 @@
+# Plantilla para generación con LoRA stickman (ComfyUI)
+# Trigger words: stickmain_jm (protagonista), jm_cine_stick (estilo)
+
+trigger_protagonista: "stickmain_jm"
+trigger_estilo: "jm_cine_stick"
+
+# Template positive. Variables: momento_de_historia, accion, emocion, plano_camara, lugar, personajes, trigger_protagonista, trigger_estilo
+prompt_template: "{trigger_protagonista}, {trigger_estilo}, {momento_de_historia}, {lugar}, {accion}, {emocion}, {plano_camara}, {personajes}, 2D flat style, clean lineart, cinematic lighting, no text on screen, no logos, simple stickman hands, 16:9, single light source"
+
+# Negative prompt fuerte (evitar 3D, anime, realismo, texto, manos raras)
+negative_prompt: "3D, anime, realistic, photograph, detailed anatomy, shaded, volume, texture, person in suit, childish, cute, colorful cartoon, text, watermark, logo, signature, extra limbs, fused fingers, deformed, blurry, low quality, messy lines, crowded, multiple overlapping figures, dense pattern, maze, architecture, cityscape, out of frame"
+
+# Resolución para ComfyUI (16:9)
+width: 1280
+height: 720
+
+# Ejemplo de relleno (solo referencia)
+ejemplo_variables:
+  momento_de_historia: "climax of the story"
+  lugar: "streaming room"
+  accion: "sitting at desk looking at monitor"
+  emocion: "anxiety"
+  plano_camara: "medium shot from front"
+  personajes: "one character"
