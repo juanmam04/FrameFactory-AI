@@ -1,5 +1,23 @@
 [
   {
+    "id": 2,
+    "fecha": "2026-03-05T18:14:36.307465",
+    "nombre_proyecto": "POV_eres_un_medico_asesino",
+    "tema": "POV eres un medico asesino. Este video es una historia en segunda persona que permite al espectador vivir la vida completa de un médico asesino. A través de una narrativa envolvente, se exploran sus infancias, decisiones, obstáculos y las consecuencias de sus acciones. El formato POV sumerge al espectador en la mente del personaje, revelando su evolución y conflictos internos.",
+    "guion_texto": "Este eres tú. Tienes 10 años y observas cómo tu madre se aferra a su trabajo en el hospital. Ella regresa a casa cansada, su rostro refleja el desgaste de la vida. Te das cuenta de que quieres ser médico, pero no solo para salvar vidas, sino para tener poder. \n\nLos años pasan. Estudias en la universidad de medicina. La presión es intensa, pero tú sobresales. Te conviertes en el mejor de tu clase. Sabes que el éxito trae oportunidades, y ya comienzas a pensar en cómo aprovecharlas. Te gradúas con honores y consigues una plaza en un prestigioso hospital. Todo parece perfecto, pero hay un vacío dentro de ti. \n\nEl primer día en el quirófano es una mezcla de adrenalina y miedo. Observas cómo la vida se escapa de un paciente, y en ese instante, sientes un impulso. Comienzas a experimentar con los límites de la ética médica. Tus decisiones se tornan oscuras; un error aquí, una omisión allá. Nadie se da cuenta. La adrenalina es embriagadora.\n\nCon el tiempo, tus acciones se vuelven más audaces. Manipulas diagnósticos y decides quién vive y quién muere. Comienzas a acumular una fortuna. El dinero te da poder, pero también enemigos. Un investigador empieza a seguir tus pasos, y sientes la presión. \n\nUn día, todo se desmorona. Un paciente que decidiste eliminar revive. Sus palabras son una sentencia. La policía llega a tu puerta. La fama que anhelabas se convierte en tu condena. Te encierran, y mientras miras a través de los barrotes, te das cuenta de que has perdido todo. \n\nLa vida que deseabas se convierte en tu prisión. Te conviertes en un recuerdo, un nombre en las páginas de un periódico. Tu historia termina aquí, con el eco de tus decisiones resonando en la oscuridad.",
+    "video_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\videos\\POV_eres_un_medico_asesino.mp4",
+    "metadata_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\metadata\\POV_eres_un_medico_asesino_youtube.txt",
+    "thumbnail_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\thumbnails\\POV_eres_un_medico_asesino_thumbnail.png",
+    "audio_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\audio\\POV_eres_un_medico_asesino.mp3",
+    "word_count": 295,
+    "estimated_minutes": 1.7559523809523812,
+    "target_words": 280,
+    "width": 1920,
+    "height": 1080,
+    "velocidad_voz": 1.2,
+    "segundos_por_imagen": 5.0
+  },
+  {
     "id": 1,
     "fecha": "2026-03-05T17:30:48.553486",
     "nombre_proyecto": "POV_ERES_UN_MEDICO_ASESINO._E",
