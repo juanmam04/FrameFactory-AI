@@ -27,5 +27,8 @@ atmosfera:
 duracion_por_imagen_segundos: 5
 formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
 
-# Negative prompt fijo para evitar desvíos de estilo (Plan v3)
-negative_prompt: "blurry, low quality, distorted, text, watermark, 3D, realistic, photo, cartoon color, messy lines, cluttered background"
+# Negative prompt fijo para evitar desvíos de estilo y elementos no deseados
+negative_prompt: "blurry, low quality, distorted, text, watermark, 3D, realistic, photo, cartoon color, messy lines, cluttered background, video player, playback bar, timeline, timecode, grid lines, editor interface, UI overlay, floating, flying, surreal"
+
+# Regla para TODAS las imágenes: un solo fotograma de ilustración, solo contenido de escena (evitar nombrar lo prohibido en el prompt; se usa lenguaje positivo)
+prohibido_en_imagen: "Un solo fotograma de ilustración. Solo el contenido dibujado de la escena visible. Composición limpia, sin overlays, sin texto, sin controles ni interfaz. Sin figuras flotando o volando."

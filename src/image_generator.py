@@ -1,12 +1,13 @@
-"""FASE 6: Generación masiva de imágenes con ComfyUI. Sin placeholders: si ComfyUI no está, falla claro."""
+"""FASE 6: Generación de imágenes con ComfyUI o OpenAI DALL-E (opcional para pruebas)."""
 import os
+import shutil
 import time
 from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
 
-from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes
+from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes, get_estilo_base
 from .scene_splitter import Escena
 
 load_dotenv(BASE / ".env")
@@ -15,6 +16,11 @@ OUTPUT_IMAGES = BASE / "output" / "imagenes"
 COMFY_URL = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188").rstrip("/")
 COMFY_CHECKPOINT_DEFAULT = "v1-5-pruned-emaonly.safetensors"
 _resolved_checkpoint: str | None = None
+
+# Si True, se usan imágenes con OpenAI DALL-E en lugar de ComfyUI (útil para probar sin ComfyUI)
+def _usar_openai_imagenes() -> bool:
+    v = (os.getenv("USE_OPENAI_IMAGES") or "").strip().lower()
+    return v in ("1", "true", "yes", "on")
 
 # Timeouts: más largos cuando ComfyUI está en la nube (RunPod, etc.)
 def _is_remote_comfy() -> bool:
@@ -257,6 +263,213 @@ def _generar_imagen_comfyui(
     return None
 
 
+def _sanitizar_prompt_para_dalle(prompt: str, escena_num: int) -> str:
+    """
+    Reescribe el prompt con GPT para que sea aceptado por DALL-E (sin violencia gráfica, etc.)
+    manteniendo la escena, el estilo stickman 2D y la intención narrativa. Así evitamos rechazos.
+    """
+    prompt = (prompt or "").strip()[:3500]
+    if not prompt:
+        return _prompt_fallback_stickman(escena_num)
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return prompt
+    estilo = get_estilo_base()
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        r = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Reescribes descripciones de imagen para DALL-E. Reglas: misma escena, composición y emoción. Estilo: " + estilo + ". "
+                        "Suaviza solo lo que active filtros (violencia, sangre). No agregues lugares que no estén en el prompt. "
+                        "IMPORTANTE: La imagen debe ser UN SOLO FOTOGRAMA de ilustración, solo el contenido de la escena. "
+                        "NUNCA incluyas ni menciones: reproductor de video, barra de progreso, línea de tiempo, rejilla, interfaz de programa, controles, código de tiempo. Solo la escena dibujada. "
+                        "Devuelve SOLO el prompt reescrito, sin explicaciones, en un solo párrafo."
+                    ),
+                },
+                {"role": "user", "content": f"Reescribí este prompt para DALL-E:\n\n{prompt}"},
+            ],
+            max_tokens=500,
+            temperature=0.3,
+        )
+        out = (r.choices[0].message.content or "").strip()
+        if out:
+            return out[:4000]
+    except Exception as e:
+        print(f"   ⚠️ Escena {escena_num}: no se pudo sanitizar prompt ({e}), se usa original.")
+    return prompt
+
+
+# PNG 1x1 gris mínimo (base64) para placeholder cuando falla hasta el fallback
+_PLACEHOLDER_PNG_B64 = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+)
+
+
+def _escribir_placeholder_png(carpeta: Path, escena_num: int, width: int = 1024, height: int = 576) -> Path:
+    """Escribe una imagen placeholder (gris) para no dejar huecos cuando todo falla."""
+    import base64
+    carpeta.mkdir(parents=True, exist_ok=True)
+    dest = carpeta / f"escena_{escena_num:04d}.png"
+    try:
+        from PIL import Image
+        img = Image.new("RGB", (width, height), color=(128, 128, 128))
+        img.save(dest)
+        return dest
+    except Exception:
+        dest.write_bytes(base64.b64decode(_PLACEHOLDER_PNG_B64))
+    return dest
+
+
+def _prompt_fallback_stickman(escena_num: int) -> str:
+    """Prompt de respaldo en estilo stickman cuando hay rechazo o error; evita fotos realistas aleatorias."""
+    estilo = get_estilo_base()
+    return (
+        f"Simple 2D stickman style illustration, {estilo}. "
+        "One character with round head and stick body, minimal background, neutral emotional moment, "
+        "clean lines, no realism, no photography style."
+    )
+
+
+def _prompt_seguro_dalle(escena_num: int) -> str:
+    """Prompt seguro en estilo stickman cuando el original fue rechazado (no genérico realista)."""
+    return _prompt_fallback_stickman(escena_num)
+
+
+def _reescribir_prompt_rechazado_para_dalle(prompt_rechazado: str, escena_num: int) -> str | None:
+    """
+    Si DALL-E rechazó el prompt por política de contenido, pide a GPT una versión que sugiera
+    lo mismo sin ser explícito (ej. sugerir una muerte sin mostrarla). Solo para fallback tras rechazo.
+    """
+    prompt_rechazado = (prompt_rechazado or "").strip()[:3000]
+    if not prompt_rechazado:
+        return None
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return None
+    estilo = get_estilo_base()
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        r = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "El siguiente prompt de imagen fue rechazado por políticas de contenido (ej. violencia, muerte explícita). "
+                        "Reescribilo para que SUGIERA la misma escena o emoción sin ser explícito: misma narrativa, mismo estilo (" + estilo + "), "
+                        "pero evita mostrar violencia, sangre, muerte explícita. Ej: en vez de 'persona muerta', usa 'silencio, sombra, mano que cae, momento de pérdida'. "
+                        "Devolvé SOLO el nuevo prompt, sin explicaciones, en un solo párrafo."
+                    ),
+                },
+                {"role": "user", "content": f"Prompt rechazado:\n\n{prompt_rechazado}"},
+            ],
+            max_tokens=500,
+            temperature=0.3,
+        )
+        out = (r.choices[0].message.content or "").strip()
+        return out[:4000] if out else None
+    except Exception:
+        return None
+
+
+def _generar_imagen_openai_dalle(
+    prompt_text: str,
+    carpeta: Path,
+    escena_num: int,
+    width: int,
+    height: int,
+) -> Path | None:
+    """Genera una imagen con OpenAI DALL-E 3. El prompt se sanitiza con GPT antes de enviar
+    para reducir rechazos por política de contenido. Si aun así es rechazado, reintenta con prompt stickman."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("USE_OPENAI_IMAGES está activo pero falta OPENAI_API_KEY en .env")
+    # DALL-E 3 solo permite 1024x1024, 1792x1024, 1024x1792
+    if width >= height * 1.5:
+        size = "1792x1024"   # 16:9 aprox
+    elif height >= width * 1.5:
+        size = "1024x1792"   # 9:16 aprox
+    else:
+        size = "1024x1024"
+    # Sanitizar con GPT para evitar rechazos; mantiene escena y estilo stickman
+    prompt_clean = _sanitizar_prompt_para_dalle((prompt_text or "").strip(), escena_num)
+    prompt_clean = (prompt_clean or "").strip()[:3800] or _prompt_fallback_stickman(escena_num)
+    # Regla fija: un solo fotograma de ilustración, solo escena, sin ninguna interfaz (nombrar "no X" a veces induce a dibujar X; usamos lenguaje positivo)
+    suffix = (
+        " Single standalone illustration frame. Only the drawn scene content visible. "
+        "Same consistent 2D stickman style. Clean composition. No overlays, no text, no controls, no interface, no HUD. "
+        "No floating or flying figures."
+    )
+    prompt_clean = (prompt_clean + suffix).strip()[:4000]
+
+    def _llamar_dalle(prompt: str) -> Path | None:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            size=size,
+            quality="standard",
+            n=1,
+        )
+        image_url = response.data[0].url
+        if not image_url:
+            return None
+        img_response = requests.get(image_url, timeout=60)
+        img_response.raise_for_status()
+        carpeta.mkdir(parents=True, exist_ok=True)
+        path = carpeta / f"escena_{escena_num:04d}.png"
+        path.write_bytes(img_response.content)
+        return path
+
+    def _es_error_servidor(exc: Exception) -> bool:
+        s = str(exc).lower()
+        return "500" in s or "502" in s or "503" in s or "server_error" in s or "server had an error" in s
+
+    # Reintentos ante error 500/502/503 del servidor (temporal)
+    intentos_dalle = 3
+    ultima_excepcion = None
+    for intento in range(intentos_dalle):
+        try:
+            return _llamar_dalle(prompt_clean)
+        except Exception as e:
+            ultima_excepcion = e
+            if _es_error_servidor(e) and intento < intentos_dalle - 1:
+                espera = (intento + 1) * 5
+                print(f"   ⚠️ Escena {escena_num}: error del servidor (500), reintento en {espera}s ({intento + 1}/{intentos_dalle})...")
+                time.sleep(espera)
+            else:
+                break
+
+    e = ultima_excepcion
+    if e is None:
+        return None
+    err_str = str(e).lower()
+    if "content_policy_violation" in err_str or "safety system" in err_str:
+        prompt_alternativo = _reescribir_prompt_rechazado_para_dalle(prompt_clean, escena_num)
+        if prompt_alternativo:
+            print(f"   ⚠️ Escena {escena_num}: rechazado por DALL-E. Reescribiendo para sugerir la escena sin infringir políticas...")
+            try:
+                return _llamar_dalle(prompt_alternativo)
+            except Exception:
+                pass
+        print(f"   ⚠️ Escena {escena_num}: usando prompt stickman de respaldo.")
+        try:
+            return _llamar_dalle(_prompt_seguro_dalle(escena_num))
+        except Exception as e2:
+            raise RuntimeError(
+                f"DALL-E rechazó el prompt y el fallback también falló: {e2}. "
+                "Para historias crudas o sensibles usá ComfyUI en lugar de DALL-E."
+            ) from e2
+    raise RuntimeError(f"DALL-E no pudo generar la imagen: {e}") from e
+
+
 def generar_imagen(
     prompt: str,
     escena_num: int,
@@ -264,13 +477,28 @@ def generar_imagen(
     width: int | None = None,
     height: int | None = None,
 ) -> Path | None:
-    """Genera una imagen con ComfyUI. Si no está disponible, lanza error (sin placeholders)."""
+    """Genera una imagen con ComfyUI o con OpenAI DALL-E si USE_OPENAI_IMAGES=true en .env."""
     instrucciones = get_instrucciones_imagenes()
     params = instrucciones.get("parametros_sd", {})
     img_width = width if width is not None else params.get("width", 1024)
     img_height = height if height is not None else params.get("height", 576)
-    negative = get_negative_prompt()
 
+    if _usar_openai_imagenes():
+        for intento in range(MAX_REINTENTOS):
+            try:
+                path = _generar_imagen_openai_dalle(prompt, carpeta, escena_num, img_width, img_height)
+                if path:
+                    return path
+            except RuntimeError:
+                raise
+            except Exception as e:
+                if intento < MAX_REINTENTOS - 1:
+                    time.sleep(PAUSA_REINTENTO)
+                else:
+                    raise RuntimeError(f"Falló generación escena {escena_num} con DALL-E: {e}") from e
+        return None
+
+    negative = get_negative_prompt()
     for intento in range(MAX_REINTENTOS):
         try:
             path = _generar_imagen_comfyui(
@@ -299,13 +527,47 @@ def generar_lote(
     width: int | None = None,
     height: int | None = None,
 ) -> list[Path]:
-    """Genera todas las imágenes con ComfyUI. Falla al inicio si ComfyUI no está."""
-    if not _comfyui_disponible():
+    """Genera todas las imágenes. Con DALL-E no se aborta: si una escena falla se usa fallback stickman o se duplica la anterior, para tener siempre N imágenes."""
+    if not _usar_openai_imagenes() and not _comfyui_disponible():
         raise RuntimeError(COMFYUI_ERROR_MSG)
     carpeta = OUTPUT_IMAGES / subcarpeta
+    instrucciones = get_instrucciones_imagenes()
+    params = instrucciones.get("parametros_sd", {})
+    img_w = width if width is not None else params.get("width", 1024)
+    img_h = height if height is not None else params.get("height", 576)
+    usar_dalle = _usar_openai_imagenes()
+    total = len(escenas_con_prompts)
     rutas = []
-    for escena, prompt in escenas_con_prompts:
-        path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
+    for idx, (escena, prompt) in enumerate(escenas_con_prompts, start=1):
+        print(f"   🖼️ Imagen {idx}/{total} (escena {escena.numero})...")
+        path = None
+        try:
+            path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
+        except Exception as e:
+            if not usar_dalle:
+                raise
+            print(f"   ⚠️ Escena {escena.numero}: falló ({e}). Intentando imagen stickman de respaldo...")
+            try:
+                path = _generar_imagen_openai_dalle(
+                    _prompt_fallback_stickman(escena.numero),
+                    carpeta,
+                    escena.numero,
+                    img_w,
+                    img_h,
+                )
+            except Exception as e2:
+                print(f"   ⚠️ Escena {escena.numero}: fallback también falló ({e2}). Usando placeholder o duplicado.")
+            if not path:
+                # Siempre dejar una imagen por escena: duplicar anterior o placeholder
+                if rutas:
+                    carpeta.mkdir(parents=True, exist_ok=True)
+                    dest = carpeta / f"escena_{escena.numero:04d}.png"
+                    shutil.copy2(rutas[-1], dest)
+                    path = dest
+                else:
+                    path = _escribir_placeholder_png(carpeta, escena.numero, img_w, img_h)
         if path:
             rutas.append(path)
+    if len(rutas) != len(escenas_con_prompts) and not usar_dalle:
+        raise RuntimeError(f"Se generaron {len(rutas)} de {len(escenas_con_prompts)} imágenes.")
     return rutas

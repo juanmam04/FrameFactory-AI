@@ -93,7 +93,9 @@ La app usa **ComfyUI** para generar las imágenes. Tenés que tener ComfyUI corr
 
 #### Opción B: ComfyUI (local)
 
-1. Instalá ComfyUI y arrancalo (por defecto escucha en el puerto 8188).
+1. Instalá ComfyUI y arrancalo en el puerto **8188** (por defecto ComfyUI usa ese puerto).
+   - Desde la carpeta de ComfyUI: `python main.py --port 8188`
+   - O desde este proyecto (Windows): `.\scripts\start_comfyui.ps1` (opcionalmente pasá la ruta a ComfyUI, o definí `COMFYUI_PATH` en `.env`).
 2. En `.env`: `COMFYUI_URL=http://127.0.0.1:8188`.
 
 #### Opción B2: ComfyUI en RunPod (GPU en la nube)

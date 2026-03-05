@@ -38,17 +38,19 @@ plantillas:
 
       - El cierre debe sentirse inevitable, no explicado.'
     usuario: 'Quiero un guion profesional estilo mini-película POV para YouTube sobre:
-      {tema}. 
-      
+      {tema}.
+
       DURACIÓN: {duracion_min} minutos (exacta).
-      
-      IMPORTANTE: Debes contar la historia COMPLETA desde el inicio hasta el final. 
-      Ajusta el nivel de detalle según la duración:
-      - Si es 1 minuto: cuenta breve pero completa (todos los eventos importantes, sin detalles innecesarios).
-      - Si es 5 minutos: cuenta con más detalle (desarrolla escenas clave, agrega contexto).
-      - Si es 20 minutos: cuenta con lujo de detalles (desarrolla cada momento, agrega descripciones, pensamientos, emociones).
-      
-      La historia debe tener: inicio, desarrollo, clímax y final completo. NO cortes la historia a la mitad.
+
+      IMPORTANTE: Debes contar la historia COMPLETA desde el inicio hasta el final.
+      Ajusta el nivel de detalle según la duración: - Si es 1 minuto: cuenta breve
+      pero completa (todos los eventos importantes, sin detalles innecesarios). -
+      Si es 5 minutos: cuenta con más detalle (desarrolla escenas clave, agrega contexto).
+      - Si es 20 minutos: cuenta con lujo de detalles (desarrolla cada momento, agrega
+      descripciones, pensamientos, emociones).
+
+      La historia debe tener: inicio, desarrollo, clímax y final completo. NO cortes
+      la historia a la mitad.
 
 
       Reglas obligatorias:

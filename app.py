@@ -5,6 +5,7 @@ Ejecutar: streamlit run app.py
 """
 import os
 import sys
+import subprocess
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -13,7 +14,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes
-from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto
+from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto, _usar_openai_imagenes
 from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
 from src.script_generator import guardar_guion
@@ -48,6 +49,84 @@ def mensaje_credenciales():
     if not os.getenv("COMFYUI_URL", "").strip() and not os.getenv("SD_API_URL", "").strip():
         faltan.append("COMFYUI_URL (ej. http://127.0.0.1:8188) para generar imágenes")
     return faltan
+
+
+def generar_descripcion_breve_desde_titulo(titulo: str) -> str:
+    """
+    Devuelve una descripción corta (1–3 frases) para el video usando IA.
+    Describe qué ES el video (formato POV, vida completa), sin lenguaje promocional.
+    """
+    titulo = (titulo or "").strip()
+    if not titulo:
+        return ""
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return f"POV: vivís la vida completa del personaje según el título. Narración en segunda persona, estilo mini-película."
+
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=api_key)
+        system_prompt = (
+            "Escribís descripciones breves (1–3 frases) en español para videos POV. "
+            "La descripción debe decir QUÉ ES el video: formato (POV, segunda persona, vida completa del personaje), no promocionarlo. "
+            "PROHIBIDO usar frases como: 'Sumérgete en...', 'No te lo pierdas', 'Este video te llevará...', 'vivirás la adrenalina...'. "
+            "Sí decir de forma neutra: que es una historia en segunda persona donde el espectador vive la vida completa del personaje (infancia, obstáculos, gloria, caídas). "
+            "Sin emojis, sin hashtags, sin listas."
+        )
+        user_prompt = (
+            f"Título del video: {titulo}\n\n"
+            "Escribí 1–3 frases que describan qué es el video: formato POV, vida completa del personaje, narración en segunda persona. "
+            "Tono neutro e informativo. No promociones ni invites a verlo; solo describe el contenido."
+        )
+
+        response = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=200,
+            temperature=0.4,
+        )
+        desc = (response.choices[0].message.content or "").strip()
+        return desc
+    except Exception as e:
+        print(f"⚠️ Error generando descripción breve: {e}")
+        return f"POV: vivís la vida completa del personaje según el título. Narración en segunda persona, estilo mini-película."
+
+
+def iniciar_comfyui_background() -> tuple[bool, str | None]:
+    """
+    Inicia ComfyUI en segundo plano (puerto 8188) usando scripts/start_comfyui.ps1.
+    Retorna (True, None) si se lanzó bien, o (False, mensaje_error).
+    """
+    script_path = BASE / "scripts" / "start_comfyui.ps1"
+    if not script_path.exists():
+        return False, "No se encontró scripts/start_comfyui.ps1"
+    try:
+        env = os.environ.copy()
+        if os.getenv("COMFYUI_PATH"):
+            env["COMFYUI_PATH"] = os.environ["COMFYUI_PATH"]
+        creationflags = 0
+        if sys.platform == "win32":
+            detach = getattr(subprocess, "DETACHED_PROCESS", 0x00000008)
+            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | detach
+        subprocess.Popen(
+            ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(script_path)],
+            cwd=str(BASE),
+            env=env,
+            creationflags=creationflags,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return True, None
+    except FileNotFoundError:
+        return False, "No se encontró PowerShell. Iniciá ComfyUI manualmente en una terminal."
+    except Exception as e:
+        return False, str(e)
 
 
 def verificar_ffmpeg():
@@ -170,8 +249,50 @@ if not verificar_ffmpeg():
 
 # ─── Generar video completo (un solo lugar) ──────────────────────────────────
 st.markdown('<div class="one-click"><strong>Generar video completo</strong></div>', unsafe_allow_html=True)
-tema = st.text_input("Tema o idea del video", placeholder="Ej: Historia de la inteligencia artificial en 2 minutos", key="tema_todo")
-nombre_proyecto = st.text_input("Nombre del proyecto (opcional)", placeholder="Para carpetas y archivos. Si está vacío se usa el tema.", key="nombre_todo")
+titulo_video = st.text_input(
+    "Título del video",
+    placeholder="Ej: La historia de la inteligencia artificial en 2 minutos",
+    key="titulo_todo",
+)
+
+col_desc1, col_desc2 = st.columns([3, 1])
+# Sugerencia con IA: guardamos en una clave auxiliar y al rerun la copiamos al widget ANTES de crearlo
+if "_descripcion_sugerida" in st.session_state:
+    st.session_state.descripcion_breve_text = st.session_state._descripcion_sugerida
+    del st.session_state._descripcion_sugerida
+if "descripcion_breve_text" not in st.session_state:
+    st.session_state.descripcion_breve_text = ""
+with col_desc1:
+    descripcion_breve = st.text_area(
+        "Descripción breve del video",
+        placeholder="Ej: Un recorrido rápido y claro por los hitos clave de la inteligencia artificial, desde sus orígenes hasta hoy.",
+        help="Usá 1–3 frases para contar de qué va el video y qué promete al espectador.",
+        key="descripcion_breve_text",
+    )
+with col_desc2:
+    st.caption("Podés dejarlo vacío y generarlo con IA.")
+    if st.button("Sugerir descripción con IA", key="btn_sugerir_desc"):
+        if not (titulo_video or "").strip():
+            st.warning("Escribí primero un título para sugerir una descripción.")
+        else:
+            sugerida = generar_descripcion_breve_desde_titulo(titulo_video)
+            if sugerida:
+                st.session_state._descripcion_sugerida = sugerida
+                st.rerun()
+
+nombre_proyecto = st.text_input(
+    "Nombre del proyecto (opcional)",
+    placeholder="Para carpetas y archivos. Si está vacío se usa el título.",
+    key="nombre_todo",
+)
+
+# Tema interno para el pipeline: combina título + descripción
+if (titulo_video or "").strip() and (descripcion_breve or "").strip():
+    tema = f"{titulo_video.strip()}. {descripcion_breve.strip()}"
+elif (titulo_video or "").strip():
+    tema = titulo_video.strip()
+else:
+    tema = ""
 
 # Configuración del video
 col1, col2, col3 = st.columns(3)
@@ -300,13 +421,20 @@ else:
 # Opciones avanzadas
 with st.expander("⚙️ Opciones avanzadas"):
     skip_imagenes = st.checkbox(
-        "Saltar generación de imágenes (video negro con voz)",
+        "Saltar generación de imágenes",
         value=False,
-        help="Desactivado = usar Stable Diffusion para generar imágenes. Necesitás tener Automatic1111 (u otro) corriendo; ver README o SETUP.",
+        help="Si lo marcás, el video se genera solo con voz (sin imágenes). Útil cuando ComfyUI no está corriendo; ver README o SETUP.",
         key="skip_imgs_todo"
     )
     
     if not skip_imagenes:
+        imagen_ia = st.radio(
+            "IA para generar imágenes",
+            options=["ComfyUI (local o RunPod)", "OpenAI DALL-E"],
+            index=0,
+            help="ComfyUI: mejor calidad, requiere ComfyUI en 8188. DALL-E: probar sin ComfyUI, usa créditos OpenAI.",
+            key="imagen_ia_todo",
+        )
         segundos_por_imagen = st.number_input(
             "Segundos por imagen",
             min_value=1.0,
@@ -317,6 +445,7 @@ with st.expander("⚙️ Opciones avanzadas"):
             key="seg_por_img_todo"
         )
     else:
+        imagen_ia = "ComfyUI (local o RunPod)"
         segundos_por_imagen = 5.0
     
     skip_miniatura = st.checkbox(
@@ -327,15 +456,24 @@ with st.expander("⚙️ Opciones avanzadas"):
     )
 
 if not skip_imagenes:
+    usar_dalle = imagen_ia == "OpenAI DALL-E"
     comfy_ok = _comfyui_disponible()
-    if comfy_ok:
+    if usar_dalle:
+        st.success("Imágenes con **OpenAI DALL-E**. No hace falta ComfyUI (usa créditos OpenAI).")
+    elif comfy_ok:
         donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
         st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarán con IA — {COMFY_URL}")
     else:
-        st.error(
-            "ComfyUI no está corriendo. Inicialo en el puerto 8188 (local o RunPod) y poné COMFYUI_URL en .env. "
-            "Sin ComfyUI no se generan imágenes reales; podés marcar «Saltar generación de imágenes» para video con voz."
+        st.warning(
+            "ComfyUI no está corriendo. Elegí **OpenAI DALL-E** en Opciones avanzadas para probar sin ComfyUI, "
+            "o iniciá ComfyUI en el puerto 8188."
         )
+        if st.button("▶️ Iniciar ComfyUI en segundo plano", key="btn_iniciar_comfy"):
+            ok, err = iniciar_comfyui_background()
+            if ok:
+                st.success("ComfyUI se está iniciando. Esperá 20–30 segundos y recargá la página (F5) para que lo detecte.")
+            else:
+                st.error(f"No se pudo iniciar ComfyUI: {err}. Verificá que tengas ComfyUI instalado y, si está en otra ruta, definí COMFYUI_PATH en .env.")
 
 col1, col2 = st.columns([1, 2])
 with col1:
@@ -346,8 +484,8 @@ if generar:
         st.error("Escribí un tema o idea.")
     elif faltan:
         st.error("Completá las credenciales en .env y volvé a intentar.")
-    elif not skip_imagenes and not _comfyui_disponible():
-        st.error("Iniciá ComfyUI antes de generar (local en :8188 o RunPod con COMFYUI_URL en .env).")
+    elif not skip_imagenes and imagen_ia != "OpenAI DALL-E" and not _comfyui_disponible():
+        st.error("ComfyUI no está corriendo. Inicialo en el puerto 8188 o elegí «OpenAI DALL-E» en Opciones avanzadas.")
     else:
         mensaje_spinner = "Generando… guion → escenas"
         if not skip_imagenes:
@@ -355,6 +493,8 @@ if generar:
         mensaje_spinner += " → voz → video → metadata YouTube"
         with st.spinner(mensaje_spinner):
             try:
+                # Aplicar elección de IA para imágenes (el pipeline lee USE_OPENAI_IMAGES)
+                os.environ["USE_OPENAI_IMAGES"] = "true" if (not skip_imagenes and imagen_ia == "OpenAI DALL-E") else "false"
                 video_path, metadata_path, thumbnail_path, info_dict = run(
                     tema=tema.strip(),
                     target_words=target_words,
@@ -462,6 +602,7 @@ if st.session_state.video_path and st.session_state.video_bytes:
     # Video
     st.subheader("🎬 Video generado")
     st.video(st.session_state.video_path)
+    st.caption("Si ves barra de reproducción o controles, es el reproductor de la app. El archivo MP4 descargado no los incluye; abrirlo en VLC o otro reproductor para ver solo el contenido.")
     st.download_button(
         "📥 Descargar video (MP4)",
         data=st.session_state.video_bytes,
@@ -472,7 +613,7 @@ if st.session_state.video_path and st.session_state.video_bytes:
     
     # Archivos generados - Tabs para organizar mejor
     st.subheader("📁 Archivos generados")
-    tabs_archivos = st.tabs(["📝 Guion", "🖼️ Miniatura", "📄 Metadata YouTube", "📂 Todos los archivos"])
+    tabs_archivos = st.tabs(["📝 Guion", "🎞️ Escenas por imagen", "🖼️ Miniatura", "📄 Metadata YouTube", "📂 Todos los archivos"])
     
     with tabs_archivos[0]:  # Guion
         if st.session_state.get("guion_completo"):
@@ -500,7 +641,41 @@ if st.session_state.video_path and st.session_state.video_bytes:
         else:
             st.info("El guion no está disponible en la sesión actual.")
     
-    with tabs_archivos[1]:  # Miniatura
+    with tabs_archivos[1]:  # Escenas por imagen
+        nombre_proy_escenas = st.session_state.video_name.replace('.mp4', '')
+        nombre_proy_sanit_escenas = sanitizar_nombre_proyecto(nombre_proy_escenas)
+        imagenes_dir_escenas = BASE / "output" / "imagenes" / nombre_proy_sanit_escenas
+        try:
+            from src.regeneration import cargar_prompts
+            escenas_con_prompts = cargar_prompts(nombre_proy_sanit_escenas)
+        except Exception:
+            escenas_con_prompts = []
+        if escenas_con_prompts and imagenes_dir_escenas.exists():
+            st.markdown("**Escena del guion usada para cada imagen:**")
+            st.caption("Cada imagen del video se generó a partir del texto de la escena (y su descripción visual).")
+            for escena, prompt in escenas_con_prompts:
+                img_path = imagenes_dir_escenas / f"escena_{escena.numero:04d}.png"
+                with st.expander(f"Escena {escena.numero} — {escena.duracion_segundos:.0f}s", expanded=(escena.numero <= 3)):
+                    if img_path.exists():
+                        st.image(str(img_path), caption=f"Imagen escena {escena.numero}", use_container_width=True)
+                    else:
+                        st.caption(f"🖼️ Imagen no encontrada: `{img_path.name}`")
+                    st.markdown("**Texto de la escena (guion):**")
+                    st.text_area(
+                        f"Escena {escena.numero}",
+                        value=escena.texto,
+                        height=140,
+                        key=f"escena_text_{nombre_proy_sanit_escenas}_{escena.numero}",
+                        label_visibility="collapsed",
+                    )
+                    with st.expander("Ver prompt usado para la imagen"):
+                        st.text(prompt)
+        elif not escenas_con_prompts:
+            st.info("No hay datos de escenas guardados para este proyecto (output/meta). Si generaste el video sin imágenes, no se guardaron escenas.")
+        else:
+            st.info("No se encontraron imágenes de escenas para este proyecto.")
+    
+    with tabs_archivos[2]:  # Miniatura (índice 2)
         if st.session_state.get("thumbnail_path") and st.session_state.get("thumbnail_bytes"):
             st.markdown("**Miniatura generada:**")
             st.image(st.session_state.thumbnail_bytes, caption="Miniatura del video", use_container_width=True)
@@ -516,7 +691,7 @@ if st.session_state.video_path and st.session_state.video_bytes:
         else:
             st.info("No se generó miniatura para este video.")
     
-    with tabs_archivos[2]:  # Metadata
+    with tabs_archivos[3]:  # Metadata YouTube
         if st.session_state.metadata_text:
             st.markdown("**Metadata para YouTube (descripción y capítulos):**")
             st.text_area(
@@ -539,7 +714,7 @@ if st.session_state.video_path and st.session_state.video_bytes:
         else:
             st.info("No se generó metadata para este video.")
     
-    with tabs_archivos[3]:  # Todos los archivos
+    with tabs_archivos[4]:  # Todos los archivos
         st.markdown("**Ubicación de todos los archivos generados:**")
         
         nombre_proy = st.session_state.video_name.replace('.mp4', '')
@@ -891,7 +1066,8 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas → Voz → Vide
             if st.button("Generar imágenes y video", key="ma_btn_vid"):
                 nombre = sanitizar_nombre_proyecto((proy or "mi_video").strip() or "mi_video")
                 escenas = dividir_en_escenas(st.session_state.guion_texto)
-                escenas_con_prompts = prompts_para_escenas(escenas)
+                tema_ctx = st.session_state.get("ma_tema") or st.session_state.get("nombre_proyecto") or nombre or ""
+                escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_ctx, usar_descripciones_ia=True)
                 guardar_prompts_por_escena(escenas_con_prompts, nombre)
                 with st.spinner("Imágenes..."):
                     generar_lote(escenas_con_prompts, subcarpeta=nombre)

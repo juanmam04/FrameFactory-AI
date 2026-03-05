@@ -146,11 +146,16 @@ def run(
 
     escenas = dividir_en_escenas(guion_texto, segundos_por_imagen=seg_por_img)
     
-    escenas_con_prompts = prompts_para_escenas(escenas)
+    # Generar descripción visual por escena con IA para coherencia de imágenes (cada ~5 s del guion)
+    tema_para_desc = tema if tema else (nombre_proyecto or proy or "")
+    escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_para_desc, usar_descripciones_ia=True)
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 
     if not skip_imagenes:
+        n_imgs = len(escenas_con_prompts)
+        print(f"🖼️ Generando {n_imgs} imágenes (puede tardar varios minutos)...")
         generar_lote(escenas_con_prompts, subcarpeta=proy, width=width, height=height)
+        print(f"✅ Imágenes generadas: {n_imgs}")
     lista_imagenes = sorted((OUTPUT_IMAGES / proy).glob("escena_*.png"))
 
     texto_narracion = escenas_a_texto_continuo(escenas)
@@ -245,6 +250,7 @@ def run(
         musica_fondo = None
 
     # NO limitar duración del video - el guion debe ser del tamaño correcto
+    print(f"🎬 Montando video con {len(lista_imagenes)} imágenes y audio...")
     video_path = montar_video(
         lista_imagenes=lista_imagenes,
         audio_narracion=audio_path,

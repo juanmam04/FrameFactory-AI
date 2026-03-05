@@ -98,19 +98,31 @@ Hechos específicos (no generalidades tipo "ganas campeonatos" sin describir).
         # ─── PASO 1: Generar borrador completo ───────────────────────────────────
         print(f"📝 Paso 1: Generando borrador completo (objetivo: ~{target_words} palabras)...")
         
-        prompt_borrador = f"""Escribe una historia COMPLETA con inicio, desarrollo y final. Debe sentirse cerrada.
-Narración continua, concreta, sin poesía, sin moralejas explícitas.
-POV en segunda persona hablándole al espectador.
-Si el límite de palabras es bajo, simplifica eventos y reduce descripciones, pero termina la historia con un final claro.
-Objetivo: acercarte a {target_words} palabras, sin excederlo.
-No uses encabezados ni listas; solo texto fluido.
+        # Frase clave desde config (mejora mucho el resultado)
+        frase_clave = (rules.get("frase_clave") or "No escribas una escena. Escribe la vida completa del personaje.").strip()
+        # Para guiones largos (>1500 palabras) ser muy explícito: debe aproximarse al número
+        longitud_guidance = ""
+        if target_words >= 1500:
+            paginas_aprox = max(2, target_words // 600)
+            longitud_guidance = f"""
+IMPORTANTE - EXTENSIÓN OBLIGATORIA: Este guion debe tener APROXIMADAMENTE {target_words} palabras (unas {paginas_aprox} páginas).
+No escribas una historia corta. Desarrollá bien la trama: varias escenas, descripciones concretas, tensión, reacciones.
+Si escribís menos de {int(target_words * 0.7)} palabras no cumple. Acercate siempre al objetivo de {target_words} palabras."""
+        
+        prompt_borrador = f"""Escribe la VIDA COMPLETA del personaje, no una escena ni un resumen. El guion debe sentirse como una mini-película POV.
+Regla clave: {frase_clave}
+- Empieza SIEMPRE con "Este eres tú." (el espectador es el protagonista).
+- ESPAÑOL NEUTRO OBLIGATORIO: usa tuteo (tú, tienes, sabes, eres, estás, puedes). NUNCA voseo (vos, tenés, sabés, sos, podés) ni regionalismos. El guion debe ser comprensible en toda Hispanoamérica y España.
+- Cuenta todo el recorrido: infancia, dificultades, rechazos, sacrificios, debut, fama, presión, decisiones difíciles, gloria, caídas. Escenas concretas (lugares, horarios, dinero, titulares), crudo y realista. Sin frases motivacionales ni intros promocionales ("este video te llevará…", "no te pierdas…"). No resumir momentos clave; narrarlos en escena.
+Narración en segunda persona (tú), concreta, sin poesía ni moralejas. Objetivo: ~{target_words} palabras. No uses encabezados ni listas; solo texto fluido.
+{longitud_guidance}
 
 Tema: {tema}"""
         
-        # Calcular max_tokens para el borrador (más permisivo)
-        # Aproximadamente 1.3 tokens por palabra en español
-        max_tokens_borrador = int(target_words * 1.5 * 1.3)  # 50% de margen para asegurar que no se corte
-        max_tokens_borrador = max(500, min(max_tokens_borrador, 8000))  # Mínimo 500, máximo 8000
+        # Calcular max_tokens para el borrador: permitir salida larga (hasta 4096+ para 3000 palabras)
+        tokens_por_palabra = 1.4  # español
+        max_tokens_borrador = int(target_words * tokens_por_palabra * 1.4)  # margen 40%
+        max_tokens_borrador = max(1000, min(max_tokens_borrador, 16000))  # mínimo 1000, máximo 16k para guiones largos
         
         r1 = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
@@ -152,42 +164,98 @@ Tema: {tema}"""
             print(f"   ✅ Borrador está cerca del objetivo ({word_count_borrador} palabras, diferencia: {diferencia_objetivo}), no se ajustará")
         
         if necesita_ajustar:
-            # Ajuste más flexible: apuntar cerca del objetivo, no exacto
+            # Siempre apuntar al objetivo; si hay que expandir mucho, ser muy explícito
             objetivo_ajuste = target_words
-            if diferencia_objetivo > 200:
-                # Si está muy lejos, ajustar más agresivamente
-                objetivo_ajuste = target_words
-            else:
-                # Si está cerca, solo ajustar suavemente hacia el objetivo
-                objetivo_ajuste = int((word_count_borrador + target_words) / 2)
-            
+            texto_para_ajustar = borrador
+            word_count_actual = word_count_borrador
+
+            # Si el borrador está muy corto, pedir expansión explícita primero
+            if necesita_expandir and (target_words - word_count_borrador) > 500:
+                print(f"   📈 Borrador corto ({word_count_borrador} palabras). Expandiendo hacia {target_words}...")
+                prompt_expandir_primero = f"""La siguiente historia tiene actualmente unas {word_count_borrador} palabras. DEBE quedar con al menos {min_words} palabras y el objetivo es {target_words} palabras.
+
+REQUISITO: Añade contenido hasta acercarte a {target_words} palabras. Mantén la misma trama y el mismo final.
+- Expande escenas con más descripciones, reacciones del personaje, detalles del entorno y tensión.
+- No inventes subtramas largas ni cambies el desenlace.
+- El resultado debe ser la misma historia pero más desarrollada, con aproximadamente {target_words} palabras.
+Devuelve solo el texto completo de la historia, sin explicaciones.
+
+HISTORIA ACTUAL:
+{borrador}"""
+                max_tokens_exp = int(target_words * 1.4 * 1.4)
+                max_tokens_exp = max(1000, min(max_tokens_exp, 16000))
+                try:
+                    r_exp = client.chat.completions.create(
+                        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                        messages=[
+                            {"role": "system", "content": "Eres un editor de guiones. Expandes historias hasta alcanzar el número de palabras pedido, manteniendo coherencia y final."},
+                            {"role": "user", "content": prompt_expandir_primero},
+                        ],
+                        max_tokens=max_tokens_exp,
+                        temperature=0.4,
+                    )
+                    texto_exp = (r_exp.choices[0].message.content or "").strip()
+                    if count_words(texto_exp) > word_count_borrador:
+                        texto_para_ajustar = texto_exp
+                        word_count_actual = count_words(texto_para_ajustar)
+                        print(f"   📊 Tras expandir: {word_count_actual} palabras")
+                except Exception:
+                    pass
+
             prompt_ajuste = f"""Reescribe la historia siguiente para que tenga aproximadamente {objetivo_ajuste} palabras (entre {min_words} y {max_words}).
+Actualmente tiene unas {word_count_actual} palabras. Objetivo: {target_words} palabras.
 Debe mantener coherencia total, historia completa y final claro.
-NO fuerces palabras solo para llegar al número - la calidad del guion es más importante.
 Si necesitas acortar, elimina detalles y escenas secundarias, pero conserva el desenlace.
-Si necesitas expandir, agrega detalles concretos y tensión sin inventar subtramas largas.
+Si necesitas expandir, agrega detalles concretos y tensión sin inventar subtramas largas. APROXIMATE al número objetivo.
 Devuelve solo el texto final.
 
-HISTORIA ORIGINAL:
-{borrador}"""
+HISTORIA:
+{texto_para_ajustar}"""
             
-            # Calcular max_tokens para el ajuste (más restrictivo pero suficiente)
-            max_tokens_ajuste = int(target_words * 1.2 * 1.3)  # 20% de margen para evitar cortes
-            max_tokens_ajuste = max(500, min(max_tokens_ajuste, 8000))  # Mínimo 500, máximo 8000
+            max_tokens_ajuste = int(target_words * 1.3 * 1.4)
+            max_tokens_ajuste = max(1000, min(max_tokens_ajuste, 16000))
             
             r2 = client.chat.completions.create(
                 model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                 messages=[
-                    {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias a números exactos de palabras manteniendo coherencia y final completo."},
+                    {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. Si el objetivo es mayor al texto actual, expandís; si es menor, recortás. Siempre te aproximás al objetivo."},
                     {"role": "user", "content": prompt_ajuste},
                 ],
                 max_tokens=max_tokens_ajuste,
-                temperature=0.3,  # Muy baja temperatura para precisión
+                temperature=0.3,
             )
             guion_ajustado = (r2.choices[0].message.content or "").strip()
             word_count_ajustado = count_words(guion_ajustado)
             
             print(f"📊 Guion ajustado: {word_count_ajustado} palabras (objetivo: {target_words})")
+            
+            # Si sigue corto, hasta 2 intentos más de expansión
+            for intento_extra in range(2):
+                if word_count_ajustado >= min_words:
+                    break
+                faltan = target_words - word_count_ajustado
+                print(f"   📈 Sigue corto ({word_count_ajustado} palabras). Intentando expandir de nuevo (+{faltan} palabras)...")
+                prompt_extra = f"""El siguiente guion tiene {word_count_ajustado} palabras. DEBE tener al menos {min_words} palabras (objetivo {target_words}).
+Añade aproximadamente {faltan} palabras: más descripciones de escenas, reacciones, detalles, tensión. NO cambies el final ni la trama.
+Devuelve solo el texto completo ampliado, sin explicaciones.
+
+GUION ACTUAL:
+{guion_ajustado}"""
+                try:
+                    r_extra = client.chat.completions.create(
+                        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                        messages=[
+                            {"role": "system", "content": "Expandes guiones hasta alcanzar el número de palabras pedido. Mantienes la misma historia y el mismo final."},
+                            {"role": "user", "content": prompt_extra},
+                        ],
+                        max_tokens=int(target_words * 1.4 * 1.4),
+                        temperature=0.35,
+                    )
+                    guion_ajustado = (r_extra.choices[0].message.content or "").strip()
+                    word_count_ajustado = count_words(guion_ajustado)
+                    print(f"   📊 Tras intento {intento_extra + 1}: {word_count_ajustado} palabras")
+                except Exception:
+                    break
             
             # Validar resultado
             if word_count_ajustado > max_words:
@@ -220,35 +288,35 @@ HISTORIA ORIGINAL:
                 else:
                     print(f"⚠️ Guion aún excede {max_words} palabras ({word_count_ajustado}). Usando versión anterior.")
             
-            # Validar que no quede muy corto y se pierda el cierre
+            # Validar que no quede muy corto: última pasada de expansión sobre el guion ya ajustado
             if word_count_ajustado < min_words:
-                # Reintentar pidiendo expandir manteniendo final
-                print(f"⚠️ Guion queda muy corto ({word_count_ajustado} palabras). Reintentando para expandir manteniendo final...")
-                prompt_expandir = f"""Reescribe la historia siguiente para que tenga al menos {min_words} palabras (objetivo: {target_words}).
-Debe mantener coherencia total, historia completa y final claro.
-Agrega detalles concretos y tensión sin inventar subtramas largas.
-MANTÉN el final completo.
-Devuelve solo el texto final.
+                faltan = target_words - word_count_ajustado
+                print(f"⚠️ Guion sigue corto ({word_count_ajustado} palabras). Última expansión hacia {target_words} (+{faltan} palabras)...")
+                prompt_expandir = f"""El guion siguiente tiene {word_count_ajustado} palabras. DEBE quedar con al menos {min_words} palabras; objetivo final: {target_words} palabras.
+Faltan aproximadamente {faltan} palabras. Añade: más descripciones de escenas, reacciones del personaje, detalles del entorno, tensión. Mantén la misma trama y el mismo final.
+Devuelve solo el texto completo ampliado.
 
-HISTORIA ORIGINAL:
-{borrador}"""
+GUION ACTUAL:
+{guion_ajustado}"""
                 
-                r4 = client.chat.completions.create(
-                    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-                    messages=[
-                        {"role": "system", "content": "Eres un editor de guiones experto. Expandes historias manteniendo coherencia y final completo."},
-                        {"role": "user", "content": prompt_expandir},
-                    ],
-                    max_tokens=int(target_words * 1.3 * 1.3),  # 30% de margen para expansión
-                    temperature=0.4,
-                )
-                guion_expandido = (r4.choices[0].message.content or "").strip()
-                word_count_expandido = count_words(guion_expandido)
-                
-                if word_count_expandido >= min_words:
-                    guion_ajustado = guion_expandido
-                    word_count_ajustado = word_count_expandido
-                    print(f"✅ Guion expandido correctamente: {word_count_ajustado} palabras")
+                try:
+                    r4 = client.chat.completions.create(
+                        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                        messages=[
+                            {"role": "system", "content": "Eres un editor de guiones. Expandes el texto hasta alcanzar el número de palabras pedido. Siempre mantienes la misma historia y el mismo final."},
+                            {"role": "user", "content": prompt_expandir},
+                        ],
+                        max_tokens=int(target_words * 1.5 * 1.4),
+                        temperature=0.4,
+                    )
+                    guion_expandido = (r4.choices[0].message.content or "").strip()
+                    word_count_expandido = count_words(guion_expandido)
+                    if word_count_expandido > word_count_ajustado:
+                        guion_ajustado = guion_expandido
+                        word_count_ajustado = word_count_expandido
+                        print(f"✅ Guion expandido: {word_count_ajustado} palabras")
+                except Exception as e:
+                    print(f"⚠️ Error en expansión final: {e}")
             
             guion_final = guion_ajustado
             word_count_final = word_count_ajustado
