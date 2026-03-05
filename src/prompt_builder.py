@@ -34,9 +34,7 @@ def construir_prompt(
     
     # Usar template configurado o fallback
     instrucciones = get_instrucciones_imagenes()
-    template = instrucciones.get("prompt_template", "{plano}, {accion}, {estilo}, luz suave, fondo simple, alta calidad")
-    
-    # Variables base requeridas
+    template = instrucciones.get("prompt_template", "{plano}, {accion}, {estilo}, 16:9.")
     variables = {
         "plano": plano,
         "accion": accion,
@@ -50,7 +48,6 @@ def construir_prompt(
     momentos_posibles = ["momento clave", "punto de inflexión", "decisión importante", "conflicto central"]
     
     # Detectar qué variables opcionales necesita el template
-    import re
     variables_en_template = set(re.findall(r'\{(\w+)\}', template))
     
     # Agregar variables opcionales si están en el template

@@ -19,7 +19,7 @@ class TestComfyUIConnectivity:
     def test_queue_responde_200(self):
         import requests
         r = requests.get(
-            f"{ig.COMFY_URL}/queue",
+            f"{ig._get_comfy_url()}/queue",
             timeout=ig._comfy_timeout_connect(),
             verify=ig.COMFY_VERIFY_SSL,
         )
@@ -28,7 +28,7 @@ class TestComfyUIConnectivity:
     def test_object_info_devuelve_checkpoints(self):
         import requests
         r = requests.get(
-            f"{ig.COMFY_URL}/object_info",
+            f"{ig._get_comfy_url()}/object_info",
             timeout=ig._comfy_timeout_connect(),
             verify=ig.COMFY_VERIFY_SSL,
         )

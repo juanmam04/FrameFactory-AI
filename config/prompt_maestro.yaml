@@ -1,0 +1,49 @@
+# PROMPT MAESTRO – Objetivo de cada imagen (para IA generadora)
+# Cada imagen es un frame de película (~5 s). Cuentan la historia. No decorativas.
+
+formato:
+  aspect_ratio: "16:9"
+  resolucion_sugerida: "1280x720 o equivalente"
+  regla: "Sin zoom innecesario: sujeto y acción se ven claros."
+
+estilo_visual_obligatorio: |
+  Personajes: stickman 2D PLANO.
+  Protagonista: siempre el mismo stickman (mismas proporciones, mismo estilo de línea, misma cabeza circular blanca).
+  Otros personajes: stickmans simples, distintos entre sí.
+  Prohibido: realismo, 3D, texturas, volumen, estilo persona con traje, anime, infantil.
+  Iluminación: simple, cinematográfica, coherente con la emoción (noche/monitor/tenue).
+
+# REGLA CRÍTICA: cada imagen debe cambiar al menos 1 de estos respecto a la anterior
+variedad_camara:
+  - "cámara frontal, plano medio"
+  - "cámara lateral desde la puerta, plano general"
+  - "ángulo cenital desde arriba, plano detalle"
+  - "desde atrás del personaje, plano medio"
+  - "picado desde arriba, plano general"
+  - "contrapicado desde abajo, primer plano"
+  - "lateral desde la ventana, plano medio"
+  - "POV sobre la mesa, plano detalle"
+  - "desde el suelo, plano general"
+  - "desde el techo, plano medio"
+  - "cámara al lado de la cama, primer plano"
+  - "frontal lejano, plano general"
+  - "lateral cercano, plano detalle"
+  - "ángulo 3/4, plano medio"
+  - "desde el monitor o pantalla, plano medio"
+
+regla_narrativa: |
+  La imagen debe representar exactamente la escena indicada.
+  La emoción debe coincidir con el momento de la historia.
+  No inventar elementos que no correspondan al momento (ej. fama, donaciones, chat grande si todavía no corresponde).
+  La historia es progresiva.
+
+texto_en_imagen: |
+  Preferible: SIN TEXTO.
+  Si hay texto: solo interfaz natural (chat/alertas) y siempre en español.
+  Nunca subtítulos del guion. Nunca inglés.
+
+objetivo: "Frame cinematográfico claro, acción visible, emoción coherente, cámara distinta a la anterior."
+
+# Prefijo corto que se añade a cada prompt (resumen para la IA)
+# Regla: siempre mostrar un LUGAR/contexto visible (habitación, calle, fiesta…), nunca fondo vacío.
+prefijo_prompt: "Frame para video 16:9. Stickman 2D plano, mismo protagonista. Imagen debe llenar todo el frame de borde a borde, sin barras ni márgenes a los costados. Lugar concreto visible. Cámara en esta imagen (distinta a la anterior):"

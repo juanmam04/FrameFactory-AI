@@ -100,15 +100,71 @@ La app usa **ComfyUI** para generar las imágenes. Tenés que tener ComfyUI corr
 
 #### Opción B2: ComfyUI en RunPod (GPU en la nube)
 
-1. Creá un Pod en [RunPod](https://runpod.io) con GPU (ej. con template que incluya ComfyUI o instalalo por SSH).
-2. En el Pod, arrancá ComfyUI y dejalo escuchando en el puerto **8188**.
-3. En el dashboard de RunPod, **exponé el puerto 8188** (TCP): te darán una URL tipo `https://TU_POD_ID-8188.proxy.runpod.net` o una IP:puerto.
-4. En tu `.env` (en tu Mac, donde corre FrameFactory):
+**Para que el RunPod no sea al pedo:** usá **SDXL** (no SD 1.5). El programa prioriza SDXL solo si está en el Pod; ver pasos más abajo.
+
+**Si ya tenés un Pod en RunPod**, seguí estos pasos:
+
+1. **En el RunPod (SSH o la consola web):** si el template no trae ComfyUI, instalalo y arrancalo:
+   ```bash
+   cd /workspace || cd ~
+   git clone https://github.com/comfyanonymous/ComfyUI
+   cd ComfyUI
+   pip install -r requirements.txt
+   # Un modelo mínimo (SD 1.5); si ya tenés otro en models/checkpoints/, saltá esto:
+   mkdir -p models/checkpoints && cd models/checkpoints
+   wget -q https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
+   cd ../..
+   python main.py --listen 0.0.0.0 --port 8188
+   ```
+   (Si solo tenés `python3`, usá `python3 main.py ...`). Dejalo corriendo; el `--listen 0.0.0.0` hace que escuche desde fuera del Pod. Para no perderlo al cerrar la sesión: `screen -S comfy` y después los comandos, o `tmux`.
+
+2. **En el dashboard de RunPod (runpod.io):**
+   - Entrá a tu Pod → pestaña **Connect** o **Expose**.
+   - **Exponé el puerto TCP 8188**. RunPod te muestra una URL tipo:
+     - `https://abc123xyz-8188.proxy.runpod.net` (proxy HTTPS), o
+     - La IP del Pod + puerto, ej. `123.45.67.89:8188` (conexión directa).
+
+3. **En tu Mac (donde corre FrameFactory), editá el `.env`:**
    ```env
+   # ComfyUI en RunPod (reemplazá por TU URL real)
    COMFYUI_URL=https://TU_POD_ID-8188.proxy.runpod.net
    ```
-   o bien `COMFYUI_URL=http://IP:8188` si usás conexión directa.
-5. Si el proxy usa HTTPS y da error de certificado: `COMFYUI_VERIFY_SSL=false` en `.env`.
+   Si usás la IP directa: `COMFYUI_URL=http://123.45.67.89:8188` (reemplazá por la IP de tu Pod).
+
+4. **Si al generar te sale error de certificado SSL**, agregá en `.env`:
+   ```env
+   COMFYUI_VERIFY_SSL=false
+   ```
+
+5. **Opcional (RunPod suele ser más lento en respuesta):** los timeouts ya están altos por defecto; si igual falla por tiempo, podés subirlos:
+   ```env
+   COMFYUI_TIMEOUT_CONNECT=30
+   COMFYUI_TIMEOUT_POST=120
+   COMFYUI_TIMEOUT_POLL=400
+   ```
+
+Listo: en la app, **no** marques «Saltar generación de imágenes» y las imágenes se generarán en la GPU del RunPod (mucho más rápido que en una Mac).
+
+**Stickman / cartoon:** El que no entiende bien stickman es el **modelo SD 1.5**, no ComfyUI. ComfyUI solo ejecuta el modelo que le pongas. Para que ComfyUI genere las imágenes que querés (stickman + contexto de escena), usá **SDXL** en RunPod:
+
+1. En el Pod, en `ComfyUI/models/checkpoints/`, descargá un checkpoint SDXL, por ejemplo:
+   ```bash
+   wget https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors -O sdXL_v10.safetensors
+   ```
+2. En tu `.env` (en la Mac):
+   ```env
+   IMAGE_BACKEND=comfyui
+   COMFYUI_URL=https://TU_POD_ID-8188.proxy.runpod.net
+   COMFYUI_CHECKPOINT=sdXL_v10.safetensors
+   COMFYUI_SDXL=true
+   COMFYUI_PARALLEL=3
+   COMFYUI_VERIFY_SSL=false
+   ```
+   `COMFYUI_PARALLEL=3` hace que se generen **varias imágenes a la vez** (masivo y más rápido).
+
+3. El estilo (stickman, etc.) se controla en `config/visual_bible.yaml` y `config/instrucciones_imagenes.yaml`.
+
+**Resumen:** ComfyUI puede crear las imágenes que necesitás y en masa; el truco es usar **SDXL** (no SD 1.5) y **COMFYUI_PARALLEL** para generar muchas a la vez.
 
 #### Opción C: API en la nube
 
@@ -132,8 +188,8 @@ python -m src.pipeline --tema "Historia de la inteligencia artificial"
 - [ ] `pip install -r requirements.txt`
 - [ ] FFmpeg instalado y en PATH
 - [ ] Archivo `.env` creado con `OPENAI_API_KEY`
-- [ ] Archivo `.env` con `SD_API_URL` configurado
-- [ ] Stable Diffusion corriendo (si es local)
+- [ ] En `.env`: `COMFYUI_URL=http://127.0.0.1:8188` (o URL de RunPod si usás nube)
+- [ ] **ComfyUI prendido** en otra terminal: `cd ComfyUI && python main.py --port 8188` (si querés imágenes; si no, marcá «Saltar generación de imágenes»)
 - [ ] Probar: `streamlit run app.py`
 
 ## ⚠️ Notas importantes

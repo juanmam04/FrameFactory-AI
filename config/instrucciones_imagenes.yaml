@@ -1,6 +1,7 @@
+# Tamaño de imagen para video (16:9). DALL-E devuelve otro tamaño; se redimensiona a este.
 parametros_sd:
   cfg_scale: 7.0
-  height: 1080
+  height: 720
   steps: 25
   width: 1920
 # El estilo (stickman 2D, etc.) es regla general: se inyecta en código desde visual_bible.yaml, no se repite aquí.

@@ -90,6 +90,7 @@ def run(
     width: int = 1920,
     height: int = 1080,
     skip_miniatura: bool = False,
+    on_progress_imagenes=None,  # callable(current_1based, total) para UI (ej. "Escena 5 de 25")
     # Parámetros legacy (deprecated, usar target_words)
     duracion_min: int | None = None,
     duracion_max: int | None = None,
@@ -151,12 +152,14 @@ def run(
     escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_para_desc, usar_descripciones_ia=True)
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 
+    lista_imagenes: list[Path] = []
     if not skip_imagenes:
         n_imgs = len(escenas_con_prompts)
         print(f"🖼️ Generando {n_imgs} imágenes (puede tardar varios minutos)...")
-        generar_lote(escenas_con_prompts, subcarpeta=proy, width=width, height=height)
-        print(f"✅ Imágenes generadas: {n_imgs}")
-    lista_imagenes = sorted((OUTPUT_IMAGES / proy).glob("escena_*.png"))
+        lista_imagenes = generar_lote(escenas_con_prompts, subcarpeta=proy, width=width, height=height)
+        print(f"✅ Imágenes generadas: {len(lista_imagenes)}")
+    else:
+        lista_imagenes = sorted((OUTPUT_IMAGES / proy).glob("escena_*.png"))
 
     texto_narracion = escenas_a_texto_continuo(escenas)
     

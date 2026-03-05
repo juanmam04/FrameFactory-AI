@@ -46,8 +46,12 @@ def mensaje_credenciales():
         faltan.append("OPENAI_API_KEY (guiones)")
     if not os.getenv("ELEVENLABS_API_KEY", "").strip() and not os.getenv("OPENAI_API_KEY", "").strip():
         faltan.append("ELEVENLABS_API_KEY o OPENAI_API_KEY (voz)")
-    if not os.getenv("COMFYUI_URL", "").strip() and not os.getenv("SD_API_URL", "").strip():
+    backend = (os.getenv("IMAGE_BACKEND") or "openai").strip().lower()
+    if backend == "comfyui" and not os.getenv("COMFYUI_URL", "").strip() and not os.getenv("SD_API_URL", "").strip():
         faltan.append("COMFYUI_URL (ej. http://127.0.0.1:8188) para generar imágenes")
+    if backend == "openai" and not os.getenv("OPENAI_API_KEY", "").strip():
+        # OPENAI_API_KEY ya se pide para guiones; si solo quieren imágenes con DALL-E, igual lo necesitan
+        pass  # ya listado como OPENAI_API_KEY (guiones)
     return faltan
 
 
@@ -204,7 +208,7 @@ st.markdown("""
     .stApp { background: var(--bg); font-family: 'DM Sans', system-ui, sans-serif; }
     header[data-testid="stHeader"] { background: transparent !important; }
     #MainMenu, footer { visibility: hidden; }
-    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; max-width: 720px; }
+    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; max-width: 1200px; padding-left: 2rem; padding-right: 2rem; }
     .hero { font-size: 1.75rem !important; color: var(--text) !important; margin-bottom: 0.25rem !important; }
     .tagline { color: var(--muted) !important; font-size: 0.9rem !important; margin-bottom: 1.5rem !important; }
     .one-click { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
@@ -480,8 +484,10 @@ with col1:
     generar = st.button("Generar video completo", type="primary", key="btn_generar_todo")
 
 if generar:
+    bloqueado = False
     if not tema or not tema.strip():
         st.error("Escribí un tema o idea.")
+        bloqueado = True
     elif faltan:
         st.error("Completá las credenciales en .env y volvé a intentar.")
     elif not skip_imagenes and imagen_ia != "OpenAI DALL-E" and not _comfyui_disponible():
@@ -491,6 +497,16 @@ if generar:
         if not skip_imagenes:
             mensaje_spinner += " → imágenes"
         mensaje_spinner += " → voz → video → metadata YouTube"
+        # Barra de progreso para imágenes (así se ve que avanza y no está trancado)
+        progress_bar = st.progress(0) if not skip_imagenes else None
+        progress_status = st.empty() if not skip_imagenes else None
+
+        def on_progress_imagenes(current: int, total: int):
+            if progress_bar is not None:
+                progress_bar.progress(current / total if total else 0)
+            if progress_status is not None:
+                progress_status.caption(f"Generando imagen **{current}** de **{total}**… (cada una puede tardar 20–60 s)")
+
         with st.spinner(mensaje_spinner):
             try:
                 # Aplicar elección de IA para imágenes (el pipeline lee USE_OPENAI_IMAGES)
@@ -511,6 +527,7 @@ if generar:
                     width=video_width,
                     height=video_height,
                     skip_miniatura=skip_miniatura,
+                    on_progress_imagenes=on_progress_imagenes if not skip_imagenes else None,
                 )
                 clear_result()
                 st.session_state.video_path = video_path
@@ -1069,9 +1086,16 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas → Voz → Vide
                 tema_ctx = st.session_state.get("ma_tema") or st.session_state.get("nombre_proyecto") or nombre or ""
                 escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_ctx, usar_descripciones_ia=True)
                 guardar_prompts_por_escena(escenas_con_prompts, nombre)
+                # Limpiar imágenes viejas de este proyecto; una por escena
+                carpeta_imgs = OUTPUT_IMAGES / nombre
+                if carpeta_imgs.exists():
+                    for f in carpeta_imgs.glob("escena_*.png"):
+                        try:
+                            f.unlink()
+                        except OSError:
+                            pass
                 with st.spinner("Imágenes..."):
-                    generar_lote(escenas_con_prompts, subcarpeta=nombre)
-                imgs = sorted((OUTPUT_IMAGES / nombre).glob("escena_*.png"))
+                    imgs = generar_lote(escenas_con_prompts, subcarpeta=nombre)
                 audio_p = st.session_state.get("audio_path")
                 if audio_p:
                     audio_p = Path(audio_p) if isinstance(audio_p, str) else audio_p
