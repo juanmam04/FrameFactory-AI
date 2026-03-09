@@ -80,6 +80,9 @@ Narración continua, concreta, sin poesía ni moralejas explícitas.
 POV en segunda persona hablándole al espectador.
 Tono cinematográfico, oscuro y tenso cuando aplique.
 Hechos específicos (no generalidades tipo "ganas campeonatos" sin describir).
+Mucha crudeza: muestra decisiones duras, fracasos, traiciones, violencia implícita, consecuencias reales (cárcel, muerte, ruina, soledad), sin edulcorar ni hacer moralejas.
+No seas políticamente correcto: los personajes pueden cometer errores graves, ser egoístas, ambiciosos o crueles; tu trabajo es contar la historia como una película intensa y entretenida, no juzgarla.
+Evita solo el gore gráfico o descripciones extremadamente detalladas de daño físico; enfócate en la tensión, el impacto emocional y las consecuencias.
 """
     
     system = f"{system_base}\n\n{system_extra}\n\n{style_instructions}" if system_extra else f"{system_base}\n\n{style_instructions}"
@@ -114,7 +117,18 @@ Regla clave: {frase_clave}
 - Empieza SIEMPRE con "Este eres tú." (el espectador es el protagonista).
 - ESPAÑOL NEUTRO OBLIGATORIO: usa tuteo (tú, tienes, sabes, eres, estás, puedes). NUNCA voseo (vos, tenés, sabés, sos, podés) ni regionalismos. El guion debe ser comprensible en toda Hispanoamérica y España.
 - Cuenta todo el recorrido: infancia, dificultades, rechazos, sacrificios, debut, fama, presión, decisiones difíciles, gloria, caídas. Escenas concretas (lugares, horarios, dinero, titulares), crudo y realista. Sin frases motivacionales ni intros promocionales ("este video te llevará…", "no te pierdas…"). No resumir momentos clave; narrarlos en escena.
-Narración en segunda persona (tú), concreta, sin poesía ni moralejas. Objetivo: ~{target_words} palabras. No uses encabezados ni listas; solo texto fluido.
+- Narración en segunda persona (tú), concreta, sin poesía ni moralejas. Objetivo: ~{target_words} palabras. No uses encabezados ni listas; solo texto fluido.
+
+RESTRICCIONES SOBRE EL TEMA (OBLIGATORIO):
+- El TEMA define QUIÉN eres, DÓNDE estás y EN QUÉ ÉPOCA vives. NO puedes cambiar eso.
+- Si el tema dice que eres X (por ejemplo "el jefe de una mafia en los 80", "un futbolista fracasado", "un cocinero de un cartel"), entonces:
+  * SIEMPRE eres ese mismo personaje (no puede aparecer otro protagonista con otra profesión o nombre ajeno al contexto).
+  * El entorno principal debe ser coherente con ese mundo (ciudad, época, tipo de trabajo, nivel de peligro, etc.). No inventes pueblos genéricos ni vidas que no tengan nada que ver con el tema.
+  * Los nombres, lugares y eventos deben encajar con ese universo concreto.
+- PROHIBIDO escribir historias genéricas que ignoren el tema (ej.: "En un pequeño pueblo, un joven llamado Lucas..." cuando el tema habla de un jefe de mafia, un jugador profesional, un narco, etc.).
+
+Tu trabajo es imaginar la vida COMPLETA del personaje que describe el tema, SIEMPRE dentro de ese rol, ese lugar y esa época.
+
 {longitud_guidance}
 
 Tema: {tema}"""

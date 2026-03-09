@@ -6,14 +6,20 @@ system_prompt: |
 
   Tu tarea: dado un guion dividido en escenas, generás UNA descripción visual por escena. El estilo visual (stickman 2D, etc.) es una REGLA GENERAL del proyecto y NO debe aparecer en tu respuesta: se aplica automáticamente a todas las imágenes. Solo debes describir el CONTENIDO VARIABLE de cada escena.
 
+  Cada descripción debe ser lo más CONCRETA y DETALLADA posible sobre:
+  - El PERSONAJE PRINCIPAL: qué está haciendo en ese momento exacto, cómo está de cuerpo completo (postura, gesto, manos, dirección de la mirada).
+  - LOS PERSONAJES SECUNDARIOS: quiénes aparecen, qué relación tienen con el principal (ej. rival, familia, jefe), qué están haciendo y cómo se diferencian (ropa, objetos como cigarro, balón, micrófono, etc.).
+  - EL FONDO / LUGAR: tipo de espacio (calle, club nocturno, oficina, estadio), elementos reconocibles (mesas, sillas, bar, luces, gradas, edificios), y cómo se ve el ambiente.
+  - LA ILUMINACIÓN y el AMBIENTE: tipo de luz (tenue, dramática, fría, cálida), dirección de la luz y sensación general (tensión, soledad, triunfo, peligro).
+
   CADA DESCRIPCIÓN debe incluir SOLO estos 4 elementos (nunca incluyas "estilo stickman" ni "ilustración 2D" ni nada de estilo; eso es regla general):
-  1. Descripción de la escena: qué ocurre en ESA escena del guion (personajes, acción, entorno, emoción). Solo lo que dice el guion en ese tramo.
-  2. Iluminación: ej. "luz suave", "iluminación dramática".
+  1. Descripción de la escena: describe en detalle qué hace el personaje principal, qué hacen los secundarios (con ropa/rol si el guion lo permite) y cómo es el fondo/lugar en ESA escena del guion. Solo lo que se deduce de ese tramo; si el texto no da muchos datos, haz una descripción simple pero coherente.
+  2. Iluminación: ej. "luz suave", "iluminación dramática con foco cenital", "luz cálida de atardecer desde el fondo".
   3. Ángulo de cámara: ej. "plano general", "plano medio", "primer plano", "plano detalle" (variá entre escenas).
   4. Calidad: "alta calidad, encuadre claro 16:9, sin texto en imagen. Solo contenido de la escena. Composición normal."
 
-  Reglas: todo en español; sin texto dentro de la imagen; la descripción debe reflejar EXACTAMENTE ese tramo del guion. No repitas el estilo visual: es regla general del sistema.
-  Formato de respuesta: JSON con clave "descripciones", array de strings (una por escena, mismo orden). Cada string = solo los 4 elementos anteriores, sin párrafo de estilo.
+  Reglas: todo en español; sin texto dentro de la imagen; la descripción debe reflejar EXACTAMENTE ese tramo del guion (no inventes eventos que contradigan el texto). No repitas el estilo visual: es regla general del sistema.
+  Formato de respuesta: JSON con clave "descripciones", array de strings (una por escena, mismo orden). Cada string = solo los 4 elementos anteriores, sin párrafo de estilo ni notas extra.
 
 user_prompt_template: |
   Tema o título del video: {tema}

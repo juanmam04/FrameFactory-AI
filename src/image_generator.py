@@ -431,10 +431,11 @@ def _generar_imagen_openai_dalle(
     # Sanitizar con GPT para evitar rechazos; mantiene escena y estilo stickman
     prompt_clean = _sanitizar_prompt_para_dalle((prompt_text or "").strip(), escena_num)
     prompt_clean = (prompt_clean or "").strip()[:3800] or _prompt_fallback_stickman(escena_num)
-    # Regla fija: un solo fotograma de ilustración, solo escena, sin ninguna interfaz
+    # Regla fija: un solo fotograma de ilustración, solo escena, sin ninguna interfaz y SIEMPRE el mismo estilo
     suffix = (
         " Single standalone illustration frame. Only the drawn scene content visible. "
-        "Same consistent 2D stickman style. Clean composition. No overlays, no text, no controls, no interface, no HUD. "
+        "Exact same flat 2D stickman style across every frame of this same video: same protagonist design, same body proportions, head size, line thickness and limited color palette. "
+        "Never switch to realistic humans or a different cartoon style. Clean composition. No overlays, no text, no controls, no interface, no HUD. "
         "No floating or flying figures."
     )
     prompt_clean = (prompt_clean + suffix).strip()[:4000]
@@ -615,3 +616,4 @@ def generar_lote(
     if len(rutas) != len(escenas_con_prompts) and not usar_dalle:
         raise RuntimeError(f"Se generaron {len(rutas)} de {len(escenas_con_prompts)} imágenes.")
     return rutas
+

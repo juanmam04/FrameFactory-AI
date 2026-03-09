@@ -1,7 +1,7 @@
 # FASE 1–2: Biblia visual
-# Estilo fijo: stickman (cuerpo blanco, contorno negro, cabeza redonda, ojos de punto). La escena y el personaje se adaptan al guion: narco, futbolista, lo que sea.
+# Estilo fijo: SIEMPRE el mismo stickman (cuerpo blanco, contorno negro del mismo grosor, cabeza redonda, ojos de punto, sin nariz realista). La escena y el personaje se adaptan al guion: narco, futbolista, lo que sea, pero el dibujo NO cambia de estilo entre imágenes.
 
-estilo_base: "stickman style: dark outline, round head, dot eyes, simple 2D cartoon, clean lines, simple flat colors limited palette. Character and setting must match the scene."
+estilo_base: "flat 2D stickman, pure black outline always same thickness, round head with dot eyes, white body, simple flat colors with limited palette. EXACT SAME protagonist design in every image (same body proportions, head size, line weight, color palette); only pose, facial expression and background change between scenes. Never switch to realistic humans or different cartoon styles; keep identical stickman drawing style across all frames."
 
 iluminacion:
   - "luz suave y direccional"
@@ -28,7 +28,7 @@ duracion_por_imagen_segundos: 5
 formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
 
 # Negative prompt fijo para evitar desvíos de estilo y elementos no deseados
-negative_prompt: "blurry, low quality, distorted, text, watermark, 3D, realistic, photo, cartoon color, messy lines, cluttered background, video player, playback bar, timeline, timecode, grid lines, editor interface, UI overlay, floating, flying, surreal"
+negative_prompt: "blurry, low quality, distorted, text, watermark, 3D, realistic, photo, realistic human, realistic face, detailed face, nose, lips, hair texture, skin shading, pixar, disney style, anime, semi-realistic, cartoon color gradients, messy lines, cluttered background, video player, playback bar, timeline, timecode, grid lines, editor interface, UI overlay, floating, flying, surreal"
 
 # Regla para TODAS las imágenes: un solo fotograma de ilustración, solo contenido de escena
 prohibido_en_imagen: "Un solo fotograma de ilustración. Solo el contenido dibujado de la escena visible. Composición limpia, sin overlays, sin texto, sin controles ni interfaz. Sin figuras flotando o volando."

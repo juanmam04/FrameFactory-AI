@@ -14,10 +14,13 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes
-from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto, _usar_openai_imagenes
+from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto, _usar_openai_imagenes, generar_lote, OUTPUT_IMAGES
 from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
-from src.script_generator import guardar_guion
+from src.script_generator import guardar_guion, generar_guion
+from src.scene_splitter import dividir_en_escenas
+from src.prompt_builder import prompts_para_escenas
+from src.regeneration import guardar_prompts_por_escena
 import yaml
 
 load_dotenv(BASE / ".env")
@@ -57,8 +60,8 @@ def mensaje_credenciales():
 
 def generar_descripcion_breve_desde_titulo(titulo: str) -> str:
     """
-    Devuelve una descripción corta (1–3 frases) para el video usando IA.
-    Describe qué ES el video (formato POV, vida completa), sin lenguaje promocional.
+    Devuelve una descripción tipo "trailer" (3–6 frases) para el video usando IA.
+    Debe adelantar el tipo de vida/historia que se verá, sin volverse un copy promocional vacío.
     """
     titulo = (titulo or "").strip()
     if not titulo:
@@ -73,16 +76,19 @@ def generar_descripcion_breve_desde_titulo(titulo: str) -> str:
 
         client = OpenAI(api_key=api_key)
         system_prompt = (
-            "Escribís descripciones breves (1–3 frases) en español para videos POV. "
-            "La descripción debe decir QUÉ ES el video: formato (POV, segunda persona, vida completa del personaje), no promocionarlo. "
-            "PROHIBIDO usar frases como: 'Sumérgete en...', 'No te lo pierdas', 'Este video te llevará...', 'vivirás la adrenalina...'. "
-            "Sí decir de forma neutra: que es una historia en segunda persona donde el espectador vive la vida completa del personaje (infancia, obstáculos, gloria, caídas). "
-            "Sin emojis, sin hashtags, sin listas."
+            "Escribís descripciones tipo TRÁILER en español para videos POV. "
+            "La descripción debe contar, en pocas líneas, qué tipo de vida/historia va a vivir el espectador: origen, conflicto principal, ambiente, tono emocional y posibles consecuencias. "
+            "Debe leerse como la sinopsis intensa de una película, no como un copy de marketing ni un resumen frío de Wikipedia. "
+            "PROHIBIDO usar frases vacías como: 'Sumérgete en...', 'No te lo pierdas', 'Este video te llevará...', 'vivirás la adrenalina...'. "
+            "En su lugar, describe directamente la situación: qué tipo de persona es, en qué mundo se mueve, qué decisiones extremas enfrenta y qué está en juego. "
+            "Siempre en ESPAÑOL NEUTRO, sin emojis, sin hashtags, sin listas y sin dirigirte al espectador con 'suscríbete' o similares."
         )
         user_prompt = (
             f"Título del video: {titulo}\n\n"
-            "Escribí 1–3 frases que describan qué es el video: formato POV, vida completa del personaje, narración en segunda persona. "
-            "Tono neutro e informativo. No promociones ni invites a verlo; solo describe el contenido."
+            "Escribí una descripción tipo tráiler de 3 a 6 frases seguidas (un solo párrafo). "
+            "Debe dejar claro que el video es un POV en segunda persona donde el espectador vive la vida COMPLETA del personaje del título: infancia, ascenso, momentos de gloria, caídas y consecuencias finales. "
+            "Incluí detalles del entorno (época, lugar, mundo en el que se mueve), del tipo de conflictos que va a enfrentar (familia, dinero, poder, culpa, cárcel, soledad, etc.) y del tono general (crudo, tenso, esperanzador, trágico, etc.). "
+            "No invites a 'ver el video' ni escribas llamados a la acción; solo cuenta, como si fuera la contraportada de una película muy intensa, qué clase de viaje va a vivir el espectador."
         )
 
         response = client.chat.completions.create(
@@ -91,8 +97,8 @@ def generar_descripcion_breve_desde_titulo(titulo: str) -> str:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            max_tokens=200,
-            temperature=0.4,
+            max_tokens=400,
+            temperature=0.6,
         )
         desc = (response.choices[0].message.content or "").strip()
         return desc
@@ -131,6 +137,73 @@ def iniciar_comfyui_background() -> tuple[bool, str | None]:
         return False, "No se encontró PowerShell. Iniciá ComfyUI manualmente en una terminal."
     except Exception as e:
         return False, str(e)
+
+
+def preparar_imagenes_para_revision(
+    tema: str,
+    nombre_proyecto: str | None,
+    target_words: int,
+    min_words: int | None,
+    max_words: int | None,
+    plantilla: str,
+    segundos_por_imagen: float,
+    width: int,
+    height: int,
+    on_progress_imagenes=None,
+) -> tuple[str, Path, list[Path]]:
+    """
+    Genera guion, escenas, prompts e IMÁGENES, pero no voz ni video.
+    Devuelve (nombre_proyecto_sanitizado, ruta_guion, lista_imagenes).
+    """
+    from src.script_generator import count_words  # import local para evitar ciclos raros
+
+    seg_por_img = segundos_por_imagen or 5.0
+
+    guion_texto, word_count, estimated_minutes = generar_guion(
+        tema,
+        target_words=target_words,
+        min_words=min_words,
+        max_words=max_words,
+        plantilla=plantilla,
+        segundos_por_imagen=seg_por_img,
+    )
+    proy = nombre_proyecto or tema[:30].replace(" ", "_")
+    proy = sanitizar_nombre_proyecto(proy)
+    guardar_guion(guion_texto, proy)
+    guion_path = BASE / "output" / "guiones" / f"{proy}.txt"
+
+    escenas = dividir_en_escenas(guion_texto, segundos_por_imagen=seg_por_img)
+    tema_para_desc = tema or proy
+    escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_para_desc, usar_descripciones_ia=True)
+    guardar_prompts_por_escena(escenas_con_prompts, proy)
+
+    # Generar imágenes (igual que pipeline.run, pero solo esta fase)
+    n_imgs = len(escenas_con_prompts)
+    print(f"🖼️ [Revisión] Generando {n_imgs} imágenes (puede tardar varios minutos)...")
+    lista_imagenes = generar_lote(
+        escenas_con_prompts,
+        subcarpeta=proy,
+        width=width,
+        height=height,
+        on_progress=on_progress_imagenes,
+    )
+    print(f"✅ [Revisión] Imágenes generadas: {len(lista_imagenes)}")
+
+    # Info básica por si hace falta mostrar algo antes del video
+    texto_narracion = " ".join(e.texto for e in escenas)
+    palabras_narracion = len(texto_narracion.split())
+    info_dict = {
+        "word_count": word_count or count_words(guion_texto),
+        "estimated_minutes": estimated_minutes,
+        "palabras_narracion": palabras_narracion,
+        "target_words": target_words,
+    }
+    # Guardar info mínima en session_state
+    st.session_state.word_count = info_dict["word_count"]
+    st.session_state.estimated_minutes = info_dict["estimated_minutes"]
+    st.session_state.target_words = info_dict["target_words"]
+
+    return proy, guion_path, lista_imagenes
 
 
 def verificar_ffmpeg():
@@ -459,6 +532,13 @@ with st.expander("⚙️ Opciones avanzadas"):
         key="skip_thumb_todo"
     )
 
+    revisar_imagenes_antes_video = st.checkbox(
+        "Revisar y aprobar imágenes antes de montar el video",
+        value=True,
+        help="Si está activo, primero se generan las imágenes y podrás aceptarlas/regenerarlas antes de crear el video final.",
+        key="revisar_imagenes_todo",
+    )
+
 if not skip_imagenes:
     usar_dalle = imagen_ia == "OpenAI DALL-E"
     comfy_ok = _comfyui_disponible()
@@ -493,10 +573,7 @@ if generar:
     elif not skip_imagenes and imagen_ia != "OpenAI DALL-E" and not _comfyui_disponible():
         st.error("ComfyUI no está corriendo. Inicialo en el puerto 8188 o elegí «OpenAI DALL-E» en Opciones avanzadas.")
     else:
-        mensaje_spinner = "Generando… guion → escenas"
-        if not skip_imagenes:
-            mensaje_spinner += " → imágenes"
-        mensaje_spinner += " → voz → video → metadata YouTube"
+        revisar_imagenes_antes_video = st.session_state.get("revisar_imagenes_todo", False)
         # Barra de progreso para imágenes (así se ve que avanza y no está trancado)
         progress_bar = st.progress(0) if not skip_imagenes else None
         progress_status = st.empty() if not skip_imagenes else None
@@ -507,63 +584,91 @@ if generar:
             if progress_status is not None:
                 progress_status.caption(f"Generando imagen **{current}** de **{total}**… (cada una puede tardar 20–60 s)")
 
-        with st.spinner(mensaje_spinner):
-            try:
-                # Aplicar elección de IA para imágenes (el pipeline lee USE_OPENAI_IMAGES)
-                os.environ["USE_OPENAI_IMAGES"] = "true" if (not skip_imagenes and imagen_ia == "OpenAI DALL-E") else "false"
-                video_path, metadata_path, thumbnail_path, info_dict = run(
-                    tema=tema.strip(),
-                    target_words=target_words,
-                    min_words=min_words,
-                    max_words=max_words,
-                    plantilla="explicativo",
-                    nombre_proyecto=(nombre_proyecto or "").strip() or None,
-                    skip_imagenes=skip_imagenes,
-                    skip_voz=False,
-                    musica_fondo=None,
-                    generar_metadata=True,
-                    velocidad_voz=velocidad_voz,
-                    segundos_por_imagen=segundos_por_imagen if not skip_imagenes else None,
-                    width=video_width,
-                    height=video_height,
-                    skip_miniatura=skip_miniatura,
-                    on_progress_imagenes=on_progress_imagenes if not skip_imagenes else None,
-                )
-                clear_result()
-                st.session_state.video_path = video_path
-                st.session_state.video_bytes = video_path.read_bytes()
-                st.session_state.video_name = video_path.name
-                st.session_state.word_count = info_dict.get("word_count", 0)
-                st.session_state.estimated_minutes = info_dict.get("estimated_minutes", 0.0)
-                st.session_state.estimated_minutes_ajustado = info_dict.get("estimated_minutes_ajustado", 0.0)
-                st.session_state.target_words = info_dict.get("target_words", target_words)
-                st.session_state.duracion_real_segundos = info_dict.get("duracion_real_segundos", None)
-                st.session_state.duracion_audio_segundos = info_dict.get("duracion_audio_segundos", None)
-                st.session_state.velocidad_voz_usada = velocidad_voz
-                st.session_state.palabras_narracion = info_dict.get("palabras_narracion", st.session_state.get("word_count", 0))
-                
-                # Guardar guion en session state para mostrarlo (desde el archivo guardado, completo)
-                nombre_proy = (nombre_proyecto or tema[:30].replace(" ", "_")).strip() or None
-                nombre_proy = sanitizar_nombre_proyecto(nombre_proy) if nombre_proy else sanitizar_nombre_proyecto(tema[:30].replace(" ", "_"))
-                guion_path = BASE / "output" / "guiones" / f"{nombre_proy}.txt"
-                if guion_path.exists():
-                    guion_completo = guion_path.read_text(encoding="utf-8")
-                    st.session_state.guion_completo = guion_completo
-                    # Verificar que el guion no esté cortado
-                    if len(guion_completo.strip()) < 100:
-                        st.warning("⚠️ El guion guardado parece muy corto. Puede estar incompleto.")
-                else:
-                    st.warning(f"⚠️ No se encontró el archivo de guion en: {guion_path}")
-                
-                if metadata_path and metadata_path.exists():
-                    st.session_state.metadata_path = metadata_path
-                    st.session_state.metadata_text = metadata_path.read_text(encoding="utf-8")
-                if thumbnail_path and thumbnail_path.exists():
-                    st.session_state.thumbnail_path = thumbnail_path
-                    st.session_state.thumbnail_bytes = thumbnail_path.read_bytes()
-                st.rerun()
-            except Exception as e:
-                st.exception(e)
+        if not skip_imagenes and revisar_imagenes_antes_video:
+            mensaje_spinner = "Generando… guion → escenas → imágenes para revisión"
+            with st.spinner(mensaje_spinner):
+                try:
+                    os.environ["USE_OPENAI_IMAGES"] = "true" if imagen_ia == "OpenAI DALL-E" else "false"
+                    proy, guion_path, lista_imagenes = preparar_imagenes_para_revision(
+                        tema=tema.strip(),
+                        nombre_proyecto=(nombre_proyecto or "").strip() or None,
+                        target_words=target_words,
+                        min_words=min_words,
+                        max_words=max_words,
+                        plantilla="explicativo",
+                        segundos_por_imagen=segundos_por_imagen,
+                        width=video_width,
+                        height=video_height,
+                        on_progress_imagenes=on_progress_imagenes,
+                    )
+                    st.session_state.modo_revision_imagenes = True
+                    st.session_state.proyecto_revision = proy
+                    st.session_state.guion_path_revision = str(guion_path)
+                    st.success("Imágenes generadas para revisión. Abrí la pestaña «🎞️ Escenas por imagen» para aceptarlas o regenerarlas y luego montar el video.")
+                except Exception as e:
+                    st.exception(e)
+        else:
+            mensaje_spinner = "Generando… guion → escenas"
+            if not skip_imagenes:
+                mensaje_spinner += " → imágenes"
+            mensaje_spinner += " → voz → video → metadata YouTube"
+            with st.spinner(mensaje_spinner):
+                try:
+                    # Aplicar elección de IA para imágenes (el pipeline lee USE_OPENAI_IMAGES)
+                    os.environ["USE_OPENAI_IMAGES"] = "true" if (not skip_imagenes and imagen_ia == "OpenAI DALL-E") else "false"
+                    video_path, metadata_path, thumbnail_path, info_dict = run(
+                        tema=tema.strip(),
+                        target_words=target_words,
+                        min_words=min_words,
+                        max_words=max_words,
+                        plantilla="explicativo",
+                        nombre_proyecto=(nombre_proyecto or "").strip() or None,
+                        skip_imagenes=skip_imagenes,
+                        skip_voz=False,
+                        musica_fondo=None,
+                        generar_metadata=True,
+                        velocidad_voz=velocidad_voz,
+                        segundos_por_imagen=segundos_por_imagen if not skip_imagenes else None,
+                        width=video_width,
+                        height=video_height,
+                        skip_miniatura=skip_miniatura,
+                        on_progress_imagenes=on_progress_imagenes if not skip_imagenes else None,
+                    )
+                    clear_result()
+                    st.session_state.video_path = video_path
+                    st.session_state.video_bytes = video_path.read_bytes()
+                    st.session_state.video_name = video_path.name
+                    st.session_state.word_count = info_dict.get("word_count", 0)
+                    st.session_state.estimated_minutes = info_dict.get("estimated_minutes", 0.0)
+                    st.session_state.estimated_minutes_ajustado = info_dict.get("estimated_minutes_ajustado", 0.0)
+                    st.session_state.target_words = info_dict.get("target_words", target_words)
+                    st.session_state.duracion_real_segundos = info_dict.get("duracion_real_segundos", None)
+                    st.session_state.duracion_audio_segundos = info_dict.get("duracion_audio_segundos", None)
+                    st.session_state.velocidad_voz_usada = velocidad_voz
+                    st.session_state.palabras_narracion = info_dict.get("palabras_narracion", st.session_state.get("word_count", 0))
+                    
+                    # Guardar guion en session state para mostrarlo (desde el archivo guardado, completo)
+                    nombre_proy = (nombre_proyecto or tema[:30].replace(" ", "_")).strip() or None
+                    nombre_proy = sanitizar_nombre_proyecto(nombre_proy) if nombre_proy else sanitizar_nombre_proyecto(tema[:30].replace(" ", "_"))
+                    guion_path = BASE / "output" / "guiones" / f"{nombre_proy}.txt"
+                    if guion_path.exists():
+                        guion_completo = guion_path.read_text(encoding="utf-8")
+                        st.session_state.guion_completo = guion_completo
+                        # Verificar que el guion no esté cortado
+                        if len(guion_completo.strip()) < 100:
+                            st.warning("⚠️ El guion guardado parece muy corto. Puede estar incompleto.")
+                    else:
+                        st.warning(f"⚠️ No se encontró el archivo de guion en: {guion_path}")
+                    
+                    if metadata_path and metadata_path.exists():
+                        st.session_state.metadata_path = metadata_path
+                        st.session_state.metadata_text = metadata_path.read_text(encoding="utf-8")
+                    if thumbnail_path and thumbnail_path.exists():
+                        st.session_state.thumbnail_path = thumbnail_path
+                        st.session_state.thumbnail_bytes = thumbnail_path.read_bytes()
+                    st.rerun()
+                except Exception as e:
+                    st.exception(e)
 
 # ─── Resultado: video + metadata ──────────────────────────────────────────────
 if st.session_state.video_path and st.session_state.video_bytes:
@@ -659,17 +764,68 @@ if st.session_state.video_path and st.session_state.video_bytes:
             st.info("El guion no está disponible en la sesión actual.")
     
     with tabs_archivos[1]:  # Escenas por imagen
-        nombre_proy_escenas = st.session_state.video_name.replace('.mp4', '')
-        nombre_proy_sanit_escenas = sanitizar_nombre_proyecto(nombre_proy_escenas)
+        modo_revision = st.session_state.get("modo_revision_imagenes", False)
+        if modo_revision and st.session_state.get("proyecto_revision"):
+            nombre_proy_sanit_escenas = sanitizar_nombre_proyecto(st.session_state.proyecto_revision)
+        else:
+            nombre_proy_escenas = st.session_state.video_name.replace('.mp4', '')
+            nombre_proy_sanit_escenas = sanitizar_nombre_proyecto(nombre_proy_escenas)
         imagenes_dir_escenas = BASE / "output" / "imagenes" / nombre_proy_sanit_escenas
         try:
-            from src.regeneration import cargar_prompts
+            from src.regeneration import cargar_prompts, regenerar_escenas
             escenas_con_prompts = cargar_prompts(nombre_proy_sanit_escenas)
         except Exception:
             escenas_con_prompts = []
         if escenas_con_prompts and imagenes_dir_escenas.exists():
             st.markdown("**Escena del guion usada para cada imagen:**")
-            st.caption("Cada imagen del video se generó a partir del texto de la escena (y su descripción visual).")
+            if modo_revision:
+                st.caption("Revisá cada imagen antes de montar el video. Podés regenerar escenas individuales.")
+                total = len(escenas_con_prompts)
+                aceptadas = 0
+                for escena, _ in escenas_con_prompts:
+                    key_estado = f"estado_escena_{nombre_proy_sanit_escenas}_{escena.numero}"
+                    if st.session_state.get(key_estado) == "aceptada":
+                        aceptadas += 1
+                st.caption(f"Escenas aceptadas: **{aceptadas} / {total}**")
+                if st.button("🎬 Generar video con imágenes aceptadas", key="btn_video_desde_revision"):
+                    if aceptadas < total:
+                        st.error("Aceptá todas las escenas antes de generar el video.")
+                    else:
+                        try:
+                            from src.pipeline import run as run_pipeline
+                            guion_path = Path(st.session_state.get("guion_path_revision", ""))
+                            if not guion_path.exists():
+                                st.error("No se encontró el guion para este proyecto. Volvé a generar las imágenes.")
+                            else:
+                                video_path, metadata_path, thumbnail_path, info_dict = run_pipeline(
+                                    tema=None,
+                                    guion_path=guion_path,
+                                    target_words=st.session_state.get("target_words_todo", 280),
+                                    min_words=st.session_state.get("min_words_todo"),
+                                    max_words=st.session_state.get("max_words_todo"),
+                                    plantilla="explicativo",
+                                    nombre_proyecto=st.session_state.get("proyecto_revision"),
+                                    skip_imagenes=True,
+                                    skip_voz=False,
+                                    musica_fondo=None,
+                                    generar_metadata=True,
+                                    velocidad_voz=st.session_state.get("velocidad_voz_todo", 1.2),
+                                    segundos_por_imagen=st.session_state.get("seg_por_img_todo", 5.0),
+                                    width=video_width,
+                                    height=video_height,
+                                    skip_miniatura=st.session_state.get("skip_thumb_todo", False),
+                                )
+                                clear_result()
+                                st.session_state.video_path = video_path
+                                st.session_state.video_bytes = video_path.read_bytes()
+                                st.session_state.video_name = video_path.name
+                                st.session_state.modo_revision_imagenes = False
+                                st.success("Video generado con las imágenes aprobadas.")
+                                st.experimental_rerun()
+                        except Exception as e:
+                            st.exception(e)
+            else:
+                st.caption("Cada imagen del video se generó a partir del texto de la escena (y su descripción visual).")
             for escena, prompt in escenas_con_prompts:
                 img_path = imagenes_dir_escenas / f"escena_{escena.numero:04d}.png"
                 with st.expander(f"Escena {escena.numero} — {escena.duracion_segundos:.0f}s", expanded=(escena.numero <= 3)):
@@ -677,6 +833,23 @@ if st.session_state.video_path and st.session_state.video_bytes:
                         st.image(str(img_path), caption=f"Imagen escena {escena.numero}", use_container_width=True)
                     else:
                         st.caption(f"🖼️ Imagen no encontrada: `{img_path.name}`")
+                    if modo_revision:
+                        estado_key = f"estado_escena_{nombre_proy_sanit_escenas}_{escena.numero}"
+                        estado_actual = st.session_state.get(estado_key, "pendiente")
+                        st.caption(f"Estado: **{estado_actual}**")
+                        cols_btn = st.columns([1, 1])
+                        with cols_btn[0]:
+                            if st.button("✅ Aceptar", key=f"aceptar_escena_{nombre_proy_sanit_escenas}_{escena.numero}"):
+                                st.session_state[estado_key] = "aceptada"
+                                st.experimental_rerun()
+                        with cols_btn[1]:
+                            if st.button("♻️ Regenerar", key=f"regen_escena_{nombre_proy_sanit_escenas}_{escena.numero}"):
+                                try:
+                                    regenerar_escenas([escena.numero], proyecto=nombre_proy_sanit_escenas, carpeta_imagenes=nombre_proy_sanit_escenas)
+                                    st.session_state[estado_key] = "pendiente"
+                                    st.experimental_rerun()
+                                except Exception as e:
+                                    st.error(f"No se pudo regenerar la escena {escena.numero}: {e}")
                     st.markdown("**Texto de la escena (guion):**")
                     st.text_area(
                         f"Escena {escena.numero}",
