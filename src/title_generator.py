@@ -9,11 +9,13 @@ def sugerir_titulos_virales(
     tema: str,
     guion_resumen: str | None = None,
     notas_creador: str | None = None,
+    titulo_actual: str | None = None,
 ) -> List[str]:
-    """Devuelve una lista de títulos propuestos (1 por línea en la respuesta de la IA)."""
+    """Devuelve una lista de títulos propuestos (ideas de contenido diversas, no similares al título actual)."""
     tema = (tema or "").strip()
     guion_resumen = (guion_resumen or "").strip()
     notas_creador = (notas_creador or "").strip()
+    titulo_actual = (titulo_actual or "").strip()
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -21,7 +23,7 @@ def sugerir_titulos_virales(
 
     # Si no hay tema, usar un contexto genérico para brainstorming
     if not tema:
-        tema = "video POV cinematográfico sobre la vida intensa de un personaje anónimo (dinero, fracaso, éxito, streaming, decisiones duras)"
+        tema = "ideas de video POV diversas (varias vidas y roles distintos)"
 
     instrucciones = get_instrucciones_titulo()
     system_prompt = instrucciones.get("system_prompt", "").strip()
@@ -29,10 +31,14 @@ def sugerir_titulos_virales(
     if not user_template:
         return []
 
+    # Si no hay título actual, indicarlo para que la IA no repita un concepto que el usuario ya tiene
+    titulo_actual_para_prompt = titulo_actual if titulo_actual else "(ninguno — generá 10 ideas de categorías distintas)"
+
     user_prompt = user_template.format(
         tema=tema,
         guion_resumen=guion_resumen or tema,
         notas_creador=notas_creador or "",
+        titulo_actual=titulo_actual_para_prompt,
     )
 
     try:
@@ -45,7 +51,7 @@ def sugerir_titulos_virales(
                 {"role": "system", "content": system_prompt or "Eres un generador de títulos para videos."},
                 {"role": "user", "content": user_prompt},
             ],
-            max_tokens=300,
+            max_tokens=450,
             temperature=0.9,
         )
         texto = (r.choices[0].message.content or "").strip()

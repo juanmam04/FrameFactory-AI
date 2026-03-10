@@ -19,7 +19,7 @@ from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
 from src.script_generator import guardar_guion, generar_guion
 from src.scene_splitter import dividir_en_escenas, Escena
-from src.prompt_builder import prompts_para_escenas, prompts_para_beats
+from src.prompt_builder import prompts_para_escenas, prompts_para_beats, emotion_to_expression_key
 from src.regeneration import guardar_prompts_por_escena
 from src.visual_beats import generar_beats_para_escenas, guardar_beats
 from src.title_generator import sugerir_titulos_virales
@@ -181,7 +181,7 @@ def preparar_imagenes_para_revision(
     beats = generar_beats_para_escenas(escenas, tema=tema_para_desc)
     guardar_beats(beats, proy)
     beats_con_prompts = prompts_para_beats(beats)
-    escenas_con_prompts: list[tuple[Escena, str]] = [
+    escenas_con_prompts: list[tuple[Escena, str, str | None]] = [
         (
             Escena(
                 numero=beat.beat_id,
@@ -189,6 +189,7 @@ def preparar_imagenes_para_revision(
                 duracion_segundos=seg_por_img,
             ),
             prompt,
+            emotion_to_expression_key(beat.emotion),
         )
         for beat, prompt in beats_con_prompts
     ]
@@ -368,6 +369,7 @@ with col_t2:
             tema=contexto_tema,
             guion_resumen="",
             notas_creador="Títulos tipo POV que puedan ser virales.",
+            titulo_actual=titulo_video or "",
         )
         if titulos:
             # Mostrar en un selectbox emergente usando session_state
@@ -438,7 +440,7 @@ with col1:
     target_words = st.number_input(
         "Palabras objetivo",
         min_value=80,
-        max_value=3000,
+        max_value=5000,
         value=280,
         step=10,
         help="Número objetivo de palabras para el guion. La historia será completa pero ajustada a este límite.",
@@ -487,7 +489,7 @@ with col3:
         min_words = st.number_input(
             "Mín palabras",
             min_value=80,
-            max_value=3000,
+            max_value=5000,
             value=int(target_words * 0.8),
             step=10,
             help="Mínimo de palabras aceptable (por defecto 80% del objetivo)",
@@ -496,7 +498,7 @@ with col3:
         max_words = st.number_input(
             "Máx palabras",
             min_value=80,
-            max_value=3000,
+            max_value=5000,
             value=int(target_words * 1.2),
             step=10,
             help="Máximo de palabras aceptable (por defecto 120% del objetivo)",
@@ -648,6 +650,8 @@ with col1:
 
 if generar:
     bloqueado = False
+    # Limpiar el video anterior para que no siga viéndose en pantalla mientras se genera el nuevo
+    clear_result()
     if not tema or not tema.strip():
         st.error("Escribí un tema o idea.")
         bloqueado = True
@@ -721,7 +725,6 @@ if generar:
                         usar_subtitulos=usar_subtitulos,
                         estilo_subtitulos=estilo_subtitulos,
                     )
-                    clear_result()
                     st.session_state.video_path = video_path
                     st.session_state.video_bytes = video_path.read_bytes()
                     st.session_state.video_name = video_path.name
@@ -881,15 +884,22 @@ if tiene_video or es_revision_imagenes:
                 st.caption("Revisá cada imagen antes de montar el video. Podés regenerar escenas individuales.")
                 total = len(escenas_con_prompts)
                 aceptadas = 0
-                for escena, _ in escenas_con_prompts:
+                for item in escenas_con_prompts:
+                    escena = item[0]
                     key_estado = f"estado_escena_{nombre_proy_sanit_escenas}_{escena.numero}"
                     if st.session_state.get(key_estado) == "aceptada":
                         aceptadas += 1
                 st.caption(f"Escenas aceptadas: **{aceptadas} / {total}**")
+                if st.button("✅ Aceptar todas las imágenes", key="btn_aceptar_todas"):
+                    for item in escenas_con_prompts:
+                        escena = item[0]
+                        st.session_state[f"estado_escena_{nombre_proy_sanit_escenas}_{escena.numero}"] = "aceptada"
+                    st.rerun()
                 if st.button("🎬 Generar video con imágenes aceptadas", key="btn_video_desde_revision"):
                     if aceptadas < total:
                         st.error("Aceptá todas las escenas antes de generar el video.")
                     else:
+                        clear_result()
                         try:
                             from src.pipeline import run as run_pipeline
                             guion_path = Path(st.session_state.get("guion_path_revision", ""))
@@ -925,7 +935,8 @@ if tiene_video or es_revision_imagenes:
                             st.exception(e)
             else:
                 st.caption("Cada imagen del video se generó a partir del texto de la escena (y su descripción visual).")
-            for escena, prompt in escenas_con_prompts:
+            for item in escenas_con_prompts:
+                escena, prompt = item[0], item[1]
                 img_path = imagenes_dir_escenas / f"escena_{escena.numero:04d}.png"
                 with st.expander(f"Escena {escena.numero} — {escena.duracion_segundos:.0f}s", expanded=(escena.numero <= 3)):
                     if img_path.exists():
@@ -1333,7 +1344,7 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz �
         modo = st.radio("Modo", ["Por tema", "Pegar guion"], horizontal=True, label_visibility="collapsed", key="ma_modo")
         if modo == "Por tema":
             t = st.text_input("Tema", key="ma_tema")
-            tw = st.number_input("Palabras objetivo", 80, 3000, 280, 10, key="ma_target_words")
+            tw = st.number_input("Palabras objetivo", 80, 5000, 280, 10, key="ma_target_words")
             if st.button("Generar guion", key="ma_btn_guion") and t:
                 with st.spinner("Generando..."):
                     texto, word_count, estimated_minutes = generar_guion(t.strip(), target_words=tw)
@@ -1401,7 +1412,7 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz �
                 beats = generar_beats_para_escenas(escenas, tema=tema_ctx)
                 guardar_beats(beats, nombre)
                 beats_con_prompts = prompts_para_beats(beats)
-                escenas_con_prompts: list[tuple[EscenaMA, str]] = [
+                escenas_con_prompts: list[tuple[EscenaMA, str, str | None]] = [
                     (
                         EscenaMA(
                             numero=beat.beat_id,
@@ -1409,6 +1420,7 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz �
                             duracion_segundos=5.0,
                         ),
                         prompt,
+                        emotion_to_expression_key(beat.emotion),
                     )
                     for beat, prompt in beats_con_prompts
                 ]

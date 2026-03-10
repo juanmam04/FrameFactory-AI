@@ -110,21 +110,21 @@ def _refinar_prompt_con_feedback(prompt_original: str, feedback: str) -> str:
 
 
 def guardar_prompts_por_escena(
-    escenas_con_prompts: list[tuple[Escena, str]],
+    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]],
     proyecto: str,
 ) -> Path:
-    """Guarda los prompts originales por escena para poder regenerar después."""
+    """Guarda los prompts originales por escena para poder regenerar después. Acepta (Escena, prompt) o (Escena, prompt, expression_key)."""
     META_DIR.mkdir(parents=True, exist_ok=True)
     meta = {
         "proyecto": proyecto,
         "escenas": [
             {
-                "numero": e.numero,
-                "texto": e.texto,
-                "duracion_segundos": e.duracion_segundos,
-                "prompt": p,
+                "numero": item[0].numero,
+                "texto": item[0].texto,
+                "duracion_segundos": item[0].duracion_segundos,
+                "prompt": item[1],
             }
-            for e, p in escenas_con_prompts
+            for item in escenas_con_prompts
         ],
     }
     path = META_DIR / f"{proyecto}_prompts.json"

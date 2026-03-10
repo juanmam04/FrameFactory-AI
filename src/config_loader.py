@@ -100,19 +100,7 @@ def get_character_references() -> dict:
 
 
 def get_preferencias_aprendidas(max_entradas: int = 25) -> str:
-    """Preferencias guardadas cada vez que el usuario regenera con feedback (entrenamiento permanente).
-    Se usa al construir prompts nuevos para que ya incluyan lo que el usuario pidió antes."""
-    if not FEEDBACK_APRENDIZAJE_PATH.exists():
-        return ""
-    try:
-        data = json.loads(FEEDBACK_APRENDIZAJE_PATH.read_text(encoding="utf-8"))
-        if not isinstance(data, list):
-            return ""
-        recientes = data[-max_entradas:] if len(data) > max_entradas else data
-        preferencias = [e.get("feedback_usuario", "").strip() for e in recientes if e.get("feedback_usuario")]
-        preferencias = list(dict.fromkeys(preferencias))[-15:]
-        if not preferencias:
-            return ""
-        return "Preferencias del usuario (aplicar): " + "; ".join(preferencias)
-    except Exception:
-        return ""
+    """Preferencias guardadas al regenerar con feedback. Desactivado: no se inyectan en prompts de imagen
+    para evitar contradicciones y errores (anatomía, estilo). El feedback se sigue guardando para la regeneración
+    individual, pero no se reutiliza en generaciones nuevas."""
+    return ""

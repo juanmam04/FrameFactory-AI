@@ -19,6 +19,66 @@ def verificar_ffprobe() -> bool:
     return shutil.which("ffprobe") is not None
 
 
+def _montar_video_con_zoom_y_transiciones(
+    lista_imagenes: list[Path],
+    seg: float,
+    width: int,
+    height: int,
+    video_solo: Path,
+    fade_segundos: float = 0.25,
+    zoom_final: float = 1.06,
+) -> None:
+    """
+    Genera el video de imágenes con zoom suave (Ken Burns) y fundidos cortos entre escenas.
+    Una sola llamada a FFmpeg: N entradas (una por imagen) + filter_complex con zoompan + fade + concat.
+    """
+    imagenes = [p for p in lista_imagenes if p.exists()]
+    if not imagenes:
+        return
+    fps = 24
+    frames_clip = max(1, int(seg * fps))
+    # Zoom muy sutil: de 1.0 a zoom_final en frames_clip frames. Incremento por frame:
+    zoom_inc = (zoom_final - 1.0) / frames_clip if frames_clip else 0
+    # Fade in en frames (fade_segundos). OJO: evitamos fade out completo para no dejar el último clip totalmente negro,
+    # porque luego el pipeline puede extender el video repitiendo el último tramo para igualar la duración del audio.
+    # Si el último frame termina 100% negro, la extensión produce varios segundos/minutos de pantalla negra.
+    fade_frames = max(1, int(fade_segundos * fps))
+
+    # Rutas con barras normales para filter_complex (evitar problemas en Windows)
+    def path_ff(v: Path) -> str:
+        return str(v.resolve()).replace("\\", "/")
+
+    # Construir filter_complex: [0:v] scale,crop,zoompan,fade in,fade out [v0]; [1:v] ... [v1]; ... [v0][v1]... concat
+    partes = []
+    for i in range(len(imagenes)):
+        # zoompan: z='min(zoom+inc,zoom_final)':d=frames_clip:s=WxH
+        # fade=t=in:st=0:d=fade_segundos
+        scale_crop = f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height}"
+        zp = f"zoompan=z='min(zoom+{zoom_inc:.6f},{zoom_final})':d={frames_clip}:s={width}x{height}:fps={fps}"
+        fi = f"fade=t=in:st=0:d={fade_segundos}"
+        # IMPORTANTÍSIMO: NO aplicamos fade out a negro aquí. Si el último clip termina en negro
+        # y luego extendemos el video (stream_loop) para igualar la duración del audio,
+        # el usuario ve muchos segundos de pantalla negra. Mejor dejar la última imagen visible.
+        partes.append(f"[{i}:v]{scale_crop},{zp},{fi}[v{i}]")
+    concat_inputs = "".join(f"[v{i}]" for i in range(len(imagenes)))
+    concat_n = len(imagenes)
+    filter_complex = ";".join(partes) + f";{concat_inputs}concat=n={concat_n}:v=1:a=0[out]"
+
+    cmd = ["ffmpeg", "-y"]
+    for p in imagenes:
+        cmd.extend(["-loop", "1", "-t", "1", "-i", path_ff(p)])
+    cmd.extend([
+        "-filter_complex", filter_complex,
+        "-map", "[out]",
+        "-r", str(fps),
+        "-pix_fmt", "yuv420p",
+        str(video_solo),
+    ])
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"FFmpeg (zoom+transiciones) falló: {result.stderr[:500]}")
+
+
 def montar_video(
     lista_imagenes: list[Path],
     audio_narracion: Path | None,
@@ -30,10 +90,12 @@ def montar_video(
     duracion_maxima_segundos: float | None = None,
     subtitles_path: Path | None = None,
     subtitle_style: str | None = None,
+    transiciones_suaves: bool = True,
 ) -> Path:
     """
     Une imágenes en secuencia (duración por imagen configurable),
     agrega narración como pista principal y música de fondo opcional.
+    Si transiciones_suaves=True, aplica zoom suave (Ken Burns) y fundidos cortos entre imágenes.
     Si no hay imágenes, genera un video negro con la duración del audio.
     """
     seg = segundos_por_imagen or get_duracion_por_imagen()
@@ -84,31 +146,42 @@ def montar_video(
         ]
         subprocess.run(cmd_video_negro, check=True, capture_output=True)
     else:
-        # Lista de archivos para concat (FFmpeg)
-        list_file = out.with_suffix(".list.txt")
-        with open(list_file, "w") as f:
-            for p in lista_imagenes:
-                if p.exists():
-                    f.write(f"file '{p.absolute()}'\nduration {seg}\n")
-            if lista_imagenes:
-                # Última entrada sin duration para que FFmpeg calcule bien
-                f.write(f"file '{lista_imagenes[-1].absolute()}'\n")
-
-        # Video solo desde imágenes: escalar para LLENAR el frame (sin barras negras)
         video_solo = out.with_stem(out.stem + "_solo_video")
-        cmd_video = [
-            "ffmpeg", "-y", "-f", "concat", "-safe", "0",
-            "-i", str(list_file),
-            "-vf", f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height}",
-            "-r", "24",
-            "-pix_fmt", "yuv420p",
-            str(video_solo),
-        ]
-        subprocess.run(cmd_video, check=True, capture_output=True)
-        
-        # Limpiar archivo temporal
-        if list_file.exists():
-            list_file.unlink()
+        if transiciones_suaves and len([p for p in lista_imagenes if p.exists()]) > 0:
+            try:
+                print("🎬 Aplicando zoom suave y transiciones entre imágenes...")
+                _montar_video_con_zoom_y_transiciones(
+                    lista_imagenes=lista_imagenes,
+                    seg=seg,
+                    width=width,
+                    height=height,
+                    video_solo=video_solo,
+                    fade_segundos=0.25,
+                    zoom_final=1.06,
+                )
+            except Exception as e:
+                print(f"⚠️ Falló video con zoom/transiciones ({e}), usando montaje estático.")
+                transiciones_suaves = False
+        if not transiciones_suaves:
+            # Montaje estático (como antes): concat sin zoom ni fade
+            list_file = out.with_suffix(".list.txt")
+            with open(list_file, "w") as f:
+                for p in lista_imagenes:
+                    if p.exists():
+                        f.write(f"file '{p.absolute()}'\nduration {seg}\n")
+                if lista_imagenes:
+                    f.write(f"file '{lista_imagenes[-1].absolute()}'\n")
+            cmd_video = [
+                "ffmpeg", "-y", "-f", "concat", "-safe", "0",
+                "-i", str(list_file),
+                "-vf", f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height}",
+                "-r", "24",
+                "-pix_fmt", "yuv420p",
+                str(video_solo),
+            ]
+            subprocess.run(cmd_video, check=True, capture_output=True)
+            if list_file.exists():
+                list_file.unlink()
 
     # Mezclar con audio
     if audio_narracion and audio_narracion.exists() and audio_narracion.stat().st_size > 0:

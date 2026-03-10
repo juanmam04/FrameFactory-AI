@@ -1,7 +1,7 @@
 """FASE 5: Conversión de escenas / beats a prompts visuales (acción + estilo + cámara)."""
 import re
 import random
-from .config_loader import get_visual_bible, get_instrucciones_imagenes, get_prohibido_en_imagen, get_preferencias_aprendidas
+from .config_loader import get_visual_bible, get_instrucciones_imagenes, get_prohibido_en_imagen
 from .scene_splitter import Escena
 from .visual_beats import VisualBeat
 
@@ -18,6 +18,51 @@ _PALABRAS_PERSONAJE_PREF = (
     "brazos", "piernas", "líneas simples", "muñeco", "palitos", "ropa", "pelo", "manos", "pies",
     "ovalados", "contorno", "cartoon", "caricatura", "no debe tener", "debe ser un",
 )
+
+# Mapeo emoción del beat → clave de referencia en character_reference (para Kontext)
+_EMOTION_TO_EXPRESSION_KEY: dict[str, str] = {
+    "alegría": "happy",
+    "alegria": "happy",
+    "happy": "happy",
+    "joy": "happy",
+    "felicidad": "happy",
+    "determinación": "determined",
+    "determinacion": "determined",
+    "determined": "determined",
+    "sorpresa": "surprised",
+    "surprised": "surprised",
+    "sorprendido": "surprised",
+    "miedo": "scared",
+    "scared": "scared",
+    "fear": "scared",
+    "asustado": "scared",
+    "enojo": "angry",
+    "angry": "angry",
+    "ira": "angry",
+    "rabia": "angry",
+    "shock": "shocked",
+    "shocked": "shocked",
+    "neutral": "neutral",
+    "calma": "neutral",
+    "calm": "neutral",
+    "tensión": "neutral",
+    "tension": "neutral",
+    "intensidad": "neutral",
+    "conflicto": "neutral",
+    "duda": "neutral",
+    "decisión": "determined",
+    "decision": "determined",
+    "resolución": "neutral",
+    "resolucion": "neutral",
+}
+
+
+def emotion_to_expression_key(emotion: str | None) -> str | None:
+    """Devuelve la clave de referencia de expresión para Kontext (happy, determined, surprised, etc.) o None (usar front)."""
+    if not (emotion or "").strip():
+        return None
+    e = emotion.strip().lower()
+    return _EMOTION_TO_EXPRESSION_KEY.get(e)
 
 
 def _es_plano_pov(plano: str) -> bool:
@@ -102,10 +147,12 @@ def construir_prompt(
         variables["fase_psicologica"] = ["inicio", "desarrollo", "clímax", "resolución"][(escena.numero - 1) % 4]
     if "momento_de_la_historia" in variables_en_template and "momento_de_la_historia" not in variables:
         variables["momento_de_la_historia"] = variables["momento"]
+    if "lugar" in variables_en_template and "lugar" not in variables:
+        variables["lugar"] = "entorno detallado que muestre claramente dónde ocurre la acción"
     try:
         base = template.format(**variables).strip()
     except KeyError:
-        base = f"{plano}, {accion}, {variables.get('emocion', 'tensión')}, {variables.get('momento', 'momento clave')}. Ritmo: {beat_visual}. 16:9."
+        base = f"{plano}, {accion}, {variables.get('emocion', 'tensión')}, {variables.get('momento', 'momento clave')}. Lugar claro. Ritmo: {beat_visual}. 16:9."
     base = "OBLIGATORIO: Mismo personaje siempre. POV = primera persona sin personaje en cuadro. Cada imagen = momento distinto. No repetir.\n\n" + base
     # POV: instrucción explícita de primera persona (lo que ve el personaje, sin mostrarlo en cuadro)
     if _es_plano_pov(plano):
@@ -114,6 +161,12 @@ def construir_prompt(
     regla_variacion = (vb.get("regla_variacion") or "").strip()
     if regla_variacion and regla_variacion not in base:
         base = base.rstrip() + "\n\n" + regla_variacion
+    regla_variedad = (vb.get("regla_variedad_composicion") or "").strip()
+    if regla_variedad and regla_variedad not in base:
+        base = base.rstrip() + "\n\n" + regla_variedad
+    continuidad = (vb.get("continuidad_y_errores") or "").strip()
+    if continuidad and continuidad not in base:
+        base = base.rstrip() + "\n\n" + continuidad
     # Character lock (ÚNICA fuente de verdad del personaje; tiene prioridad sobre preferencias)
     character_lock = (vb.get("character_lock") or "").strip()
     if character_lock and character_lock not in base:
@@ -125,12 +178,8 @@ def construir_prompt(
     prohibido = get_prohibido_en_imagen()
     if prohibido and prohibido.strip() and prohibido.strip() not in base:
         base = base.rstrip() + "\n\n" + prohibido.strip()
-    # Preferencias aprendidas: solo las que hablan de fondo/estilo; no las que describen al personaje (evitar contradicción con character_lock)
-    preferencias_raw = get_preferencias_aprendidas()
-    preferencias = _filtrar_preferencias_solo_fondo_estilo(preferencias_raw)
-    if preferencias:
-        base = base.rstrip() + "\n\nPreferencias del usuario (solo fondo, iluminación y composición; el diseño del personaje ya está fijado arriba): " + preferencias
-    base = base.rstrip() + "\n\nOBLIGATORIO: Mismo personaje (cabeza blanca, hoodie gris, remera blanca, pantalón azul). POV = primera persona sin personaje. No repetir."
+    # No inyectar preferencias aprendidas de feedbacks pasados (generaban errores y contradicciones)
+    base = base.rstrip() + "\n\nOBLIGATORIO: Máximo sentido común e inteligencia lógica—imagen coherente y creíble, sin absurdos. Misma identidad de personaje; edad y ropa según contexto. Incluir lugar claro y qué está pasando. Anatomía correcta; objetos lógicos. No repetir."
     return base
 
 
@@ -178,6 +227,7 @@ def construir_prompt_desde_beat(
 
     instrucciones = get_instrucciones_imagenes()
     template = instrucciones.get("prompt_template", "{plano}, {accion}, {emocion}, {momento}. 16:9.")
+    lugar = (beat.location or "entorno que muestre claramente dónde ocurre la escena").strip()
     variables = {
         "plano": plano,
         "accion": accion,
@@ -186,15 +236,18 @@ def construir_prompt_desde_beat(
         "beat_visual": beat.importance or "acción",
         "shot_role": shot_role,
         "time_of_day": time_of_day,
+        "lugar": lugar,
     }
     variables_en_template = set(re.findall(r'\{(\w+)\}', template))
     if "estilo" in variables_en_template and "estilo" not in variables:
         variables["estilo"] = vb.get("estilo_base", "stickman 2D cinematográfico")
+    if "lugar" in variables_en_template and "lugar" not in variables:
+        variables["lugar"] = lugar
 
     try:
         base = template.format(**variables).strip()
     except KeyError:
-        base = f"{plano}, {accion}, {emocion}, {momento}. 16:9."
+        base = f"{plano}, {accion}, {emocion}, {momento}. Lugar: {lugar}. 16:9."
     base = "OBLIGATORIO: Mismo personaje siempre. POV = primera persona sin personaje en cuadro. Cada imagen = momento distinto. No repetir.\n\n" + base
     # POV: instrucción explícita de primera persona
     if _es_plano_pov(plano):
@@ -203,6 +256,12 @@ def construir_prompt_desde_beat(
     regla_variacion = (vb.get("regla_variacion") or "").strip()
     if regla_variacion and regla_variacion not in base:
         base = base.rstrip() + "\n\n" + regla_variacion
+    regla_variedad = (vb.get("regla_variedad_composicion") or "").strip()
+    if regla_variedad and regla_variedad not in base:
+        base = base.rstrip() + "\n\n" + regla_variedad
+    continuidad = (vb.get("continuidad_y_errores") or "").strip()
+    if continuidad and continuidad not in base:
+        base = base.rstrip() + "\n\n" + continuidad
     # Character lock (ÚNICA fuente de verdad del personaje)
     character_lock = (vb.get("character_lock") or "").strip()
     if character_lock and character_lock not in base:
@@ -214,16 +273,12 @@ def construir_prompt_desde_beat(
     prohibido = get_prohibido_en_imagen()
     if prohibido and prohibido.strip() and prohibido.strip() not in base:
         base = base.rstrip() + "\n\n" + prohibido.strip()
-    # Preferencias: solo fondo/estilo, no descripción del personaje
-    preferencias_raw = get_preferencias_aprendidas()
-    preferencias = _filtrar_preferencias_solo_fondo_estilo(preferencias_raw)
-    if preferencias:
-        base = base.rstrip() + "\n\nPreferencias del usuario (solo fondo, iluminación y composición; el diseño del personaje ya está fijado arriba): " + preferencias
+    # No inyectar preferencias aprendidas de feedbacks pasados (generaban errores y contradicciones)
     # Unicidad
     frame_id = indice_imagen if indice_imagen is not None else (beat.beat_id if beat else 0)
     base = base.rstrip() + f"\n\nFrame {frame_id} de la secuencia. Esta imagen debe ser visualmente distinta."
     # Repetir instrucción crítica al final (los modelos de imagen atienden más al inicio y al final)
-    base = base.rstrip() + "\n\nOBLIGATORIO: Mismo personaje (cabeza blanca, hoodie gris, remera blanca, pantalón azul). POV = primera persona sin personaje en cuadro. No repetir escena."
+    base = base.rstrip() + "\n\nOBLIGATORIO: Máximo sentido común e inteligencia—imagen 100% coherente y creíble. Misma identidad de personaje; edad y ropa según contexto (bebé/niño/adulto, traje/fútbol/casual). Lugar claro y acción visible. Anatomía correcta; objetos y cantidades lógicas. No repetir escena."
     return base
 
 

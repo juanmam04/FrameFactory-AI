@@ -51,8 +51,8 @@ def generar_guion(
     # Validar target_words
     if target_words < 80:
         target_words = 80
-    if target_words > 3000:
-        target_words = 3000
+    if target_words > 5000:
+        target_words = 5000
     
     # Calcular min/max si no se proporcionan
     if min_words is None:
@@ -103,16 +103,23 @@ Evita solo el gore gráfico o descripciones extremadamente detalladas de daño f
         
         # Frase clave desde config (mejora mucho el resultado)
         frase_clave = (rules.get("frase_clave") or "No escribas una escena. Escribe la vida completa del personaje.").strip()
-        # Para guiones largos (>1500 palabras) ser muy explícito: debe aproximarse al número
+        # Para guiones largos (>1000 palabras) ser muy explícito: debe aproximarse al número
         longitud_guidance = ""
-        if target_words >= 1500:
+        if target_words >= 1000:
             paginas_aprox = max(2, target_words // 600)
             longitud_guidance = f"""
 IMPORTANTE - EXTENSIÓN OBLIGATORIA: Este guion debe tener APROXIMADAMENTE {target_words} palabras (unas {paginas_aprox} páginas).
 No escribas una historia corta. Desarrollá bien la trama: varias escenas, descripciones concretas, tensión, reacciones.
 Si escribís menos de {int(target_words * 0.7)} palabras no cumple. Acercate siempre al objetivo de {target_words} palabras."""
         
-        prompt_borrador = f"""Escribe la VIDA COMPLETA del personaje, no una escena ni un resumen. El guion debe sentirse como una mini-película POV.
+        prompt_borrador = f"""Escribe la VIDA COMPLETA del personaje, no una escena ni un resumen. El guion debe sentirse como una PELÍCULA DE CINE: una historia con TRAMA CONCRETA.
+
+TRAMA COMO PELÍCULA (OBLIGATORIO):
+- Inventá una historia concreta, no una vida genérica. Que algo PASE: una misión, un objetivo claro, un conflicto que se resuelve (o no).
+- Ejemplos: si el tema es "hacker" → una misión concreta (ej. infiltrar un sistema, un ataque a la Casa Blanca, el día que todo salió mal). Si es "futbolista" → la final decisiva, el fichaje que cambió todo, la lesión que lo puso en duda. Si es "cirujano" → la operación de su vida, el paciente que no podía fallar.
+- La historia debe tener un ARCO CLARO: inicio (situación), desarrollo (obstáculos, tensión), clímax y desenlace. Como una película: específica, entretenida, con cosas concretas que ocurren.
+- Evitá "eres un X y vivís tu vida". Preferí "eres un X y ESTO es lo que pasa: esta misión, este día, esta decisión".
+
 Regla clave: {frase_clave}
 
 APERTURA OBLIGATORIA (NO NEGOCIABLE):

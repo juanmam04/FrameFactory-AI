@@ -4,12 +4,11 @@
 
 estilo_base: |
   Ilustración 2D narrativa cinematográfica, limpia y clara.
-  Personaje principal: figura minimalista de rostro blanco redondo, sin rasgos faciales complejos, con ojos negros ovalados y boca simple.
-  Vestuario consistente: buzo con capucha gris oscuro, remera/camiseta blanca debajo, pantalón azul oscuro y zapatillas deportivas blancas con detalles azul oscuro.
-  Proporciones del personaje siempre iguales: misma altura relativa, mismo tamaño de cabeza, mismo grosor de líneas, misma silueta general.
-  Fondos: entornos creíbles y con cierta profundidad, pero el foco visual siempre está en el personaje principal.
-  Reglas importantes: el personaje debe verse SIEMPRE igual en todas las imágenes, como si fuera exactamente el mismo diseño que en las imágenes de referencia oficiales (frontal y expresiones).
-  La imagen debe parecer un frame de una película animada continua, no ilustraciones sueltas con estilos diferentes.
+  Personaje principal: misma identidad visual que la referencia (rostro blanco redondo, ojos negros ovalados, boca simple, estilo minimalista).
+  La EDAD y el CUERPO del personaje se adaptan al contexto: si la escena es de un bebé, dibujar un bebé; si es un niño, un niño; si es adulto, adulto. Cada uno con su ropa adecuada.
+  La ROPA del personaje depende del contexto de la escena: si usa traje, mostrarlo de traje; si es futbolista, con la camiseta del equipo; si está en casa, ropa casual; etc. Siempre la misma identidad de personaje (cara, estilo), pero la vestimenta y la edad/contexto pueden cambiar.
+  Fondos: OBLIGATORIO en todas las imágenes. Nunca fondo blanco ni vacío. Siempre un lugar concreto visible (sala, calle, cancha, oficina, etc.) con escenario detallado, y que se entienda qué está pasando en la escena.
+  La imagen debe parecer un frame de una película animada continua, con contexto claro de lugar y acción.
 
 # Prohibido en estilo (se inyecta en todos los prompts)
 prohibido_estilo: "anime, pixar, 3D render, caricatura infantil, personajes humanos realistas, estilos visuales inconsistentes"
@@ -19,25 +18,31 @@ prohibido_estilo: "anime, pixar, 3D render, caricatura infantil, personajes huma
 # =============================================================================
 
 character_lock: |
-  PERSONAJE PRINCIPAL (LOCK): Debe parecerse lo máximo posible al personaje de las imágenes de referencia oficiales.
-  Rasgos clave:
-    - Cabeza circular completamente blanca, contorno negro limpio.
-    - Ojos negros ovalados simples, sin pupilas visibles, cejas suaves y expresión amigable.
-    - Sin pelo ni rasgos faciales detallados (sin nariz realista, sin arrugas complejas).
-    - Buzo con capucha gris oscuro, remera/camiseta blanca debajo, pantalón azul oscuro, zapatillas blancas con detalles azul oscuro.
-    - Manos y pies simplificados pero consistentes con las referencias (no manos hiperrealistas).
-  Consistencia:
-    - Mantener exactamente la misma combinación de ropa, colores y proporciones en TODAS las imágenes del mismo video.
-    - No cambiar el diseño del personaje entre escenas, solo su pose, expresión y posición en el encuadre.
+  PERSONAJE PRINCIPAL (IDENTIDAD): Mantener la identidad visual del personaje de referencia (cara, estilo).
+  Rasgos de identidad (siempre reconocible):
+    - Cabeza circular blanca, contorno negro limpio, ojos negros ovalados simples, boca simple, estilo minimalista.
+    - Sin pelo ni rasgos faciales hiperrealistas; manos y pies simplificados.
+  Adaptación al contexto (OBLIGATORIO):
+    - EDAD/CUERPO: Si la historia dice bebé → personaje como bebé; si dice niño → niño; adulto → adulto. Adaptar proporciones a la edad del contexto.
+    - ROPA: La vestimenta depende de la escena. Si usa traje → traje; si es futbolista → camiseta del equipo; si está en entrevista → ropa formal; en casa → casual; etc. Cada personaje con la ropa que corresponde a la situación. La ropa NO es fija: puede ser cualquiera según el contexto, pero siempre reconociendo al mismo personaje.
+  Escena:
+    - Incluir SIEMPRE un lugar claro (dónde ocurre) y una acción clara (qué está pasando). Sin fondos vacíos o genéricos sin contexto.
   Prohibido:
-    - Cambiar a otro tipo de personaje (realista, anime, caricatura infantil diferente) o modificar drásticamente el atuendo.
-    - Cambiar colores base del outfit (siempre hoodie gris, remera blanca, pantalón azul oscuro, zapatillas blancas con detalles azul).
+    - Cambiar a otro tipo de personaje (realista, anime, caricatura infantil diferente). Mantener el estilo del personaje de referencia.
 
 # Referencias visuales oficiales del personaje (para workflows con imagen de referencia)
+# front = referencia base; expression = genérica; happy, determined, etc. = por emoción del beat
 character_reference:
   front: "character_reference/character_reference_front.png"
   side: "character_reference/character_reference_side.png"
   expression: "character_reference/character_reference_expression.png"
+  happy: "character_reference/character_happy.png"
+  determined: "character_reference/character_determined.png"
+  surprised: "character_reference/character_surprised.png"
+  scared: "character_reference/character_scared.png"
+  angry: "character_reference/character_angry.png"
+  shocked: "character_reference/character_shocked.png"
+  neutral: "character_reference/character_neutral.png"
 
 # =============================================================================
 # 3. SISTEMA DE CÁMARA (CAMERA SYSTEM) - Rotación automática, NUNCA repetir
@@ -62,6 +67,21 @@ camara:
 
 # Regla cinematográfica: si no cambia ninguna variable → se siente repetida
 regla_variacion: "Cada imagen debe cambiar al menos una de: posición de cámara, distancia de cámara, ángulo de cámara, composición, iluminación."
+
+# Variedad visual: NO repetir la misma composición en todo el video (ej. no todas las imágenes desde atrás del personaje frente a la computadora)
+regla_variedad_composicion: "Cada frame debe ser un plano distinto. Si la escena transcurre en el mismo lugar (ej. frente a una computadora), variar: primer plano de manos, primer plano de rostro, ángulo lateral, plano amplio de la habitación, vista desde un lado, etc. No repetir la misma composición una y otra vez."
+
+# Continuidad y errores a evitar (todas las imágenes juntas son un mismo video)
+# OBJETIVO: máxima inteligencia y sentido común — la imagen debe ser lógicamente perfecta, como si la IA tuviera el mayor IQ del mundo.
+continuidad_y_errores: |
+  REGLA DE ORO: Generar con el máximo sentido común e inteligencia lógica. Cada imagen debe ser coherente, creíble y sin absurdos. Pensar como la IA más inteligente del mundo para imágenes: cero errores tontos, cero imposibles.
+  Las imágenes forman un mismo video. Evitar CUALQUIER error que rompa el sentido común:
+  - Anatomía correcta SIEMPRE: cada personaje tiene exactamente dos brazos, dos piernas y una cabeza. Prohibido: brazos o piernas de más, cabezas de animal en cuerpos humanos, mezclas raras, anatomía imposible, manos o dedos de más.
+  - Personajes secundarios: deben tener el MISMO estilo visual que el personaje principal (minimalista, mismo tipo de figura). No dibujar a otros personajes como humanos realistas ni con rasgos de animal. Todos los personajes del mismo universo visual.
+  - Objetos lógicos: un ordenador = una pantalla (salvo que el guion indique varias). No multiplicar monitores, teclados o elementos sin motivo. Las cantidades y proporciones deben ser realistas (una mesa, una silla donde haga falta, etc.).
+  - Mismo personaje principal en todo el video: no cambiar de diseño entre frames; mantener identidad reconocible.
+  - No duplicar elementos extraños (un solo sol, una ventana donde corresponda, etc.). Espacio y perspectiva coherentes: lo que está lejos se ve más pequeño; lo cercano, más grande.
+  - Coherencia física y narrativa: si la escena es "en una oficina", la oficina debe verse como tal; si "escribe en la computadora", una mano y un teclado lógicos. Nada que un humano inteligente consideraría imposible o ridículo.
 
 # =============================================================================
 # RITMO: cada 3-5 imágenes tiene que pasar algo visual (acción, reacción, detalle, cambio)
@@ -98,7 +118,7 @@ formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
 negative_prompt: "anime, pixar, 3d render, realistic human, photorealistic, caricature, childish cartoon, manga style, overly detailed human anatomy, blurry, low quality, distorted, text, watermark, video player, playback bar, editor interface, UI overlay"
 
 # Regla para TODAS las imágenes
-prohibido_en_imagen: "Sin reproductor de video, sin barra de reproducción, sin interfaz de editor. Solo contenido de la escena. Formato 16:9, encuadre claro, composición cinematográfica."
+prohibido_en_imagen: "Sin reproductor de video, sin barra de reproducción, sin interfaz de editor. Sin fondo blanco ni fondos vacíos; toda imagen debe tener escenario/fondo visible y detallado. Formato 16:9, encuadre claro, composición cinematográfica."
 
 # =============================================================================
 # 8. DENSIDAD DE IMÁGENES POR VIDEO (para automatizar duración)

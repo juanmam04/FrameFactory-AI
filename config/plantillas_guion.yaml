@@ -38,8 +38,10 @@ plantillas:
       - Sin moralejas explícitas.
 
       - El cierre debe sentirse inevitable, no explicado.'
-    usuario: 'Quiero un guion profesional estilo mini-película POV para YouTube sobre:
+    usuario: 'Quiero un guion profesional estilo PELÍCULA DE CINE para YouTube sobre:
       {tema}.
+
+      TRAMA CONCRETA (OBLIGATORIO): La historia debe tener una trama específica, no una vida genérica. Inventá algo que PASE: una misión (ej. un hacker con una misión contra la Casa Blanca), un objetivo claro (ej. ganar la final, salvar al paciente), un conflicto que se desarrolla y tiene desenlace. Como una película: principio, desarrollo, clímax y final. Algo entretenido y concreto que el espectador siga como una película.
 
       DURACIÓN: {duracion_min} minutos (exacta).
 

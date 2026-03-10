@@ -6,28 +6,30 @@ parametros_sd:
   width: 1920
 
 # PROMPT FINAL DE GENERACIÓN (sección 5 de la spec)
-# Variables: {plano}, {accion}, {emocion}, {momento}, {beat_visual} (ritmo: acción/reacción/detalle/cambio de plano)
-# El estilo global (style lock) y character lock se inyectan desde código desde visual_bible.yaml.
+# Variables: {plano}, {accion}, {emocion}, {momento}, {beat_visual}, {lugar} (ritmo y lugar)
+# El personaje mantiene identidad pero adapta edad/ropa al contexto. Siempre incluir lugar y qué pasa.
 prompt_template: |
   Ilustración 2D narrativa cinematográfica.
 
-  Personaje principal: mismo diseño que el personaje oficial de referencia (rostro blanco circular, ojos negros simples, hoodie gris oscuro, remera blanca, pantalón azul oscuro y zapatillas blancas con detalles azul oscuro). Siempre el mismo personaje en todas las escenas.
+  Personaje principal: misma identidad que la referencia (rostro blanco circular, ojos negros simples, estilo minimalista). La EDAD y la ROPA se adaptan al contexto de esta escena: si es bebé/niño/adulto o usa traje/equipo de fútbol/ropa casual, mostrarlo así. Cada uno con su ropa según la situación.
 
   Plano de cámara: {plano}
 
-  Acción: {accion}
+  Acción (qué está pasando): {accion}
 
   Emoción del momento: {emocion}
 
   Contexto narrativo: {momento}
 
-  Ritmo visual (cada 3-5 imágenes algo cambia): {beat_visual}
+  LUGAR (obligatorio): {lugar}. El escenario debe verse claro: dónde está el personaje y qué está pasando. Fondo obligatorio en toda imagen: nunca blanco ni vacío; siempre escenario visible y detallado.
 
-  Escenario: entorno coherente con la escena, fondo detallado y creíble.
+  Ritmo visual: {beat_visual}
 
-  Iluminación acorde al momento de la historia.
+  Iluminación y ambiente coherentes con el lugar y la acción.
 
-  La imagen debe parecer un frame de una película animada narrativa.
+  La imagen debe parecer un frame de una película animada con contexto claro de lugar y acción.
+
+  MÁXIMO SENTIDO COMÚN E INTELIGENCIA: generar como la IA más inteligente del mundo para imágenes. Anatomía perfecta (cada personaje: exactamente dos brazos, dos piernas, una cabeza; cero extras, cero cabezas de animal en cuerpos humanos). Personajes secundarios en el MISMO estilo que el principal (minimalista), nunca humanos realistas ni rasgos de animal. Objetos lógicos y cantidades realistas (un ordenador = una pantalla; una mesa = una mesa). Perspectiva y espacio coherentes. Nada imposible ni absurdo: la escena debe ser 100% creíble para un observador con sentido común. Esta imagen con composición o ángulo distinto; variar plano, no repetir la misma toma.
 
   Formato: 16:9, encuadre claro, composición cinematográfica.
 

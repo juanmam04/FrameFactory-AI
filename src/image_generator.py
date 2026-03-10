@@ -366,14 +366,29 @@ def _escribir_placeholder_png(carpeta: Path, escena_num: int, width: int = 1024,
     return dest
 
 
+def _aspect_ratio_from_size(width: int, height: int) -> str:
+    """Calcula aspect_ratio para Replicate (16:9, 9:16, 1:1) según dimensiones."""
+    if not width or not height:
+        return "16:9"
+    r = width / height if height else 1.0
+    if r < 0.6:
+        return "9:16"
+    if r > 1.5:
+        return "16:9"
+    if abs(r - 1.0) < 0.2:
+        return "1:1"
+    return "16:9" if r > 1.0 else "9:16"
+
+
 def _generar_imagen_replicate(
     prompt: str,
     carpeta: Path,
     escena_num: int,
     width: int = 1024,
     height: int = 576,
+    expression_key: str | None = None,
 ) -> Path | None:
-    """Genera una imagen con Replicate. Si existe character_reference_front.png, usa FLUX Kontext
+    """Genera una imagen con Replicate. Si existe character_reference (front o expresión), usa FLUX Kontext
     para respetar al personaje (~$0.025/imagen). Si no, usa flux-schnell (~$0.003/imagen)."""
     import replicate as replicate_client
     from base64 import b64encode
@@ -385,25 +400,45 @@ def _generar_imagen_replicate(
     image_ref_path: Path | None = None
     try:
         refs = get_character_references()
-        front_rel = refs.get("front")
-        if front_rel:
-            p = BASE / front_rel
+        # Preferir referencia de expresión si viene expression_key y existe; si no, front
+        ref_key = (expression_key if expression_key and refs.get(expression_key) else None) or "front"
+        ref_rel = refs.get(ref_key)
+        if ref_rel:
+            p = BASE / ref_rel
             if p.exists() and p.stat().st_size > 0:
                 image_ref_path = p
     except Exception:
         image_ref_path = None
 
     if image_ref_path:
-        # FLUX Kontext: usa la imagen de referencia para mantener al personaje
+        # Identidad del personaje; ropa y edad según contexto. Siempre incluir lugar y acción.
+        context_instruction = (
+            "Generate with maximum common sense and logical intelligence—like the smartest image AI in the world. Every image must be coherent, believable, and free of absurd or impossible elements. "
+            "Keep the character's identity (face, style) from the reference. "
+            "Clothing and age/body MUST adapt to THIS scene: if baby → baby, if child → child, "
+            "if wearing suit → suit, if footballer → team kit, etc. Each character with appropriate clothes for the situation. "
+            "Always show a clear location/setting and what is happening in the scene. "
+            "Background is mandatory: never white or empty background; every image must have a visible, detailed environment. "
+            "Common sense - anatomy: every character has exactly two arms, two legs, one head. No extra limbs, no animal heads on human bodies, no mixed or impossible anatomy, no extra fingers or hands. "
+            "Common sense - secondary characters: draw them in the SAME visual style as the main character (minimalist, same figure type). Do not draw other characters as realistic humans or with animal features; all characters must look like they belong in the same world. "
+            "Logical props and quantities: one computer = one monitor unless the story says otherwise; realistic proportions and object counts (one table, one chair where it makes sense). Coherent perspective and space. "
+            "Nothing impossible or ridiculous: the scene must be 100% believable to any observer with common sense. "
+            "This frame must have a different composition or angle than the others; vary shot type; avoid repeating the same shot. "
+        )
+        prompt_kontext = (context_instruction + prompt).strip()[:3500]
+        aspect_ratio = _aspect_ratio_from_size(width, height)
+        seed = (escena_num * 12345 + (hash(prompt) % 100000)) % (2**31)
         try:
             with open(image_ref_path, "rb") as f:
                 output = replicate_client.run(
                     REPLICATE_MODEL_KONTEXT,
                     input={
-                        "prompt": prompt,
+                        "prompt": prompt_kontext,
                         "input_image": f,
+                        "aspect_ratio": aspect_ratio,
                         "output_format": "png",
                         "num_inference_steps": 28,
+                        "seed": seed,
                     },
                 )
         except Exception as e:
@@ -601,6 +636,7 @@ def generar_imagen(
     carpeta: Path,
     width: int | None = None,
     height: int | None = None,
+    expression_key: str | None = None,
 ) -> Path | None:
     """Genera una imagen con Replicate (FLUX) o ComfyUI según IMAGE_BACKEND."""
     instrucciones = get_instrucciones_imagenes()
@@ -611,7 +647,9 @@ def generar_imagen(
     if _usar_replicate():
         for intento in range(MAX_REINTENTOS):
             try:
-                path = _generar_imagen_replicate(prompt, carpeta, escena_num, img_width, img_height)
+                path = _generar_imagen_replicate(
+                    prompt, carpeta, escena_num, img_width, img_height, expression_key=expression_key
+                )
                 if path:
                     return path
             except RuntimeError:
@@ -649,25 +687,30 @@ def generar_imagen(
 
 
 def _generar_una_escena(
-    item: tuple[Escena, str],
+    item: tuple[Escena, str] | tuple[Escena, str, str | None],
     carpeta: Path,
     width: int | None,
     height: int | None,
 ) -> tuple[int, Path | None]:
-    """Helper para paralelo: (numero_escena, path o None)."""
-    escena, prompt = item
-    path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
+    """Helper para paralelo: (numero_escena, path o None). Acepta (Escena, prompt) o (Escena, prompt, expression_key)."""
+    escena = item[0]
+    prompt = item[1]
+    expression_key = item[2] if len(item) >= 3 else None
+    path = generar_imagen(
+        prompt, escena.numero, carpeta, width=width, height=height, expression_key=expression_key
+    )
     return (escena.numero, path)
 
 
 def generar_lote(
-    escenas_con_prompts: list[tuple[Escena, str]],
+    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]],
     subcarpeta: str = "default",
     width: int | None = None,
     height: int | None = None,
     on_progress: Callable[[int, int], None] | None = None,
 ) -> list[Path]:
-    """Genera todas las imágenes con Replicate (FLUX) o ComfyUI. Si una falla con Replicate se usa placeholder."""
+    """Genera todas las imágenes con Replicate (FLUX) o ComfyUI. Si una falla con Replicate se usa placeholder.
+    Cada elemento puede ser (Escena, prompt) o (Escena, prompt, expression_key) para referencia de expresión."""
     if not _usar_replicate() and not _comfyui_disponible():
         raise RuntimeError(_comfyui_error_msg())
     carpeta = OUTPUT_IMAGES / subcarpeta
@@ -678,14 +721,19 @@ def generar_lote(
     usar_replicate = _usar_replicate()
     total = len(escenas_con_prompts)
     rutas = []
-    for idx, (escena, prompt) in enumerate(escenas_con_prompts, start=1):
+    for idx, item in enumerate(escenas_con_prompts, start=1):
+        escena = item[0]
+        prompt = item[1]
+        expression_key = item[2] if len(item) >= 3 else None
         print(f"   🖼️ Imagen {idx}/{total} (escena {escena.numero})...")
         path = None
         # Pequeño bucle local para respetar rate limit de Replicate (6 req/min ≈ 1 cada 10s)
         intentos_locales = 3
         for intento in range(intentos_locales):
             try:
-                path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
+                path = generar_imagen(
+                    prompt, escena.numero, carpeta, width=width, height=height, expression_key=expression_key
+                )
                 break
             except Exception as e:
                 # Si no usamos Replicate, delegar comportamiento anterior.
