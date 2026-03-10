@@ -12,7 +12,7 @@ except ImportError:
         return None
 from .script_generator import generar_guion, guardar_guion, count_words
 from .scene_splitter import dividir_en_escenas, escenas_a_texto_continuo, Escena
-from .prompt_builder import prompts_para_escenas, prompts_para_beats, emotion_to_expression_key
+from .prompt_builder import prompts_para_escenas, prompts_para_beats, emotion_to_expression_key, get_outfit_key_for_beat
 from .image_generator import generar_lote, OUTPUT_IMAGES
 from .voice_generator import generar_voz
 from .video_assembler import montar_video
@@ -182,8 +182,8 @@ def run(
     guardar_beats(beats, proy)
     beats_con_prompts = prompts_para_beats(beats)
 
-    # Adaptar beats → estructura Escena para reutilizar regeneración y montaje; expression_key para Kontext
-    escenas_con_prompts: list[tuple[Escena, str, str | None]] = [
+    # Adaptar beats → estructura Escena para reutilizar regeneración y montaje; expression_key y outfit_key para Kontext/outfit ref
+    escenas_con_prompts: list[tuple[Escena, str, str | None, str]] = [
         (
             Escena(
                 numero=beat.beat_id,
@@ -192,6 +192,7 @@ def run(
             ),
             prompt,
             emotion_to_expression_key(beat.emotion),
+            get_outfit_key_for_beat(beat),
         )
         for beat, prompt in beats_con_prompts
     ]

@@ -12,6 +12,18 @@ from dotenv import load_dotenv
 from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes, get_estilo_base, get_character_references, get_visual_references
 from .scene_splitter import Escena
 
+# Mapeo outfit_key (outfit_library) -> nombre de archivo en references/outfits/
+OUTFIT_REF_FILENAMES: dict[str, str] = {
+    "casual_outfit": "outfit_casual.png",
+    "kid_outfit": "outfit_kid.png",
+    "gamer_outfit": "outfit_gamer.png",
+    "athlete_outfit": "outfit_athlete.png",
+    "business_outfit": "outfit_business.png",
+    "criminal_outfit": "outfit_criminal.png",
+    "war_outfit": "outfit_war.png",
+}
+OUTFIT_REF_DIR = BASE / "references" / "outfits"
+
 load_dotenv(BASE / ".env")
 
 OUTPUT_IMAGES = BASE / "output" / "imagenes"
@@ -389,6 +401,17 @@ def _aspect_ratio_from_size(width: int, height: int) -> str:
     return "16:9" if r > 1.0 else "9:16"
 
 
+def _get_outfit_reference_path(outfit_key: str | None) -> Path | None:
+    """Si existe la imagen de referencia del outfit en references/outfits/, devuelve su Path; si no, None."""
+    if not outfit_key:
+        return None
+    filename = OUTFIT_REF_FILENAMES.get(outfit_key) or f"{outfit_key}.png"
+    p = OUTFIT_REF_DIR / filename
+    if p.exists() and p.stat().st_size > 0:
+        return p
+    return None
+
+
 def _generar_imagen_replicate(
     prompt: str,
     carpeta: Path,
@@ -396,10 +419,12 @@ def _generar_imagen_replicate(
     width: int = 1024,
     height: int = 576,
     expression_key: str | None = None,
+    outfit_key: str | None = None,
 ) -> Path | None:
     """Genera una imagen con Replicate.
     - Si existe character_reference (front o expresión), usa el modelo con referencia (por defecto FLUX Kontext).
-    - Si no, usa el modelo de texto→imagen configurado en REPLICATE_IMAGE_MODEL (o flux-schnell por defecto).
+    - Si no hay personaje pero sí outfit_key y existe references/outfits/outfit_<x>.png, usa esa imagen como referencia visual del outfit.
+    - Si no, usa el modelo de texto→imagen sin imagen.
     """
     import replicate as replicate_client
     from base64 import b64encode
@@ -407,13 +432,10 @@ def _generar_imagen_replicate(
     prompt = (prompt or "").strip()[:3500]
     if not prompt:
         return None
-    # ¿Tenemos imagen de referencia de PERSONAJE? → Kontext respeta esa cara/cuerpo.
-    # Las otras referencias (style/environment/camera/lighting/composition) SOLO se usan vía texto,
-    # para que inspiren el estilo pero sin copiar literalmente una imagen concreta.
+    # 1) Prioridad: imagen de referencia de PERSONAJE (Kontext respeta cara/cuerpo).
     image_ref_path: Path | None = None
     try:
         refs = get_character_references()
-        # Preferir referencia de expresión si viene expression_key y existe; si no, front
         ref_key = (expression_key if expression_key and refs.get(expression_key) else None) or "front"
         ref_rel = refs.get(ref_key)
         if ref_rel:
@@ -421,7 +443,10 @@ def _generar_imagen_replicate(
             if p.exists() and p.stat().st_size > 0:
                 image_ref_path = p
     except Exception:
-        image_ref_path = None
+        pass
+    # 2) Si no hay referencia de personaje, usar imagen de referencia del OUTFIT (references/outfits/) si existe.
+    if image_ref_path is None:
+        image_ref_path = _get_outfit_reference_path(outfit_key)
 
     if image_ref_path:
         # Identidad del personaje; ropa y edad según contexto. Siempre incluir lugar y acción.
@@ -650,8 +675,9 @@ def generar_imagen(
     width: int | None = None,
     height: int | None = None,
     expression_key: str | None = None,
+    outfit_key: str | None = None,
 ) -> Path | None:
-    """Genera una imagen con Replicate (FLUX) o ComfyUI según IMAGE_BACKEND."""
+    """Genera una imagen con Replicate (FLUX) o ComfyUI según IMAGE_BACKEND. outfit_key se usa para imagen de referencia en references/outfits/ si no hay character ref."""
     instrucciones = get_instrucciones_imagenes()
     params = instrucciones.get("parametros_sd", {})
     img_width = width if width is not None else params.get("width", 1024)
@@ -661,7 +687,8 @@ def generar_imagen(
         for intento in range(MAX_REINTENTOS):
             try:
                 path = _generar_imagen_replicate(
-                    prompt, carpeta, escena_num, img_width, img_height, expression_key=expression_key
+                    prompt, carpeta, escena_num, img_width, img_height,
+                    expression_key=expression_key, outfit_key=outfit_key,
                 )
                 if path:
                     return path
@@ -700,23 +727,25 @@ def generar_imagen(
 
 
 def _generar_una_escena(
-    item: tuple[Escena, str] | tuple[Escena, str, str | None],
+    item: tuple[Escena, str] | tuple[Escena, str, str | None] | tuple[Escena, str, str | None, str],
     carpeta: Path,
     width: int | None,
     height: int | None,
 ) -> tuple[int, Path | None]:
-    """Helper para paralelo: (numero_escena, path o None). Acepta (Escena, prompt) o (Escena, prompt, expression_key)."""
+    """Helper para paralelo. Item: (Escena, prompt), (Escena, prompt, expression_key) o (Escena, prompt, expression_key, outfit_key)."""
     escena = item[0]
     prompt = item[1]
     expression_key = item[2] if len(item) >= 3 else None
+    outfit_key = item[3] if len(item) >= 4 else None
     path = generar_imagen(
-        prompt, escena.numero, carpeta, width=width, height=height, expression_key=expression_key
+        prompt, escena.numero, carpeta, width=width, height=height,
+        expression_key=expression_key, outfit_key=outfit_key,
     )
     return (escena.numero, path)
 
 
 def generar_lote(
-    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]],
+    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]] | list[tuple[Escena, str, str | None, str]],
     subcarpeta: str = "default",
     width: int | None = None,
     height: int | None = None,
@@ -738,6 +767,7 @@ def generar_lote(
         escena = item[0]
         prompt = item[1]
         expression_key = item[2] if len(item) >= 3 else None
+        outfit_key = item[3] if len(item) >= 4 else None
         print(f"   🖼️ Imagen {idx}/{total} (escena {escena.numero})...")
         path = None
         # Pequeño bucle local para respetar rate limit de Replicate (6 req/min ≈ 1 cada 10s)
@@ -745,7 +775,8 @@ def generar_lote(
         for intento in range(intentos_locales):
             try:
                 path = generar_imagen(
-                    prompt, escena.numero, carpeta, width=width, height=height, expression_key=expression_key
+                    prompt, escena.numero, carpeta, width=width, height=height,
+                    expression_key=expression_key, outfit_key=outfit_key,
                 )
                 break
             except Exception as e:

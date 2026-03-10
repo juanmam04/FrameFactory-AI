@@ -121,6 +121,12 @@ def _select_outfit_key(scene_type: str) -> str:
     return mapping.get(scene_type, "casual_outfit")
 
 
+def get_outfit_key_for_scene(escena_texto: str, descripcion_visual: str | None = None) -> str:
+    """Dado el texto de la escena (y opcional descripción visual), devuelve la clave del outfit a usar (ej. casual_outfit, war_outfit)."""
+    combined = " ".join(filter(None, [escena_texto or "", descripcion_visual or ""]))
+    return _select_outfit_key(_infer_scene_type(combined))
+
+
 def _select_props_for_scene(combined_text: str, max_props: int = 3) -> list[str]:
     """Devuelve hasta max_props descripciones de props que encajan con el texto de la escena."""
     lib = get_outfit_library()
@@ -438,10 +444,11 @@ def prompts_para_escenas(
     shuffle_planos: bool = False,
     tema: str | None = None,
     usar_descripciones_ia: bool = True,
-) -> list[tuple[Escena, str]]:
+) -> list[tuple[Escena, str, str | None, str]]:
     """
     Genera un prompt por escena. El plano de cámara es distinto al de la imagen anterior (regla de oro).
     Si usar_descripciones_ia=True, genera antes descripción visual por escena con IA.
+    Retorna (Escena, prompt, expression_key, outfit_key). expression_key es None (solo beats lo usan).
     """
     descripciones: list[str] = []
     if usar_descripciones_ia and escenas:
@@ -464,6 +471,8 @@ def prompts_para_escenas(
                 orden[i],
                 descripcion_visual=descripciones[i] if i < len(descripciones) else None,
             ),
+            None,  # expression_key (solo en beats)
+            get_outfit_key_for_scene(e.texto, descripciones[i] if i < len(descripciones) else None),
         )
         for i, e in enumerate(escenas)
     ]
@@ -493,4 +502,10 @@ def prompts_para_beats(
             prompt = prompt.rstrip() + " Variación alternativa: ángulo o encuadre distinto."
         resultados.append((beat, prompt))
     return resultados
+
+
+def get_outfit_key_for_beat(beat: VisualBeat) -> str:
+    """Dado un beat, devuelve la clave del outfit para esa escena."""
+    combined = " ".join(filter(None, [getattr(beat, "original_text", "") or "", getattr(beat, "action", "") or ""]))
+    return get_outfit_key_for_scene(combined, None)
 

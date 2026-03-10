@@ -110,30 +110,32 @@ def _refinar_prompt_con_feedback(prompt_original: str, feedback: str) -> str:
 
 
 def guardar_prompts_por_escena(
-    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]],
+    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]] | list[tuple[Escena, str, str | None, str]],
     proyecto: str,
 ) -> Path:
-    """Guarda los prompts originales por escena para poder regenerar después. Acepta (Escena, prompt) o (Escena, prompt, expression_key)."""
+    """Guarda los prompts por escena. Acepta (Escena, prompt), (Escena, prompt, expression_key) o (Escena, prompt, expression_key, outfit_key)."""
     META_DIR.mkdir(parents=True, exist_ok=True)
-    meta = {
-        "proyecto": proyecto,
-        "escenas": [
-            {
-                "numero": item[0].numero,
-                "texto": item[0].texto,
-                "duracion_segundos": item[0].duracion_segundos,
-                "prompt": item[1],
-            }
-            for item in escenas_con_prompts
-        ],
-    }
+    escenas_list = []
+    for item in escenas_con_prompts:
+        rec = {
+            "numero": item[0].numero,
+            "texto": item[0].texto,
+            "duracion_segundos": item[0].duracion_segundos,
+            "prompt": item[1],
+        }
+        if len(item) >= 3 and item[2] is not None:
+            rec["expression_key"] = item[2]
+        if len(item) >= 4:
+            rec["outfit_key"] = item[3]
+        escenas_list.append(rec)
+    meta = {"proyecto": proyecto, "escenas": escenas_list}
     path = META_DIR / f"{proyecto}_prompts.json"
     path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     return path
 
 
-def cargar_prompts(proyecto: str) -> list[tuple[Escena, str]]:
-    """Carga escenas y prompts guardados para un proyecto."""
+def cargar_prompts(proyecto: str) -> list[tuple[Escena, str, str | None, str | None]]:
+    """Carga escenas y prompts guardados. Retorna (Escena, prompt, expression_key, outfit_key); expression_key y outfit_key pueden ser None."""
     path = META_DIR / f"{proyecto}_prompts.json"
     if not path.exists():
         return []
@@ -145,7 +147,12 @@ def cargar_prompts(proyecto: str) -> list[tuple[Escena, str]]:
             texto=item["texto"],
             duracion_segundos=item["duracion_segundos"],
         )
-        out.append((e, item["prompt"]))
+        out.append((
+            e,
+            item["prompt"],
+            item.get("expression_key"),
+            item.get("outfit_key"),
+        ))
     return out
 
 
@@ -160,20 +167,20 @@ def regenerar_escenas(
     escenas_con_prompts = cargar_prompts(proyecto)
     if not escenas_con_prompts:
         raise FileNotFoundError(f"No hay meta para proyecto: {proyecto}")
-    by_num = {e.numero: (e, p) for e, p in escenas_con_prompts}
+    by_num = {e.numero: (e, p, expr, ok) for e, p, expr, ok in escenas_con_prompts}
     carpeta = BASE / "output" / "imagenes" / carpeta_imagenes
     feedback_por_escena = feedback_por_escena or {}
     rutas = []
     for n in numeros_escenas:
         if n not in by_num:
             continue
-        e, prompt = by_num[n]
+        e, prompt, expression_key, outfit_key = by_num[n]
         feedback = feedback_por_escena.get(n, "").strip()
         if feedback:
             prompt_refinado = _refinar_prompt_con_feedback(prompt, feedback)
             _guardar_feedback_aprendizaje(proyecto, n, prompt, feedback, prompt_refinado)
             prompt = prompt_refinado
-        path = generar_imagen(prompt, e.numero, carpeta)
+        path = generar_imagen(prompt, e.numero, carpeta, expression_key=expression_key, outfit_key=outfit_key)
         if path:
             rutas.append(path)
     return rutas

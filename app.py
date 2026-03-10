@@ -31,7 +31,7 @@ from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
 from src.script_generator import guardar_guion, generar_guion
 from src.scene_splitter import dividir_en_escenas, Escena
-from src.prompt_builder import prompts_para_escenas, prompts_para_beats, emotion_to_expression_key
+from src.prompt_builder import prompts_para_escenas, prompts_para_beats, emotion_to_expression_key, get_outfit_key_for_beat
 from src.regeneration import guardar_prompts_por_escena
 from src.video_replicate import generar_clip_desde_imagen as generar_clip_video_replicate
 from src.visual_beats import generar_beats_para_escenas, guardar_beats
@@ -194,7 +194,7 @@ def preparar_imagenes_para_revision(
     beats = generar_beats_para_escenas(escenas, tema=tema_para_desc)
     guardar_beats(beats, proy)
     beats_con_prompts = prompts_para_beats(beats)
-    escenas_con_prompts: list[tuple[Escena, str, str | None]] = [
+    escenas_con_prompts: list[tuple[Escena, str, str | None, str]] = [
         (
             Escena(
                 numero=beat.beat_id,
@@ -203,6 +203,7 @@ def preparar_imagenes_para_revision(
             ),
             prompt,
             emotion_to_expression_key(beat.emotion),
+            get_outfit_key_for_beat(beat),
         )
         for beat, prompt in beats_con_prompts
     ]
@@ -1645,7 +1646,7 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz �
                 beats = generar_beats_para_escenas(escenas, tema=tema_ctx)
                 guardar_beats(beats, nombre)
                 beats_con_prompts = prompts_para_beats(beats)
-                escenas_con_prompts: list[tuple[EscenaMA, str, str | None]] = [
+                escenas_con_prompts: list[tuple[EscenaMA, str, str | None, str]] = [
                     (
                         EscenaMA(
                             numero=beat.beat_id,
@@ -1654,6 +1655,7 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz �
                         ),
                         prompt,
                         emotion_to_expression_key(beat.emotion),
+                        get_outfit_key_for_beat(beat),
                     )
                     for beat, prompt in beats_con_prompts
                 ]
