@@ -1,0 +1,184 @@
+# =============================================================================
+# OUTFIT LIBRARY — Ropa del personaje según contexto narrativo
+# La identidad (cara circular, ojos negros, estilo stickman) NUNCA cambia.
+# Solo la vestimenta y los props cambian según la escena.
+# =============================================================================
+
+# Mapeo: tipo de escena (inferido por keywords) -> clave del outfit
+scene_type_to_outfit:
+  war: war_outfit
+  crime: criminal_outfit
+  business: business_outfit
+  sports: athlete_outfit
+  gaming: gamer_outfit
+  childhood: kid_outfit
+  casual: casual_outfit
+
+# Orden en que se comprueban los tipos (el primero que coincida con keywords gana)
+scene_type_priority: [war, crime, business, sports, gaming, childhood]
+
+outfits:
+  casual_outfit:
+    prompt: |
+      Character wearing casual outfit: hoodie or t-shirt, jeans or casual pants, sneakers.
+      Used for: daily life, home, walking in city, neutral moments.
+  kid_outfit:
+    prompt: |
+      Character as a child: simple t-shirt, shorts or simple pants, sneakers.
+      Proportions must reflect a younger body (child). Same face and stickman style; only age-appropriate clothing and proportions.
+  gamer_outfit:
+    prompt: |
+      Character wearing gamer outfit: hoodie, headphones, casual pants.
+      Optional in scene: controller, keyboard, desk chair. Used in gaming or computer scenes.
+  athlete_outfit:
+    prompt: |
+      Character wearing athlete outfit: football/sports jersey, shorts, sport shoes.
+      Optional: team colors, stadium or sports environment. Used in sports scenes.
+  business_outfit:
+    prompt: |
+      Character wearing business outfit: suit jacket, formal pants, dress shoes.
+      Optional environment: office, boardroom, city skyline. Used in business or power scenes.
+  criminal_outfit:
+    prompt: |
+      Character wearing criminal outfit: dark hoodie, dark jacket, simple pants.
+      Atmosphere: night scenes, tense environments. Used in crime-related scenes.
+  war_outfit:
+    prompt: |
+      Character wearing military/tactical outfit: military gear, tactical vest, boots.
+      Environment: battlefield, ruined buildings, conflict. Used in war or conflict scenes.
+
+# Palabras clave por tipo de escena (español e inglés). Se buscan en el texto de la escena + descripción visual.
+scene_type_keywords:
+  childhood:
+    - niño
+    - niña
+    - child
+    - children
+    - infancia
+    - childhood
+    - años de edad
+    - nueve años
+    - diez años
+    - pequeño
+    - pequeña
+    - kid
+    - kids
+  gaming:
+    - consola
+    - videojuego
+    - videojuegos
+    - gaming
+    - gamer
+    - computadora
+    - ordenador
+    - pantalla
+    - teclado
+    - control
+    - controller
+    - juego
+    - jugar
+    - pc
+    - desk
+    - headphones
+    - auriculares
+  sports:
+    - fútbol
+    - futbol
+    - cancha
+    - estadio
+    - deporte
+    - sports
+    - athlete
+    - partido
+    - equipo
+    - camiseta
+    - jersey
+    - gol
+    - entrenamiento
+  business:
+    - oficina
+    - office
+    - negocio
+    - business
+    - reunión
+    - reuniones
+    - junta
+    - corporativo
+    - ejecutivo
+    - traje
+    - suit
+    - despacho
+    - boardroom
+    - dinero
+    - poder
+    - influencia
+    - negociación
+  crime:
+    - crimen
+    - crime
+    - cartel
+    - mafia
+    - delincuente
+    - criminal
+    - droga
+    - tráfico
+    - emboscada
+    - policía
+    - celda
+    - prisión
+    - cárcel
+    - warehouse
+    - almacén
+    - parking
+    - estacionamiento
+    - noche
+    - oscuro
+  war:
+    - guerra
+    - war
+    - batalla
+    - battlefield
+    - soldado
+    - military
+    - militar
+    - explosión
+    - explosiones
+    - destrucción
+    - ruinas
+    - conflicto
+    - combate
+    - tactical
+    - táctico
+
+# =============================================================================
+# PROP LIBRARY — Objetos que el personaje puede tener o que aparecen en la escena
+# Hacen la escena más narrativa. Se seleccionan según contexto.
+# =============================================================================
+props:
+  laptop:
+    prompt: "laptop or computer visible in scene"
+    keywords: [computadora, ordenador, laptop, pc, trabajo, office, escritorio, desk]
+  weapon:
+    prompt: "weapon or threat object (suggested, not graphic) if context implies danger"
+    keywords: [arma, armas, disparo, disparos, amenaza, peligro, weapon, gun, danger]
+  football:
+    prompt: "football or ball in scene"
+    keywords: [fútbol, futbol, balón, pelota, ball, cancha, sports, deporte]
+  phone:
+    prompt: "phone or mobile device in scene"
+    keywords: [teléfono, telefono, móvil, celular, phone, llamada, mensaje]
+  suitcase:
+    prompt: "suitcase or bag in scene"
+    keywords: [maleta, equipaje, viaje, suitcase, bag, huir, escapar]
+  money:
+    prompt: "money or cash suggested in scene (stacks, briefcase, exchange)"
+    keywords: [dinero, efectivo, cash, pago, negocio, deal, maletín, briefcase]
+  microphone:
+    prompt: "microphone or interview setup in scene"
+    keywords: [micrófono, microfono, entrevista, entrevista, prensa, microphone, interview]
+  controller:
+    prompt: "game controller or keyboard in scene"
+    keywords: [consola, control, controller, mando, teclado, keyboard, gaming, videojuego]
+
+# Máximo de props a mencionar por escena (evitar prompt sobrecargado)
+max_props_per_scene: 3

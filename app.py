@@ -13,7 +13,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import streamlit as st
 from dotenv import load_dotenv
 
-from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes, get_subtitle_styles, get_instrucciones_titulo
+from src.config_loader import (
+    BASE,
+    get_narrative_rules,
+    get_plantillas_guion,
+    get_instrucciones_descripcion,
+    get_instrucciones_miniatura,
+    get_instrucciones_imagenes,
+    get_subtitle_styles,
+    get_instrucciones_titulo,
+    get_character_references,
+    get_visual_references,
+    get_outfit_library,
+)
 from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto, _replicate_disponible, generar_lote, OUTPUT_IMAGES
 from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
@@ -21,6 +33,7 @@ from src.script_generator import guardar_guion, generar_guion
 from src.scene_splitter import dividir_en_escenas, Escena
 from src.prompt_builder import prompts_para_escenas, prompts_para_beats, emotion_to_expression_key
 from src.regeneration import guardar_prompts_por_escena
+from src.video_replicate import generar_clip_desde_imagen as generar_clip_video_replicate
 from src.visual_beats import generar_beats_para_escenas, guardar_beats
 from src.title_generator import sugerir_titulos_virales
 import yaml
@@ -281,6 +294,235 @@ def clear_result():
     st.session_state.target_words = None
 
 
+# ─── Subidor de referencias de personaje ──────────────────────────────────────
+def ui_referencias_personaje():
+    """Permite subir/actualizar las imágenes de referencia del personaje (stickman) usadas por FLUX."""
+    refs = get_character_references()
+    if not refs:
+        return
+
+    with st.expander("🎭 Personaje principal: referencias visuales (stickman)", expanded=False):
+        st.caption(
+            "Estas imágenes se usan como referencia para que todas las escenas mantengan **el mismo personaje**. "
+            "Si subís una nueva, se guarda en la carpeta `character_reference/` del proyecto."
+        )
+        base_dir = BASE / "character_reference"
+        base_dir.mkdir(parents=True, exist_ok=True)
+
+        for key, rel_path in refs.items():
+            rel = Path(rel_path)
+            filename = rel.name or f"character_{key}.png"
+            dest = base_dir / filename
+
+            cols = st.columns([1, 2])
+            with cols[0]:
+                st.markdown(f"**{key}**")
+                if dest.exists():
+                    st.image(str(dest), caption=filename, use_container_width=True)
+                else:
+                    st.caption("Sin imagen cargada.")
+            with cols[1]:
+                uploaded = st.file_uploader(
+                    f"Subir imagen para '{key}'",
+                    type=["png", "jpg", "jpeg"],
+                    key=f"upload_ref_{key}",
+                    label_visibility="collapsed",
+                )
+                if uploaded is not None:
+                    data = uploaded.read()
+                    dest.write_bytes(data)
+                    st.success(f"Referencia '{key}' actualizada y guardada en `character_reference/{filename}`.")
+        st.caption(
+            "Las referencias quedan guardadas en el proyecto. Si clonás/copias esta carpeta en otra PC, "
+            "el personaje se mantendrá igual."
+        )
+
+
+# ─── Referencias visuales del proyecto (estilo, ambiente, atmósferas) ───
+_VISUAL_REF_LABELS = {
+    "style": "Estilo visual (style_reference)",
+    "environment": "Ambiente / entornos (environment_reference)",
+    "camera": "Cámara / encuadre (camera_reference)",
+    "lighting": "Iluminación (lighting_reference)",
+    "composition": "Composición (composition_reference)",
+    "tension": "Tensión / suspense (tension_reference)",
+    "crime": "Crimen / entornos delictivos (crime_reference)",
+    "war": "Guerra / conflicto (war_reference)",
+    "power": "Poder / influencia / lujo (power_reference)",
+    "night": "Noche / urbano nocturno (night_reference)",
+}
+
+
+def ui_referencias_visuales():
+    """Permite subir las imágenes de referencia visual del proyecto: estilo base y atmósferas (calm, tension, crime, war, power, night)."""
+    refs = get_visual_references()
+    if not refs:
+        return
+
+    with st.expander("🎬 Referencias visuales del proyecto (estilo, cámara, iluminación, atmósferas)", expanded=False):
+        st.caption(
+            "Definen el **universo visual** del video: estilo base (calm, habitaciones, parques) y **atmósferas** "
+            "(tensión, crimen, guerra, poder, noche). Las referencias de atmósfera amplían el rango sin reemplazar "
+            "el estilo. Se aplican a todas las imágenes; la escena decide qué atmósfera usar. Se guardan en `visual_reference/`."
+        )
+        base_dir = BASE / "visual_reference"
+        base_dir.mkdir(parents=True, exist_ok=True)
+
+        for key, rel_path in refs.items():
+            rel = Path(rel_path)
+            filename = rel.name or f"{key}_reference.png"
+            dest = base_dir / filename
+            label = _VISUAL_REF_LABELS.get(key, key)
+
+            cols = st.columns([1, 2])
+            with cols[0]:
+                st.markdown(f"**{label}**")
+                if dest.exists():
+                    st.image(str(dest), caption=filename, use_container_width=True)
+                else:
+                    st.caption("Sin imagen cargada.")
+            with cols[1]:
+                uploaded = st.file_uploader(
+                    f"Subir imagen para {label}",
+                    type=["png", "jpg", "jpeg"],
+                    key=f"upload_visual_ref_{key}",
+                    label_visibility="collapsed",
+                )
+                if uploaded is not None:
+                    data = uploaded.read()
+                    dest.write_bytes(data)
+                    st.success(f"Referencia '{key}' guardada en `visual_reference/{filename}`.")
+        st.caption(
+            "Las referencias se usan como guía de estilo en cada generación (no se copian; inspiran el look). "
+            "Incluyen estilo base y atmósferas (tensión, crimen, guerra, poder, noche). Si no subís ninguna, no se aplican estas reglas."
+        )
+
+
+# ─── Editor de outfits y props del personaje ──────────────────────────────────
+def ui_outfits_y_props():
+    """Permite editar la biblioteca de outfits del personaje y los props narrativos."""
+    data = get_outfit_library()
+    if not data:
+        return
+
+    outfits = data.get("outfits") or {}
+    props = data.get("props") or {}
+    max_props = data.get("max_props_per_scene", 3)
+
+    with st.expander("🧥 Outfits del personaje y props (edición avanzada)", expanded=False):
+        st.caption(
+            "Acá definís **cómo se viste el personaje** según el contexto (infancia, gaming, deporte, negocio, crimen, guerra, etc.) "
+            "y qué **objetos narrativos** pueden aparecer (laptop, arma sugerida, pelota, teléfono, dinero, etc.). "
+            "La identidad del personaje (cara circular blanca, ojos negros simples, cuerpo stickman) **nunca cambia**; "
+            "solo cambia la ropa y los props."
+        )
+
+        st.markdown("#### Outfits por contexto (texto + imagen de referencia opcional)")
+        nuevos_outfits: dict[str, str] = {}
+        for key, cfg in outfits.items():
+            if isinstance(cfg, dict):
+                prompt_actual = cfg.get("prompt", "")
+            else:
+                prompt_actual = str(cfg or "")
+            label = f"{key}"
+            col_txt, col_img = st.columns([3, 2])
+            with col_txt:
+                nuevos_outfits[key] = st.text_area(
+                    f"Prompt de outfit para `{key}`",
+                    value=prompt_actual,
+                    height=80,
+                    help="Describe la ropa y contexto de uso para este outfit. La cara y el estilo stickman NO cambian.",
+                    key=f"outfit_prompt_{key}",
+                )
+            # Imagen de referencia de outfit (opcional): solo guía visual, no se copia literal.
+            with col_img:
+                st.caption("Referencia visual opcional")
+                outfit_ref_dir = BASE / "references" / "outfits"
+                outfit_ref_dir.mkdir(parents=True, exist_ok=True)
+                # Nombre de archivo sugerido según tu spec
+                filename = {
+                    "casual_outfit": "outfit_casual.png",
+                    "kid_outfit": "outfit_kid.png",
+                    "gamer_outfit": "outfit_gamer.png",
+                    "athlete_outfit": "outfit_athlete.png",
+                    "business_outfit": "outfit_business.png",
+                    "criminal_outfit": "outfit_criminal.png",
+                    "war_outfit": "outfit_war.png",
+                }.get(key, f"{key}.png")
+                dest = outfit_ref_dir / filename
+                if dest.exists():
+                    st.image(str(dest), caption=filename, use_container_width=True)
+                uploaded_outfit = st.file_uploader(
+                    f"Subir referencia para `{key}`",
+                    type=["png", "jpg", "jpeg"],
+                    key=f"outfit_ref_{key}",
+                    label_visibility="collapsed",
+                )
+                if uploaded_outfit is not None:
+                    data = uploaded_outfit.read()
+                    dest.write_bytes(data)
+                    st.success(f"Referencia visual para `{key}` guardada en `/references/outfits/{filename}`.")
+
+        st.markdown("#### Props narrativos (objetos)")
+        nuevos_props_prompts: dict[str, str] = {}
+        nuevos_props_keywords: dict[str, list[str]] = {}
+        for key, cfg in props.items():
+            if not isinstance(cfg, dict):
+                continue
+            col1, col2 = st.columns([2, 3])
+            with col1:
+                st.markdown(f"**{key}**")
+                prompt_actual = cfg.get("prompt", "")
+                nuevos_props_prompts[key] = st.text_input(
+                    f"Descripción de prop para `{key}`",
+                    value=prompt_actual,
+                    key=f"prop_prompt_{key}",
+                )
+            with col2:
+                kw_actual = ", ".join(cfg.get("keywords") or [])
+                kw_str = st.text_input(
+                    f"Palabras clave (coma separada) para `{key}`",
+                    value=kw_actual,
+                    key=f"prop_keywords_{key}",
+                    help="Si alguna de estas palabras aparece en la escena, se sugiere este objeto en la imagen.",
+                )
+                nuevos_props_keywords[key] = [w.strip() for w in kw_str.split(",") if w.strip()]
+
+        max_props = st.number_input(
+            "Máximo de props por escena",
+            min_value=0,
+            max_value=6,
+            value=int(max_props),
+            step=1,
+            help="Cuántos objetos como máximo se mencionan en el prompt de una sola imagen.",
+        )
+
+        if st.button("💾 Guardar cambios de outfits y props"):
+            # Actualizar en memoria
+            for key, txt in nuevos_outfits.items():
+                if isinstance(outfits.get(key), dict):
+                    outfits[key]["prompt"] = txt
+                else:
+                    outfits[key] = {"prompt": txt}
+            for key, txt in nuevos_props_prompts.items():
+                if key not in props:
+                    props[key] = {}
+                props[key]["prompt"] = txt
+                props[key]["keywords"] = nuevos_props_keywords.get(key, [])
+            data["outfits"] = outfits
+            data["props"] = props
+            data["max_props_per_scene"] = int(max_props)
+
+            # Guardar en disco
+            outfit_path = BASE / "config" / "outfit_library.yaml"
+            try:
+                with open(outfit_path, "w", encoding="utf-8") as f:
+                    yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
+                st.success("Outfits y props actualizados en `config/outfit_library.yaml`.")
+            except Exception as e:
+                st.error(f"No se pudieron guardar los cambios: {e}")
+
+
 # ─── Estilos ─────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -316,6 +558,11 @@ st.markdown("""
     .stError { background: rgba(239,68,68,0.15) !important; border-radius: var(--radius) !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# Subidor de referencias de personaje y referencias visuales del proyecto (antes del flujo principal)
+ui_referencias_personaje()
+ui_referencias_visuales()
+ui_outfits_y_props()
 
 # ─── Hero ───────────────────────────────────────────────────────────────────
 st.markdown('<p class="hero">FrameFactory</p>', unsafe_allow_html=True)
@@ -563,7 +810,7 @@ with st.expander("⚙️ Opciones avanzadas"):
     skip_imagenes = st.checkbox(
         "Saltar generación de imágenes",
         value=False,
-        help="Si lo marcás, el video se genera solo con voz (sin imágenes). Útil cuando ComfyUI no está corriendo; ver README o SETUP.",
+        help="Si lo marcás, el video se genera solo con voz (sin imágenes).",
         key="skip_imgs_todo"
     )
     
@@ -626,23 +873,9 @@ with st.expander("⚙️ Opciones avanzadas"):
 if not skip_imagenes:
     usar_replicate = _replicate_disponible()
     if usar_replicate:
-        st.success("Imágenes con **Replicate FLUX** (~$0.003/imagen). No hace falta ComfyUI.")
+        st.success("Imágenes con **Replicate FLUX** (~$0.003/imagen).")
     else:
-        # Solo si NO hay Replicate disponible, se permite/avisa sobre ComfyUI como opción legacy.
-        comfy_ok = _comfyui_disponible()
-        if comfy_ok:
-            donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
-            st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarían con ComfyUI — {COMFY_URL}")
-        else:
-            st.warning(
-                "ComfyUI no está corriendo. Iniciá ComfyUI en el puerto 8188 (local o RunPod) o configurá REPLICATE_API_TOKEN en .env para usar FLUX."
-            )
-            if st.button("▶️ Iniciar ComfyUI en segundo plano", key="btn_iniciar_comfy"):
-                ok, err = iniciar_comfyui_background()
-                if ok:
-                    st.success("ComfyUI se está iniciando. Esperá 30–60 segundos y recargá la página (F5). Si no aparece, abrí el log abajo o ejecutá en terminal: bash scripts/start_comfyui.sh")
-                else:
-                    st.error(f"No se pudo iniciar ComfyUI: {err}. Verificá que tengas ComfyUI instalado y, si está en otra ruta, definí COMFYUI_PATH en .env.")
+        st.error("Falta REPLICATE_API_TOKEN en .env. Configurá ese token para generar imágenes con FLUX o marcá «Saltar generación de imágenes».")
 
 col1, col2 = st.columns([1, 2])
 with col1:
@@ -657,9 +890,9 @@ if generar:
         bloqueado = True
     elif faltan:
         st.error("Completá las credenciales en .env y volvé a intentar.")
-    elif not skip_imagenes and not usar_replicate and not _replicate_disponible() and not _comfyui_disponible():
-        # Solo bloquear si NO hay Replicate y TAMPOCO ComfyUI disponible.
-        st.error("No hay backend de imágenes disponible. Configurá REPLICATE_API_TOKEN en .env o levantá ComfyUI en el puerto 8188.")
+    elif not skip_imagenes and not _replicate_disponible():
+        # Bloquear si quieren imágenes pero no hay FLUX configurado.
+        st.error("No hay backend de imágenes disponible. Configurá REPLICATE_API_TOKEN en .env o marcá «Saltar generación de imágenes».")
     else:
         revisar_imagenes_antes_video = st.session_state.get("revisar_imagenes_todo", False)
         # Barra de progreso para imágenes (así se ve que avanza y no está trancado)
@@ -677,7 +910,7 @@ if generar:
             with st.spinner(mensaje_spinner):
                 try:
                     os.environ["USE_OPENAI_IMAGES"] = "false"
-                    os.environ["IMAGE_BACKEND"] = "replicate" if (st.session_state.get("imagen_backend_todo") == "Replicate (FLUX, ~$0.003/imagen)") else "comfyui"
+                    os.environ["IMAGE_BACKEND"] = "replicate"
                     proy, guion_path, lista_imagenes = preparar_imagenes_para_revision(
                         tema=tema.strip(),
                         nombre_proyecto=(nombre_proyecto or "").strip() or None,
@@ -704,7 +937,7 @@ if generar:
             with st.spinner(mensaje_spinner):
                 try:
                     os.environ["USE_OPENAI_IMAGES"] = "false"
-                    os.environ["IMAGE_BACKEND"] = "replicate" if (st.session_state.get("imagen_backend_todo") == "Replicate (FLUX, ~$0.003/imagen)") else "comfyui"
+                    os.environ["IMAGE_BACKEND"] = "replicate"
                     video_path, metadata_path, thumbnail_path, info_dict = run(
                         tema=tema.strip(),
                         target_words=target_words,

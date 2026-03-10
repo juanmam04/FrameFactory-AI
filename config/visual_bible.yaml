@@ -45,6 +45,37 @@ character_reference:
   neutral: "character_reference/character_neutral.png"
 
 # =============================================================================
+# 2b. REFERENCIAS VISUALES DEL PROYECTO (Visual Reference System)
+# Se aplican a TODAS las imágenes. No son por escena: definen el universo visual.
+# Las reglas debajo se inyectan en el prompt cuando existen estas referencias.
+# =============================================================================
+visual_reference:
+  # Base style and framing (calm, daily life, general cinematography)
+  style: "visual_reference/style_reference.png"
+  environment: "visual_reference/environment_reference.png"
+  camera: "visual_reference/camera_reference.png"
+  lighting: "visual_reference/lighting_reference.png"
+  composition: "visual_reference/composition_reference.png"
+  # Atmosphere references (tension, crime, war, power, night) — extend range without replacing base style
+  tension: "visual_reference/tension_reference.png"
+  crime: "visual_reference/crime_reference.png"
+  war: "visual_reference/war_reference.png"
+  power: "visual_reference/power_reference.png"
+  night: "visual_reference/night_reference.png"
+
+# Reglas que se añaden al prompt cuando hay referencias visuales (la IA las tiene en cuenta).
+# Referencias no reemplazan la descripción de la escena; definen CÓMO se ve el mundo.
+# Las de atmósfera (tension, crime, war, power, night) amplían el rango sin sustituir estilo base.
+visual_reference_rules: |
+  VISUAL REFERENCE SYSTEM (apply to this image). Same character style and visual universe; atmosphere depends on scene:
+  - STYLE: Match the style reference: stickman visual language, balance between simple character and detailed background, line style, cinematic look. Main character always matches reference style; background must be more detailed than the character.
+  - ENVIRONMENT: Follow environment reference: interiors/exteriors with structure, logical object placement, spatial depth. Backgrounds never empty; environments believable and populated (furniture, lighting, windows, depth). Every image has a clear location.
+  - CAMERA: Follow camera reference: cinematic framing, spatial composition, subject-environment relation. Avoid flat centered compositions; use varied camera distances; encourage depth and perspective. Camera distance, framing style, and perspective must feel cinematic.
+  - LIGHTING: Follow lighting reference: atmospheric lighting, emotional tone, cinematic contrast. Lighting must match scene emotion; environments have natural light sources (windows, lamps, screens, sunlight). Avoid flat uniform lighting. Lighting reinforces narrative emotion.
+  - COMPOSITION: Follow composition reference: visual balance, focus hierarchy, cinematic storytelling. Main subject clearly readable; rule-of-thirds when appropriate; avoid cluttered or chaotic framing. Viewer must understand the scene immediately.
+  - ATMOSPHERE (use when scene calls for it): TENSION reference: darker lighting, strong shadows, dramatic framing, confrontational situations, visual suspense (abandoned buildings, alleyways, face-offs, standoffs). CRIME reference: urban night, secrecy, danger, suspicious meetings, cars, warehouses, back rooms, criminal environments. WAR reference: chaotic environments, destruction, smoke, damaged buildings, military tension, ruined streets, distant conflict. POWER reference: luxury, authority, business power, corporate offices, large desks, city skyline views, expensive environments, negotiations, influence. NIGHT reference: night-time cinematic look, neon lights, dark streets, strong contrast, urban night atmosphere, rain on pavement, moody lighting. Apply the atmosphere that fits the scene while keeping the same visual style and character design.
+
+# =============================================================================
 # 3. SISTEMA DE CÁMARA (CAMERA SYSTEM) - Rotación automática, NUNCA repetir
 # =============================================================================
 # Regla de oro: if camera_position == previous_camera_position: change_camera()
@@ -115,7 +146,7 @@ formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
 # 6. NEGATIVE PROMPT (estabilidad del modelo)
 # =============================================================================
 
-negative_prompt: "anime, pixar, 3d render, realistic human, photorealistic, caricature, childish cartoon, manga style, overly detailed human anatomy, blurry, low quality, distorted, text, watermark, video player, playback bar, editor interface, UI overlay"
+negative_prompt: "anime, pixar, 3d render, realistic human, photorealistic, caricature, childish cartoon, manga style, overly detailed human anatomy, extra fingers, extra hands, extra arms, deformed hands, bad hands, mutated fingers, distorted limbs, blurry, low quality, distorted, text, watermark, video player, playback bar, editor interface, UI overlay"
 
 # Regla para TODAS las imágenes
 prohibido_en_imagen: "Sin reproductor de video, sin barra de reproducción, sin interfaz de editor. Sin fondo blanco ni fondos vacíos; toda imagen debe tener escenario/fondo visible y detallado. Formato 16:9, encuadre claro, composición cinematográfica."

@@ -9,7 +9,7 @@ from typing import Callable
 import requests
 from dotenv import load_dotenv
 
-from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes, get_estilo_base, get_character_references
+from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes, get_estilo_base, get_character_references, get_visual_references
 from .scene_splitter import Escena
 
 load_dotenv(BASE / ".env")
@@ -23,9 +23,18 @@ _resolved_checkpoint: str | None = None
 def _usar_openai_imagenes() -> bool:
     return False
 
-# Replicate: flux-schnell = solo texto (~$0.003/imagen). Si hay character_reference front, usamos Kontext para respetar al personaje (~$0.025/imagen).
-REPLICATE_MODEL_SCHNELL = os.getenv("REPLICATE_FLUX_MODEL", "black-forest-labs/flux-schnell").strip()
-REPLICATE_MODEL_KONTEXT = "black-forest-labs/flux-kontext-dev"
+# Replicate: permitimos elegir modelo de texto→imagen por .env.
+# REPLICATE_IMAGE_MODEL (nuevo) tiene prioridad; si no está, usamos REPLICATE_FLUX_MODEL (legacy) y,
+# en última instancia, flux-schnell (muy barato pero peor calidad de anatomía).
+REPLICATE_MODEL_TEXT = (
+    os.getenv("REPLICATE_IMAGE_MODEL")
+    or os.getenv("REPLICATE_FLUX_MODEL")
+    or "black-forest-labs/flux-schnell"
+).strip()
+# Para flujos con imagen de referencia (Kontext) mantenemos por defecto FLUX Kontext, también configurable.
+REPLICATE_MODEL_KONTEXT = os.getenv(
+    "REPLICATE_IMAGE_MODEL_WITH_REF", "black-forest-labs/flux-kontext-dev"
+).strip()
 
 def _usar_replicate() -> bool:
     """Usar SIEMPRE Replicate (FLUX) cuando haya token; ComfyUI queda como opción legacy."""
@@ -388,15 +397,19 @@ def _generar_imagen_replicate(
     height: int = 576,
     expression_key: str | None = None,
 ) -> Path | None:
-    """Genera una imagen con Replicate. Si existe character_reference (front o expresión), usa FLUX Kontext
-    para respetar al personaje (~$0.025/imagen). Si no, usa flux-schnell (~$0.003/imagen)."""
+    """Genera una imagen con Replicate.
+    - Si existe character_reference (front o expresión), usa el modelo con referencia (por defecto FLUX Kontext).
+    - Si no, usa el modelo de texto→imagen configurado en REPLICATE_IMAGE_MODEL (o flux-schnell por defecto).
+    """
     import replicate as replicate_client
     from base64 import b64encode
 
     prompt = (prompt or "").strip()[:3500]
     if not prompt:
         return None
-    # ¿Tenemos imagen de referencia del personaje? → Kontext respeta esa cara/cuerpo
+    # ¿Tenemos imagen de referencia de PERSONAJE? → Kontext respeta esa cara/cuerpo.
+    # Las otras referencias (style/environment/camera/lighting/composition) SOLO se usan vía texto,
+    # para que inspiren el estilo pero sin copiar literalmente una imagen concreta.
     image_ref_path: Path | None = None
     try:
         refs = get_character_references()
@@ -444,7 +457,7 @@ def _generar_imagen_replicate(
         except Exception as e:
             raise RuntimeError(f"Replicate FLUX Kontext no pudo generar la imagen: {e}") from e
     else:
-        # FLUX Schnell: solo texto, sin referencia
+        # Solo texto, sin referencia: usar modelo configurable (REPLICATE_MODEL_TEXT)
         aspect_ratio = "16:9"
         if width and height:
             r = width / height if height else 1.0
@@ -456,7 +469,7 @@ def _generar_imagen_replicate(
                 aspect_ratio = "1:1"
         try:
             output = replicate_client.run(
-                REPLICATE_MODEL_SCHNELL,
+                REPLICATE_MODEL_TEXT,
                 input={
                     "prompt": prompt,
                     "aspect_ratio": aspect_ratio,

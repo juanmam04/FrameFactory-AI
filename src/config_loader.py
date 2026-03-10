@@ -98,6 +98,30 @@ def get_character_references() -> dict:
     return vb.get("character_reference", {})
 
 
+def get_visual_references() -> dict:
+    """Devuelve rutas relativas a las referencias visuales del proyecto (estilo, ambiente, cámara, iluminación, composición)."""
+    vb = get_visual_bible()
+    return vb.get("visual_reference", {})
+
+
+def get_visual_reference_rules() -> str:
+    """Texto de reglas que se inyecta en cada prompt cuando existen referencias visuales (style, environment, camera, lighting, composition)."""
+    vb = get_visual_bible()
+    return (vb.get("visual_reference_rules") or "").strip()
+
+
+def has_any_visual_reference() -> bool:
+    """True si al menos una imagen de referencia visual existe en disco (para activar las reglas en el prompt)."""
+    for rel in get_visual_references().values():
+        if rel and (BASE / rel).exists() and (BASE / rel).stat().st_size > 0:
+            return True
+    return False
+
+
+def get_outfit_library() -> dict:
+    """Carga la biblioteca de outfits y props (outfit_library.yaml)."""
+    return load_yaml("outfit_library.yaml")
+
 
 def get_preferencias_aprendidas(max_entradas: int = 25) -> str:
     """Preferencias guardadas al regenerar con feedback. Desactivado: no se inyectan en prompts de imagen

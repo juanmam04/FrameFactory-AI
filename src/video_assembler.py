@@ -90,7 +90,7 @@ def montar_video(
     duracion_maxima_segundos: float | None = None,
     subtitles_path: Path | None = None,
     subtitle_style: str | None = None,
-    transiciones_suaves: bool = True,
+    transiciones_suaves: bool = False,
 ) -> Path:
     """
     Une imágenes en secuencia (duración por imagen configurable),
@@ -163,7 +163,7 @@ def montar_video(
                 print(f"⚠️ Falló video con zoom/transiciones ({e}), usando montaje estático.")
                 transiciones_suaves = False
         if not transiciones_suaves:
-            # Montaje estático (como antes): concat sin zoom ni fade
+            # Montaje estático: concat de imágenes con leve fade inicial
             list_file = out.with_suffix(".list.txt")
             with open(list_file, "w") as f:
                 for p in lista_imagenes:
@@ -174,7 +174,12 @@ def montar_video(
             cmd_video = [
                 "ffmpeg", "-y", "-f", "concat", "-safe", "0",
                 "-i", str(list_file),
-                "-vf", f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height}",
+                "-vf",
+                (
+                    f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+                    f"crop={width}:{height},"
+                    f"fade=t=in:st=0:d=0.5"
+                ),
                 "-r", "24",
                 "-pix_fmt", "yuv420p",
                 str(video_solo),

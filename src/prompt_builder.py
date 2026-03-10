@@ -1,7 +1,7 @@
 """FASE 5: Conversión de escenas / beats a prompts visuales (acción + estilo + cámara)."""
 import re
 import random
-from .config_loader import get_visual_bible, get_instrucciones_imagenes, get_prohibido_en_imagen
+from .config_loader import get_visual_bible, get_instrucciones_imagenes, get_prohibido_en_imagen, get_visual_reference_rules, has_any_visual_reference, get_outfit_library
 from .scene_splitter import Escena
 from .visual_beats import VisualBeat
 
@@ -71,6 +71,110 @@ def _es_plano_pov(plano: str) -> bool:
         return False
     p = plano.strip().upper()
     return "POV" in p or "PUNTO DE VISTA" in p or "PRIMERA PERSONA" in p
+
+
+def _ajustar_prompt_para_pov(texto: str) -> str:
+    """
+    En POV NO queremos que el modelo dibuje al personaje en cuadro.
+    Eliminamos el bloque "Personaje principal: ..." del template base
+    para que la instrucción dominante sea solo lo que ve el personaje.
+    """
+    if not texto:
+        return texto
+    # Quitar todo el párrafo que empieza en "Personaje principal:" hasta la primera línea en blanco siguiente.
+    texto = re.sub(
+        r"Personaje principal:[\s\S]*?(?:\n\s*\n|$)",
+        "",
+        texto,
+        flags=re.IGNORECASE,
+    )
+    # Limpiar dobles saltos de línea vacíos que puedan quedar
+    texto = re.sub(r"\n{3,}", "\n\n", texto).strip()
+    return texto
+
+
+def _infer_scene_type(combined_text: str) -> str:
+    """
+    Infiere el tipo de escena (war, crime, business, sports, gaming, childhood, casual)
+    a partir del texto. Usa scene_type_priority para que el primero que coincida gane.
+    """
+    lib = get_outfit_library()
+    if not lib:
+        return "casual"
+    keywords_map = lib.get("scene_type_keywords") or {}
+    priority = lib.get("scene_type_priority") or ["war", "crime", "business", "sports", "gaming", "childhood"]
+    text_lower = (combined_text or "").lower()
+    for scene_type in priority:
+        words = keywords_map.get(scene_type) or []
+        for w in words:
+            if w and w.lower() in text_lower:
+                return scene_type
+    return "casual"
+
+
+def _select_outfit_key(scene_type: str) -> str:
+    """Mapea scene_type a la clave del outfit en la biblioteca."""
+    lib = get_outfit_library()
+    if not lib:
+        return "casual_outfit"
+    mapping = lib.get("scene_type_to_outfit") or {}
+    return mapping.get(scene_type, "casual_outfit")
+
+
+def _select_props_for_scene(combined_text: str, max_props: int = 3) -> list[str]:
+    """Devuelve hasta max_props descripciones de props que encajan con el texto de la escena."""
+    lib = get_outfit_library()
+    if not lib:
+        return []
+    props_config = lib.get("props") or {}
+    max_n = lib.get("max_props_per_scene") or max_props
+    text_lower = (combined_text or "").lower()
+    selected: list[str] = []
+    for prop_key, data in props_config.items():
+        if isinstance(data, dict):
+            keywords = data.get("keywords") or []
+            prompt = (data.get("prompt") or "").strip()
+        else:
+            continue
+        if not prompt or len(selected) >= max_n:
+            continue
+        for w in keywords:
+            if w and w.lower() in text_lower:
+                selected.append(prompt)
+                break
+    return selected[:max_n]
+
+
+def _build_outfit_and_props_prompt(escena_texto: str, descripcion_visual: str | None) -> str:
+    """
+    Construye el bloque OUTFIT + PROPS para inyectar en el prompt.
+    Regla: identidad (cara, cabeza, cuerpo stickman) no cambia; solo ropa y props.
+    """
+    lib = get_outfit_library()
+    if not lib or not lib.get("outfits"):
+        return ""
+    combined = " ".join(filter(None, [escena_texto or "", descripcion_visual or ""]))
+    scene_type = _infer_scene_type(combined)
+    outfit_key = _select_outfit_key(scene_type)
+    outfits = lib.get("outfits") or {}
+    outfit_data = outfits.get(outfit_key) or outfits.get("casual_outfit")
+    outfit_prompt = ""
+    if isinstance(outfit_data, dict):
+        outfit_prompt = (outfit_data.get("prompt") or "").strip()
+    elif isinstance(outfit_data, str):
+        outfit_prompt = outfit_data.strip()
+    if not outfit_prompt:
+        return ""
+    props = _select_props_for_scene(combined)
+    identity_rule = (
+        "Character identity NEVER changes: circular white head, black simple eyes, minimal stickman body style. "
+        "Only clothing and optional props change according to scene."
+    )
+    parts = [f"OUTFIT (identity unchanged): {outfit_prompt}"]
+    if props:
+        parts.append("PROPS IN SCENE (if relevant): " + "; ".join(props))
+    parts.append(identity_rule)
+    return " ".join(parts)
 
 
 def _filtrar_preferencias_solo_fondo_estilo(texto: str) -> str:
@@ -156,6 +260,7 @@ def construir_prompt(
     base = "OBLIGATORIO: Mismo personaje siempre. POV = primera persona sin personaje en cuadro. Cada imagen = momento distinto. No repetir.\n\n" + base
     # POV: instrucción explícita de primera persona (lo que ve el personaje, sin mostrarlo en cuadro)
     if _es_plano_pov(plano):
+        base = _ajustar_prompt_para_pov(base)
         base = base.rstrip() + "\n\n" + _INSTRUCCION_POV
     # Regla cinematográfica: cada imagen debe cambiar algo (posición/distancia/ángulo/composición/iluminación)
     regla_variacion = (vb.get("regla_variacion") or "").strip()
@@ -171,6 +276,10 @@ def construir_prompt(
     character_lock = (vb.get("character_lock") or "").strip()
     if character_lock and character_lock not in base:
         base = base.rstrip() + "\n\nOBLIGATORIO (prioridad sobre todo lo demás): " + character_lock
+    # Outfit + props según contexto (identidad igual; solo ropa y objetos cambian)
+    outfit_props = _build_outfit_and_props_prompt(escena.texto, descripcion_visual)
+    if outfit_props and outfit_props not in base:
+        base = base.rstrip() + "\n\n" + outfit_props
     # PROHIBIDO estilo (anime, pixar, etc.) + UI
     prohibido_estilo = vb.get("prohibido_estilo", "").strip()
     if prohibido_estilo and prohibido_estilo not in base:
@@ -178,6 +287,11 @@ def construir_prompt(
     prohibido = get_prohibido_en_imagen()
     if prohibido and prohibido.strip() and prohibido.strip() not in base:
         base = base.rstrip() + "\n\n" + prohibido.strip()
+    # Referencias visuales del proyecto (estilo, ambiente, cámara, iluminación, composición): reglas inyectadas en cada prompt
+    if has_any_visual_reference():
+        rules = get_visual_reference_rules()
+        if rules and rules not in base:
+            base = base.rstrip() + "\n\n" + rules
     # No inyectar preferencias aprendidas de feedbacks pasados (generaban errores y contradicciones)
     base = base.rstrip() + "\n\nOBLIGATORIO: Máximo sentido común e inteligencia lógica—imagen coherente y creíble, sin absurdos. Misma identidad de personaje; edad y ropa según contexto. Incluir lugar claro y qué está pasando. Anatomía correcta; objetos lógicos. No repetir."
     return base
@@ -251,6 +365,7 @@ def construir_prompt_desde_beat(
     base = "OBLIGATORIO: Mismo personaje siempre. POV = primera persona sin personaje en cuadro. Cada imagen = momento distinto. No repetir.\n\n" + base
     # POV: instrucción explícita de primera persona
     if _es_plano_pov(plano):
+        base = _ajustar_prompt_para_pov(base)
         base = base.rstrip() + "\n\n" + _INSTRUCCION_POV
     # Regla cinematográfica: cada imagen debe cambiar algo
     regla_variacion = (vb.get("regla_variacion") or "").strip()
@@ -266,6 +381,11 @@ def construir_prompt_desde_beat(
     character_lock = (vb.get("character_lock") or "").strip()
     if character_lock and character_lock not in base:
         base = base.rstrip() + "\n\nOBLIGATORIO (prioridad sobre todo lo demás): " + character_lock
+    # Outfit + props según contexto (identidad igual; solo ropa y objetos cambian)
+    beat_text = " ".join(filter(None, [getattr(beat, "original_text", "") or "", getattr(beat, "action", "") or ""]))
+    outfit_props = _build_outfit_and_props_prompt(beat_text, None)
+    if outfit_props and outfit_props not in base:
+        base = base.rstrip() + "\n\n" + outfit_props
     # PROHIBIDO estilo + UI
     prohibido_estilo = vb.get("prohibido_estilo", "").strip()
     if prohibido_estilo and prohibido_estilo not in base:
@@ -273,7 +393,11 @@ def construir_prompt_desde_beat(
     prohibido = get_prohibido_en_imagen()
     if prohibido and prohibido.strip() and prohibido.strip() not in base:
         base = base.rstrip() + "\n\n" + prohibido.strip()
-    # No inyectar preferencias aprendidas de feedbacks pasados (generaban errores y contradicciones)
+    # Referencias visuales del proyecto (estilo, ambiente, cámara, iluminación, composición)
+    if has_any_visual_reference():
+        rules = get_visual_reference_rules()
+        if rules and rules not in base:
+            base = base.rstrip() + "\n\n" + rules
     # Unicidad
     frame_id = indice_imagen if indice_imagen is not None else (beat.beat_id if beat else 0)
     base = base.rstrip() + f"\n\nFrame {frame_id} de la secuencia. Esta imagen debe ser visualmente distinta."
