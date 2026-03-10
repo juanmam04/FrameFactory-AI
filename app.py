@@ -13,14 +13,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import streamlit as st
 from dotenv import load_dotenv
 
-from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes
+from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes, get_subtitle_styles, get_instrucciones_titulo
 from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto, _replicate_disponible, generar_lote, OUTPUT_IMAGES
 from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
 from src.script_generator import guardar_guion, generar_guion
-from src.scene_splitter import dividir_en_escenas
-from src.prompt_builder import prompts_para_escenas
+from src.scene_splitter import dividir_en_escenas, Escena
+from src.prompt_builder import prompts_para_escenas, prompts_para_beats
 from src.regeneration import guardar_prompts_por_escena
+from src.visual_beats import generar_beats_para_escenas, guardar_beats
+from src.title_generator import sugerir_titulos_virales
 import yaml
 
 load_dotenv(BASE / ".env")
@@ -174,7 +176,22 @@ def preparar_imagenes_para_revision(
 
     escenas = dividir_en_escenas(guion_texto, segundos_por_imagen=seg_por_img)
     tema_para_desc = tema or proy
-    escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_para_desc, usar_descripciones_ia=True)
+
+    # Usar beats visuales también en modo revisión (misma lógica que pipeline.run)
+    beats = generar_beats_para_escenas(escenas, tema=tema_para_desc)
+    guardar_beats(beats, proy)
+    beats_con_prompts = prompts_para_beats(beats)
+    escenas_con_prompts: list[tuple[Escena, str]] = [
+        (
+            Escena(
+                numero=beat.beat_id,
+                texto=beat.original_text,
+                duracion_segundos=seg_por_img,
+            ),
+            prompt,
+        )
+        for beat, prompt in beats_con_prompts
+    ]
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 
     # Generar imágenes (igual que pipeline.run, pero solo esta fase)
@@ -301,7 +318,7 @@ st.markdown("""
 
 # ─── Hero ───────────────────────────────────────────────────────────────────
 st.markdown('<p class="hero">FrameFactory</p>', unsafe_allow_html=True)
-st.markdown('<p class="tagline">Generá el video completo automáticamente. Solo completá las credenciales en <code>.env</code>.</p>', unsafe_allow_html=True)
+st.markdown('<p class="tagline">Generá el video completo automáticamente.</p>', unsafe_allow_html=True)
 
 # ─── Aviso si faltan credenciales ────────────────────────────────────────────
 faltan = mensaje_credenciales()
@@ -326,11 +343,55 @@ if not verificar_ffmpeg():
 
 # ─── Generar video completo (un solo lugar) ──────────────────────────────────
 st.markdown('<div class="one-click"><strong>Generar video completo</strong></div>', unsafe_allow_html=True)
-titulo_video = st.text_input(
-    "Título del video",
-    placeholder="Ej: La historia de la inteligencia artificial en 2 minutos",
-    key="titulo_todo",
-)
+
+# Si hay un título sugerido pendiente, aplicarlo ANTES de instanciar el widget
+if "_titulo_sugerido_val" in st.session_state:
+    st.session_state.titulo_todo = st.session_state._titulo_sugerido_val
+    del st.session_state._titulo_sugerido_val
+
+col_t1, col_t2 = st.columns([3, 1])
+with col_t1:
+    titulo_video = st.text_input(
+        "Título del video",
+        placeholder="Ej: La historia de la inteligencia artificial en 2 minutos",
+        key="titulo_todo",
+    )
+with col_t2:
+    st.caption("Podés pedir títulos sugeridos con IA.")
+    if st.button("Sugerir títulos con IA", key="btn_sugerir_titulo"):
+        # Usar el tema si ya existe (título + descripción) como contexto; si no, IA inventa ideas POV
+        contexto_tema = (titulo_video or "").strip()
+        desc_actual = (st.session_state.get("descripcion_breve_text") or "").strip()
+        if desc_actual:
+            contexto_tema = f"{contexto_tema}. {desc_actual}" if contexto_tema else desc_actual
+        titulos = sugerir_titulos_virales(
+            tema=contexto_tema,
+            guion_resumen="",
+            notas_creador="Títulos tipo POV que puedan ser virales.",
+        )
+        if titulos:
+            # Mostrar en un selectbox emergente usando session_state
+            st.session_state._titulos_sugeridos = titulos
+        else:
+            st.warning("No se pudieron generar títulos. Revisá tu OPENAI_API_KEY.")
+
+if "_titulos_sugeridos" in st.session_state:
+    st.markdown("**Títulos sugeridos:**")
+    elegido = st.radio(
+        "Elegí uno o úsalo como inspiración",
+        options=st.session_state._titulos_sugeridos,
+        index=0,
+        key="titulo_sugerido_radio",
+    )
+    col_apply1, col_apply2 = st.columns(2)
+    with col_apply1:
+        if st.button("Usar este título", key="btn_usar_titulo_sugerido"):
+            st.session_state._titulo_sugerido_val = elegido
+            del st.session_state._titulos_sugeridos
+            st.rerun()
+    with col_apply2:
+        if st.button("Descartar sugerencias", key="btn_descartar_titulos_sugeridos"):
+            del st.session_state._titulos_sugeridos
 
 col_desc1, col_desc2 = st.columns([3, 1])
 # Sugerencia con IA: guardamos en una clave auxiliar y al rerun la copiamos al widget ANTES de crearlo
@@ -505,16 +566,10 @@ with st.expander("⚙️ Opciones avanzadas"):
     )
     
     if not skip_imagenes:
-        opciones_imagen = ["ComfyUI (local o RunPod)"]
-        if _replicate_disponible():
-            opciones_imagen.append("Replicate (FLUX, ~$0.003/imagen)")
-        imagen_backend = st.radio(
-            "Generador de imágenes",
-            options=opciones_imagen,
-            index=0,
-            help="ComfyUI: gratis si tenés GPU (local o RunPod). Replicate: FLUX por API, muy barato, sin instalar nada.",
-            key="imagen_backend_todo",
-        )
+        # Solo Replicate (FLUX) como backend principal.
+        if not _replicate_disponible():
+            st.error("Falta REPLICATE_API_TOKEN en .env. Configurá ese token para generar imágenes con FLUX.")
+        imagen_backend = "Replicate (FLUX, ~$0.003/imagen)"
         segundos_por_imagen = st.number_input(
             "Segundos por imagen",
             min_value=1.0,
@@ -525,8 +580,32 @@ with st.expander("⚙️ Opciones avanzadas"):
             key="seg_por_img_todo"
         )
     else:
-        imagen_backend = "ComfyUI (local o RunPod)"
+        # Si se salta la generación de imágenes, el backend es irrelevante.
+        imagen_backend = "sin_imagenes"
         segundos_por_imagen = 5.0
+
+    # Subtítulos (especialmente útiles para Shorts/Reels/TikTok)
+    estilos_sub = get_subtitle_styles()
+    nombres_estilos = list(estilos_sub.keys()) if estilos_sub else []
+    es_vertical = formato_video != "YouTube (16:9) - 1920x1080"
+    usar_subtitulos = st.checkbox(
+        "Agregar subtítulos quemados en el video (recomendado para Shorts/Reels/TikTok)",
+        value=es_vertical,
+        help="Genera un archivo de subtítulos sincronizado por beat y lo quema en el video final.",
+        key="usar_subs_todo",
+    )
+    estilo_subtitulos = None
+    if usar_subtitulos and nombres_estilos:
+        default_idx = 0
+        if es_vertical and "tiktok_karaoke" in nombres_estilos:
+            default_idx = nombres_estilos.index("tiktok_karaoke")
+        estilo_subtitulos = st.selectbox(
+            "Estilo de subtítulo",
+            options=nombres_estilos,
+            index=default_idx,
+            format_func=lambda k: f"{k} – {estilos_sub.get(k, {}).get('description', '')}",
+            key="estilo_subs_todo",
+        )
     
     skip_miniatura = st.checkbox(
         "Saltar generación de miniatura",
@@ -543,23 +622,25 @@ with st.expander("⚙️ Opciones avanzadas"):
     )
 
 if not skip_imagenes:
-    usar_replicate = _replicate_disponible() and st.session_state.get("imagen_backend_todo", "ComfyUI (local o RunPod)") == "Replicate (FLUX, ~$0.003/imagen)"
-    comfy_ok = _comfyui_disponible()
+    usar_replicate = _replicate_disponible()
     if usar_replicate:
         st.success("Imágenes con **Replicate FLUX** (~$0.003/imagen). No hace falta ComfyUI.")
-    elif comfy_ok:
-        donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
-        st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarán con ComfyUI — {COMFY_URL}")
     else:
-        st.warning(
-            "ComfyUI no está corriendo. Iniciá ComfyUI en el puerto 8188 (local o RunPod) o elegí **Replicate** si tenés REPLICATE_API_TOKEN en .env."
-        )
-        if st.button("▶️ Iniciar ComfyUI en segundo plano", key="btn_iniciar_comfy"):
-            ok, err = iniciar_comfyui_background()
-            if ok:
-                st.success("ComfyUI se está iniciando. Esperá 30–60 segundos y recargá la página (F5). Si no aparece, abrí el log abajo o ejecutá en terminal: bash scripts/start_comfyui.sh")
-            else:
-                st.error(f"No se pudo iniciar ComfyUI: {err}. Verificá que tengas ComfyUI instalado y, si está en otra ruta, definí COMFYUI_PATH en .env.")
+        # Solo si NO hay Replicate disponible, se permite/avisa sobre ComfyUI como opción legacy.
+        comfy_ok = _comfyui_disponible()
+        if comfy_ok:
+            donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
+            st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarían con ComfyUI — {COMFY_URL}")
+        else:
+            st.warning(
+                "ComfyUI no está corriendo. Iniciá ComfyUI en el puerto 8188 (local o RunPod) o configurá REPLICATE_API_TOKEN en .env para usar FLUX."
+            )
+            if st.button("▶️ Iniciar ComfyUI en segundo plano", key="btn_iniciar_comfy"):
+                ok, err = iniciar_comfyui_background()
+                if ok:
+                    st.success("ComfyUI se está iniciando. Esperá 30–60 segundos y recargá la página (F5). Si no aparece, abrí el log abajo o ejecutá en terminal: bash scripts/start_comfyui.sh")
+                else:
+                    st.error(f"No se pudo iniciar ComfyUI: {err}. Verificá que tengas ComfyUI instalado y, si está en otra ruta, definí COMFYUI_PATH en .env.")
 
 col1, col2 = st.columns([1, 2])
 with col1:
@@ -572,8 +653,9 @@ if generar:
         bloqueado = True
     elif faltan:
         st.error("Completá las credenciales en .env y volvé a intentar.")
-    elif not skip_imagenes and not usar_replicate and not _comfyui_disponible():
-        st.error("ComfyUI no está corriendo. Inicialo en el puerto 8188 (local o RunPod) o elegí Replicate (REPLICATE_API_TOKEN en .env).")
+    elif not skip_imagenes and not usar_replicate and not _replicate_disponible() and not _comfyui_disponible():
+        # Solo bloquear si NO hay Replicate y TAMPOCO ComfyUI disponible.
+        st.error("No hay backend de imágenes disponible. Configurá REPLICATE_API_TOKEN en .env o levantá ComfyUI en el puerto 8188.")
     else:
         revisar_imagenes_antes_video = st.session_state.get("revisar_imagenes_todo", False)
         # Barra de progreso para imágenes (así se ve que avanza y no está trancado)
@@ -636,6 +718,8 @@ if generar:
                         height=video_height,
                         skip_miniatura=skip_miniatura,
                         on_progress_imagenes=on_progress_imagenes if not skip_imagenes else None,
+                        usar_subtitulos=usar_subtitulos,
+                        estilo_subtitulos=estilo_subtitulos,
                     )
                     clear_result()
                     st.session_state.video_path = video_path
@@ -845,7 +929,7 @@ if tiene_video or es_revision_imagenes:
                 img_path = imagenes_dir_escenas / f"escena_{escena.numero:04d}.png"
                 with st.expander(f"Escena {escena.numero} — {escena.duracion_segundos:.0f}s", expanded=(escena.numero <= 3)):
                     if img_path.exists():
-                        st.image(str(img_path), caption=f"Imagen escena {escena.numero}", use_container_width=True)
+                        st.image(str(img_path), caption=f"Imagen escena {escena.numero}", width="stretch")
                     else:
                         st.caption(f"🖼️ Imagen no encontrada: `{img_path.name}`")
                     if modo_revision:
@@ -903,7 +987,7 @@ if tiene_video or es_revision_imagenes:
     with tabs_archivos[2]:  # Miniatura (índice 2)
         if st.session_state.get("thumbnail_path") and st.session_state.get("thumbnail_bytes"):
             st.markdown("**Miniatura generada:**")
-            st.image(st.session_state.thumbnail_bytes, caption="Miniatura del video", use_container_width=True)
+            st.image(st.session_state.thumbnail_bytes, caption="Miniatura del video", width="stretch")
             st.download_button(
                 "📥 Descargar miniatura (PNG)",
                 data=st.session_state.thumbnail_bytes,
@@ -1095,7 +1179,7 @@ with st.expander("📚 Historial de Videos Generados"):
 st.markdown("---")
 with st.expander("⚙️ Editor de Instrucciones (Personalizar cómo se genera cada parte)"):
     st.markdown("### Personalizá las instrucciones para cada paso de generación")
-    tab_guion, tab_descripcion, tab_miniatura, tab_imagenes = st.tabs(["📝 Guion", "📄 Descripción YouTube", "🖼️ Miniatura", "🎨 Imágenes"])
+    tab_guion, tab_titulo, tab_descripcion, tab_miniatura, tab_imagenes = st.tabs(["📝 Guion", "🏷️ Título", "📄 Descripción YouTube", "🖼️ Miniatura", "🎨 Imágenes"])
     
     with tab_guion:
         st.markdown("#### Instrucciones para generar guiones")
@@ -1125,6 +1209,22 @@ with st.expander("⚙️ Editor de Instrucciones (Personalizar cómo se genera c
             except Exception as e:
                 st.error(f"Error: {e}")
     
+    with tab_titulo:
+        st.markdown("#### Instrucciones para generar TÍTULOS")
+        instrucciones_titulo = get_instrucciones_titulo()
+        titulo_system = st.text_area("Prompt del sistema", value=instrucciones_titulo.get("system_prompt", ""), height=200, key="edit_title_system")
+        titulo_user = st.text_area("Template (usa {tema}, {guion_resumen}, {notas_creador})", value=instrucciones_titulo.get("user_prompt_template", ""), height=200, key="edit_title_user")
+        if st.button("💾 Guardar instrucciones de título", key="save_title"):
+            try:
+                instrucciones_titulo["system_prompt"] = titulo_system
+                instrucciones_titulo["user_prompt_template"] = titulo_user
+                with open(BASE / "config" / "instrucciones_titulo.yaml", "w", encoding="utf-8") as f:
+                    yaml.dump(instrucciones_titulo, f, allow_unicode=True, default_flow_style=False)
+                st.success("✅ Instrucciones de título guardadas")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
+
     with tab_descripcion:
         st.markdown("#### Instrucciones para generar descripción de YouTube")
         instrucciones_desc = get_instrucciones_descripcion()
@@ -1213,10 +1313,11 @@ with st.expander("⚙️ Editor de Instrucciones (Personalizar cómo se genera c
 
 
 # ─── Modo avanzado (4 partes) ───────────────────────────────────────────────
-with st.expander("Modo avanzado (paso a paso: Guion → Escenas → Voz → Video)"):
+with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz → Video)"):
     from src.script_generator import generar_guion, guardar_guion
-    from src.scene_splitter import dividir_en_escenas, escenas_a_texto_continuo
-    from src.prompt_builder import prompts_para_escenas
+    from src.scene_splitter import dividir_en_escenas, escenas_a_texto_continuo, Escena as EscenaMA
+    from src.visual_beats import generar_beats_para_escenas, guardar_beats
+    from src.prompt_builder import prompts_para_beats
     from src.voice_generator import generar_voz
     from src.image_generator import generar_lote, OUTPUT_IMAGES
     from src.video_assembler import montar_video
@@ -1257,15 +1358,17 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas → Voz → Vide
             st.text(st.session_state.guion_texto[:300] + ("..." if len(st.session_state.guion_texto) > 300 else ""))
 
     with tab2:
-        st.caption("Dividir guion en escenas (5 s cada una).")
+        st.caption("Dividir guion en escenas y beats visuales (~5 s cada una).")
         txt = st.text_area("Guion", value=st.session_state.get("guion_texto", ""), height=160, key="ma_escenas_txt")
         if st.button("Dividir en escenas", key="ma_dividir") and txt:
             st.session_state.guion_texto = txt.strip()
             st.rerun()
         if st.session_state.get("guion_texto"):
             escenas = dividir_en_escenas(st.session_state.guion_texto)
+            beats_prev = generar_beats_para_escenas(escenas, tema=st.session_state.get("ma_tema") or "")
+            st.markdown(f"**Escenas:** {len(escenas)}  |  **Beats visuales:** {len(beats_prev)}")
             for e in escenas:
-                st.markdown(f"**#{e.numero}** ({e.duracion_segundos:.0f}s) {e.texto[:80]}…")
+                st.markdown(f"**Escena #{e.numero}** ({e.duracion_segundos:.0f}s) {e.texto[:80]}…")
 
     with tab3:
         st.caption("Generar voz (narración) del guion.")
@@ -1294,9 +1397,23 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas → Voz → Vide
                 nombre = sanitizar_nombre_proyecto((proy or "mi_video").strip() or "mi_video")
                 escenas = dividir_en_escenas(st.session_state.guion_texto)
                 tema_ctx = st.session_state.get("ma_tema") or st.session_state.get("nombre_proyecto") or nombre or ""
-                escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_ctx, usar_descripciones_ia=True)
+                # Usar el mismo sistema de beats que el pipeline principal
+                beats = generar_beats_para_escenas(escenas, tema=tema_ctx)
+                guardar_beats(beats, nombre)
+                beats_con_prompts = prompts_para_beats(beats)
+                escenas_con_prompts: list[tuple[EscenaMA, str]] = [
+                    (
+                        EscenaMA(
+                            numero=beat.beat_id,
+                            texto=beat.original_text,
+                            duracion_segundos=5.0,
+                        ),
+                        prompt,
+                    )
+                    for beat, prompt in beats_con_prompts
+                ]
                 guardar_prompts_por_escena(escenas_con_prompts, nombre)
-                # Limpiar imágenes viejas de este proyecto; una por escena
+                # Limpiar imágenes viejas de este proyecto; una por beat
                 carpeta_imgs = OUTPUT_IMAGES / nombre
                 if carpeta_imgs.exists():
                     for f in carpeta_imgs.glob("escena_*.png"):

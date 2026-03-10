@@ -11,7 +11,7 @@ parametros_sd:
 prompt_template: |
   Ilustración 2D narrativa cinematográfica.
 
-  Personaje principal: stickman estilizado con cabeza redonda y cuerpo formado por líneas simples.
+  Personaje principal: mismo diseño que el personaje oficial de referencia (rostro blanco circular, ojos negros simples, hoodie gris oscuro, remera blanca, pantalón azul oscuro y zapatillas blancas con detalles azul oscuro). Siempre el mismo personaje en todas las escenas.
 
   Plano de cámara: {plano}
 
@@ -22,8 +22,6 @@ prompt_template: |
   Contexto narrativo: {momento}
 
   Ritmo visual (cada 3-5 imágenes algo cambia): {beat_visual}
-
-  El personaje puede tener ropa simple pero su estructura debe seguir siendo un stickman.
 
   Escenario: entorno coherente con la escena, fondo detallado y creíble.
 

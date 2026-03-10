@@ -9,7 +9,7 @@ from typing import Callable
 import requests
 from dotenv import load_dotenv
 
-from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes, get_estilo_base
+from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes, get_estilo_base, get_character_references
 from .scene_splitter import Escena
 
 load_dotenv(BASE / ".env")
@@ -23,12 +23,13 @@ _resolved_checkpoint: str | None = None
 def _usar_openai_imagenes() -> bool:
     return False
 
-# Replicate (FLUX): muy barato (~$0.003/imagen con flux-schnell), sin montar ComfyUI.
-REPLICATE_MODEL = os.getenv("REPLICATE_FLUX_MODEL", "black-forest-labs/flux-schnell").strip()
+# Replicate: flux-schnell = solo texto (~$0.003/imagen). Si hay character_reference front, usamos Kontext para respetar al personaje (~$0.025/imagen).
+REPLICATE_MODEL_SCHNELL = os.getenv("REPLICATE_FLUX_MODEL", "black-forest-labs/flux-schnell").strip()
+REPLICATE_MODEL_KONTEXT = "black-forest-labs/flux-kontext-dev"
 
 def _usar_replicate() -> bool:
-    v = (os.getenv("IMAGE_BACKEND") or "").strip().lower()
-    return v == "replicate" and bool(os.getenv("REPLICATE_API_TOKEN", "").strip())
+    """Usar SIEMPRE Replicate (FLUX) cuando haya token; ComfyUI queda como opción legacy."""
+    return bool(os.getenv("REPLICATE_API_TOKEN", "").strip())
 
 def _replicate_disponible() -> bool:
     return bool(os.getenv("REPLICATE_API_TOKEN", "").strip())
@@ -372,33 +373,64 @@ def _generar_imagen_replicate(
     width: int = 1024,
     height: int = 576,
 ) -> Path | None:
-    """Genera una imagen con Replicate FLUX (flux-schnell ~$0.003/imagen). Sin ComfyUI."""
+    """Genera una imagen con Replicate. Si existe character_reference_front.png, usa FLUX Kontext
+    para respetar al personaje (~$0.025/imagen). Si no, usa flux-schnell (~$0.003/imagen)."""
     import replicate as replicate_client
-    prompt = (prompt or "").strip()[:2000]
+    from base64 import b64encode
+
+    prompt = (prompt or "").strip()[:3500]
     if not prompt:
         return None
-    # FLUX Schnell: aspect_ratio 16:9 para video, output_format png
-    aspect_ratio = "16:9"
-    if width and height:
-        r = width / height if height else 1.0
-        if r < 0.6:
-            aspect_ratio = "9:16"
-        elif r > 1.5:
-            aspect_ratio = "16:9"
-        elif abs(r - 1.0) < 0.2:
-            aspect_ratio = "1:1"
+    # ¿Tenemos imagen de referencia del personaje? → Kontext respeta esa cara/cuerpo
+    image_ref_path: Path | None = None
     try:
-        output = replicate_client.run(
-            REPLICATE_MODEL,
-            input={
-                "prompt": prompt,
-                "aspect_ratio": aspect_ratio,
-                "output_format": "png",
-                "num_outputs": 1,
-            },
-        )
-    except Exception as e:
-        raise RuntimeError(f"Replicate FLUX no pudo generar la imagen: {e}") from e
+        refs = get_character_references()
+        front_rel = refs.get("front")
+        if front_rel:
+            p = BASE / front_rel
+            if p.exists() and p.stat().st_size > 0:
+                image_ref_path = p
+    except Exception:
+        image_ref_path = None
+
+    if image_ref_path:
+        # FLUX Kontext: usa la imagen de referencia para mantener al personaje
+        try:
+            with open(image_ref_path, "rb") as f:
+                output = replicate_client.run(
+                    REPLICATE_MODEL_KONTEXT,
+                    input={
+                        "prompt": prompt,
+                        "input_image": f,
+                        "output_format": "png",
+                        "num_inference_steps": 28,
+                    },
+                )
+        except Exception as e:
+            raise RuntimeError(f"Replicate FLUX Kontext no pudo generar la imagen: {e}") from e
+    else:
+        # FLUX Schnell: solo texto, sin referencia
+        aspect_ratio = "16:9"
+        if width and height:
+            r = width / height if height else 1.0
+            if r < 0.6:
+                aspect_ratio = "9:16"
+            elif r > 1.5:
+                aspect_ratio = "16:9"
+            elif abs(r - 1.0) < 0.2:
+                aspect_ratio = "1:1"
+        try:
+            output = replicate_client.run(
+                REPLICATE_MODEL_SCHNELL,
+                input={
+                    "prompt": prompt,
+                    "aspect_ratio": aspect_ratio,
+                    "output_format": "png",
+                    "num_outputs": 1,
+                },
+            )
+        except Exception as e:
+            raise RuntimeError(f"Replicate FLUX no pudo generar la imagen: {e}") from e
     if not output:
         return None
     # output puede ser lista de URLs o un FileOutput
@@ -649,13 +681,31 @@ def generar_lote(
     for idx, (escena, prompt) in enumerate(escenas_con_prompts, start=1):
         print(f"   🖼️ Imagen {idx}/{total} (escena {escena.numero})...")
         path = None
-        try:
-            path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
-        except Exception as e:
-            if not usar_replicate:
-                raise
-            print(f"   ⚠️ Escena {escena.numero}: falló ({e}). Usando placeholder.")
-            path = _escribir_placeholder_png(carpeta, escena.numero, img_w, img_h)
+        # Pequeño bucle local para respetar rate limit de Replicate (6 req/min ≈ 1 cada 10s)
+        intentos_locales = 3
+        for intento in range(intentos_locales):
+            try:
+                path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
+                break
+            except Exception as e:
+                # Si no usamos Replicate, delegar comportamiento anterior.
+                if not usar_replicate:
+                    raise
+                msg = str(e)
+                # Manejo específico de 429 (rate limit): esperar y reintentar en vez de ir directo a placeholder.
+                if "status: 429" in msg or "rate limit" in msg.lower():
+                    espera = 10
+                    if intento < intentos_locales - 1:
+                        print(
+                            f"   ⚠️ Escena {escena.numero}: límite de tasa de Replicate (429). "
+                            f"Esperando {espera}s antes de reintentar ({intento + 1}/{intentos_locales})..."
+                        )
+                        time.sleep(espera)
+                        continue
+                # Otros errores (o demasiados 429): usar placeholder y seguir
+                print(f"   ⚠️ Escena {escena.numero}: falló ({e}). Usando placeholder.")
+                path = _escribir_placeholder_png(carpeta, escena.numero, img_w, img_h)
+                break
         if path:
             rutas.append(path)
     if len(rutas) != len(escenas_con_prompts) and not usar_replicate:

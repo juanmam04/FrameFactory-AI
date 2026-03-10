@@ -28,6 +28,8 @@ def montar_video(
     width: int = 1920,
     height: int = 1080,
     duracion_maxima_segundos: float | None = None,
+    subtitles_path: Path | None = None,
+    subtitle_style: str | None = None,
 ) -> Path:
     """
     Une imágenes en secuencia (duración por imagen configurable),
@@ -250,9 +252,19 @@ def montar_video(
             "ffmpeg", "-y",
             "-i", str(video_solo),
             "-i", str(audio_final),
+        ]
+
+        # Subtítulos opcionales (SRT/ASS) con estilo configurable (ASS force_style)
+        if subtitles_path and subtitles_path.exists():
+            sub_filter = f"subtitles='{subtitles_path.as_posix()}'"
+            if subtitle_style:
+                sub_filter += f":force_style='{subtitle_style}'"
+            cmd_final.extend(["-vf", sub_filter])
+
+        cmd_final.extend([
             "-c:v", "libx264", "-preset", "fast", "-crf", "23",  # Re-encodear video para mejor control
             "-c:a", "aac", "-b:a", "192k",
-        ]
+        ])
         
         # NUNCA usar -shortest porque puede cortar el audio
         # Siempre usar la duración del audio como referencia

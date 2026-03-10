@@ -72,6 +72,11 @@ def get_instrucciones_miniatura() -> dict:
     return load_yaml("instrucciones_miniatura.yaml")
 
 
+def get_instrucciones_titulo() -> dict:
+    """Carga instrucciones para generar TÍTULOS de YouTube / Shorts."""
+    return load_yaml("instrucciones_titulo.yaml")
+
+
 def get_instrucciones_imagenes() -> dict:
     """Carga instrucciones para generación masiva de imágenes."""
     return load_yaml("instrucciones_imagenes.yaml")
@@ -80,6 +85,18 @@ def get_instrucciones_imagenes() -> dict:
 def get_instrucciones_descripcion_escenas() -> dict:
     """Carga instrucciones para generar descripción visual por escena (para coherencia de imágenes)."""
     return load_yaml("instrucciones_descripcion_escenas.yaml")
+
+
+def get_subtitle_styles() -> dict:
+    """Estilos de subtítulos (ASS force_style) para shorts / reels / videos."""
+    return load_yaml("subtitle_styles.yaml")
+
+
+def get_character_references() -> dict:
+    """Devuelve rutas relativas a las imágenes de referencia del personaje."""
+    vb = get_visual_bible()
+    return vb.get("character_reference", {})
+
 
 
 def get_preferencias_aprendidas(max_entradas: int = 25) -> str:

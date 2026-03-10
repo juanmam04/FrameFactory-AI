@@ -3,14 +3,13 @@
 # =============================================================================
 
 estilo_base: |
-  Ilustración 2D narrativa cinematográfica.
-  Personaje principal: stickman estilizado.
-  Estructura del personaje: cabeza redonda, cuerpo formado por líneas simples, brazos y piernas líneas simples, cara simple (ojos y boca pequeños).
-  El personaje puede tener ropa simple (camiseta, pantalón, zapatillas), pero la estructura del cuerpo debe seguir siendo un stickman.
-  Estética general: estilo consistente en todas las imágenes, ilustración limpia y clara, composición cinematográfica, imagen pensada como un frame de película.
-  Fondos: entornos detallados y creíbles, fondos más realistas que el personaje, profundidad visual, iluminación natural según la escena.
-  Reglas importantes: el personaje debe verse siempre igual en todas las imágenes; el estilo visual no debe cambiar entre escenas; la imagen debe parecer parte de una historia continua.
-  Fórmula del proyecto: personaje simple + fondo creíble + cámara cinematográfica = video que funciona.
+  Ilustración 2D narrativa cinematográfica, limpia y clara.
+  Personaje principal: figura minimalista de rostro blanco redondo, sin rasgos faciales complejos, con ojos negros ovalados y boca simple.
+  Vestuario consistente: buzo con capucha gris oscuro, remera/camiseta blanca debajo, pantalón azul oscuro y zapatillas deportivas blancas con detalles azul oscuro.
+  Proporciones del personaje siempre iguales: misma altura relativa, mismo tamaño de cabeza, mismo grosor de líneas, misma silueta general.
+  Fondos: entornos creíbles y con cierta profundidad, pero el foco visual siempre está en el personaje principal.
+  Reglas importantes: el personaje debe verse SIEMPRE igual en todas las imágenes, como si fuera exactamente el mismo diseño que en las imágenes de referencia oficiales (frontal y expresiones).
+  La imagen debe parecer un frame de una película animada continua, no ilustraciones sueltas con estilos diferentes.
 
 # Prohibido en estilo (se inyecta en todos los prompts)
 prohibido_estilo: "anime, pixar, 3D render, caricatura infantil, personajes humanos realistas, estilos visuales inconsistentes"
@@ -20,11 +19,25 @@ prohibido_estilo: "anime, pixar, 3D render, caricatura infantil, personajes huma
 # =============================================================================
 
 character_lock: |
-  PERSONAJE PRINCIPAL: Figura stickman estilizada.
-  Características: cabeza circular blanca, cuerpo formado por líneas simples, brazos y piernas líneas simples, cara simple.
-  Opcional: ropa simple, camiseta, pantalón, zapatillas.
-  Prohibido: pelo, anatomía humana detallada, manos realistas, pies realistas, cuerpo humanoide.
-  El personaje debe parecer un muñeco de palitos estilizado.
+  PERSONAJE PRINCIPAL (LOCK): Debe parecerse lo máximo posible al personaje de las imágenes de referencia oficiales.
+  Rasgos clave:
+    - Cabeza circular completamente blanca, contorno negro limpio.
+    - Ojos negros ovalados simples, sin pupilas visibles, cejas suaves y expresión amigable.
+    - Sin pelo ni rasgos faciales detallados (sin nariz realista, sin arrugas complejas).
+    - Buzo con capucha gris oscuro, remera/camiseta blanca debajo, pantalón azul oscuro, zapatillas blancas con detalles azul oscuro.
+    - Manos y pies simplificados pero consistentes con las referencias (no manos hiperrealistas).
+  Consistencia:
+    - Mantener exactamente la misma combinación de ropa, colores y proporciones en TODAS las imágenes del mismo video.
+    - No cambiar el diseño del personaje entre escenas, solo su pose, expresión y posición en el encuadre.
+  Prohibido:
+    - Cambiar a otro tipo de personaje (realista, anime, caricatura infantil diferente) o modificar drásticamente el atuendo.
+    - Cambiar colores base del outfit (siempre hoodie gris, remera blanca, pantalón azul oscuro, zapatillas blancas con detalles azul).
+
+# Referencias visuales oficiales del personaje (para workflows con imagen de referencia)
+character_reference:
+  front: "character_reference/character_reference_front.png"
+  side: "character_reference/character_reference_side.png"
+  expression: "character_reference/character_reference_expression.png"
 
 # =============================================================================
 # 3. SISTEMA DE CÁMARA (CAMERA SYSTEM) - Rotación automática, NUNCA repetir
@@ -95,4 +108,4 @@ densidad_imagenes:
   shorts_30_60_seg: [30, 60]
   video_10_min: [120, 160]
   video_20_min: [200, 260]
-  video_40_min: [300, 450]   # 40 min: guion → escenas → beats → acción → plano → generar
+  video_40_min: [350, 450]   # 40 min: guion → escenas → beats → acción → plano → generar

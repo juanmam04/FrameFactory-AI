@@ -3,7 +3,7 @@ import argparse
 import re
 from pathlib import Path
 
-from .config_loader import BASE
+from .config_loader import BASE, get_subtitle_styles, get_visual_bible
 
 try:
     from .config_loader import get_background_music_path
@@ -11,14 +11,15 @@ except ImportError:
     def get_background_music_path():
         return None
 from .script_generator import generar_guion, guardar_guion, count_words
-from .scene_splitter import dividir_en_escenas, escenas_a_texto_continuo
-from .prompt_builder import prompts_para_escenas
+from .scene_splitter import dividir_en_escenas, escenas_a_texto_continuo, Escena
+from .prompt_builder import prompts_para_escenas, prompts_para_beats
 from .image_generator import generar_lote, OUTPUT_IMAGES
 from .voice_generator import generar_voz
 from .video_assembler import montar_video
 from .regeneration import guardar_prompts_por_escena
 from .metadata_youtube import generar_metadata_completa
 from .history import guardar_en_historial
+from .visual_beats import generar_beats_para_escenas, guardar_beats, generar_subtitulos_srt
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -91,6 +92,8 @@ def run(
     height: int = 1080,
     skip_miniatura: bool = False,
     on_progress_imagenes=None,  # callable(current_1based, total) para UI (ej. "Escena 5 de 25")
+    usar_subtitulos: bool = False,
+    estilo_subtitulos: str | None = None,
     # Parámetros legacy (deprecated, usar target_words)
     duracion_min: int | None = None,
     duracion_max: int | None = None,
@@ -146,10 +149,51 @@ def run(
         raise ValueError("Indica --tema o --guion con un archivo existente.")
 
     escenas = dividir_en_escenas(guion_texto, segundos_por_imagen=seg_por_img)
-    
-    # Generar descripción visual por escena con IA para coherencia de imágenes (cada ~5 s del guion)
+
+    # ─── NUEVO: beats visuales cinematográficos ────────────────────────────────
     tema_para_desc = tema if tema else (nombre_proyecto or proy or "")
-    escenas_con_prompts = prompts_para_escenas(escenas, tema=tema_para_desc, usar_descripciones_ia=True)
+    # Calcular un máximo razonable de beats según duración estimada y densidad configurada
+    max_beats_total: int | None = None
+    try:
+        vb = get_visual_bible()
+        dens = vb.get("densidad_imagenes") or {}
+        shorts_min, shorts_max = dens.get("shorts_30_60_seg", [30, 60])
+        v10_min, v10_max = dens.get("video_10_min", [120, 160])
+        v20_min, v20_max = dens.get("video_20_min", [200, 260])
+        v40_min, v40_max = dens.get("video_40_min", [350, 450])
+        # Categorizar por duración estimada del guion
+        if estimated_minutes <= 1.0:
+            rango_min, rango_max = shorts_min, shorts_max
+        elif estimated_minutes <= 12.0:
+            rango_min, rango_max = v10_min, v10_max
+        elif estimated_minutes <= 24.0:
+            rango_min, rango_max = v20_min, v20_max
+        else:
+            rango_min, rango_max = v40_min, v40_max
+        # Estimar número de imágenes según duración y segundos por imagen
+        if estimated_minutes > 0:
+            estimado_imgs = int((estimated_minutes * 60.0) / seg_por_img)
+            max_beats_total = max(rango_min, min(estimado_imgs, rango_max))
+    except Exception as e:
+        print(f"⚠️ No se pudo calcular densidad de beats desde visual_bible.yaml: {e}")
+        max_beats_total = None
+
+    beats = generar_beats_para_escenas(escenas, tema=tema_para_desc, max_beats_total=max_beats_total)
+    guardar_beats(beats, proy)
+    beats_con_prompts = prompts_para_beats(beats)
+
+    # Adaptar beats → estructura Escena para reutilizar regeneración y montaje
+    escenas_con_prompts: list[tuple[Escena, str]] = [
+        (
+            Escena(
+                numero=beat.beat_id,
+                texto=beat.original_text,
+                duracion_segundos=seg_por_img,
+            ),
+            prompt,
+        )
+        for beat, prompt in beats_con_prompts
+    ]
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 
     lista_imagenes: list[Path] = []
@@ -246,6 +290,22 @@ def run(
         else:
             audio_path = None
 
+    # Subtítulos opcionales (por ahora 1 beat = 1 subtítulo, sincronizado con imágenes)
+    subtitles_path = None
+    subtitle_style_force = None
+    if usar_subtitulos and beats:
+        try:
+            subtitles_path = generar_subtitulos_srt(beats, proy, seg_por_img)
+            styles = get_subtitle_styles()
+            if estilo_subtitulos and isinstance(styles.get(estilo_subtitulos), dict):
+                subtitle_style_force = styles[estilo_subtitulos].get("force_style")
+            elif isinstance(styles.get("default"), dict):
+                subtitle_style_force = styles["default"].get("force_style")
+        except Exception as e:
+            print(f"⚠️ Error al generar subtítulos: {e}")
+            subtitles_path = None
+            subtitle_style_force = None
+
     # Música: parámetro > .env BACKGROUND_MUSIC_PATH
     if musica_fondo is None:
         musica_fondo = get_background_music_path()
@@ -263,6 +323,8 @@ def run(
         width=width,
         height=height,
         duracion_maxima_segundos=None,  # No limitar - confiar en que el guion es del tamaño correcto
+        subtitles_path=subtitles_path,
+        subtitle_style=subtitle_style_force,
     )
 
     metadata_path = None
