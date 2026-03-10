@@ -1,4 +1,4 @@
-"""FASE 6: Generación de imágenes con ComfyUI o OpenAI DALL-E (opcional para pruebas)."""
+"""FASE 6: Generación de imágenes con ComfyUI (local o RunPod)."""
 import os
 import shutil
 import time
@@ -19,10 +19,19 @@ COMFY_URL = (os.getenv("COMFYUI_URL") or "http://127.0.0.1:8188").strip().rstrip
 COMFY_CHECKPOINT_DEFAULT = "v1-5-pruned-emaonly.safetensors"
 _resolved_checkpoint: str | None = None
 
-# Si True, se usan imágenes con OpenAI DALL-E en lugar de ComfyUI (útil para probar sin ComfyUI)
+# DALL-E deshabilitado: solo ComfyUI o Replicate (FLUX).
 def _usar_openai_imagenes() -> bool:
-    v = (os.getenv("USE_OPENAI_IMAGES") or "").strip().lower()
-    return v in ("1", "true", "yes", "on")
+    return False
+
+# Replicate (FLUX): muy barato (~$0.003/imagen con flux-schnell), sin montar ComfyUI.
+REPLICATE_MODEL = os.getenv("REPLICATE_FLUX_MODEL", "black-forest-labs/flux-schnell").strip()
+
+def _usar_replicate() -> bool:
+    v = (os.getenv("IMAGE_BACKEND") or "").strip().lower()
+    return v == "replicate" and bool(os.getenv("REPLICATE_API_TOKEN", "").strip())
+
+def _replicate_disponible() -> bool:
+    return bool(os.getenv("REPLICATE_API_TOKEN", "").strip())
 
 # Timeouts: más largos cuando ComfyUI está en la nube (RunPod, etc.)
 def _is_remote_comfy() -> bool:
@@ -356,6 +365,58 @@ def _escribir_placeholder_png(carpeta: Path, escena_num: int, width: int = 1024,
     return dest
 
 
+def _generar_imagen_replicate(
+    prompt: str,
+    carpeta: Path,
+    escena_num: int,
+    width: int = 1024,
+    height: int = 576,
+) -> Path | None:
+    """Genera una imagen con Replicate FLUX (flux-schnell ~$0.003/imagen). Sin ComfyUI."""
+    import replicate as replicate_client
+    prompt = (prompt or "").strip()[:2000]
+    if not prompt:
+        return None
+    # FLUX Schnell: aspect_ratio 16:9 para video, output_format png
+    aspect_ratio = "16:9"
+    if width and height:
+        r = width / height if height else 1.0
+        if r < 0.6:
+            aspect_ratio = "9:16"
+        elif r > 1.5:
+            aspect_ratio = "16:9"
+        elif abs(r - 1.0) < 0.2:
+            aspect_ratio = "1:1"
+    try:
+        output = replicate_client.run(
+            REPLICATE_MODEL,
+            input={
+                "prompt": prompt,
+                "aspect_ratio": aspect_ratio,
+                "output_format": "png",
+                "num_outputs": 1,
+            },
+        )
+    except Exception as e:
+        raise RuntimeError(f"Replicate FLUX no pudo generar la imagen: {e}") from e
+    if not output:
+        return None
+    # output puede ser lista de URLs o un FileOutput
+    url = output[0] if isinstance(output, (list, tuple)) else output
+    if hasattr(url, "read"):
+        data = url.read()
+    elif isinstance(url, str) and (url.startswith("http://") or url.startswith("https://")):
+        r = requests.get(url, timeout=60)
+        r.raise_for_status()
+        data = r.content
+    else:
+        return None
+    carpeta.mkdir(parents=True, exist_ok=True)
+    path = carpeta / f"escena_{escena_num:04d}.png"
+    path.write_bytes(data)
+    return path
+
+
 def _prompt_fallback_stickman(escena_num: int) -> str:
     """Prompt de respaldo en estilo stickman cuando hay rechazo o error; evita fotos realistas aleatorias."""
     estilo = get_estilo_base()
@@ -509,16 +570,16 @@ def generar_imagen(
     width: int | None = None,
     height: int | None = None,
 ) -> Path | None:
-    """Genera una imagen con ComfyUI o con OpenAI DALL-E si USE_OPENAI_IMAGES=true en .env."""
+    """Genera una imagen con Replicate (FLUX) o ComfyUI según IMAGE_BACKEND."""
     instrucciones = get_instrucciones_imagenes()
     params = instrucciones.get("parametros_sd", {})
     img_width = width if width is not None else params.get("width", 1024)
     img_height = height if height is not None else params.get("height", 576)
 
-    if _usar_openai_imagenes():
+    if _usar_replicate():
         for intento in range(MAX_REINTENTOS):
             try:
-                path = _generar_imagen_openai_dalle(prompt, carpeta, escena_num, img_width, img_height)
+                path = _generar_imagen_replicate(prompt, carpeta, escena_num, img_width, img_height)
                 if path:
                     return path
             except RuntimeError:
@@ -527,7 +588,7 @@ def generar_imagen(
                 if intento < MAX_REINTENTOS - 1:
                     time.sleep(PAUSA_REINTENTO)
                 else:
-                    raise RuntimeError(f"Falló generación escena {escena_num} con DALL-E: {e}") from e
+                    raise RuntimeError(f"Falló generación escena {escena_num} con Replicate: {e}") from e
         return None
 
     negative = get_negative_prompt()
@@ -550,6 +611,8 @@ def generar_imagen(
                 time.sleep(PAUSA_REINTENTO)
             else:
                 raise RuntimeError(f"Falló generación escena {escena_num}: {e}") from e
+    if _usar_replicate():
+        raise RuntimeError("Replicate no respondió. Revisá REPLICATE_API_TOKEN e IMAGE_BACKEND=replicate en .env.")
     raise RuntimeError(_comfyui_error_msg())
 
 
@@ -572,15 +635,15 @@ def generar_lote(
     height: int | None = None,
     on_progress: Callable[[int, int], None] | None = None,
 ) -> list[Path]:
-    """Genera todas las imágenes. Con DALL-E no se aborta: si una escena falla se usa fallback stickman o se duplica la anterior, para tener siempre N imágenes."""
-    if not _usar_openai_imagenes() and not _comfyui_disponible():
+    """Genera todas las imágenes con Replicate (FLUX) o ComfyUI. Si una falla con Replicate se usa placeholder."""
+    if not _usar_replicate() and not _comfyui_disponible():
         raise RuntimeError(_comfyui_error_msg())
     carpeta = OUTPUT_IMAGES / subcarpeta
     instrucciones = get_instrucciones_imagenes()
     params = instrucciones.get("parametros_sd", {})
     img_w = width if width is not None else params.get("width", 1024)
     img_h = height if height is not None else params.get("height", 576)
-    usar_dalle = _usar_openai_imagenes()
+    usar_replicate = _usar_replicate()
     total = len(escenas_con_prompts)
     rutas = []
     for idx, (escena, prompt) in enumerate(escenas_con_prompts, start=1):
@@ -589,31 +652,13 @@ def generar_lote(
         try:
             path = generar_imagen(prompt, escena.numero, carpeta, width=width, height=height)
         except Exception as e:
-            if not usar_dalle:
+            if not usar_replicate:
                 raise
-            print(f"   ⚠️ Escena {escena.numero}: falló ({e}). Intentando imagen stickman de respaldo...")
-            try:
-                path = _generar_imagen_openai_dalle(
-                    _prompt_fallback_stickman(escena.numero),
-                    carpeta,
-                    escena.numero,
-                    img_w,
-                    img_h,
-                )
-            except Exception as e2:
-                print(f"   ⚠️ Escena {escena.numero}: fallback también falló ({e2}). Usando placeholder o duplicado.")
-            if not path:
-                # Siempre dejar una imagen por escena: duplicar anterior o placeholder
-                if rutas:
-                    carpeta.mkdir(parents=True, exist_ok=True)
-                    dest = carpeta / f"escena_{escena.numero:04d}.png"
-                    shutil.copy2(rutas[-1], dest)
-                    path = dest
-                else:
-                    path = _escribir_placeholder_png(carpeta, escena.numero, img_w, img_h)
+            print(f"   ⚠️ Escena {escena.numero}: falló ({e}). Usando placeholder.")
+            path = _escribir_placeholder_png(carpeta, escena.numero, img_w, img_h)
         if path:
             rutas.append(path)
-    if len(rutas) != len(escenas_con_prompts) and not usar_dalle:
+    if len(rutas) != len(escenas_con_prompts) and not usar_replicate:
         raise RuntimeError(f"Se generaron {len(rutas)} de {len(escenas_con_prompts)} imágenes.")
     return rutas
 

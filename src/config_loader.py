@@ -1,9 +1,12 @@
 """Carga de configuración: biblia visual y plantillas."""
+import json
 from pathlib import Path
 import yaml
 
 BASE = Path(__file__).resolve().parent.parent
 CONFIG_DIR = BASE / "config"
+META_DIR = BASE / "output" / "meta"
+FEEDBACK_APRENDIZAJE_PATH = META_DIR / "feedback_aprendizaje.json"
 
 
 def load_yaml(name: str) -> dict:
@@ -77,3 +80,22 @@ def get_instrucciones_imagenes() -> dict:
 def get_instrucciones_descripcion_escenas() -> dict:
     """Carga instrucciones para generar descripción visual por escena (para coherencia de imágenes)."""
     return load_yaml("instrucciones_descripcion_escenas.yaml")
+
+
+def get_preferencias_aprendidas(max_entradas: int = 25) -> str:
+    """Preferencias guardadas cada vez que el usuario regenera con feedback (entrenamiento permanente).
+    Se usa al construir prompts nuevos para que ya incluyan lo que el usuario pidió antes."""
+    if not FEEDBACK_APRENDIZAJE_PATH.exists():
+        return ""
+    try:
+        data = json.loads(FEEDBACK_APRENDIZAJE_PATH.read_text(encoding="utf-8"))
+        if not isinstance(data, list):
+            return ""
+        recientes = data[-max_entradas:] if len(data) > max_entradas else data
+        preferencias = [e.get("feedback_usuario", "").strip() for e in recientes if e.get("feedback_usuario")]
+        preferencias = list(dict.fromkeys(preferencias))[-15:]
+        if not preferencias:
+            return ""
+        return "Preferencias del usuario (aplicar): " + "; ".join(preferencias)
+    except Exception:
+        return ""

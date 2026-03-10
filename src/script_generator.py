@@ -114,10 +114,16 @@ Si escribís menos de {int(target_words * 0.7)} palabras no cumple. Acercate sie
         
         prompt_borrador = f"""Escribe la VIDA COMPLETA del personaje, no una escena ni un resumen. El guion debe sentirse como una mini-película POV.
 Regla clave: {frase_clave}
-- Empieza SIEMPRE con "Este eres tú." (el espectador es el protagonista).
+
+APERTURA OBLIGATORIA (NO NEGOCIABLE):
+- La PRIMERA oración del guion debe ser exactamente "Este eres tú." (o "Este eres tú,") seguida de la primera escena. Ejemplo: "Este eres tú. Tienes 9 años y el balón es demasiado grande para tus pies."
+- PROHIBIDO empezar con: "Hoy vamos a hablar de...", "En este video...", "Te invito a...", "¿Alguna vez te preguntaste...?", "En el día de hoy...", o cualquier intro de youtuber o presentador. El espectador ES el protagonista desde la primera palabra; no hay presentación del tema.
+- Si el tema incluye un título o descripción, NO lo repitas como intro; empieza directo con "Este eres tú." y la primera escena de la vida del personaje.
+
 - ESPAÑOL NEUTRO OBLIGATORIO: usa tuteo (tú, tienes, sabes, eres, estás, puedes). NUNCA voseo (vos, tenés, sabés, sos, podés) ni regionalismos. El guion debe ser comprensible en toda Hispanoamérica y España.
 - Cuenta todo el recorrido: infancia, dificultades, rechazos, sacrificios, debut, fama, presión, decisiones difíciles, gloria, caídas. Escenas concretas (lugares, horarios, dinero, titulares), crudo y realista. Sin frases motivacionales ni intros promocionales ("este video te llevará…", "no te pierdas…"). No resumir momentos clave; narrarlos en escena.
 - Narración en segunda persona (tú), concreta, sin poesía ni moralejas. Objetivo: ~{target_words} palabras. No uses encabezados ni listas; solo texto fluido.
+- La historia DEBE tener SIEMPRE un final completo (desenlace, cierre). NUNCA la cortes a la mitad de una frase. Adaptá la cantidad de escenas al largo pedido, pero siempre terminá la historia con una última oración que cierre.
 
 RESTRICCIONES SOBRE EL TEMA (OBLIGATORIO):
 - El TEMA define QUIÉN eres, DÓNDE estás y EN QUÉ ÉPOCA vives. NO puedes cambiar eso.
@@ -148,6 +154,21 @@ Tema: {tema}"""
             temperature=0.7,  # Más creatividad en el borrador
         )
         borrador = (r1.choices[0].message.content or "").strip()
+        # Forzar apertura POV: si el modelo puso "Hoy vamos a hablar..." u otra intro, quitarla y empezar con "Este eres tú."
+        borrador_lower = borrador.lower()
+        intro_prohibida = (
+            borrador_lower.startswith("hoy vamos a hablar")
+            or borrador_lower.startswith("en este video")
+            or borrador_lower.startswith("te invito a")
+            or (borrador_lower.startswith("¿alguna vez") and "preguntaste" in borrador_lower[:80])
+        )
+        empieza_con_este_eres_tu = borrador_lower.startswith("este eres tú") or borrador_lower.startswith("este eres tu")
+        if intro_prohibida:
+            first_line = borrador.split("\n")[0].strip() if borrador else ""
+            rest = borrador[len(first_line):].lstrip() if len(first_line) > 5 else borrador
+            borrador = f"Este eres tú. {rest}"
+        elif not empieza_con_este_eres_tu and borrador:
+            borrador = f"Este eres tú. {borrador}"
         word_count_borrador = count_words(borrador)
         
         print(f"📊 Borrador generado: {word_count_borrador} palabras (objetivo: {target_words})")
@@ -219,9 +240,9 @@ HISTORIA ACTUAL:
             prompt_ajuste = f"""Reescribe la historia siguiente para que tenga aproximadamente {objetivo_ajuste} palabras (entre {min_words} y {max_words}).
 Actualmente tiene unas {word_count_actual} palabras. Objetivo: {target_words} palabras.
 Debe mantener coherencia total, historia completa y final claro.
-Si necesitas acortar, elimina detalles y escenas secundarias, pero conserva el desenlace.
+Si necesitas acortar, elimina detalles y escenas secundarias, pero CONSERVA SIEMPRE EL DESENLACE: la historia DEBE terminar con un final completo (cierre de la trama). NUNCA cortes a la mitad de una frase ni dejes la historia incompleta.
 Si necesitas expandir, agrega detalles concretos y tensión sin inventar subtramas largas. APROXIMATE al número objetivo.
-Devuelve solo el texto final.
+OBLIGATORIO: La última oración debe ser un cierre (punto final). Devuelve solo el texto final.
 
 HISTORIA:
 {texto_para_ajustar}"""
@@ -232,7 +253,7 @@ HISTORIA:
             r2 = client.chat.completions.create(
                 model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                 messages=[
-                    {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. Si el objetivo es mayor al texto actual, expandís; si es menor, recortás. Siempre te aproximás al objetivo."},
+                    {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. Si acortas, quitas escenas o detalles pero SIEMPRE conservas el desenlace: la historia debe terminar con un final completo, nunca cortada a la mitad de una frase."},
                     {"role": "user", "content": prompt_ajuste},
                 ],
                 max_tokens=max_tokens_ajuste,
@@ -277,8 +298,8 @@ GUION ACTUAL:
                 print(f"⚠️ Guion excede {max_words} palabras. Reintentando con instrucción más estricta...")
                 prompt_ajuste_estricto = f"""Reescribe la historia siguiente para que tenga EXACTAMENTE {target_words} palabras (MÁXIMO {max_words}, NO MÁS).
 Debe mantener coherencia total, historia completa y final claro.
-Si necesitas acortar, elimina detalles y escenas secundarias, pero conserva el desenlace.
-Devuelve solo el texto final.
+Si necesitas acortar, elimina detalles y escenas secundarias, pero CONSERVA SIEMPRE EL DESENLACE. La historia DEBE terminar con un final completo; NUNCA la cortes a la mitad de una oración.
+Devuelve solo el texto final. La última frase debe ser un cierre con punto final.
 
 HISTORIA ORIGINAL:
 {borrador}"""
@@ -286,11 +307,11 @@ HISTORIA ORIGINAL:
                 r3 = client.chat.completions.create(
                     model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                     messages=[
-                        {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias a números exactos de palabras manteniendo coherencia y final completo."},
+                        {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. SIEMPRE entregas una historia con final completo; nunca cortes a la mitad de una frase."},
                         {"role": "user", "content": prompt_ajuste_estricto},
                     ],
-                    max_tokens=int(target_words * 1.15 * 1.3),  # 15% de margen para evitar cortes
-                    temperature=0.2,  # Temperatura aún más baja
+                    max_tokens=max(1200, int(target_words * 1.6 * 1.4)),  # margen suficiente para no truncar el final
+                    temperature=0.2,
                 )
                 guion_final = (r3.choices[0].message.content or "").strip()
                 word_count_final = count_words(guion_final)
@@ -346,9 +367,20 @@ GUION ACTUAL:
         if len(guion_final.strip()) < 100:
             print(f"⚠️ ADVERTENCIA: Guion parece muy corto ({len(guion_final)} caracteres)")
         
-        # Verificar que termine con punto o signo de puntuación
-        if guion_final.strip() and not guion_final.strip()[-1] in ".!?":
-            print(f"⚠️ ADVERTENCIA: Guion puede estar cortado (no termina con puntuación)")
+        # Si termina sin puntuación (cortado a la mitad), recortar hasta la última oración completa
+        guion_stripped = guion_final.strip()
+        if guion_stripped and guion_stripped[-1] not in ".!?":
+            print(f"⚠️ Guion cortado a la mitad. Recortando hasta la última oración completa...")
+            last_punto = max(guion_stripped.rfind(". "), guion_stripped.rfind("."))
+            last_excl = guion_stripped.rfind("!")
+            last_inter = guion_stripped.rfind("?")
+            ultimo_fin = max(last_punto, last_excl, last_inter)
+            if ultimo_fin > 50:
+                guion_final = guion_stripped[: ultimo_fin + 1]
+                word_count_final = count_words(guion_final)
+                print(f"   ✅ Guion recortado a oración completa: {word_count_final} palabras")
+            else:
+                print(f"⚠️ ADVERTENCIA: Guion puede estar cortado (no termina con puntuación)")
         
         print(f"✅ Guion final: {word_count_final} palabras, ≈ {estimated_minutes:.1f} minutos (base, sin velocidad)")
         print(f"   Longitud del texto: {len(guion_final)} caracteres")

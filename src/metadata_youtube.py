@@ -230,49 +230,7 @@ def generar_miniatura(
     usar_ia: bool = True,
 ) -> Path | None:
     """
-    Genera la miniatura del video usando OpenAI DALL-E.
-    Retorna la ruta a la imagen generada o None si falla.
+    Miniatura: ya no usa DALL-E (muy caro). Retorna None; podés usar un frame del video
+    o generar la miniatura con ComfyUI por separado.
     """
-    OUTPUT_THUMBNAILS.mkdir(parents=True, exist_ok=True)
-    path = OUTPUT_THUMBNAILS / f"{nombre_proyecto}_thumbnail.png"
-    
-    # Generar prompt para la miniatura
-    prompt = generar_prompt_miniatura(titulo, tema, guion_resumen, usar_ia=usar_ia)
-    
-    # Agregar especificaciones de miniatura de YouTube
-    prompt_completo = f"{prompt}, miniatura de YouTube, diseño llamativo, colores vibrantes, alta calidad, estilo profesional"
-    
-    # Generar imagen usando OpenAI DALL-E
-    import os
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return None
-    
-    try:
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key)
-        
-        # DALL-E 3 genera imágenes de alta calidad
-        # Tamaño recomendado para miniaturas de YouTube: 1024x1024 o 1792x1024
-        response = client.images.generate(
-            model="dall-e-3",
-            prompt=prompt_completo,
-            size="1792x1024",  # Formato 16:9 para YouTube
-            quality="hd",
-            n=1,
-        )
-        
-        # Descargar la imagen
-        import requests
-        image_url = response.data[0].url
-        img_response = requests.get(image_url, timeout=30)
-        img_response.raise_for_status()
-        
-        # Guardar la imagen
-        path.write_bytes(img_response.content)
-        return path
-        
-    except Exception as e:
-        # Si falla, retornar None
-        print(f"⚠️ Error al generar miniatura con DALL-E: {e}")
-        return None
+    return None

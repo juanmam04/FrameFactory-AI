@@ -15,8 +15,9 @@ pydub>=0.25.0
 # Frontend
 streamlit>=1.28.0
 
-# Imágenes (ComfyUI output, miniatura)
+# Imágenes (ComfyUI, Replicate FLUX)
 Pillow>=10.0.0
+replicate>=0.25.0
 
 # Tests
 pytest>=7.0.0

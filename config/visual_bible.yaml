@@ -1,34 +1,98 @@
-# FASE 1–2: Biblia visual
-# Estilo fijo: SIEMPRE el mismo stickman (cuerpo blanco, contorno negro del mismo grosor, cabeza redonda, ojos de punto, sin nariz realista). La escena y el personaje se adaptan al guion: narco, futbolista, lo que sea, pero el dibujo NO cambia de estilo entre imágenes.
+# =============================================================================
+# 1. PROMPT GLOBAL DEL SISTEMA (STYLE LOCK) - Se agrega a TODAS las imágenes
+# =============================================================================
 
-estilo_base: "flat 2D stickman, pure black outline always same thickness, round head with dot eyes, white body, simple flat colors with limited palette. EXACT SAME protagonist design in every image (same body proportions, head size, line weight, color palette); only pose, facial expression and background change between scenes. Never switch to realistic humans or different cartoon styles; keep identical stickman drawing style across all frames."
+estilo_base: |
+  Ilustración 2D narrativa cinematográfica.
+  Personaje principal: stickman estilizado.
+  Estructura del personaje: cabeza redonda, cuerpo formado por líneas simples, brazos y piernas líneas simples, cara simple (ojos y boca pequeños).
+  El personaje puede tener ropa simple (camiseta, pantalón, zapatillas), pero la estructura del cuerpo debe seguir siendo un stickman.
+  Estética general: estilo consistente en todas las imágenes, ilustración limpia y clara, composición cinematográfica, imagen pensada como un frame de película.
+  Fondos: entornos detallados y creíbles, fondos más realistas que el personaje, profundidad visual, iluminación natural según la escena.
+  Reglas importantes: el personaje debe verse siempre igual en todas las imágenes; el estilo visual no debe cambiar entre escenas; la imagen debe parecer parte de una historia continua.
+  Fórmula del proyecto: personaje simple + fondo creíble + cámara cinematográfica = video que funciona.
+
+# Prohibido en estilo (se inyecta en todos los prompts)
+prohibido_estilo: "anime, pixar, 3D render, caricatura infantil, personajes humanos realistas, estilos visuales inconsistentes"
+
+# =============================================================================
+# 2. DEFINICIÓN DEL PERSONAJE (CHARACTER LOCK) - Se agrega siempre
+# =============================================================================
+
+character_lock: |
+  PERSONAJE PRINCIPAL: Figura stickman estilizada.
+  Características: cabeza circular blanca, cuerpo formado por líneas simples, brazos y piernas líneas simples, cara simple.
+  Opcional: ropa simple, camiseta, pantalón, zapatillas.
+  Prohibido: pelo, anatomía humana detallada, manos realistas, pies realistas, cuerpo humanoide.
+  El personaje debe parecer un muñeco de palitos estilizado.
+
+# =============================================================================
+# 3. SISTEMA DE CÁMARA (CAMERA SYSTEM) - Rotación automática, NUNCA repetir
+# =============================================================================
+# Regla de oro: if camera_position == previous_camera_position: change_camera()
+# Cada imagen debe cambiar al menos una: posición, distancia, ángulo, composición, iluminación.
+
+camara:
+  regla_plano_distinto: true
+  # Nombres estándar cinematográficos (rotación automática en código)
+  variedad_planos:
+    - "POV (punto de vista del personaje)"
+    - "plano sobre el hombro (over the shoulder)"
+    - "plano amplio cinematográfico (wide shot)"
+    - "plano medio (medium shot)"
+    - "primer plano / close-up"
+    - "ángulo lateral (side angle)"
+    - "vista desde arriba (top down)"
+    - "ángulo bajo (low angle)"
+    - "vista desde atrás (rear view)"
+    - "plano de entorno (environment shot)"
+
+# Regla cinematográfica: si no cambia ninguna variable → se siente repetida
+regla_variacion: "Cada imagen debe cambiar al menos una de: posición de cámara, distancia de cámara, ángulo de cámara, composición, iluminación."
+
+# =============================================================================
+# RITMO: cada 3-5 imágenes tiene que pasar algo visual (acción, reacción, detalle, cambio)
+# =============================================================================
+ritmo_beats:
+  - "acción"
+  - "reacción"
+  - "detalle"
+  - "cambio de plano"
+ciclo_beats_imagenes: 4   # cada 4 imágenes se completa el ciclo
+
+# =============================================================================
+# 4–5. Contexto narrativo y prompt final se definen en instrucciones_imagenes.yaml
+# Variables por escena: plano, accion, emocion, momento
+# =============================================================================
 
 iluminacion:
   - "luz suave y direccional"
   - "sombras definidas pero no duras"
-  - "sin reflejos excesivos"
-
-camara:
-  variedad_planos:
-    - "plano general"
-    - "plano medio"
-    - "primer plano"
-    - "plano detalle"
-  reglas:
-    - "evitar repetición del mismo plano en escenas consecutivas"
-    - "ángulo de cámara bajo para momentos dramáticos"
-    - "ángulo neutro para narración"
+  - "iluminación acorde al momento de la historia"
 
 atmosfera:
-  - "ambiente minimalista"
-  - "fondos simples que no distraigan"
-  - "paleta limitada y coherente"
+  - "ambiente coherente con la escena"
+  - "fondos detallados y creíbles"
+  - "composición cinematográfica"
 
 duracion_por_imagen_segundos: 5
 formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
 
-# Negative prompt fijo para evitar desvíos de estilo y elementos no deseados
-negative_prompt: "blurry, low quality, distorted, text, watermark, 3D, realistic, photo, realistic human, realistic face, detailed face, nose, lips, hair texture, skin shading, pixar, disney style, anime, semi-realistic, cartoon color gradients, messy lines, cluttered background, video player, playback bar, timeline, timecode, grid lines, editor interface, UI overlay, floating, flying, surreal"
+# =============================================================================
+# 6. NEGATIVE PROMPT (estabilidad del modelo)
+# =============================================================================
 
-# Regla para TODAS las imágenes: un solo fotograma de ilustración, solo contenido de escena
-prohibido_en_imagen: "Un solo fotograma de ilustración. Solo el contenido dibujado de la escena visible. Composición limpia, sin overlays, sin texto, sin controles ni interfaz. Sin figuras flotando o volando."
+negative_prompt: "anime, pixar, 3d render, realistic human, photorealistic, caricature, childish cartoon, manga style, overly detailed human anatomy, blurry, low quality, distorted, text, watermark, video player, playback bar, editor interface, UI overlay"
+
+# Regla para TODAS las imágenes
+prohibido_en_imagen: "Sin reproductor de video, sin barra de reproducción, sin interfaz de editor. Solo contenido de la escena. Formato 16:9, encuadre claro, composición cinematográfica."
+
+# =============================================================================
+# 8. DENSIDAD DE IMÁGENES POR VIDEO (para automatizar duración)
+# =============================================================================
+
+densidad_imagenes:
+  shorts_30_60_seg: [30, 60]
+  video_10_min: [120, 160]
+  video_20_min: [200, 260]
+  video_40_min: [300, 450]   # 40 min: guion → escenas → beats → acción → plano → generar

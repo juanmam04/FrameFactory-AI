@@ -1,15 +1,38 @@
-# Tamaño de imagen para video (16:9). DALL-E devuelve otro tamaño; se redimensiona a este.
+# Tamaño de imagen para video (16:9)
 parametros_sd:
   cfg_scale: 7.0
   height: 720
   steps: 25
   width: 1920
-# El estilo (stickman 2D, etc.) es regla general: se inyecta en código desde visual_bible.yaml, no se repite aquí.
-# Este template solo define el contenido variable por escena.
-prompt_template: |
-  Plano: {plano}. Acción coherente con la escena: {accion}. Emoción: {emocion}. Fase: {fase_psicologica}. Momento: {momento_de_la_historia}.
 
-  Iluminación coherente con el estado emocional. Formato 16:9, encuadre claro.
+# PROMPT FINAL DE GENERACIÓN (sección 5 de la spec)
+# Variables: {plano}, {accion}, {emocion}, {momento}, {beat_visual} (ritmo: acción/reacción/detalle/cambio de plano)
+# El estilo global (style lock) y character lock se inyectan desde código desde visual_bible.yaml.
+prompt_template: |
+  Ilustración 2D narrativa cinematográfica.
+
+  Personaje principal: stickman estilizado con cabeza redonda y cuerpo formado por líneas simples.
+
+  Plano de cámara: {plano}
+
+  Acción: {accion}
+
+  Emoción del momento: {emocion}
+
+  Contexto narrativo: {momento}
+
+  Ritmo visual (cada 3-5 imágenes algo cambia): {beat_visual}
+
+  El personaje puede tener ropa simple pero su estructura debe seguir siendo un stickman.
+
+  Escenario: entorno coherente con la escena, fondo detallado y creíble.
+
+  Iluminación acorde al momento de la historia.
+
+  La imagen debe parecer un frame de una película animada narrativa.
+
+  Formato: 16:9, encuadre claro, composición cinematográfica.
+
 reintentos:
   max_reintentos: 3
   pausa_segundos: 5

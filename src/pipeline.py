@@ -271,7 +271,7 @@ def run(
         metadata_path, thumbnail_path = generar_metadata_completa(
             proy, tema or proy, escenas, guion_texto,
             usar_ia_descripcion=True,
-            generar_miniatura_flag=not skip_miniatura,  # Generar miniatura si no se salta (usa DALL-E, no necesita Stable Diffusion)
+            generar_miniatura_flag=not skip_miniatura,  # Llama a generar_miniatura (ahora retorna None; sin DALL-E)
         )
     
     # Obtener duración real del video

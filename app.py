@@ -14,7 +14,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.config_loader import BASE, get_narrative_rules, get_plantillas_guion, get_instrucciones_descripcion, get_instrucciones_miniatura, get_instrucciones_imagenes
-from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto, _usar_openai_imagenes, generar_lote, OUTPUT_IMAGES
+from src.image_generator import COMFY_URL, _comfyui_disponible, comfyui_es_remoto, _replicate_disponible, generar_lote, OUTPUT_IMAGES
 from src.pipeline import run, sanitizar_nombre_proyecto
 from src.history import cargar_historial, obtener_video_por_id, eliminar_del_historial
 from src.script_generator import guardar_guion, generar_guion
@@ -53,8 +53,7 @@ def mensaje_credenciales():
     if backend == "comfyui" and not os.getenv("COMFYUI_URL", "").strip() and not os.getenv("SD_API_URL", "").strip():
         faltan.append("COMFYUI_URL (ej. http://127.0.0.1:8188) para generar imágenes")
     if backend == "openai" and not os.getenv("OPENAI_API_KEY", "").strip():
-        # OPENAI_API_KEY ya se pide para guiones; si solo quieren imágenes con DALL-E, igual lo necesitan
-        pass  # ya listado como OPENAI_API_KEY (guiones)
+        pass  # OPENAI_API_KEY ya se pide para guiones/voz
     return faltan
 
 
@@ -85,10 +84,11 @@ def generar_descripcion_breve_desde_titulo(titulo: str) -> str:
         )
         user_prompt = (
             f"Título del video: {titulo}\n\n"
-            "Escribí una descripción tipo tráiler de 3 a 6 frases seguidas (un solo párrafo). "
+            "Escribí una descripción tipo tráiler, rica y desarrollada: varios párrafos o líneas separadas (no todo en un solo renglón). "
             "Debe dejar claro que el video es un POV en segunda persona donde el espectador vive la vida COMPLETA del personaje del título: infancia, ascenso, momentos de gloria, caídas y consecuencias finales. "
             "Incluí detalles del entorno (época, lugar, mundo en el que se mueve), del tipo de conflictos que va a enfrentar (familia, dinero, poder, culpa, cárcel, soledad, etc.) y del tono general (crudo, tenso, esperanzador, trágico, etc.). "
-            "No invites a 'ver el video' ni escribas llamados a la acción; solo cuenta, como si fuera la contraportada de una película muy intensa, qué clase de viaje va a vivir el espectador."
+            "No invites a 'ver el video' ni escribas llamados a la acción; solo cuenta, como si fuera la contraportada de una película muy intensa, qué clase de viaje va a vivir el espectador. "
+            "Podés usar 2 o 3 párrafos cortos si ayuda a dar ritmo y claridad."
         )
 
         response = client.chat.completions.create(
@@ -97,7 +97,7 @@ def generar_descripcion_breve_desde_titulo(titulo: str) -> str:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            max_tokens=400,
+            max_tokens=700,
             temperature=0.6,
         )
         desc = (response.choices[0].message.content or "").strip()
@@ -505,12 +505,15 @@ with st.expander("⚙️ Opciones avanzadas"):
     )
     
     if not skip_imagenes:
-        imagen_ia = st.radio(
-            "IA para generar imágenes",
-            options=["ComfyUI (local o RunPod)", "OpenAI DALL-E"],
+        opciones_imagen = ["ComfyUI (local o RunPod)"]
+        if _replicate_disponible():
+            opciones_imagen.append("Replicate (FLUX, ~$0.003/imagen)")
+        imagen_backend = st.radio(
+            "Generador de imágenes",
+            options=opciones_imagen,
             index=0,
-            help="ComfyUI: mejor calidad, requiere ComfyUI en 8188. DALL-E: probar sin ComfyUI, usa créditos OpenAI.",
-            key="imagen_ia_todo",
+            help="ComfyUI: gratis si tenés GPU (local o RunPod). Replicate: FLUX por API, muy barato, sin instalar nada.",
+            key="imagen_backend_todo",
         )
         segundos_por_imagen = st.number_input(
             "Segundos por imagen",
@@ -522,7 +525,7 @@ with st.expander("⚙️ Opciones avanzadas"):
             key="seg_por_img_todo"
         )
     else:
-        imagen_ia = "ComfyUI (local o RunPod)"
+        imagen_backend = "ComfyUI (local o RunPod)"
         segundos_por_imagen = 5.0
     
     skip_miniatura = st.checkbox(
@@ -540,22 +543,21 @@ with st.expander("⚙️ Opciones avanzadas"):
     )
 
 if not skip_imagenes:
-    usar_dalle = imagen_ia == "OpenAI DALL-E"
+    usar_replicate = _replicate_disponible() and st.session_state.get("imagen_backend_todo", "ComfyUI (local o RunPod)") == "Replicate (FLUX, ~$0.003/imagen)"
     comfy_ok = _comfyui_disponible()
-    if usar_dalle:
-        st.success("Imágenes con **OpenAI DALL-E**. No hace falta ComfyUI (usa créditos OpenAI).")
+    if usar_replicate:
+        st.success("Imágenes con **Replicate FLUX** (~$0.003/imagen). No hace falta ComfyUI.")
     elif comfy_ok:
         donde = "remoto (RunPod/nube)" if comfyui_es_remoto() else "local"
-        st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarán con IA — {COMFY_URL}")
+        st.success(f"ComfyUI: disponible ({donde}). Las imágenes se generarán con ComfyUI — {COMFY_URL}")
     else:
         st.warning(
-            "ComfyUI no está corriendo. Elegí **OpenAI DALL-E** en Opciones avanzadas para probar sin ComfyUI, "
-            "o iniciá ComfyUI en el puerto 8188."
+            "ComfyUI no está corriendo. Iniciá ComfyUI en el puerto 8188 (local o RunPod) o elegí **Replicate** si tenés REPLICATE_API_TOKEN en .env."
         )
         if st.button("▶️ Iniciar ComfyUI en segundo plano", key="btn_iniciar_comfy"):
             ok, err = iniciar_comfyui_background()
             if ok:
-                st.success("ComfyUI se está iniciando. Esperá 20–30 segundos y recargá la página (F5) para que lo detecte.")
+                st.success("ComfyUI se está iniciando. Esperá 30–60 segundos y recargá la página (F5). Si no aparece, abrí el log abajo o ejecutá en terminal: bash scripts/start_comfyui.sh")
             else:
                 st.error(f"No se pudo iniciar ComfyUI: {err}. Verificá que tengas ComfyUI instalado y, si está en otra ruta, definí COMFYUI_PATH en .env.")
 
@@ -570,8 +572,8 @@ if generar:
         bloqueado = True
     elif faltan:
         st.error("Completá las credenciales en .env y volvé a intentar.")
-    elif not skip_imagenes and imagen_ia != "OpenAI DALL-E" and not _comfyui_disponible():
-        st.error("ComfyUI no está corriendo. Inicialo en el puerto 8188 o elegí «OpenAI DALL-E» en Opciones avanzadas.")
+    elif not skip_imagenes and not usar_replicate and not _comfyui_disponible():
+        st.error("ComfyUI no está corriendo. Inicialo en el puerto 8188 (local o RunPod) o elegí Replicate (REPLICATE_API_TOKEN en .env).")
     else:
         revisar_imagenes_antes_video = st.session_state.get("revisar_imagenes_todo", False)
         # Barra de progreso para imágenes (así se ve que avanza y no está trancado)
@@ -588,7 +590,8 @@ if generar:
             mensaje_spinner = "Generando… guion → escenas → imágenes para revisión"
             with st.spinner(mensaje_spinner):
                 try:
-                    os.environ["USE_OPENAI_IMAGES"] = "true" if imagen_ia == "OpenAI DALL-E" else "false"
+                    os.environ["USE_OPENAI_IMAGES"] = "false"
+                    os.environ["IMAGE_BACKEND"] = "replicate" if (st.session_state.get("imagen_backend_todo") == "Replicate (FLUX, ~$0.003/imagen)") else "comfyui"
                     proy, guion_path, lista_imagenes = preparar_imagenes_para_revision(
                         tema=tema.strip(),
                         nombre_proyecto=(nombre_proyecto or "").strip() or None,
@@ -604,7 +607,7 @@ if generar:
                     st.session_state.modo_revision_imagenes = True
                     st.session_state.proyecto_revision = proy
                     st.session_state.guion_path_revision = str(guion_path)
-                    st.success("Imágenes generadas para revisión. Abrí la pestaña «🎞️ Escenas por imagen» para aceptarlas o regenerarlas y luego montar el video.")
+                    st.success("Imágenes generadas. Revisá cada una en **🎞️ Escenas por imagen** (abajo) y aceptá o regenerá antes de montar el video.")
                 except Exception as e:
                     st.exception(e)
         else:
@@ -614,8 +617,8 @@ if generar:
             mensaje_spinner += " → voz → video → metadata YouTube"
             with st.spinner(mensaje_spinner):
                 try:
-                    # Aplicar elección de IA para imágenes (el pipeline lee USE_OPENAI_IMAGES)
-                    os.environ["USE_OPENAI_IMAGES"] = "true" if (not skip_imagenes and imagen_ia == "OpenAI DALL-E") else "false"
+                    os.environ["USE_OPENAI_IMAGES"] = "false"
+                    os.environ["IMAGE_BACKEND"] = "replicate" if (st.session_state.get("imagen_backend_todo") == "Replicate (FLUX, ~$0.003/imagen)") else "comfyui"
                     video_path, metadata_path, thumbnail_path, info_dict = run(
                         tema=tema.strip(),
                         target_words=target_words,
@@ -670,8 +673,13 @@ if generar:
                 except Exception as e:
                     st.exception(e)
 
-# ─── Resultado: video + metadata ──────────────────────────────────────────────
-if st.session_state.video_path and st.session_state.video_bytes:
+# ─── Resultado: video + metadata O imágenes para revisión ─────────────────────
+tiene_video = bool(st.session_state.video_path and st.session_state.video_bytes)
+es_revision_imagenes = bool(
+    st.session_state.get("modo_revision_imagenes") and st.session_state.get("proyecto_revision")
+)
+
+if tiene_video:
     st.success("✅ Video generado exitosamente")
     
     # Mostrar información del guion generado
@@ -721,7 +729,7 @@ if st.session_state.video_path and st.session_state.video_bytes:
                 else:
                     st.metric("✅ Duración", "Correcta", delta=None)
     
-    # Video
+    # Video (solo si ya hay video generado)
     st.subheader("🎬 Video generado")
     st.video(st.session_state.video_path)
     st.caption("Si ves barra de reproducción o controles, es el reproductor de la app. El archivo MP4 descargado no los incluye; abrirlo en VLC o otro reproductor para ver solo el contenido.")
@@ -732,32 +740,39 @@ if st.session_state.video_path and st.session_state.video_bytes:
         mime="video/mp4",
         key="dl_video",
     )
-    
-    # Archivos generados - Tabs para organizar mejor
-    st.subheader("📁 Archivos generados")
+
+if es_revision_imagenes and not tiene_video:
+    st.success("Imágenes generadas para revisión. Revisá cada una en la pestaña **🎞️ Escenas por imagen**, aceptá o regenerá las que quieras, y cuando todas estén aceptadas usá **Generar video con imágenes aceptadas**.")
+
+if tiene_video or es_revision_imagenes:
+    # Archivos generados - Tabs (Guion, Escenas por imagen con Aceptar/Regenerar, etc.)
+    st.subheader("📁 Archivos generados" if tiene_video else "📁 Revisar imágenes")
     tabs_archivos = st.tabs(["📝 Guion", "🎞️ Escenas por imagen", "🖼️ Miniatura", "📄 Metadata YouTube", "📂 Todos los archivos"])
     
     with tabs_archivos[0]:  # Guion
-        if st.session_state.get("guion_completo"):
+        guion_texto = st.session_state.get("guion_completo")
+        if not guion_texto and es_revision_imagenes:
+            guion_path_rev = st.session_state.get("guion_path_revision")
+            if guion_path_rev and Path(guion_path_rev).exists():
+                guion_texto = Path(guion_path_rev).read_text(encoding="utf-8")
+        nombre_proy_guion = (st.session_state.video_name or "").replace(".mp4", "") if tiene_video else sanitizar_nombre_proyecto(st.session_state.get("proyecto_revision", ""))
+        if guion_texto:
             st.markdown("**Guion completo generado:**")
             st.text_area(
                 "Guion",
-                value=st.session_state.guion_completo,
+                value=guion_texto,
                 height=400,
                 key="guion_completo_display",
                 label_visibility="collapsed"
             )
             st.download_button(
                 "📥 Descargar guion completo (.txt)",
-                data=st.session_state.guion_completo,
-                file_name=f"{st.session_state.video_name.replace('.mp4', '')}_guion.txt",
+                data=guion_texto,
+                file_name=f"{nombre_proy_guion}_guion.txt",
                 mime="text/plain",
                 key="dl_guion_completo"
             )
-            
-            # Información del archivo guardado
-            nombre_proy = st.session_state.video_name.replace('.mp4', '')
-            guion_path = BASE / "output" / "guiones" / f"{nombre_proy}.txt"
+            guion_path = BASE / "output" / "guiones" / f"{nombre_proy_guion}.txt"
             if guion_path.exists():
                 st.caption(f"💾 Guardado en: `{guion_path.relative_to(BASE)}`")
         else:
@@ -821,7 +836,7 @@ if st.session_state.video_path and st.session_state.video_bytes:
                                 st.session_state.video_name = video_path.name
                                 st.session_state.modo_revision_imagenes = False
                                 st.success("Video generado con las imágenes aprobadas.")
-                                st.experimental_rerun()
+                                st.rerun()
                         except Exception as e:
                             st.exception(e)
             else:
@@ -837,19 +852,39 @@ if st.session_state.video_path and st.session_state.video_bytes:
                         estado_key = f"estado_escena_{nombre_proy_sanit_escenas}_{escena.numero}"
                         estado_actual = st.session_state.get(estado_key, "pendiente")
                         st.caption(f"Estado: **{estado_actual}**")
+                        feedback_key = f"feedback_regen_{nombre_proy_sanit_escenas}_{escena.numero}"
+                        st.markdown("**1. Escribí qué no te gusta (antes de regenerar):**")
+                        st.text_input(
+                            "La nueva imagen se generará usando esta corrección",
+                            placeholder="Ej: más oscuro, menos personajes, otro ángulo, que se vea más el rostro…",
+                            key=feedback_key,
+                            label_visibility="collapsed",
+                            help="Primero escribí acá tu corrección. Cuando toques Regenerar, la próxima imagen ya incluirá lo que pediste.",
+                        )
+                        st.caption("La IA usa tu texto para mejorar el prompt; así la nueva imagen ya incorpora lo que querés.")
                         cols_btn = st.columns([1, 1])
                         with cols_btn[0]:
                             if st.button("✅ Aceptar", key=f"aceptar_escena_{nombre_proy_sanit_escenas}_{escena.numero}"):
                                 st.session_state[estado_key] = "aceptada"
-                                st.experimental_rerun()
+                                st.rerun()
                         with cols_btn[1]:
                             if st.button("♻️ Regenerar", key=f"regen_escena_{nombre_proy_sanit_escenas}_{escena.numero}"):
-                                try:
-                                    regenerar_escenas([escena.numero], proyecto=nombre_proy_sanit_escenas, carpeta_imagenes=nombre_proy_sanit_escenas)
-                                    st.session_state[estado_key] = "pendiente"
-                                    st.experimental_rerun()
-                                except Exception as e:
-                                    st.error(f"No se pudo regenerar la escena {escena.numero}: {e}")
+                                feedback_text = (st.session_state.get(feedback_key) or "").strip()
+                                if not feedback_text:
+                                    st.warning("Escribí arriba qué no te gusta o qué querés cambiar. La nueva imagen se generará usando esa corrección.")
+                                else:
+                                    try:
+                                        regenerar_escenas(
+                                            [escena.numero],
+                                            proyecto=nombre_proy_sanit_escenas,
+                                            carpeta_imagenes=nombre_proy_sanit_escenas,
+                                            feedback_por_escena={escena.numero: feedback_text},
+                                        )
+                                        st.session_state[estado_key] = "pendiente"
+                                        st.success("Imagen regenerada con tu corrección.")
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"No se pudo regenerar la escena {escena.numero}: {e}")
                     st.markdown("**Texto de la escena (guion):**")
                     st.text_area(
                         f"Escena {escena.numero}",
@@ -882,7 +917,7 @@ if st.session_state.video_path and st.session_state.video_bytes:
             st.info("No se generó miniatura para este video.")
     
     with tabs_archivos[3]:  # Metadata YouTube
-        if st.session_state.metadata_text:
+        if st.session_state.get("metadata_text"):
             st.markdown("**Metadata para YouTube (descripción y capítulos):**")
             st.text_area(
                 "Descripción y capítulos",
@@ -892,23 +927,24 @@ if st.session_state.video_path and st.session_state.video_bytes:
                 label_visibility="collapsed",
                 help="Copiá este texto y pegalo en la descripción de YouTube"
             )
+            meta_path = st.session_state.get("metadata_path")
             st.download_button(
                 "📥 Descargar metadata (.txt)",
                 data=st.session_state.metadata_text,
-                file_name=(Path(st.session_state.metadata_path).name if st.session_state.metadata_path else "youtube_metadata.txt"),
+                file_name=(Path(meta_path).name if meta_path else "youtube_metadata.txt"),
                 mime="text/plain",
                 key="dl_meta",
             )
-            if st.session_state.metadata_path:
-                st.caption(f"💾 Guardado en: `{Path(st.session_state.metadata_path).relative_to(BASE)}`")
+            if meta_path:
+                st.caption(f"💾 Guardado en: `{Path(meta_path).relative_to(BASE)}`")
         else:
             st.info("No se generó metadata para este video.")
     
     with tabs_archivos[4]:  # Todos los archivos
         st.markdown("**Ubicación de todos los archivos generados:**")
         
-        nombre_proy = st.session_state.video_name.replace('.mp4', '')
-        nombre_proy_sanitizado = sanitizar_nombre_proyecto(nombre_proy)
+        nombre_proy_todos = (st.session_state.video_name or "").replace(".mp4", "") or sanitizar_nombre_proyecto(st.session_state.get("proyecto_revision", ""))
+        nombre_proy_sanitizado = sanitizar_nombre_proyecto(nombre_proy_todos) if nombre_proy_todos else ""
         
         # Listar archivos generados
         archivos_info = []
@@ -927,8 +963,9 @@ if st.session_state.video_path and st.session_state.video_bytes:
             archivos_info.append(("🖼️ Miniatura", Path(st.session_state.thumbnail_path).relative_to(BASE), "PNG"))
         
         # Metadata
-        if st.session_state.metadata_path:
-            archivos_info.append(("📄 Metadata", Path(st.session_state.metadata_path).relative_to(BASE), "TXT"))
+        meta_path_lista = st.session_state.get("metadata_path")
+        if meta_path_lista:
+            archivos_info.append(("📄 Metadata", Path(meta_path_lista).relative_to(BASE), "TXT"))
         
         # Audio
         audio_path = BASE / "output" / "audio" / f"{nombre_proy_sanitizado}.mp3"
