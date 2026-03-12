@@ -1,415 +1,251 @@
-"""FASE 5: Conversión de escenas / beats a prompts visuales (acción + estilo + cámara)."""
-import re
+"""FASE 5: Conversión de escenas / beats a prompts visuales (arquitectura simplificada stickman storyboard)."""
+from __future__ import annotations
+
 import random
-from .config_loader import get_visual_bible, get_instrucciones_imagenes, get_prohibido_en_imagen, get_visual_reference_rules, has_any_visual_reference, get_outfit_library
+from typing import List, Dict, Any
+
+from .config_loader import (
+    get_visual_bible,
+    get_character_bible,
+    get_role_library,
+)
 from .scene_splitter import Escena
 from .visual_beats import VisualBeat
-
-# Cuando el plano es POV, esta instrucción se añade para forzar primera persona (lo que ve el personaje, sin mostrarlo).
-_INSTRUCCION_POV = (
-    "Vista en PRIMERA PERSONA (POV): la imagen debe mostrar exactamente lo que VE el personaje, "
-    "como si la cámara fueran sus ojos. NO mostrar al personaje en cuadro; solo el escenario desde su mirada. "
-    "First person view, no third person. No character body visible."
-)
-
-# Palabras que indican que una preferencia habla del diseño del personaje; esas se filtran para no pisar character_lock.
-_PALABRAS_PERSONAJE_PREF = (
-    "stickman", "personaje", "cuerpo", "cabeza", "figura tipo", "humano", "humanoide", "torso",
-    "brazos", "piernas", "líneas simples", "muñeco", "palitos", "ropa", "pelo", "manos", "pies",
-    "ovalados", "contorno", "cartoon", "caricatura", "no debe tener", "debe ser un",
-)
-
-# Mapeo emoción del beat → clave de referencia en character_reference (para Kontext)
-_EMOTION_TO_EXPRESSION_KEY: dict[str, str] = {
-    "alegría": "happy",
-    "alegria": "happy",
-    "happy": "happy",
-    "joy": "happy",
-    "felicidad": "happy",
-    "determinación": "determined",
-    "determinacion": "determined",
-    "determined": "determined",
-    "sorpresa": "surprised",
-    "surprised": "surprised",
-    "sorprendido": "surprised",
-    "miedo": "scared",
-    "scared": "scared",
-    "fear": "scared",
-    "asustado": "scared",
-    "enojo": "angry",
-    "angry": "angry",
-    "ira": "angry",
-    "rabia": "angry",
-    "shock": "shocked",
-    "shocked": "shocked",
-    "neutral": "neutral",
-    "calma": "neutral",
-    "calm": "neutral",
-    "tensión": "neutral",
-    "tension": "neutral",
-    "intensidad": "neutral",
-    "conflicto": "neutral",
-    "duda": "neutral",
-    "decisión": "determined",
-    "decision": "determined",
-    "resolución": "neutral",
-    "resolucion": "neutral",
-}
+from .scene_visual_mapper import map_escena_to_visual_meta, map_beat_to_visual_meta
+from .visual_story_mapper import enrich_scene_visual_meta, enrich_beat_visual_meta
 
 
 def emotion_to_expression_key(emotion: str | None) -> str | None:
-    """Devuelve la clave de referencia de expresión para Kontext (happy, determined, surprised, etc.) o None (usar front)."""
-    if not (emotion or "").strip():
-        return None
-    e = emotion.strip().lower()
-    return _EMOTION_TO_EXPRESSION_KEY.get(e)
-
-
-def _es_plano_pov(plano: str) -> bool:
-    """True si el plano pedido es POV (punto de vista del personaje)."""
-    if not (plano or "").strip():
-        return False
-    p = plano.strip().upper()
-    return "POV" in p or "PUNTO DE VISTA" in p or "PRIMERA PERSONA" in p
-
-
-def _ajustar_prompt_para_pov(texto: str) -> str:
     """
-    En POV NO queremos que el modelo dibuje al personaje en cuadro.
-    Eliminamos el bloque "Personaje principal: ..." del template base
-    para que la instrucción dominante sea solo lo que ve el personaje.
+    Compatibilidad: antes devolvía una clave de expresión para Kontext.
+    En la nueva arquitectura no se usa, se mantiene firma y devuelve None.
     """
-    if not texto:
-        return texto
-    # Quitar todo el párrafo que empieza en "Personaje principal:" hasta la primera línea en blanco siguiente.
-    texto = re.sub(
-        r"Personaje principal:[\s\S]*?(?:\n\s*\n|$)",
-        "",
-        texto,
-        flags=re.IGNORECASE,
+    return None
+
+
+def _camera_options() -> list[str]:
+    vb = get_visual_bible()
+    cam = vb.get("camera_options") or []
+    if cam:
+        return list(cam)
+    return [
+        "wide shot",
+        "medium shot",
+        "close up",
+        "side shot",
+        "over the shoulder",
+        "top down",
+        "low angle",
+        "rear view",
+    ]
+
+
+def _style_lock() -> str:
+    vb = get_visual_bible()
+    return vb.get(
+        "style_lock",
+        "Flat 2D storyboard illustration. Minimal stickman characters. Same visual style across all images.",
     )
-    # Limpiar dobles saltos de línea vacíos que puedan quedar
-    texto = re.sub(r"\n{3,}", "\n\n", texto).strip()
-    return texto
 
 
-def _infer_scene_type(combined_text: str) -> str:
-    """
-    Infiere el tipo de escena (war, crime, business, sports, gaming, childhood, casual)
-    a partir del texto. Usa scene_type_priority para que el primero que coincida gane.
-    """
-    lib = get_outfit_library()
-    if not lib:
-        return "casual"
-    keywords_map = lib.get("scene_type_keywords") or {}
-    priority = lib.get("scene_type_priority") or ["war", "crime", "business", "sports", "gaming", "childhood"]
-    text_lower = (combined_text or "").lower()
-    for scene_type in priority:
-        words = keywords_map.get(scene_type) or []
-        for w in words:
-            if w and w.lower() in text_lower:
-                return scene_type
-    return "casual"
+def _character_bible() -> dict:
+    return get_character_bible().get("characters", {})
 
 
-def _select_outfit_key(scene_type: str) -> str:
-    """Mapea scene_type a la clave del outfit en la biblioteca."""
-    lib = get_outfit_library()
-    if not lib:
-        return "casual_outfit"
-    mapping = lib.get("scene_type_to_outfit") or {}
-    return mapping.get(scene_type, "casual_outfit")
+def _role_library() -> dict:
+    return get_role_library().get("roles", {})
 
 
-def get_outfit_key_for_scene(escena_texto: str, descripcion_visual: str | None = None) -> str:
-    """Dado el texto de la escena (y opcional descripción visual), devuelve la clave del outfit a usar (ej. casual_outfit, war_outfit)."""
-    combined = " ".join(filter(None, [escena_texto or "", descripcion_visual or ""]))
-    return _select_outfit_key(_infer_scene_type(combined))
+def _extras_rule() -> str | None:
+    vb = get_visual_bible()
+    return (vb.get("extras_rule") or "").strip() or None
 
 
-def _select_props_for_scene(combined_text: str, max_props: int = 3) -> list[str]:
-    """Devuelve hasta max_props descripciones de props que encajan con el texto de la escena."""
-    lib = get_outfit_library()
-    if not lib:
+def _resolve_camera_order(n: int, shuffle: bool = False) -> list[str]:
+    """Devuelve una lista de cámaras de longitud n sin repetir la misma dos veces seguidas."""
+    options = _camera_options()
+    if not options or n <= 0:
         return []
-    props_config = lib.get("props") or {}
-    max_n = lib.get("max_props_per_scene") or max_props
-    text_lower = (combined_text or "").lower()
-    selected: list[str] = []
-    for prop_key, data in props_config.items():
-        if isinstance(data, dict):
-            keywords = data.get("keywords") or []
-            prompt = (data.get("prompt") or "").strip()
+    order: list[str] = []
+    for i in range(n):
+        if i == 0:
+            cam = random.choice(options) if shuffle else options[0]
         else:
-            continue
-        if not prompt or len(selected) >= max_n:
-            continue
-        for w in keywords:
-            if w and w.lower() in text_lower:
-                selected.append(prompt)
-                break
-    return selected[:max_n]
+            prev = order[-1]
+            candidates = [c for c in options if c != prev] or options
+            cam = random.choice(candidates) if shuffle else candidates[(i - 1) % len(candidates)]
+        order.append(cam)
+    return order
 
 
-def _build_outfit_and_props_prompt(escena_texto: str, descripcion_visual: str | None) -> str:
+def _describe_character_from_bible(key: str, body_override: str | None, outfit_override: str | None) -> str:
     """
-    Construye el bloque OUTFIT + PROPS para inyectar en el prompt.
-    Regla: identidad (cara, cabeza, cuerpo stickman) no cambia; solo ropa y props.
+    Devuelve una descripción corta del personaje tomando solo atributos visuales.
+    Aplica overrides de body_preset y outfit_base si vienen del mapper.
     """
-    lib = get_outfit_library()
-    if not lib or not lib.get("outfits"):
+    data = _character_bible().get(key, {})
+    body = body_override or data.get("body_preset", "adult")
+    outfit = outfit_override or data.get("outfit_base", "casual_dark")
+    color = data.get("color_identity", "")
+    sil = data.get("silhouette_hint", "")
+    acc = data.get("accessory", "")
+    parts = [body, "body", f"{outfit} outfit"]
+    if color:
+        parts.append(f"{color} identity")
+    if sil:
+        parts.append(f"{sil} silhouette")
+    if acc and acc != "none":
+        parts.append(f"simple accessory: {acc}")
+    return ", ".join(parts)
+
+
+def _describe_role(role_key: str) -> str:
+    """Descripción visual mínima para personajes funcionales (role_library)."""
+    data = _role_library().get(role_key, {})
+    body = data.get("body_preset", "adult")
+    outfit = data.get("outfit_base", "casual_dark")
+    color = data.get("color_identity", "")
+    sil = data.get("silhouette_hint", "")
+    acc = data.get("accessory", "")
+    parts = [body, "body", f"{outfit} outfit"]
+    if color:
+        parts.append(f"{color} identity")
+    if sil:
+        parts.append(f"{sil} silhouette")
+    if acc and acc != "none":
+        parts.append(f"simple accessory: {acc}")
+    return ", ".join(parts)
+
+
+def _build_characters_block(scene_characters: list[str] | None, meta: Dict[str, Any]) -> str:
+    """
+    Construye el bloque "Characters in scene:".
+    scene_characters es una lista de claves (character_bible o role_library).
+    Usa character_overrides[personaje] para body_preset / outfit_base cuando existan.
+    """
+    if not scene_characters:
+        scene_characters = ["protagonist"]
+
+    chars_cfg = _character_bible()
+    roles_cfg = _role_library()
+    overrides: Dict[str, Dict[str, str]] = meta.get("character_overrides") or {}
+
+    lines: list[str] = []
+    for key in scene_characters:
+        if key in chars_cfg:
+            ov = overrides.get(key, {})
+            bo = ov.get("body_preset")
+            oo = ov.get("outfit_base")
+            desc = _describe_character_from_bible(key, bo, oo)
+            label = chars_cfg[key].get("role", key)
+            lines.append(f"- {label.capitalize()}: {desc}.")
+        elif key in roles_cfg:
+            desc = _describe_role(key)
+            lines.append(f"- {key.replace('_', ' ').title()}: {desc}.")
+        elif key == "extras":
+            rule = _extras_rule()
+            if rule:
+                lines.append(f"- Extras: {rule}")
+        else:
+            lines.append(f"- {key.replace('_', ' ').title()}: flat stickman character matching the project style.")
+
+    if not lines:
         return ""
-    combined = " ".join(filter(None, [escena_texto or "", descripcion_visual or ""]))
-    scene_type = _infer_scene_type(combined)
-    outfit_key = _select_outfit_key(scene_type)
-    outfits = lib.get("outfits") or {}
-    outfit_data = outfits.get(outfit_key) or outfits.get("casual_outfit")
-    outfit_prompt = ""
-    if isinstance(outfit_data, dict):
-        outfit_prompt = (outfit_data.get("prompt") or "").strip()
-    elif isinstance(outfit_data, str):
-        outfit_prompt = outfit_data.strip()
-    if not outfit_prompt:
-        return ""
-    props = _select_props_for_scene(combined)
-    identity_rule = (
-        "Character identity NEVER changes: circular white head, black simple eyes, minimal stickman body style. "
-        "Only clothing and optional props change according to scene."
+
+    header = "Characters in scene:\n"
+    return header + "\n".join(lines)
+
+
+def _build_scene_block(meta: Dict[str, Any]) -> str:
+    loc = (meta.get("location") or "clear location that matches the story").strip()
+    act = (meta.get("action") or "clear readable action that matches the script").strip()
+    md = (meta.get("mood") or "neutral").strip()
+    kv = (meta.get("key_visual") or "").strip()
+
+    lines = [
+        "Scene:",
+        f"Location: {loc}.",
+        f"Action: {act}.",
+        f"Mood: {md}.",
+    ]
+    if kv:
+        lines.append(f"Key visual element: {kv}.")
+    return "\n".join(lines)
+
+
+def _build_camera_block(camera: str) -> str:
+    return f"Camera:\n{camera}."
+
+
+def _final_rules_block() -> str:
+    return (
+        "Rules:\n"
+        "One clear narrative image.\n"
+        "Clear visual focus.\n"
+        "No empty background.\n"
+        "16:9 frame."
     )
-    parts = [f"OUTFIT (identity unchanged): {outfit_prompt}"]
-    if props:
-        parts.append("PROPS IN SCENE (if relevant): " + "; ".join(props))
-    parts.append(identity_rule)
-    return " ".join(parts)
-
-
-def _filtrar_preferencias_solo_fondo_estilo(texto: str) -> str:
-    """Quita de las preferencias aprendidas las que describen al personaje, para no contradecir character_lock."""
-    if not (texto or "").strip():
-        return ""
-    # Quitar el prefijo "Preferencias del usuario (aplicar): " si existe
-    t = re.sub(r"^Preferencias del usuario \(aplicar\):\s*", "", texto, flags=re.IGNORECASE).strip()
-    if not t:
-        return ""
-    # Dividir por ; o . y quedarnos solo con fragmentos que NO hablan del personaje
-    fragmentos = re.split(r"[.;]\s*", t)
-    buenos = []
-    for frag in fragmentos:
-        frag = frag.strip()
-        if not frag or len(frag) < 10:
-            continue
-        lower = frag.lower()
-        if any(pal in lower for pal in _PALABRAS_PERSONAJE_PREF):
-            continue
-        buenos.append(frag)
-    if not buenos:
-        return ""
-    return "; ".join(buenos)
 
 
 def construir_prompt(
     escena: Escena,
     indice_plan: int | None = None,
     descripcion_visual: str | None = None,
+    scene_meta: Dict[str, Any] | None = None,
 ) -> str:
     """
-    Prompt final de generación: variables plano, accion, emocion, momento.
-    Style lock y character lock están en el template; se añaden prohibiciones y preferencias aprendidas.
+    Prompt final simplificado para una escena (con capa narrativa aplicada).
     """
-    vb = get_visual_bible()
-    planos = vb.get("camara", {}).get("variedad_planos") or [
-        "plano general", "plano medio", "primer plano", "plano detalle"
-    ]
-    idx = (indice_plan if indice_plan is not None else escena.numero - 1) % len(planos)
-    plano = planos[idx]
-    # Acción: descripción visual por escena (IA) o fallback al texto de la escena
-    if descripcion_visual and descripcion_visual.strip():
-        accion = descripcion_visual.strip().replace("\n", " ")
-        for palabra in ("stickman", "2D", "ilustración", "ilustracion", "cinematográfico", "estilo limpio", "líneas negras", "mismo personaje consistente"):
-            if palabra.lower() in accion.lower():
-                accion = re.sub(rf"[^.]*{re.escape(palabra)}[^.]*\.?", "", accion, flags=re.IGNORECASE)
-        accion = " ".join(accion.split()).strip()[:400] or escena.texto[:200].replace("\n", " ")
-    else:
-        accion = escena.texto[:200].replace("\n", " ")
-    emociones_posibles = ["tensión", "determinación", "conflicto", "duda", "decisión", "intensidad", "calma", "sorpresa"]
-    momentos_posibles = ["inicio de la historia", "desarrollo", "momento clave", "punto de inflexión", "clímax", "resolución"]
-    # Ritmo: cada 3-5 imágenes algo visual (acción, reacción, detalle, cambio de plano)
-    ritmo_beats = vb.get("ritmo_beats") or ["acción", "reacción", "detalle", "cambio de plano"]
-    ciclo = max(1, vb.get("ciclo_beats_imagenes", 4))
-    beat_idx = ((escena.numero - 1) // ciclo) % len(ritmo_beats)
-    beat_visual = ritmo_beats[beat_idx]
-    emocion_idx = (escena.numero - 1) % len(emociones_posibles)
-    momento_idx = (escena.numero - 1) % len(momentos_posibles)
-    instrucciones = get_instrucciones_imagenes()
-    template = instrucciones.get("prompt_template", "{plano}, {accion}, {emocion}, {momento}. 16:9.")
-    variables = {
-        "plano": plano,
-        "accion": accion,
-        "emocion": emociones_posibles[emocion_idx],
-        "momento": momentos_posibles[momento_idx],
-        "beat_visual": beat_visual,
-    }
-    # Variables opcionales por si el template usa otros nombres
-    variables_en_template = set(re.findall(r'\{(\w+)\}', template))
-    if "estilo" in variables_en_template and "estilo" not in variables:
-        variables["estilo"] = vb.get("estilo_base", "stickman 2D cinematográfico")
-    if "fase_psicologica" in variables_en_template and "fase_psicologica" not in variables:
-        variables["fase_psicologica"] = ["inicio", "desarrollo", "clímax", "resolución"][(escena.numero - 1) % 4]
-    if "momento_de_la_historia" in variables_en_template and "momento_de_la_historia" not in variables:
-        variables["momento_de_la_historia"] = variables["momento"]
-    if "lugar" in variables_en_template and "lugar" not in variables:
-        variables["lugar"] = "entorno detallado que muestre claramente dónde ocurre la acción"
-    try:
-        base = template.format(**variables).strip()
-    except KeyError:
-        base = f"{plano}, {accion}, {variables.get('emocion', 'tensión')}, {variables.get('momento', 'momento clave')}. Lugar claro. Ritmo: {beat_visual}. 16:9."
-    base = "OBLIGATORIO: Mismo personaje siempre. POV = primera persona sin personaje en cuadro. Cada imagen = momento distinto. No repetir.\n\n" + base
-    # POV: instrucción explícita de primera persona (lo que ve el personaje, sin mostrarlo en cuadro)
-    if _es_plano_pov(plano):
-        base = _ajustar_prompt_para_pov(base)
-        base = base.rstrip() + "\n\n" + _INSTRUCCION_POV
-    # Regla cinematográfica: cada imagen debe cambiar algo (posición/distancia/ángulo/composición/iluminación)
-    regla_variacion = (vb.get("regla_variacion") or "").strip()
-    if regla_variacion and regla_variacion not in base:
-        base = base.rstrip() + "\n\n" + regla_variacion
-    regla_variedad = (vb.get("regla_variedad_composicion") or "").strip()
-    if regla_variedad and regla_variedad not in base:
-        base = base.rstrip() + "\n\n" + regla_variedad
-    continuidad = (vb.get("continuidad_y_errores") or "").strip()
-    if continuidad and continuidad not in base:
-        base = base.rstrip() + "\n\n" + continuidad
-    # Character lock (ÚNICA fuente de verdad del personaje; tiene prioridad sobre preferencias)
-    character_lock = (vb.get("character_lock") or "").strip()
-    if character_lock and character_lock not in base:
-        base = base.rstrip() + "\n\nOBLIGATORIO (prioridad sobre todo lo demás): " + character_lock
-    # Outfit + props según contexto (identidad igual; solo ropa y objetos cambian)
-    outfit_props = _build_outfit_and_props_prompt(escena.texto, descripcion_visual)
-    if outfit_props and outfit_props not in base:
-        base = base.rstrip() + "\n\n" + outfit_props
-    # PROHIBIDO estilo (anime, pixar, etc.) + UI
-    prohibido_estilo = vb.get("prohibido_estilo", "").strip()
-    if prohibido_estilo and prohibido_estilo not in base:
-        base = base.rstrip() + "\n\nPROHIBIDO: " + prohibido_estilo
-    prohibido = get_prohibido_en_imagen()
-    if prohibido and prohibido.strip() and prohibido.strip() not in base:
-        base = base.rstrip() + "\n\n" + prohibido.strip()
-    # Referencias visuales del proyecto (estilo, ambiente, cámara, iluminación, composición): reglas inyectadas en cada prompt
-    if has_any_visual_reference():
-        rules = get_visual_reference_rules()
-        if rules and rules not in base:
-            base = base.rstrip() + "\n\n" + rules
-    # No inyectar preferencias aprendidas de feedbacks pasados (generaban errores y contradicciones)
-    base = base.rstrip() + "\n\nOBLIGATORIO: Máximo sentido común e inteligencia lógica—imagen coherente y creíble, sin absurdos. Misma identidad de personaje; edad y ropa según contexto. Incluir lugar claro y qué está pasando. Anatomía correcta; objetos lógicos. No repetir."
-    return base
+    meta = scene_meta or map_escena_to_visual_meta(escena, descripcion_visual)
 
+    cameras = _camera_options()
+    cam = meta.get("camera")
+    if not cam:
+        if indice_plan is not None and 0 <= indice_plan < len(cameras):
+            cam = cameras[indice_plan]
+        else:
+            order = _resolve_camera_order(escena.numero + 1)
+            cam = order[escena.numero] if escena.numero < len(order) else order[-1]
+    meta["camera"] = cam
 
-def construir_prompt_desde_beat(
-    beat: VisualBeat,
-    indice_plan: int | None = None,
-    indice_imagen: int | None = None,
-) -> str:
-    """
-    Versión para beats visuales:
-    - Usa camera_type del beat como plano base.
-    - Acción/emoción/contexto salen del propio beat.
-    - indice_imagen se usa para que cada prompt sea único (evitar mismo texto cada N fotos).
-    """
-    vb = get_visual_bible()
-    planos = vb.get("camara", {}).get("variedad_planos") or [
-        "plano general", "plano medio", "primer plano", "plano detalle"
-    ]
-    # Mapear camera_type (POV, wide_shot, etc.) a descripción legible
-    camera_map = {
-        "POV": "POV (punto de vista del personaje)",
-        "over_the_shoulder": "plano sobre el hombro",
-        "wide_shot": "plano amplio cinematográfico",
-        "medium_shot": "plano medio",
-        "close_up": "primer plano / close-up",
-        "side_angle": "ángulo lateral",
-        "top_down": "vista desde arriba (top down)",
-        "low_angle": "ángulo bajo (low angle)",
-        "rear_view": "vista desde atrás",
-        "environment_shot": "plano de entorno (environment shot)",
-    }
-    plano_from_camera = camera_map.get(beat.camera_type, "plano medio")
-    if indice_plan is not None and 0 <= indice_plan < len(planos):
-        plano = planos[indice_plan]
-    else:
-        plano = plano_from_camera
+    style = _style_lock()
+    theme = meta.get("thematic_context") or "generic"
+    visual_device = meta.get("visual_device") or "literal"
+    rep_mode = meta.get("narrative_representation_mode") or "literal"
+    scene_focus = meta.get("scene_focus") or "protagonist_face"
+    symbolic_desc = meta.get("symbolic_descriptions") or []
+    symbolic_str = ", ".join(symbolic_desc) if symbolic_desc else ""
 
-    accion = (beat.action or beat.original_text or "").replace("\n", " ").strip()[:400]
-    if not accion:
-        accion = "momento clave de la escena"
-    emocion = (beat.emotion or "tensión").strip()
-    momento = (beat.context or "momento clave de la historia").strip()
-    shot_role = (beat.shot_role or "action").strip()
-    time_of_day = (beat.time_of_day or "").strip() or "momento indefinido del día"
+    chars_block = _build_characters_block(meta.get("scene_characters"), meta)
+    scene_block = _build_scene_block(meta)
+    camera_block = _build_camera_block(meta.get("camera_priority") or cam)
+    rules_block = _final_rules_block()
 
-    instrucciones = get_instrucciones_imagenes()
-    template = instrucciones.get("prompt_template", "{plano}, {accion}, {emocion}, {momento}. 16:9.")
-    lugar = (beat.location or "entorno que muestre claramente dónde ocurre la escena").strip()
-    variables = {
-        "plano": plano,
-        "accion": accion,
-        "emocion": emocion,
-        "momento": momento,
-        "beat_visual": beat.importance or "acción",
-        "shot_role": shot_role,
-        "time_of_day": time_of_day,
-        "lugar": lugar,
-    }
-    variables_en_template = set(re.findall(r'\{(\w+)\}', template))
-    if "estilo" in variables_en_template and "estilo" not in variables:
-        variables["estilo"] = vb.get("estilo_base", "stickman 2D cinematográfico")
-    if "lugar" in variables_en_template and "lugar" not in variables:
-        variables["lugar"] = lugar
+    parts = [style.strip()]
 
-    try:
-        base = template.format(**variables).strip()
-    except KeyError:
-        base = f"{plano}, {accion}, {emocion}, {momento}. Lugar: {lugar}. 16:9."
-    base = "OBLIGATORIO: Mismo personaje siempre. POV = primera persona sin personaje en cuadro. Cada imagen = momento distinto. No repetir.\n\n" + base
-    # POV: instrucción explícita de primera persona
-    if _es_plano_pov(plano):
-        base = _ajustar_prompt_para_pov(base)
-        base = base.rstrip() + "\n\n" + _INSTRUCCION_POV
-    # Regla cinematográfica: cada imagen debe cambiar algo
-    regla_variacion = (vb.get("regla_variacion") or "").strip()
-    if regla_variacion and regla_variacion not in base:
-        base = base.rstrip() + "\n\n" + regla_variacion
-    regla_variedad = (vb.get("regla_variedad_composicion") or "").strip()
-    if regla_variedad and regla_variedad not in base:
-        base = base.rstrip() + "\n\n" + regla_variedad
-    continuidad = (vb.get("continuidad_y_errores") or "").strip()
-    if continuidad and continuidad not in base:
-        base = base.rstrip() + "\n\n" + continuidad
-    # Character lock (ÚNICA fuente de verdad del personaje)
-    character_lock = (vb.get("character_lock") or "").strip()
-    if character_lock and character_lock not in base:
-        base = base.rstrip() + "\n\nOBLIGATORIO (prioridad sobre todo lo demás): " + character_lock
-    # Outfit + props según contexto (identidad igual; solo ropa y objetos cambian)
-    beat_text = " ".join(filter(None, [getattr(beat, "original_text", "") or "", getattr(beat, "action", "") or ""]))
-    outfit_props = _build_outfit_and_props_prompt(beat_text, None)
-    if outfit_props and outfit_props not in base:
-        base = base.rstrip() + "\n\n" + outfit_props
-    # PROHIBIDO estilo + UI
-    prohibido_estilo = vb.get("prohibido_estilo", "").strip()
-    if prohibido_estilo and prohibido_estilo not in base:
-        base = base.rstrip() + "\n\nPROHIBIDO: " + prohibido_estilo
-    prohibido = get_prohibido_en_imagen()
-    if prohibido and prohibido.strip() and prohibido.strip() not in base:
-        base = base.rstrip() + "\n\n" + prohibido.strip()
-    # Referencias visuales del proyecto (estilo, ambiente, cámara, iluminación, composición)
-    if has_any_visual_reference():
-        rules = get_visual_reference_rules()
-        if rules and rules not in base:
-            base = base.rstrip() + "\n\n" + rules
-    # Unicidad
-    frame_id = indice_imagen if indice_imagen is not None else (beat.beat_id if beat else 0)
-    base = base.rstrip() + f"\n\nFrame {frame_id} de la secuencia. Esta imagen debe ser visualmente distinta."
-    # Repetir instrucción crítica al final (los modelos de imagen atienden más al inicio y al final)
-    base = base.rstrip() + "\n\nOBLIGATORIO: Máximo sentido común e inteligencia—imagen 100% coherente y creíble. Misma identidad de personaje; edad y ropa según contexto (bebé/niño/adulto, traje/fútbol/casual). Lugar claro y acción visible. Anatomía correcta; objetos y cantidades lógicas. No repetir escena."
-    return base
+    parts.append(f"Theme:\n{theme}.")
+
+    if chars_block:
+        parts.append(chars_block.strip())
+
+    parts.append(
+        "Narrative device:\n"
+        f"{visual_device}.\n"
+        "Representation mode:\n"
+        f"{rep_mode}.\n"
+        "Scene focus:\n"
+        f"{scene_focus}."
+    )
+
+    parts.append(scene_block.strip())
+
+    if symbolic_str:
+        parts.append(f"Symbolic elements:\n{symbolic_str}.")
+
+    parts.append(camera_block.strip())
+    parts.append(rules_block.strip())
+
+    return "\n\n".join(parts)
 
 
 def _indices_planos_sin_repetir_consecutivo(
@@ -418,8 +254,8 @@ def _indices_planos_sin_repetir_consecutivo(
     shuffle: bool = False,
 ) -> list[int]:
     """
-    Asigna índice de plano a cada escena respetando la regla de oro:
-    plano_actual != plano_anterior (evita video repetitivo).
+    Conservado por compatibilidad: devuelve índices de cámaras sin repetir consecutivos.
+    Usa la lista de camera_options de visual_bible.yaml.
     """
     if not planos or n_escenas == 0:
         return [0] * n_escenas
@@ -431,10 +267,7 @@ def _indices_planos_sin_repetir_consecutivo(
         else:
             prev_idx = orden[i - 1]
             prev_plano = planos[prev_idx]
-            # Elegir cualquier plano distinto al anterior
-            otros = [j for j in range(n) if planos[j] != prev_plano]
-            if not otros:
-                otros = list(range(n))
+            otros = [j for j in range(n) if planos[j] != prev_plano] or list(range(n))
             orden.append(random.choice(otros) if shuffle else otros[(i - 1) % len(otros)])
     return orden
 
@@ -444,68 +277,103 @@ def prompts_para_escenas(
     shuffle_planos: bool = False,
     tema: str | None = None,
     usar_descripciones_ia: bool = True,
+    video_theme: str | None = None,
 ) -> list[tuple[Escena, str, str | None, str]]:
     """
-    Genera un prompt por escena. El plano de cámara es distinto al de la imagen anterior (regla de oro).
-    Si usar_descripciones_ia=True, genera antes descripción visual por escena con IA.
-    Retorna (Escena, prompt, expression_key, outfit_key). expression_key es None (solo beats lo usan).
+    Genera un prompt por escena usando la nueva arquitectura.
+    'video_theme' puede ser, por ejemplo: 'football_career'.
+    Retorna (Escena, prompt, expression_key, outfit_key). Los dos últimos se dejan en None.
     """
+    from .scene_descriptions import generar_descripciones_visuales_escenas  # import local para evitar ciclos
+
+    if video_theme is None:
+        video_theme = tema
+
     descripciones: list[str] = []
     if usar_descripciones_ia and escenas:
-        from .scene_descriptions import generar_descripciones_visuales_escenas
-        descripciones = generar_descripciones_visuales_escenas(escenas, tema=tema, verificar_y_corregir=False)
+        descripciones = generar_descripciones_visuales_escenas(
+            escenas, tema=tema, verificar_y_corregir=False
+        )
         if descripciones:
             print(f"   Descripciones visuales generadas para {len(descripciones)} escenas.")
 
-    vb = get_visual_bible()
-    planos = vb.get("camara", {}).get("variedad_planos") or [
-        "plano general", "plano medio", "primer plano", "plano detalle"
-    ]
-    # Regla de oro: si plano_actual == plano_anterior -> cambiar_plano()
-    orden = _indices_planos_sin_repetir_consecutivo(len(escenas), planos, shuffle=shuffle_planos)
-    return [
-        (
-            e,
-            construir_prompt(
-                e,
-                orden[i],
-                descripcion_visual=descripciones[i] if i < len(descripciones) else None,
-            ),
-            None,  # expression_key (solo en beats)
-            get_outfit_key_for_scene(e.texto, descripciones[i] if i < len(descripciones) else None),
-        )
-        for i, e in enumerate(escenas)
-    ]
+    cameras = _camera_options()
+    resultados: list[tuple[Escena, str, str | None, str]] = []
+    last_cam: str | None = None
+
+    for i, e in enumerate(escenas):
+        desc = descripciones[i] if i < len(descripciones) else None
+        base_meta = map_escena_to_visual_meta(e, desc)
+        full_meta = enrich_scene_visual_meta(base_meta, video_theme=video_theme)
+
+        # Aplicar camera_priority intentando no repetir consecutivo
+        pref_cam = full_meta.get("camera_priority")
+        cam: str
+        if pref_cam:
+            cam = pref_cam
+        else:
+            cam = cameras[0] if cameras else "medium shot"
+        if cam == last_cam and cameras:
+            # elegir otra cámara distinta
+            alt = [c for c in cameras if c != last_cam] or cameras
+            cam = alt[0]
+        full_meta["camera"] = cam
+        last_cam = cam
+
+        prompt = construir_prompt(e, indice_plan=None, descripcion_visual=desc, scene_meta=full_meta)
+        resultados.append((e, prompt, None, None))
+    return resultados
 
 
 def prompts_para_beats(
     beats: list[VisualBeat],
     shuffle_planos: bool = True,
+    video_theme: str | None = None,
 ) -> list[tuple[VisualBeat, str]]:
     """
-    Genera prompts a partir de beats visuales.
-    Respeta el sistema de cámara y rota los planos para no repetir la posición.
-    Cada prompt incluye un frame id para que nunca se repita el mismo texto (evitar mismo prompt cada 3 fotos).
+    Genera prompts a partir de beats visuales usando la nueva arquitectura simplificada.
     """
     if not beats:
         return []
-    vb = get_visual_bible()
-    planos = vb.get("camara", {}).get("variedad_planos") or [
-        "plano general", "plano medio", "primer plano", "plano detalle"
-    ]
-    orden = _indices_planos_sin_repetir_consecutivo(len(beats), planos, shuffle=shuffle_planos)
+    cameras = _camera_options()
     resultados: list[tuple[VisualBeat, str]] = []
+    last_cam: str | None = None
+
     for i, beat in enumerate(beats):
-        prompt = construir_prompt_desde_beat(beat, indice_plan=orden[i], indice_imagen=i + 1)
-        # Si por algún motivo el prompt salió igual al anterior, forzar variación
-        if resultados and resultados[-1][1] == prompt:
-            prompt = prompt.rstrip() + " Variación alternativa: ángulo o encuadre distinto."
+        base_meta = map_beat_to_visual_meta(beat)
+        full_meta = enrich_beat_visual_meta(base_meta, video_theme=video_theme)
+
+        pref_cam = full_meta.get("camera_priority")
+        cam: str
+        if pref_cam:
+            cam = pref_cam
+        else:
+            cam = cameras[0] if cameras else "medium shot"
+        if cam == last_cam and cameras:
+            alt = [c for c in cameras if c != last_cam] or cameras
+            cam = alt[0]
+        full_meta["camera"] = cam
+        last_cam = cam
+
+        escena_fake = Escena(
+            numero=i + 1,
+            texto=beat.original_text or full_meta.get("action", ""),
+            duracion_segundos=5.0,
+        )
+        prompt = construir_prompt(
+            escena=escena_fake,
+            indice_plan=None,
+            descripcion_visual=None,
+            scene_meta=full_meta,
+        )
         resultados.append((beat, prompt))
     return resultados
 
 
 def get_outfit_key_for_beat(beat: VisualBeat) -> str:
-    """Dado un beat, devuelve la clave del outfit para esa escena."""
-    combined = " ".join(filter(None, [getattr(beat, "original_text", "") or "", getattr(beat, "action", "") or ""]))
-    return get_outfit_key_for_scene(combined, None)
+    """
+    Compatibilidad: ya no se usa outfit library en la nueva arquitectura.
+    Se mantiene la firma para no romper imports, pero siempre devuelve 'casual_dark'.
+    """
+    return "casual_dark"
 

@@ -1,0 +1,35 @@
+characters:
+  protagonist:
+    priority: primary
+    role: protagonist
+    body_preset: teen
+    outfit_base: casual_dark
+    color_identity: blue_gray
+    silhouette_hint: hoodie
+    accessory: none
+
+  villain_main:
+    priority: primary
+    role: villain
+    body_preset: adult_tall
+    outfit_base: dark_formal
+    color_identity: black_red
+    silhouette_hint: long_coat
+    accessory: gloves
+
+  friend_main:
+    priority: secondary
+    role: companion
+    body_preset: teen
+    outfit_base: casual_light
+    color_identity: green_gray
+    silhouette_hint: t_shirt
+    accessory: backpack
+
+# Body presets permitidos:
+# - kid
+# - teen
+# - adult
+# - adult_tall
+# - adult_wide
+

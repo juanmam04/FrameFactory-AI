@@ -31,8 +31,12 @@ def get_duracion_por_imagen() -> int:
 
 
 def get_estilo_base() -> str:
+    """
+    Devuelve el style lock global para imágenes.
+    Compatibilidad: si existe 'estilo_base' se usa; si no, 'style_lock'.
+    """
     vb = get_visual_bible()
-    return vb.get("estilo_base", "stickman 2D cinematográfico")
+    return vb.get("estilo_base") or vb.get("style_lock", "Flat 2D storyboard illustration.")
 
 
 def get_narrative_rules() -> dict:
@@ -99,13 +103,20 @@ def get_character_references() -> dict:
 
 
 def get_visual_references() -> dict:
-    """Devuelve rutas relativas a las referencias visuales del proyecto (estilo, ambiente, cámara, iluminación, composición)."""
+    """
+    Referencias visuales mínimas del proyecto (si existen).
+    En la nueva arquitectura pueden ser solo:
+    - character_front.png
+    - character_side.png
+    - character_closeup.png
+    - outfit_sheet.png
+    """
     vb = get_visual_bible()
     return vb.get("visual_reference", {})
 
 
 def get_visual_reference_rules() -> str:
-    """Texto de reglas que se inyecta en cada prompt cuando existen referencias visuales (style, environment, camera, lighting, composition)."""
+    """Reglas opcionales asociadas a las referencias visuales (puede estar vacío en la nueva arquitectura)."""
     vb = get_visual_bible()
     return (vb.get("visual_reference_rules") or "").strip()
 
@@ -121,6 +132,21 @@ def has_any_visual_reference() -> bool:
 def get_outfit_library() -> dict:
     """Carga la biblioteca de outfits y props (outfit_library.yaml)."""
     return load_yaml("outfit_library.yaml")
+
+
+def get_character_bible() -> dict:
+    """Carga la biblia de personajes persistentes (character_bible.yaml)."""
+    return load_yaml("character_bible.yaml")
+
+
+def get_role_library() -> dict:
+    """Carga la librería de roles funcionales (role_library.yaml)."""
+    return load_yaml("role_library.yaml")
+
+
+def get_visual_motifs() -> dict:
+    """Carga motivos visuales (visual_motifs.yaml)."""
+    return load_yaml("visual_motifs.yaml")
 
 
 def get_preferencias_aprendidas(max_entradas: int = 25) -> str:

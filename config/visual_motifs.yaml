@@ -1,0 +1,114 @@
+themes:
+  football:
+    recurring_symbols:
+      - stadium
+      - football
+      - trophy
+      - club_flags
+      - sports_documents
+      - jersey
+      - spotlight
+      - microphones
+      - sports_office
+
+  football_career:
+    recurring_symbols:
+      - stadium
+      - trophy_cabinet
+      - football_contract
+      - director_call
+      - audience
+      - locker_room
+
+  football_industry:
+    recurring_symbols:
+      - football_contract
+      - boardroom_table
+      - club_logo
+      - financial_documents
+      - sports_director_office
+
+  crime_pressure:
+    recurring_symbols:
+      - siren_reflection
+      - shadow_in_window
+      - dark_corridor
+      - parked_car
+      - hanging_lamp
+
+  business_power:
+    recurring_symbols:
+      - skyline_office_window
+      - large_desk
+      - city_view
+      - contracts
+      - conference_table
+
+scene_devices:
+  phone_call:
+    preferred_elements:
+      - phone_screen
+      - desk
+      - lamp
+      - coffee_mug
+      - caller_name
+
+  message_reveal:
+    preferred_elements:
+      - phone_screen
+      - notification_icon
+      - dark_background
+      - hand_holding_phone
+
+  police_lights:
+    preferred_elements:
+      - red_blue_reflection
+      - window
+      - dark_room
+      - protagonist_silhouette
+
+  football_glory:
+    preferred_elements:
+      - spotlight
+      - stadium_crowd
+      - flags
+      - field
+      - protagonist_center_stage
+
+  contract_moment:
+    preferred_elements:
+      - folder
+      - documents
+      - pen
+      - desk
+      - office_light
+
+  press_scene:
+    preferred_elements:
+      - podium
+      - microphones
+      - cameras
+      - audience_rows
+
+  desk_research:
+    preferred_elements:
+      - desk
+      - papers
+      - laptop
+      - lamp
+      - notes_on_wall
+
+  shadow_threat:
+    preferred_elements:
+      - shadow_in_doorway
+      - half_open_door
+      - light_from_corridor
+      - protagonist_in_foreground
+
+  empty_room_tension:
+    preferred_elements:
+      - empty_chair
+      - single_lamp
+      - door
+      - long_shadows
+

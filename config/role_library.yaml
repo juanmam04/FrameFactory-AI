@@ -1,0 +1,29 @@
+roles:
+  police_officer:
+    body_preset: adult
+    outfit_base: police_uniform
+    color_identity: navy
+    silhouette_hint: cap
+    accessory: badge
+
+  reporter:
+    body_preset: adult
+    outfit_base: formal_light
+    color_identity: beige_blue
+    silhouette_hint: microphone
+    accessory: notebook
+
+  soldier:
+    body_preset: adult
+    outfit_base: military_uniform
+    color_identity: olive
+    silhouette_hint: helmet
+    accessory: none
+
+  bodyguard:
+    body_preset: adult_wide
+    outfit_base: black_suit
+    color_identity: black
+    silhouette_hint: tie
+    accessory: none
+

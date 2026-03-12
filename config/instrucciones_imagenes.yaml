@@ -1,38 +1,14 @@
-# Tamaño de imagen para video (16:9)
+# Instrucciones mínimas para generación de imágenes
+
 parametros_sd:
-  cfg_scale: 7.0
-  height: 720
-  steps: 25
   width: 1920
+  height: 1080
+  steps: 25
 
-# PROMPT FINAL DE GENERACIÓN (sección 5 de la spec)
-# Variables: {plano}, {accion}, {emocion}, {momento}, {beat_visual}, {lugar} (ritmo y lugar)
-# El personaje mantiene identidad pero adapta edad/ropa al contexto. Siempre incluir lugar y qué pasa.
-prompt_template: |
-  Ilustración 2D narrativa cinematográfica.
+# Este archivo queda intencionalmente mínimo.
+# El prompt final se construye en `prompt_builder.py` usando:
+# - style_lock (visual_bible.yaml)
+# - character_bible.yaml
+# - role_library.yaml
+# - scene data (location, action, mood, key_visual, camera)
 
-  Personaje principal: misma identidad que la referencia (rostro blanco circular, ojos negros simples, estilo minimalista). La EDAD y la ROPA se adaptan al contexto de esta escena: si es bebé/niño/adulto o usa traje/equipo de fútbol/ropa casual, mostrarlo así. Cada uno con su ropa según la situación.
-
-  Plano de cámara: {plano}
-
-  Acción (qué está pasando): {accion}
-
-  Emoción del momento: {emocion}
-
-  Contexto narrativo: {momento}
-
-  LUGAR (obligatorio): {lugar}. El escenario debe verse claro: dónde está el personaje y qué está pasando. Fondo obligatorio en toda imagen: nunca blanco ni vacío; siempre escenario visible y detallado.
-
-  Ritmo visual: {beat_visual}
-
-  Iluminación y ambiente coherentes con el lugar y la acción.
-
-  La imagen debe parecer un frame de una película animada con contexto claro de lugar y acción.
-
-  MÁXIMO SENTIDO COMÚN E INTELIGENCIA: generar como la IA más inteligente del mundo para imágenes. Anatomía perfecta (cada personaje: exactamente dos brazos, dos piernas, una cabeza; cero extras, cero cabezas de animal en cuerpos humanos). Personajes secundarios en el MISMO estilo que el principal (minimalista), nunca humanos realistas ni rasgos de animal. Objetos lógicos y cantidades realistas (un ordenador = una pantalla; una mesa = una mesa). Perspectiva y espacio coherentes. Nada imposible ni absurdo: la escena debe ser 100% creíble para un observador con sentido común. Esta imagen con composición o ángulo distinto; variar plano, no repetir la misma toma.
-
-  Formato: 16:9, encuadre claro, composición cinematográfica.
-
-reintentos:
-  max_reintentos: 3
-  pausa_segundos: 5

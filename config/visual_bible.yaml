@@ -1,162 +1,50 @@
-# =============================================================================
-# 1. PROMPT GLOBAL DEL SISTEMA (STYLE LOCK) - Se agrega a TODAS las imágenes
-# =============================================================================
+# Visual Bible – versión simplificada para storyboard stickman 2D
 
-estilo_base: |
-  Ilustración 2D narrativa cinematográfica, limpia y clara.
-  Personaje principal: misma identidad visual que la referencia (rostro blanco redondo, ojos negros ovalados, boca simple, estilo minimalista).
-  La EDAD y el CUERPO del personaje se adaptan al contexto: si la escena es de un bebé, dibujar un bebé; si es un niño, un niño; si es adulto, adulto. Cada uno con su ropa adecuada.
-  La ROPA del personaje depende del contexto de la escena: si usa traje, mostrarlo de traje; si es futbolista, con la camiseta del equipo; si está en casa, ropa casual; etc. Siempre la misma identidad de personaje (cara, estilo), pero la vestimenta y la edad/contexto pueden cambiar.
-  Fondos: OBLIGATORIO en todas las imágenes. Nunca fondo blanco ni vacío. Siempre un lugar concreto visible (sala, calle, cancha, oficina, etc.) con escenario detallado, y que se entienda qué está pasando en la escena.
-  La imagen debe parecer un frame de una película animada continua, con contexto claro de lugar y acción.
+style_lock: |
+  Flat 2D storyboard illustration, clean and cinematic.
+  Main character: always the same design in every frame.
+  White round face with simple dark brown hair, black simple eyes and simple mouth.
+  Clean black outline, stickman-like body with slightly thicker torso and limbs.
+  Large, readable face with simple expressive eyebrows when needed.
+  Simple flat clothing with limited colors, no complex textures or wrinkles.
+  Same character proportions, head size and line thickness in all scenes.
+  Backgrounds: simple but narrative, with clear depth and thematic details.
+  No realistic rendering, no anime, no 3D, no Pixar; consistent cartoon style.
 
-# Prohibido en estilo (se inyecta en todos los prompts)
-prohibido_estilo: "anime, pixar, 3D render, caricatura infantil, personajes humanos realistas, estilos visuales inconsistentes"
+character_universe_rule: |
+  All characters share the same flat 2D stickman visual universe.
+  Face is always minimal (no realistic details): white circular head, simple black eyes, simple mouth.
+  Identity is defined by body preset, outfit base, color identity, silhouette hint and simple accessories.
+  Facial details must never be realistic or unique; silhouette and outfit define each character.
 
-# =============================================================================
-# 2. DEFINICIÓN DEL PERSONAJE (CHARACTER LOCK) - Se agrega siempre
-# =============================================================================
+camera_options:
+  - wide shot
+  - medium shot
+  - close up
+  - side shot
+  - over the shoulder
+  - top down
+  - low angle
+  - rear view
 
-character_lock: |
-  PERSONAJE PRINCIPAL (IDENTIDAD): Mantener la identidad visual del personaje de referencia (cara, estilo).
-  Rasgos de identidad (siempre reconocible):
-    - Cabeza circular blanca, contorno negro limpio, ojos negros ovalados simples, boca simple, estilo minimalista.
-    - Sin pelo ni rasgos faciales hiperrealistas; manos y pies simplificados.
-  Adaptación al contexto (OBLIGATORIO):
-    - EDAD/CUERPO: Si la historia dice bebé → personaje como bebé; si dice niño → niño; adulto → adulto. Adaptar proporciones a la edad del contexto.
-    - ROPA: La vestimenta depende de la escena. Si usa traje → traje; si es futbolista → camiseta del equipo; si está en entrevista → ropa formal; en casa → casual; etc. Cada personaje con la ropa que corresponde a la situación. La ropa NO es fija: puede ser cualquiera según el contexto, pero siempre reconociendo al mismo personaje.
-  Escena:
-    - Incluir SIEMPRE un lugar claro (dónde ocurre) y una acción clara (qué está pasando). Sin fondos vacíos o genéricos sin contexto.
-  Prohibido:
-    - Cambiar a otro tipo de personaje (realista, anime, caricatura infantil diferente). Mantener el estilo del personaje de referencia.
+camera_rule: "Do not repeat the same camera type in two consecutive images."
 
-# Referencias visuales oficiales del personaje (para workflows con imagen de referencia)
-# front = referencia base; expression = genérica; happy, determined, etc. = por emoción del beat
-character_reference:
-  front: "character_reference/character_reference_front.png"
-  side: "character_reference/character_reference_side.png"
-  expression: "character_reference/character_reference_expression.png"
-  happy: "character_reference/character_happy.png"
-  determined: "character_reference/character_determined.png"
-  surprised: "character_reference/character_surprised.png"
-  scared: "character_reference/character_scared.png"
-  angry: "character_reference/character_angry.png"
-  shocked: "character_reference/character_shocked.png"
-  neutral: "character_reference/character_neutral.png"
+extras_rule: |
+  Background extras must use the same flat stickman visual style.
+  Keep them small, simple and not individually detailed.
+  No realistic humans, no unique faces.
+  Use only clear role silhouettes and flat clothing colors.
 
-# =============================================================================
-# 2b. REFERENCIAS VISUALES DEL PROYECTO (Visual Reference System)
-# Se aplican a TODAS las imágenes. No son por escena: definen el universo visual.
-# Las reglas debajo se inyectan en el prompt cuando existen estas referencias.
-# =============================================================================
-visual_reference:
-  # Base style and framing (calm, daily life, general cinematography)
-  style: "visual_reference/style_reference.png"
-  environment: "visual_reference/environment_reference.png"
-  camera: "visual_reference/camera_reference.png"
-  lighting: "visual_reference/lighting_reference.png"
-  composition: "visual_reference/composition_reference.png"
-  # Atmosphere references (tension, crime, war, power, night) — extend range without replacing base style
-  tension: "visual_reference/tension_reference.png"
-  crime: "visual_reference/crime_reference.png"
-  war: "visual_reference/war_reference.png"
-  power: "visual_reference/power_reference.png"
-  night: "visual_reference/night_reference.png"
+negative_prompt: >
+  anime, manga, pixar, 3d render, realistic human, photorealistic,
+  overly detailed painting, hyper textured clothing, messy composition,
+  duplicate characters, extra arms, extra legs, extra fingers, extra heads,
+  text overlay, subtitles, UI, video player, controls, timeline, watermark,
+  empty white background
 
-# Reglas que se añaden al prompt cuando hay referencias visuales (la IA las tiene en cuenta).
-# Referencias no reemplazan la descripción de la escena; definen CÓMO se ve el mundo.
-# Las de atmósfera (tension, crime, war, power, night) amplían el rango sin sustituir estilo base.
-visual_reference_rules: |
-  VISUAL REFERENCE SYSTEM (apply to this image). Same character style and visual universe; atmosphere depends on scene:
-  - STYLE: Match the style reference: stickman visual language, balance between simple character and detailed background, line style, cinematic look. Main character always matches reference style; background must be more detailed than the character.
-  - ENVIRONMENT: Follow environment reference: interiors/exteriors with structure, logical object placement, spatial depth. Backgrounds never empty; environments believable and populated (furniture, lighting, windows, depth). Every image has a clear location.
-  - CAMERA: Follow camera reference: cinematic framing, spatial composition, subject-environment relation. Avoid flat centered compositions; use varied camera distances; encourage depth and perspective. Camera distance, framing style, and perspective must feel cinematic.
-  - LIGHTING: Follow lighting reference: atmospheric lighting, emotional tone, cinematic contrast. Lighting must match scene emotion; environments have natural light sources (windows, lamps, screens, sunlight). Avoid flat uniform lighting. Lighting reinforces narrative emotion.
-  - COMPOSITION: Follow composition reference: visual balance, focus hierarchy, cinematic storytelling. Main subject clearly readable; rule-of-thirds when appropriate; avoid cluttered or chaotic framing. Viewer must understand the scene immediately.
-  - ATMOSPHERE (use when scene calls for it): TENSION reference: darker lighting, strong shadows, dramatic framing, confrontational situations, visual suspense (abandoned buildings, alleyways, face-offs, standoffs). CRIME reference: urban night, secrecy, danger, suspicious meetings, cars, warehouses, back rooms, criminal environments. WAR reference: chaotic environments, destruction, smoke, damaged buildings, military tension, ruined streets, distant conflict. POWER reference: luxury, authority, business power, corporate offices, large desks, city skyline views, expensive environments, negotiations, influence. NIGHT reference: night-time cinematic look, neon lights, dark streets, strong contrast, urban night atmosphere, rain on pavement, moody lighting. Apply the atmosphere that fits the scene while keeping the same visual style and character design.
+# Tamaño por defecto para video 16:9 (se puede sobreescribir por proyecto)
+parametros_sd:
+  width: 1920
+  height: 1080
+  steps: 25
 
-# =============================================================================
-# 3. SISTEMA DE CÁMARA (CAMERA SYSTEM) - Rotación automática, NUNCA repetir
-# =============================================================================
-# Regla de oro: if camera_position == previous_camera_position: change_camera()
-# Cada imagen debe cambiar al menos una: posición, distancia, ángulo, composición, iluminación.
-
-camara:
-  regla_plano_distinto: true
-  # Nombres estándar cinematográficos (rotación automática en código)
-  variedad_planos:
-    - "POV (punto de vista del personaje)"
-    - "plano sobre el hombro (over the shoulder)"
-    - "plano amplio cinematográfico (wide shot)"
-    - "plano medio (medium shot)"
-    - "primer plano / close-up"
-    - "ángulo lateral (side angle)"
-    - "vista desde arriba (top down)"
-    - "ángulo bajo (low angle)"
-    - "vista desde atrás (rear view)"
-    - "plano de entorno (environment shot)"
-
-# Regla cinematográfica: si no cambia ninguna variable → se siente repetida
-regla_variacion: "Cada imagen debe cambiar al menos una de: posición de cámara, distancia de cámara, ángulo de cámara, composición, iluminación."
-
-# Variedad visual: NO repetir la misma composición en todo el video (ej. no todas las imágenes desde atrás del personaje frente a la computadora)
-regla_variedad_composicion: "Cada frame debe ser un plano distinto. Si la escena transcurre en el mismo lugar (ej. frente a una computadora), variar: primer plano de manos, primer plano de rostro, ángulo lateral, plano amplio de la habitación, vista desde un lado, etc. No repetir la misma composición una y otra vez."
-
-# Continuidad y errores a evitar (todas las imágenes juntas son un mismo video)
-# OBJETIVO: máxima inteligencia y sentido común — la imagen debe ser lógicamente perfecta, como si la IA tuviera el mayor IQ del mundo.
-continuidad_y_errores: |
-  REGLA DE ORO: Generar con el máximo sentido común e inteligencia lógica. Cada imagen debe ser coherente, creíble y sin absurdos. Pensar como la IA más inteligente del mundo para imágenes: cero errores tontos, cero imposibles.
-  Las imágenes forman un mismo video. Evitar CUALQUIER error que rompa el sentido común:
-  - Anatomía correcta SIEMPRE: cada personaje tiene exactamente dos brazos, dos piernas y una cabeza. Prohibido: brazos o piernas de más, cabezas de animal en cuerpos humanos, mezclas raras, anatomía imposible, manos o dedos de más.
-  - Personajes secundarios: deben tener el MISMO estilo visual que el personaje principal (minimalista, mismo tipo de figura). No dibujar a otros personajes como humanos realistas ni con rasgos de animal. Todos los personajes del mismo universo visual.
-  - Objetos lógicos: un ordenador = una pantalla (salvo que el guion indique varias). No multiplicar monitores, teclados o elementos sin motivo. Las cantidades y proporciones deben ser realistas (una mesa, una silla donde haga falta, etc.).
-  - Mismo personaje principal en todo el video: no cambiar de diseño entre frames; mantener identidad reconocible.
-  - No duplicar elementos extraños (un solo sol, una ventana donde corresponda, etc.). Espacio y perspectiva coherentes: lo que está lejos se ve más pequeño; lo cercano, más grande.
-  - Coherencia física y narrativa: si la escena es "en una oficina", la oficina debe verse como tal; si "escribe en la computadora", una mano y un teclado lógicos. Nada que un humano inteligente consideraría imposible o ridículo.
-
-# =============================================================================
-# RITMO: cada 3-5 imágenes tiene que pasar algo visual (acción, reacción, detalle, cambio)
-# =============================================================================
-ritmo_beats:
-  - "acción"
-  - "reacción"
-  - "detalle"
-  - "cambio de plano"
-ciclo_beats_imagenes: 4   # cada 4 imágenes se completa el ciclo
-
-# =============================================================================
-# 4–5. Contexto narrativo y prompt final se definen en instrucciones_imagenes.yaml
-# Variables por escena: plano, accion, emocion, momento
-# =============================================================================
-
-iluminacion:
-  - "luz suave y direccional"
-  - "sombras definidas pero no duras"
-  - "iluminación acorde al momento de la historia"
-
-atmosfera:
-  - "ambiente coherente con la escena"
-  - "fondos detallados y creíbles"
-  - "composición cinematográfica"
-
-duracion_por_imagen_segundos: 5
-formato_guion: "narrativo por párrafos, cada párrafo/acción = una escena"
-
-# =============================================================================
-# 6. NEGATIVE PROMPT (estabilidad del modelo)
-# =============================================================================
-
-negative_prompt: "anime, pixar, 3d render, realistic human, photorealistic, caricature, childish cartoon, manga style, overly detailed human anatomy, extra fingers, extra hands, extra arms, deformed hands, bad hands, mutated fingers, distorted limbs, blurry, low quality, distorted, text, watermark, video player, playback bar, editor interface, UI overlay"
-
-# Regla para TODAS las imágenes
-prohibido_en_imagen: "Sin reproductor de video, sin barra de reproducción, sin interfaz de editor. Sin fondo blanco ni fondos vacíos; toda imagen debe tener escenario/fondo visible y detallado. Formato 16:9, encuadre claro, composición cinematográfica."
-
-# =============================================================================
-# 8. DENSIDAD DE IMÁGENES POR VIDEO (para automatizar duración)
-# =============================================================================
-
-densidad_imagenes:
-  shorts_30_60_seg: [30, 60]
-  video_10_min: [120, 160]
-  video_20_min: [200, 260]
-  video_40_min: [350, 450]   # 40 min: guion → escenas → beats → acción → plano → generar

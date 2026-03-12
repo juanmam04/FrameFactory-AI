@@ -449,21 +449,13 @@ def _generar_imagen_replicate(
         image_ref_path = _get_outfit_reference_path(outfit_key)
 
     if image_ref_path:
-        # Identidad del personaje; ropa y edad según contexto. Siempre incluir lugar y acción.
+        # Instrucción corta coherente con la nueva arquitectura de prompts.
         context_instruction = (
-            "Generate with maximum common sense and logical intelligence—like the smartest image AI in the world. Every image must be coherent, believable, and free of absurd or impossible elements. "
-            "Keep the character's identity (face, style) from the reference. "
-            "Clothing and age/body MUST adapt to THIS scene: if baby → baby, if child → child, "
-            "if wearing suit → suit, if footballer → team kit, etc. Each character with appropriate clothes for the situation. "
-            "Always show a clear location/setting and what is happening in the scene. "
-            "Background is mandatory: never white or empty background; every image must have a visible, detailed environment. "
-            "Common sense - anatomy: every character has exactly two arms, two legs, one head. No extra limbs, no animal heads on human bodies, no mixed or impossible anatomy, no extra fingers or hands. "
-            "Common sense - secondary characters: draw them in the SAME visual style as the main character (minimalist, same figure type). Do not draw other characters as realistic humans or with animal features; all characters must look like they belong in the same world. "
-            "Logical props and quantities: one computer = one monitor unless the story says otherwise; realistic proportions and object counts (one table, one chair where it makes sense). Coherent perspective and space. "
-            "Nothing impossible or ridiculous: the scene must be 100% believable to any observer with common sense. "
-            "This frame must have a different composition or angle than the others; vary shot type; avoid repeating the same shot. "
+            "Flat 2D storyboard stickman style. Same visual style as the reference. "
+            "Keep character identity from the reference (head shape, eyes, outline) but adapt body preset and outfit to this scene. "
+            "Clear readable action and location. No UI, no text, no photorealism."
         )
-        prompt_kontext = (context_instruction + prompt).strip()[:3500]
+        prompt_kontext = (context_instruction + " " + prompt).strip()[:3500]
         aspect_ratio = _aspect_ratio_from_size(width, height)
         seed = (escena_num * 12345 + (hash(prompt) % 100000)) % (2**31)
         try:
