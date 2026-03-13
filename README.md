@@ -9,7 +9,7 @@ Sistema automático de creación de videos con IA. Genera videos largos a partir
 - **Stable Diffusion** (Automatic1111 o ComfyUI) en local o en la nube (ej. RunPod)
 - APIs: modelo de lenguaje (OpenAI/Claude/etc.) y voz IA (ElevenLabs/OpenAI TTS/etc.)
 
-## Instalación
+## Instalación.
 
 ```bash
 python -m venv venv

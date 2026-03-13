@@ -121,7 +121,6 @@ def generar_descripcion_breve_desde_titulo(titulo: str) -> str:
         print(f"⚠️ Error generando descripción breve: {e}")
         return f"POV: vivís la vida completa del personaje según el título. Narración en segunda persona, estilo mini-película."
 
-
 def iniciar_comfyui_background() -> tuple[bool, str | None]:
     """
     Inicia ComfyUI en segundo plano (puerto 8188) usando scripts/start_comfyui.ps1.
