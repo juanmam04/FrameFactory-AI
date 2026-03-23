@@ -180,10 +180,12 @@ def run(
 
     beats = generar_beats_para_escenas(escenas, tema=tema_para_desc, max_beats_total=max_beats_total)
     guardar_beats(beats, proy)
-    beats_con_prompts = prompts_para_beats(beats)
+    beats_con_prompts = prompts_para_beats(
+        beats, video_theme=tema_para_desc, project_id=proy
+    )
 
     # Adaptar beats → estructura Escena para reutilizar regeneración y montaje; expression_key y outfit_key para Kontext/outfit ref
-    escenas_con_prompts: list[tuple[Escena, str, str | None, str]] = [
+    escenas_con_prompts: list[tuple[Escena, str, str | None, str, str]] = [
         (
             Escena(
                 numero=beat.beat_id,
@@ -193,8 +195,9 @@ def run(
             prompt,
             emotion_to_expression_key(beat.emotion),
             get_outfit_key_for_beat(beat),
+            (gen_meta or {}).get("seed_material", ""),
         )
-        for beat, prompt in beats_con_prompts
+        for beat, prompt, gen_meta in beats_con_prompts
     ]
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 

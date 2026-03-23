@@ -1,7 +1,9 @@
 """FASE 5: Conversión de escenas / beats a prompts visuales (arquitectura simplificada stickman storyboard)."""
 from __future__ import annotations
 
+import os
 import random
+from pathlib import Path
 from typing import List, Dict, Any
 
 from .config_loader import (
@@ -12,7 +14,25 @@ from .config_loader import (
 from .scene_splitter import Escena
 from .visual_beats import VisualBeat
 from .scene_visual_mapper import map_escena_to_visual_meta, map_beat_to_visual_meta
+from .action_scene import apply_action_scene_meta_overrides, action_prompt_appendix
 from .visual_story_mapper import enrich_scene_visual_meta, enrich_beat_visual_meta
+from .storyboard_continuity import (
+    CharacterStateStore,
+    StoryboardState,
+    apply_beat_camera_position_hint,
+    construir_prompt_secuencial,
+    initial_storyboard_state,
+    resolve_scene_context,
+    update_storyboard_state,
+)
+from .storyboard_debug import (
+    BeatPromptDebugBundle,
+    clone_storyboard_state,
+    scene_continuity_to_dict,
+    storyboard_state_to_dict,
+    visual_beat_to_dict,
+    write_beat_debug_json,
+)
 
 
 def emotion_to_expression_key(emotion: str | None) -> str | None:
@@ -218,7 +238,8 @@ def construir_prompt(
 
     chars_block = _build_characters_block(meta.get("scene_characters"), meta)
     scene_block = _build_scene_block(meta)
-    camera_block = _build_camera_block(meta.get("camera_priority") or cam)
+    # Cámara final: la ya resuelta en meta["camera"] (p. ej. anti-repetición) tiene prioridad absoluta.
+    camera_block = _build_camera_block(cam)
     rules_block = _final_rules_block()
 
     parts = [style.strip()]
@@ -236,6 +257,9 @@ def construir_prompt(
         "Scene focus:\n"
         f"{scene_focus}."
     )
+
+    if meta.get("action_scene_dynamic"):
+        parts.append(action_prompt_appendix())
 
     parts.append(scene_block.strip())
 
@@ -305,6 +329,7 @@ def prompts_para_escenas(
         desc = descripciones[i] if i < len(descripciones) else None
         base_meta = map_escena_to_visual_meta(e, desc)
         full_meta = enrich_scene_visual_meta(base_meta, video_theme=video_theme)
+        full_meta = apply_action_scene_meta_overrides(full_meta, escena_text=e.texto)
 
         # Aplicar camera_priority intentando no repetir consecutivo
         pref_cam = full_meta.get("camera_priority")
@@ -325,48 +350,87 @@ def prompts_para_escenas(
     return resultados
 
 
+def compute_beat_prompt_bundle(
+    scene_index: int,
+    beat: VisualBeat,
+    state: StoryboardState,
+    char_store: CharacterStateStore,
+    video_theme: str | None,
+) -> tuple[str, dict, BeatPromptDebugBundle]:
+    """
+    Un paso del pipeline: beat → meta → contexto resuelto → prompt.
+    Mutates `state` y `char_store`. Para tests y modo debug.
+    """
+    state_before = storyboard_state_to_dict(clone_storyboard_state(state))
+
+    base_meta = map_beat_to_visual_meta(beat)
+    full_meta = enrich_beat_visual_meta(base_meta, video_theme=video_theme)
+    full_meta = apply_action_scene_meta_overrides(full_meta, beat=beat)
+    full_meta = apply_beat_camera_position_hint(beat, full_meta)
+
+    ctx = resolve_scene_context(scene_index, beat, base_meta, full_meta, state, char_store)
+    full_meta["location"] = ctx.resolved_location
+    full_meta["camera"] = ctx.resolved_camera
+
+    if set(ctx.characters_present) <= {"protagonist"}:
+        chars_block = ""
+    else:
+        chars_block = _build_characters_block(ctx.characters_present, base_meta)
+    prompt = construir_prompt_secuencial(ctx, full_meta, chars_block)
+
+    update_storyboard_state(state, ctx, full_meta, beat=beat)
+    state_after = storyboard_state_to_dict(state)
+
+    gen_meta = {
+        "seed_material": ctx.seed_material,
+        "location_id": ctx.resolved_location,
+        "resolved_camera": ctx.resolved_camera,
+    }
+    bundle = BeatPromptDebugBundle(
+        scene_index=scene_index,
+        beat_id=beat.beat_id,
+        state_before=state_before,
+        state_after=state_after,
+        beat=visual_beat_to_dict(beat),
+        base_meta=dict(base_meta),
+        enriched_meta=dict(full_meta),
+        resolved_context=scene_continuity_to_dict(ctx),
+        prompt_final=prompt,
+        gen_meta=dict(gen_meta),
+    )
+    return prompt, gen_meta, bundle
+
+
 def prompts_para_beats(
     beats: list[VisualBeat],
     shuffle_planos: bool = True,
     video_theme: str | None = None,
-) -> list[tuple[VisualBeat, str]]:
+    project_id: str = "",
+    debug_output_dir: str | Path | None = None,
+) -> list[tuple[VisualBeat, str, dict]]:
     """
-    Genera prompts a partir de beats visuales usando la nueva arquitectura simplificada.
+    Genera prompts a partir de beats con estado secuencial (StoryboardState) y continuidad explícita.
+    Retorna (beat, prompt, gen_meta) donde gen_meta incluye seed_material y location_id para el generador.
+
+    Modo debug: `debug_output_dir` o variable de entorno `PROMPT_PIPELINE_DEBUG_DIR` escribe un JSON
+    por beat (`scene_XXXX.json`) con beat, metas, contexto resuelto, prompt y estado antes/después.
     """
     if not beats:
         return []
-    cameras = _camera_options()
-    resultados: list[tuple[VisualBeat, str]] = []
-    last_cam: str | None = None
+    state = initial_storyboard_state(project_id=project_id or "", video_theme=video_theme)
+    char_store = CharacterStateStore()
+    resultados: list[tuple[VisualBeat, str, dict]] = []
+
+    dbg = debug_output_dir or os.environ.get("PROMPT_PIPELINE_DEBUG_DIR", "").strip()
+    debug_path = Path(dbg) if dbg else None
 
     for i, beat in enumerate(beats):
-        base_meta = map_beat_to_visual_meta(beat)
-        full_meta = enrich_beat_visual_meta(base_meta, video_theme=video_theme)
-
-        pref_cam = full_meta.get("camera_priority")
-        cam: str
-        if pref_cam:
-            cam = pref_cam
-        else:
-            cam = cameras[0] if cameras else "medium shot"
-        if cam == last_cam and cameras:
-            alt = [c for c in cameras if c != last_cam] or cameras
-            cam = alt[0]
-        full_meta["camera"] = cam
-        last_cam = cam
-
-        escena_fake = Escena(
-            numero=i + 1,
-            texto=beat.original_text or full_meta.get("action", ""),
-            duracion_segundos=5.0,
+        prompt, gen_meta, bundle = compute_beat_prompt_bundle(
+            i, beat, state, char_store, video_theme
         )
-        prompt = construir_prompt(
-            escena=escena_fake,
-            indice_plan=None,
-            descripcion_visual=None,
-            scene_meta=full_meta,
-        )
-        resultados.append((beat, prompt))
+        if debug_path is not None:
+            write_beat_debug_json(bundle, debug_path / f"scene_{beat.beat_id:04d}.json")
+        resultados.append((beat, prompt, gen_meta))
     return resultados
 
 

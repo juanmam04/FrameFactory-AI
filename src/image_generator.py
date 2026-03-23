@@ -9,7 +9,17 @@ from typing import Callable
 import requests
 from dotenv import load_dotenv
 
-from .config_loader import BASE, get_negative_prompt, get_instrucciones_imagenes, get_estilo_base, get_character_references, get_visual_references
+from .config_loader import (
+    BASE,
+    get_negative_prompt,
+    get_instrucciones_imagenes,
+    get_estilo_base,
+    get_character_references,
+    get_character_reference_mode,
+    get_kontext_context_instruction,
+)
+from .kontext_prompt import build_kontext_prompt_for_replicate
+from .storyboard_continuity import comfyui_seed_from_material
 from .scene_splitter import Escena
 
 # Mapeo outfit_key (outfit_library) -> nombre de archivo en references/outfits/
@@ -35,18 +45,47 @@ _resolved_checkpoint: str | None = None
 def _usar_openai_imagenes() -> bool:
     return False
 
-# Replicate: permitimos elegir modelo de texto→imagen por .env.
-# REPLICATE_IMAGE_MODEL (nuevo) tiene prioridad; si no está, usamos REPLICATE_FLUX_MODEL (legacy) y,
-# en última instancia, flux-schnell (muy barato pero peor calidad de anatomía).
+# Replicate: modelo texto→imagen por .env (por defecto FLUX.1 [dev], mayor fidelidad que schnell).
+# REPLICATE_IMAGE_MODEL (nuevo) tiene prioridad; si no está, REPLICATE_FLUX_MODEL (legacy).
 REPLICATE_MODEL_TEXT = (
     os.getenv("REPLICATE_IMAGE_MODEL")
     or os.getenv("REPLICATE_FLUX_MODEL")
-    or "black-forest-labs/flux-schnell"
+    or "black-forest-labs/flux-dev"
 ).strip()
-# Para flujos con imagen de referencia (Kontext) mantenemos por defecto FLUX Kontext, también configurable.
+# Imagen + texto (Kontext): referencia del protagonista en todas las escenas cuando el PNG existe.
 REPLICATE_MODEL_KONTEXT = os.getenv(
     "REPLICATE_IMAGE_MODEL_WITH_REF", "black-forest-labs/flux-kontext-dev"
 ).strip()
+# Si hay character_reference en visual_bible pero falta el archivo, fallar en lugar de texto solo.
+REPLICATE_FORCE_KONTEXT = os.getenv("REPLICATE_FORCE_KONTEXT", "1").strip().lower() not in (
+    "0",
+    "false",
+    "no",
+)
+
+
+def _replicate_text_model_input(prompt: str, aspect_ratio: str) -> dict:
+    """Inputs para el modelo texto→imagen (flux-dev vs schnell difieren ligeramente)."""
+    model_low = REPLICATE_MODEL_TEXT.lower()
+    inp: dict[str, str | int | float] = {
+        "prompt": prompt,
+        "aspect_ratio": aspect_ratio,
+        "output_format": "png",
+    }
+    if "schnell" in model_low:
+        inp["num_outputs"] = 1
+        return inp
+    steps = os.getenv("REPLICATE_FLUX_DEV_STEPS", "28").strip()
+    try:
+        inp["num_inference_steps"] = max(1, min(50, int(steps)))
+    except ValueError:
+        inp["num_inference_steps"] = 28
+    guidance = os.getenv("REPLICATE_FLUX_DEV_GUIDANCE", "3.5").strip()
+    try:
+        inp["guidance"] = float(guidance)
+    except ValueError:
+        inp["guidance"] = 3.5
+    return inp
 
 def _usar_replicate() -> bool:
     """Usar SIEMPRE Replicate (FLUX) cuando haya token; ComfyUI queda como opción legacy."""
@@ -231,11 +270,12 @@ def _generar_imagen_comfyui(
     height: int,
     timeout_post: int | None = None,
     timeout_poll: int | None = None,
+    seed: int | None = None,
 ) -> Path | None:
     """Envía prompt a ComfyUI, espera resultado y guarda la imagen en carpeta/escena_XXXX.png."""
     timeout_post = timeout_post if timeout_post is not None else _comfy_timeout_post()
     timeout_poll = timeout_poll if timeout_poll is not None else _comfy_timeout_poll()
-    workflow = _workflow_comfyui(prompt_text, negative, width, height)
+    workflow = _workflow_comfyui(prompt_text, negative, width, height, seed=seed)
     try:
         r = requests.post(
             f"{COMFY_URL}/prompt",
@@ -412,6 +452,68 @@ def _get_outfit_reference_path(outfit_key: str | None) -> Path | None:
     return None
 
 
+def _resolve_protagonist_reference_path(expression_key: str | None) -> Path | None:
+    """
+    Imagen de referencia del protagonista para Kontext.
+    Prioriza siempre ``front`` cuando existe (misma identidad en todas las escenas); si no, expresión u otras claves.
+    """
+    try:
+        refs = get_character_references() or {}
+    except Exception:
+        refs = {}
+    if not refs:
+        return None
+
+    def _path_for_key(k: str) -> Path | None:
+        rel = refs.get(k)
+        if not rel or not isinstance(rel, str):
+            return None
+        p = BASE / rel.strip()
+        if p.exists() and p.stat().st_size > 0:
+            return p
+        return None
+
+    p = _path_for_key("front")
+    if p:
+        return p
+    if expression_key:
+        p = _path_for_key(expression_key)
+        if p:
+            return p
+    for k in ("closeup", "side"):
+        p = _path_for_key(k)
+        if p:
+            return p
+    for k in refs:
+        p = _path_for_key(k)
+        if p:
+            return p
+    return None
+
+
+def _protagonist_ref_misconfigured_message() -> str | None:
+    """Hay rutas en character_reference pero ningún archivo válido en disco."""
+    try:
+        refs = get_character_references() or {}
+    except Exception:
+        return None
+    configured: list[str] = []
+    for v in refs.values():
+        if v and isinstance(v, str) and v.strip():
+            configured.append(v.strip())
+    if not configured:
+        return None
+    for rel in configured:
+        p = BASE / rel
+        if p.exists() and p.stat().st_size > 0:
+            return None
+    first = configured[0]
+    return (
+        "Replicate Kontext: en visual_bible hay character_reference pero no existe ningún PNG en disco "
+        f"(ej. {first}). Colocá el archivo o poné REPLICATE_FORCE_KONTEXT=0 para generar sin referencia."
+    )
+
+
 def _generar_imagen_replicate(
     prompt: str,
     carpeta: Path,
@@ -422,40 +524,30 @@ def _generar_imagen_replicate(
     outfit_key: str | None = None,
 ) -> Path | None:
     """Genera una imagen con Replicate.
-    - Si existe character_reference (front o expresión), usa el modelo con referencia (por defecto FLUX Kontext).
-    - Si no hay personaje pero sí outfit_key y existe references/outfits/outfit_<x>.png, usa esa imagen como referencia visual del outfit.
-    - Si no, usa el modelo de texto→imagen sin imagen.
+    - Con PNG de personaje en visual_bible: siempre FLUX Kontext con ``input_image`` (prioridad ``front``).
+    - Sin referencia de personaje: modelo texto→imagen (por defecto flux-dev). outfit_key no sustituye al personaje en Replicate.
     """
     import replicate as replicate_client
-    from base64 import b64encode
 
+    _ = outfit_key  # reservado; consistencia del protagonista = solo character_reference (Kontext)
     prompt = (prompt or "").strip()[:3500]
     if not prompt:
         return None
-    # 1) Prioridad: imagen de referencia de PERSONAJE (Kontext respeta cara/cuerpo).
-    image_ref_path: Path | None = None
-    try:
-        refs = get_character_references()
-        ref_key = (expression_key if expression_key and refs.get(expression_key) else None) or "front"
-        ref_rel = refs.get(ref_key)
-        if ref_rel:
-            p = BASE / ref_rel
-            if p.exists() and p.stat().st_size > 0:
-                image_ref_path = p
-    except Exception:
-        pass
-    # 2) Si no hay referencia de personaje, usar imagen de referencia del OUTFIT (references/outfits/) si existe.
-    if image_ref_path is None:
-        image_ref_path = _get_outfit_reference_path(outfit_key)
+
+    image_ref_path = _resolve_protagonist_reference_path(expression_key)
+    if image_ref_path is None and REPLICATE_FORCE_KONTEXT:
+        msg = _protagonist_ref_misconfigured_message()
+        if msg:
+            raise RuntimeError(msg)
 
     if image_ref_path:
-        # Instrucción corta coherente con la nueva arquitectura de prompts.
-        context_instruction = (
-            "Flat 2D storyboard stickman style. Same visual style as the reference. "
-            "Keep character identity from the reference (head shape, eyes, outline) but adapt body preset and outfit to this scene. "
-            "Clear readable action and location. No UI, no text, no photorealism."
+        context_instruction = get_kontext_context_instruction()
+        prompt_kontext = build_kontext_prompt_for_replicate(
+            prompt,
+            context_instruction,
+            get_character_reference_mode(),
+            max_chars=3500,
         )
-        prompt_kontext = (context_instruction + " " + prompt).strip()[:3500]
         aspect_ratio = _aspect_ratio_from_size(width, height)
         seed = (escena_num * 12345 + (hash(prompt) % 100000)) % (2**31)
         try:
@@ -487,12 +579,7 @@ def _generar_imagen_replicate(
         try:
             output = replicate_client.run(
                 REPLICATE_MODEL_TEXT,
-                input={
-                    "prompt": prompt,
-                    "aspect_ratio": aspect_ratio,
-                    "output_format": "png",
-                    "num_outputs": 1,
-                },
+                input=_replicate_text_model_input(prompt, aspect_ratio),
             )
         except Exception as e:
             raise RuntimeError(f"Replicate FLUX no pudo generar la imagen: {e}") from e
@@ -668,8 +755,9 @@ def generar_imagen(
     height: int | None = None,
     expression_key: str | None = None,
     outfit_key: str | None = None,
+    comfy_seed: int | None = None,
 ) -> Path | None:
-    """Genera una imagen con Replicate (FLUX) o ComfyUI según IMAGE_BACKEND. outfit_key se usa para imagen de referencia en references/outfits/ si no hay character ref."""
+    """Genera una imagen con Replicate (FLUX) o ComfyUI. En Replicate, la referencia del protagonista es solo ``character_reference`` (Kontext); outfit_key no reemplaza al PNG del personaje."""
     instrucciones = get_instrucciones_imagenes()
     params = instrucciones.get("parametros_sd", {})
     img_width = width if width is not None else params.get("width", 1024)
@@ -703,6 +791,7 @@ def generar_imagen(
                 escena_num,
                 img_width,
                 img_height,
+                seed=comfy_seed,
             )
             if path:
                 return path
@@ -737,14 +826,18 @@ def _generar_una_escena(
 
 
 def generar_lote(
-    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]] | list[tuple[Escena, str, str | None, str]],
+    escenas_con_prompts: list[tuple[Escena, str]]
+    | list[tuple[Escena, str, str | None]]
+    | list[tuple[Escena, str, str | None, str]]
+    | list[tuple[Escena, str, str | None, str, str]],
     subcarpeta: str = "default",
     width: int | None = None,
     height: int | None = None,
     on_progress: Callable[[int, int], None] | None = None,
 ) -> list[Path]:
     """Genera todas las imágenes con Replicate (FLUX) o ComfyUI. Si una falla con Replicate se usa placeholder.
-    Cada elemento puede ser (Escena, prompt) o (Escena, prompt, expression_key) para referencia de expresión."""
+    Tupla extendida opcional: (Escena, prompt, expression_key, outfit_key, seed_material) — seed_material alimenta
+    semilla estable en ComfyUI."""
     if not _usar_replicate() and not _comfyui_disponible():
         raise RuntimeError(_comfyui_error_msg())
     carpeta = OUTPUT_IMAGES / subcarpeta
@@ -760,6 +853,10 @@ def generar_lote(
         prompt = item[1]
         expression_key = item[2] if len(item) >= 3 else None
         outfit_key = item[3] if len(item) >= 4 else None
+        seed_material = item[4] if len(item) >= 5 else ""
+        comfy_seed = None
+        if seed_material and not usar_replicate:
+            comfy_seed = comfyui_seed_from_material(f"{subcarpeta}\0{seed_material}")
         print(f"   🖼️ Imagen {idx}/{total} (escena {escena.numero})...")
         path = None
         # Pequeño bucle local para respetar rate limit de Replicate (6 req/min ≈ 1 cada 10s)
@@ -769,6 +866,7 @@ def generar_lote(
                 path = generar_imagen(
                     prompt, escena.numero, carpeta, width=width, height=height,
                     expression_key=expression_key, outfit_key=outfit_key,
+                    comfy_seed=comfy_seed,
                 )
                 break
             except Exception as e:

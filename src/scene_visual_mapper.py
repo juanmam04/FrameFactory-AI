@@ -358,7 +358,11 @@ def map_beat_to_visual_meta(beat: VisualBeat) -> Dict[str, Any]:
     if not base_text:
         base_text = "Escena narrativa donde el protagonista realiza una acción clave."
     scene_type = _guess_scene_type(base_text)
-    location = _guess_location(scene_type)
+    raw_beat_loc = (getattr(beat, "location", None) or "").strip()
+    if raw_beat_loc:
+        location = raw_beat_loc
+    else:
+        location = _guess_location(scene_type)
     action = (beat.action or beat.original_text or "").replace("\n", " ").strip() or base_text
     action = action[:220]
     mood = _guess_mood(base_text)

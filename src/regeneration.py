@@ -110,10 +110,13 @@ def _refinar_prompt_con_feedback(prompt_original: str, feedback: str) -> str:
 
 
 def guardar_prompts_por_escena(
-    escenas_con_prompts: list[tuple[Escena, str]] | list[tuple[Escena, str, str | None]] | list[tuple[Escena, str, str | None, str]],
+    escenas_con_prompts: list[tuple[Escena, str]]
+    | list[tuple[Escena, str, str | None]]
+    | list[tuple[Escena, str, str | None, str]]
+    | list[tuple[Escena, str, str | None, str, str]],
     proyecto: str,
 ) -> Path:
-    """Guarda los prompts por escena. Acepta (Escena, prompt), (Escena, prompt, expression_key) o (Escena, prompt, expression_key, outfit_key)."""
+    """Guarda los prompts por escena. Acepta hasta (Escena, prompt, expression_key, outfit_key, seed_material)."""
     META_DIR.mkdir(parents=True, exist_ok=True)
     escenas_list = []
     for item in escenas_con_prompts:
@@ -127,6 +130,8 @@ def guardar_prompts_por_escena(
             rec["expression_key"] = item[2]
         if len(item) >= 4:
             rec["outfit_key"] = item[3]
+        if len(item) >= 5 and item[4]:
+            rec["seed_material"] = item[4]
         escenas_list.append(rec)
     meta = {"proyecto": proyecto, "escenas": escenas_list}
     path = META_DIR / f"{proyecto}_prompts.json"
@@ -134,8 +139,8 @@ def guardar_prompts_por_escena(
     return path
 
 
-def cargar_prompts(proyecto: str) -> list[tuple[Escena, str, str | None, str | None]]:
-    """Carga escenas y prompts guardados. Retorna (Escena, prompt, expression_key, outfit_key); expression_key y outfit_key pueden ser None."""
+def cargar_prompts(proyecto: str) -> list[tuple[Escena, str, str | None, str | None, str]]:
+    """Carga escenas y prompts. Retorna (Escena, prompt, expression_key, outfit_key, seed_material)."""
     path = META_DIR / f"{proyecto}_prompts.json"
     if not path.exists():
         return []
@@ -152,6 +157,7 @@ def cargar_prompts(proyecto: str) -> list[tuple[Escena, str, str | None, str | N
             item["prompt"],
             item.get("expression_key"),
             item.get("outfit_key"),
+            item.get("seed_material") or "",
         ))
     return out
 
@@ -167,20 +173,34 @@ def regenerar_escenas(
     escenas_con_prompts = cargar_prompts(proyecto)
     if not escenas_con_prompts:
         raise FileNotFoundError(f"No hay meta para proyecto: {proyecto}")
-    by_num = {e.numero: (e, p, expr, ok) for e, p, expr, ok in escenas_con_prompts}
+    by_num = {e.numero: (e, p, expr, ok, sm) for e, p, expr, ok, sm in escenas_con_prompts}
     carpeta = BASE / "output" / "imagenes" / carpeta_imagenes
     feedback_por_escena = feedback_por_escena or {}
     rutas = []
     for n in numeros_escenas:
         if n not in by_num:
             continue
-        e, prompt, expression_key, outfit_key = by_num[n]
+        e, prompt, expression_key, outfit_key, seed_material = by_num[n]
         feedback = feedback_por_escena.get(n, "").strip()
         if feedback:
             prompt_refinado = _refinar_prompt_con_feedback(prompt, feedback)
             _guardar_feedback_aprendizaje(proyecto, n, prompt, feedback, prompt_refinado)
             prompt = prompt_refinado
-        path = generar_imagen(prompt, e.numero, carpeta, expression_key=expression_key, outfit_key=outfit_key)
+        from .storyboard_continuity import comfyui_seed_from_material
+
+        comfy_seed = (
+            comfyui_seed_from_material(f"{carpeta_imagenes}\0{seed_material}")
+            if seed_material
+            else None
+        )
+        path = generar_imagen(
+            prompt,
+            e.numero,
+            carpeta,
+            expression_key=expression_key,
+            outfit_key=outfit_key,
+            comfy_seed=comfy_seed,
+        )
         if path:
             rutas.append(path)
     return rutas

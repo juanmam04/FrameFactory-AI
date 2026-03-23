@@ -192,8 +192,10 @@ def preparar_imagenes_para_revision(
     # Usar beats visuales también en modo revisión (misma lógica que pipeline.run)
     beats = generar_beats_para_escenas(escenas, tema=tema_para_desc)
     guardar_beats(beats, proy)
-    beats_con_prompts = prompts_para_beats(beats)
-    escenas_con_prompts: list[tuple[Escena, str, str | None, str]] = [
+    beats_con_prompts = prompts_para_beats(
+        beats, video_theme=tema_para_desc, project_id=proy
+    )
+    escenas_con_prompts: list[tuple[Escena, str, str | None, str, str]] = [
         (
             Escena(
                 numero=beat.beat_id,
@@ -203,8 +205,9 @@ def preparar_imagenes_para_revision(
             prompt,
             emotion_to_expression_key(beat.emotion),
             get_outfit_key_for_beat(beat),
+            (gen_meta or {}).get("seed_material", ""),
         )
-        for beat, prompt in beats_con_prompts
+        for beat, prompt, gen_meta in beats_con_prompts
     ]
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 
@@ -1644,8 +1647,10 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz �
                 # Usar el mismo sistema de beats que el pipeline principal
                 beats = generar_beats_para_escenas(escenas, tema=tema_ctx)
                 guardar_beats(beats, nombre)
-                beats_con_prompts = prompts_para_beats(beats)
-                escenas_con_prompts: list[tuple[EscenaMA, str, str | None, str]] = [
+                beats_con_prompts = prompts_para_beats(
+                    beats, video_theme=tema_ctx, project_id=nombre
+                )
+                escenas_con_prompts: list[tuple[EscenaMA, str, str | None, str, str]] = [
                     (
                         EscenaMA(
                             numero=beat.beat_id,
@@ -1655,8 +1660,9 @@ with st.expander("Modo avanzado (paso a paso: Guion → Escenas/Beats → Voz �
                         prompt,
                         emotion_to_expression_key(beat.emotion),
                         get_outfit_key_for_beat(beat),
+                        (gen_meta or {}).get("seed_material", ""),
                     )
-                    for beat, prompt in beats_con_prompts
+                    for beat, prompt, gen_meta in beats_con_prompts
                 ]
                 guardar_prompts_por_escena(escenas_con_prompts, nombre)
                 # Limpiar imágenes viejas de este proyecto; una por beat

@@ -1,0 +1,149 @@
+{
+  "scene_index": 4,
+  "beat_id": 5,
+  "state_before": {
+    "current_location_id": "pasillo_del_edificio",
+    "current_location_prompt": "pasillo del edificio",
+    "current_scene_type": "generic_interior",
+    "current_time_of_day": "noche",
+    "current_mood": "tense",
+    "current_characters": [
+      "protagonist"
+    ],
+    "protagonist_profile": {},
+    "wardrobe_state": {},
+    "last_camera": "medium shot",
+    "last_action": "avanza por el pasillo, mira una puerta entreabierta, la tensión se vuelve amenaza",
+    "last_prompt_summary": "pasillo del edificio — avanza por el pasillo, mira una puerta entreabierta, la tensión se vuelve amenaz",
+    "continuity_notes": [
+      "location_updated",
+      "camera_updated",
+      "camera_updated",
+      "location_updated",
+      "camera_updated",
+      "camera_updated"
+    ],
+    "project_id": "tituloaqui",
+    "video_theme": "[TITULO_AQUI]"
+  },
+  "state_after": {
+    "current_location_id": "living_del_apartamento_con_sofa",
+    "current_location_prompt": "living del apartamento con sofa",
+    "current_scene_type": "home_living_room",
+    "current_time_of_day": "noche",
+    "current_mood": "angry",
+    "current_characters": [
+      "protagonist"
+    ],
+    "protagonist_profile": {},
+    "wardrobe_state": {},
+    "last_camera": "close up",
+    "last_action": "llega al living, respira aliviado, sostiene el teléfono, shock",
+    "last_prompt_summary": "living del apartamento con sofa — llega al living, respira aliviado, sostiene el teléfono, shock",
+    "continuity_notes": [
+      "location_updated",
+      "camera_updated",
+      "camera_updated",
+      "location_updated",
+      "camera_updated",
+      "camera_updated",
+      "location_updated",
+      "camera_updated"
+    ],
+    "project_id": "tituloaqui",
+    "video_theme": "[TITULO_AQUI]"
+  },
+  "beat": {
+    "beat_id": 5,
+    "scene": 5,
+    "original_text": "Llega al living del apartamento; abre la puerta y queda quieto, en shock, con el teléfono en la mano.",
+    "action": "llega al living, respira aliviado, sostiene el teléfono, shock",
+    "emotion": "shock",
+    "context": "",
+    "location": "living del apartamento con sofa",
+    "time_of_day": "noche",
+    "shot_role": "action",
+    "camera_type": "close_up",
+    "camera_position": "frontal",
+    "camera_distance": "media",
+    "importance": "normal",
+    "act": 1
+  },
+  "base_meta": {
+    "scene_type": "home_living_room",
+    "scene_characters": [
+      "protagonist"
+    ],
+    "location": "living del apartamento con sofa",
+    "action": "llega al living, respira aliviado, sostiene el teléfono, shock",
+    "mood": "angry",
+    "key_visual": "sofa, coffee table, TV, lamp",
+    "camera": null,
+    "character_overrides": {},
+    "scene_mode": "present"
+  },
+  "enriched_meta": {
+    "scene_type": "home_living_room",
+    "scene_characters": [
+      "protagonist"
+    ],
+    "location": "living del apartamento con sofa",
+    "action": "llega al living, respira aliviado, sostiene el teléfono, shock",
+    "mood": "angry",
+    "key_visual": "sofa, coffee table, TV, lamp",
+    "camera": "close up",
+    "character_overrides": {},
+    "scene_mode": "present",
+    "thematic_context": null,
+    "visual_device": "phone_call",
+    "symbolic_tags": [
+      "phone_call",
+      "phone_screen",
+      "desk",
+      "lamp"
+    ],
+    "symbolic_descriptions": [
+      "glowing phone screen with important caller ID visible",
+      "phone screen with clear caller name",
+      "simple desk surface",
+      "desk lamp casting warm light"
+    ],
+    "narrative_representation_mode": "symbolic",
+    "scene_focus": "phone_screen",
+    "camera_priority": "close up",
+    "_beat_camera_position": "frontal"
+  },
+  "resolved_context": {
+    "scene_index": 4,
+    "raw_location": "living del apartamento con sofa",
+    "resolved_location": "living del apartamento con sofa",
+    "location_changed": true,
+    "previous_location": "pasillo del edificio",
+    "raw_camera": "close_up",
+    "resolved_camera": "close up",
+    "previous_camera": "medium shot",
+    "action": "llega al living, respira aliviado, sostiene el teléfono, shock",
+    "previous_action": "avanza por el pasillo, mira una puerta entreabierta, la tensión se vuelve amenaza",
+    "characters_present": [
+      "protagonist"
+    ],
+    "protagonist_locked_description": "CHARACTER LOCK (protagonist — do not change between shots unless script explicitly changes wardrobe):\nLocked appearance: teen body, casual_dark outfit, hoodie silhouette, blue_gray color identity.\nAllowed to vary: expression, pose, lighting angle.\nKeep same face design, head shape, body proportions and base outfit as previous shots in this story.",
+    "continuity_block": "CONTINUITY FROM PREVIOUS SCENE:\nPrevious scene context: pasillo del edificio — avanza por el pasillo, mira una puerta entreabierta, la tensión se vuelve amenaz.\nPrevious location was: pasillo del edificio.\nLocation has changed from the previous shot; show a new setting clearly while keeping the same protagonist design.\nKeep protagonist appearance unchanged from CHARACTER LOCK.\nCurrent scene progression: llega al living, respira aliviado, sostiene el teléfono, shock",
+    "symbolic_overlay_allowed": true,
+    "symbolic_overlay_reason": "overlay compatible with scene_type",
+    "sanitized_symbolic_descriptions": [
+      "glowing phone screen with important caller ID visible",
+      "phone screen with clear caller name",
+      "simple desk surface",
+      "desk lamp casting warm light"
+    ],
+    "seed_material": "tituloaqui|5|living_del_apartamento_con_sofa|teen_body_casual_dark_outfit_hoodie_silhouette_blue_gray_color_identity",
+    "protagonist_signature": "teen body, casual_dark outfit, hoodie silhouette, blue_gray color identity"
+  },
+  "prompt_final": "STYLE LOCK:\nCinematic cartoon storyboard illustration, clean bold outlines, soft directional lighting.\nMain character: always the same design in every frame.\nLarge perfectly white spherical head (emoji-like); two simple black oval eyes; no realistic nose or mouth unless the scene needs a tiny simple mouth line.\nYoung-adult human body proportions (not a stick figure): same limb length, torso width and head scale in all scenes.\nDefault outfit unless the script overrides: dark zip hoodie (often open) over white tee, blue jeans, grey low-top sneakers.\nConsistent line thickness, readable silhouette, subtle shading for depth (not flat poster style, not 3D Pixar).\nBackgrounds: narrative and readable, with clear depth; match the same cartoon-cinematic lighting quality.\nNo photorealistic humans, no anime eyes, no 3D render look.\n\nCHARACTER LOCK (protagonist — do not change between shots unless script explicitly changes wardrobe):\nLocked appearance: teen body, casual_dark outfit, hoodie silhouette, blue_gray color identity.\nAllowed to vary: expression, pose, lighting angle.\nKeep same face design, head shape, body proportions and base outfit as previous shots in this story.\n\nCONTINUITY FROM PREVIOUS SCENE:\nPrevious scene context: pasillo del edificio — avanza por el pasillo, mira una puerta entreabierta, la tensión se vuelve amenaz.\nPrevious location was: pasillo del edificio.\nLocation has changed from the previous shot; show a new setting clearly while keeping the same protagonist design.\nKeep protagonist appearance unchanged from CHARACTER LOCK.\nCurrent scene progression: llega al living, respira aliviado, sostiene el teléfono, shock\n\nCURRENT SCENE:\nLocation: living del apartamento con sofa.\nAction: llega al living, respira aliviado, sostiene el teléfono, shock.\nMood: angry.\nKey visual element: sofa, coffee table, TV, lamp.\n\nNarrative device:\nphone_call.\nRepresentation mode:\nsymbolic.\nScene focus:\nphone_screen.\n\nSYMBOLIC OVERLAY (compatible):\nglowing phone screen with important caller ID visible, phone screen with clear caller name, simple desk surface, desk lamp casting warm light.\n(overlay compatible with scene_type)\n\nCAMERA:\nclose up (director note: close_up, position frontal).\n\nHARD RULES:\nOne clear narrative image.\nClear visual focus.\nNo empty background.\n16:9 frame.\nDo not contradict the continuity block or character lock.\n\nTheme:\ngeneric.",
+  "gen_meta": {
+    "seed_material": "tituloaqui|5|living_del_apartamento_con_sofa|teen_body_casual_dark_outfit_hoodie_silhouette_blue_gray_color_identity",
+    "location_id": "living del apartamento con sofa",
+    "resolved_camera": "close up"
+  }
+}

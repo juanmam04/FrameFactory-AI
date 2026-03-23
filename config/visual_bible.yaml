@@ -1,21 +1,19 @@
-# Visual Bible – versión simplificada para storyboard stickman 2D
+# Visual Bible – cartoon cinematográfico + referencia de personaje (Kontext / prompts)
 
 style_lock: |
-  Flat 2D storyboard illustration, clean and cinematic.
+  Cinematic cartoon storyboard illustration, clean bold outlines, soft directional lighting.
   Main character: always the same design in every frame.
-  White round face with simple dark brown hair, black simple eyes and simple mouth.
-  Clean black outline, stickman-like body with slightly thicker torso and limbs.
-  Large, readable face with simple expressive eyebrows when needed.
-  Simple flat clothing with limited colors, no complex textures or wrinkles.
-  Same character proportions, head size and line thickness in all scenes.
-  Backgrounds: simple but narrative, with clear depth and thematic details.
-  No realistic rendering, no anime, no 3D, no Pixar; consistent cartoon style.
+  Large perfectly white spherical head (emoji-like); two simple black oval eyes; no realistic nose or mouth unless the scene needs a tiny simple mouth line.
+  Young-adult human body proportions (not a stick figure): same limb length, torso width and head scale in all scenes.
+  Default outfit unless the script overrides: dark zip hoodie (often open) over white tee, blue jeans, grey low-top sneakers.
+  Consistent line thickness, readable silhouette, subtle shading for depth (not flat poster style, not 3D Pixar).
+  Backgrounds: narrative and readable, with clear depth; match the same cartoon-cinematic lighting quality.
+  No photorealistic humans, no anime eyes, no 3D render look.
 
 character_universe_rule: |
-  All characters share the same flat 2D stickman visual universe.
-  Face is always minimal (no realistic details): white circular head, simple black eyes, simple mouth.
-  Identity is defined by body preset, outfit base, color identity, silhouette hint and simple accessories.
-  Facial details must never be realistic or unique; silhouette and outfit define each character.
+  All characters share the same cinematic cartoon universe.
+  The protagonist is locked to the spherical white head + simple black eyes; identity across frames is silhouette, outfit and pose.
+  Secondary characters: simplified faces and same line/shading language; no hyper-realistic facial detail.
 
 camera_options:
   - wide shot
@@ -30,21 +28,30 @@ camera_options:
 camera_rule: "Do not repeat the same camera type in two consecutive images."
 
 extras_rule: |
-  Background extras must use the same flat stickman visual style.
-  Keep them small, simple and not individually detailed.
-  No realistic humans, no unique faces.
-  Use only clear role silhouettes and flat clothing colors.
+  Background extras use the same cinematic cartoon style: simple readable bodies, no photorealistic faces.
+  Keep them smaller and less detailed than the main subject.
 
 negative_prompt: >
   anime, manga, pixar, 3d render, realistic human, photorealistic,
-  overly detailed painting, hyper textured clothing, messy composition,
+  overly detailed painting, hyper textured skin, messy composition,
   duplicate characters, extra arms, extra legs, extra fingers, extra heads,
   text overlay, subtitles, UI, video player, controls, timeline, watermark,
   empty white background
+
+# Referencias de personaje (rutas relativas al raíz del proyecto).
+# Colocá tu PNG en references/character_reference/character_reference_front.png
+# Replicate: con REPLICATE_API_TOKEN, todas las escenas usan FLUX Kontext con este PNG (input_image) si el archivo existe.
+character_reference:
+  front: "references/character_reference/character_reference_front.png"
+  # side: "references/character_reference/character_reference_side.png"
+  # closeup: "references/character_reference/character_reference_closeup.png"
+
+# Opcional: sobrescribe la instrucción que se antepone al prompt en Kontext.
+# kontext_context_instruction: |
+#   ...
 
 # Tamaño por defecto para video 16:9 (se puede sobreescribir por proyecto)
 parametros_sd:
   width: 1920
   height: 1080
   steps: 25
-

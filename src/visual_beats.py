@@ -278,8 +278,8 @@ def generar_prompts_desde_guion(
     seg = segundos_por_imagen or float(get_duracion_por_imagen())
     escenas = dividir_en_escenas(guion_texto, segundos_por_imagen=seg)
     beats = generar_beats_para_escenas(escenas, tema=tema)
-    beat_prompts = prompts_para_beats(beats)
-    return [{"beat_id": b.beat_id, "prompt": p} for b, p in beat_prompts]
+    beat_prompts = prompts_para_beats(beats, video_theme=tema, project_id="compact")
+    return [{"beat_id": b.beat_id, "prompt": p, "gen_meta": gm} for b, p, gm in beat_prompts]
 
 
 def generar_subtitulos_srt(

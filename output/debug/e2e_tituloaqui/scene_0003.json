@@ -1,0 +1,143 @@
+{
+  "scene_index": 2,
+  "beat_id": 3,
+  "state_before": {
+    "current_location_id": "calle_oscura_con_neones",
+    "current_location_prompt": "calle oscura con neones",
+    "current_scene_type": "city_street",
+    "current_time_of_day": "noche",
+    "current_mood": "angry",
+    "current_characters": [
+      "protagonist"
+    ],
+    "protagonist_profile": {},
+    "wardrobe_state": {},
+    "last_camera": "medium shot",
+    "last_action": "se detiene un segundo, mira alrededor, la tensión aumenta, incertidumbre",
+    "last_prompt_summary": "calle oscura con neones — se detiene un segundo, mira alrededor, la tensión aumenta, incertidumbre",
+    "continuity_notes": [
+      "location_updated",
+      "camera_updated",
+      "camera_updated"
+    ],
+    "project_id": "tituloaqui",
+    "video_theme": "[TITULO_AQUI]"
+  },
+  "state_after": {
+    "current_location_id": "pasillo_del_edificio",
+    "current_location_prompt": "pasillo del edificio",
+    "current_scene_type": "generic_interior",
+    "current_time_of_day": "noche",
+    "current_mood": "calm",
+    "current_characters": [
+      "protagonist"
+    ],
+    "protagonist_profile": {},
+    "wardrobe_state": {},
+    "last_camera": "wide shot",
+    "last_action": "entra al edificio, camina rápido por el pasillo, pasos detrás",
+    "last_prompt_summary": "pasillo del edificio — entra al edificio, camina rápido por el pasillo, pasos detrás",
+    "continuity_notes": [
+      "location_updated",
+      "camera_updated",
+      "camera_updated",
+      "location_updated",
+      "camera_updated"
+    ],
+    "project_id": "tituloaqui",
+    "video_theme": "[TITULO_AQUI]"
+  },
+  "beat": {
+    "beat_id": 3,
+    "scene": 3,
+    "original_text": "Entra al edificio y se mete al pasillo; escucha pasos detrás y acelera el paso.",
+    "action": "entra al edificio, camina rápido por el pasillo, pasos detrás",
+    "emotion": "alarma",
+    "context": "",
+    "location": "pasillo del edificio",
+    "time_of_day": "noche",
+    "shot_role": "action",
+    "camera_type": "wide_shot",
+    "camera_position": "frontal",
+    "camera_distance": "media",
+    "importance": "normal",
+    "act": 1
+  },
+  "base_meta": {
+    "scene_type": "generic_interior",
+    "scene_characters": [
+      "protagonist"
+    ],
+    "location": "pasillo del edificio",
+    "action": "entra al edificio, camina rápido por el pasillo, pasos detrás",
+    "mood": "calm",
+    "key_visual": "walls, floor, door or window",
+    "camera": null,
+    "character_overrides": {},
+    "scene_mode": "present"
+  },
+  "enriched_meta": {
+    "scene_type": "generic_interior",
+    "scene_characters": [
+      "protagonist"
+    ],
+    "location": "pasillo del edificio",
+    "action": "entra al edificio, camina rápido por el pasillo, pasos detrás",
+    "mood": "calm",
+    "key_visual": "walls, floor, door or window",
+    "camera": "wide shot",
+    "character_overrides": {},
+    "scene_mode": "present",
+    "thematic_context": null,
+    "visual_device": "empty_room_tension",
+    "symbolic_tags": [
+      "empty_room_tension",
+      "empty_chair",
+      "single_lamp",
+      "door"
+    ],
+    "symbolic_descriptions": [
+      "empty room tension",
+      "empty chair facing the protagonist",
+      "single desk lamp as main light source",
+      "door"
+    ],
+    "narrative_representation_mode": "literal",
+    "scene_focus": "protagonist_face",
+    "camera_priority": "close up",
+    "_beat_camera_position": "frontal"
+  },
+  "resolved_context": {
+    "scene_index": 2,
+    "raw_location": "pasillo del edificio",
+    "resolved_location": "pasillo del edificio",
+    "location_changed": true,
+    "previous_location": "calle oscura con neones",
+    "raw_camera": "wide_shot",
+    "resolved_camera": "wide shot",
+    "previous_camera": "medium shot",
+    "action": "entra al edificio, camina rápido por el pasillo, pasos detrás",
+    "previous_action": "se detiene un segundo, mira alrededor, la tensión aumenta, incertidumbre",
+    "characters_present": [
+      "protagonist"
+    ],
+    "protagonist_locked_description": "CHARACTER LOCK (protagonist — do not change between shots unless script explicitly changes wardrobe):\nLocked appearance: teen body, casual_dark outfit, hoodie silhouette, blue_gray color identity.\nAllowed to vary: expression, pose, lighting angle.\nKeep same face design, head shape, body proportions and base outfit as previous shots in this story.",
+    "continuity_block": "CONTINUITY FROM PREVIOUS SCENE:\nPrevious scene context: calle oscura con neones — se detiene un segundo, mira alrededor, la tensión aumenta, incertidumbre.\nPrevious location was: calle oscura con neones.\nLocation has changed from the previous shot; show a new setting clearly while keeping the same protagonist design.\nKeep protagonist appearance unchanged from CHARACTER LOCK.\nCurrent scene progression: entra al edificio, camina rápido por el pasillo, pasos detrás",
+    "symbolic_overlay_allowed": true,
+    "symbolic_overlay_reason": "overlay compatible with scene_type",
+    "sanitized_symbolic_descriptions": [
+      "empty room tension",
+      "empty chair facing the protagonist",
+      "single desk lamp as main light source",
+      "door"
+    ],
+    "seed_material": "tituloaqui|3|pasillo_del_edificio|teen_body_casual_dark_outfit_hoodie_silhouette_blue_gray_color_identity",
+    "protagonist_signature": "teen body, casual_dark outfit, hoodie silhouette, blue_gray color identity"
+  },
+  "prompt_final": "STYLE LOCK:\nCinematic cartoon storyboard illustration, clean bold outlines, soft directional lighting.\nMain character: always the same design in every frame.\nLarge perfectly white spherical head (emoji-like); two simple black oval eyes; no realistic nose or mouth unless the scene needs a tiny simple mouth line.\nYoung-adult human body proportions (not a stick figure): same limb length, torso width and head scale in all scenes.\nDefault outfit unless the script overrides: dark zip hoodie (often open) over white tee, blue jeans, grey low-top sneakers.\nConsistent line thickness, readable silhouette, subtle shading for depth (not flat poster style, not 3D Pixar).\nBackgrounds: narrative and readable, with clear depth; match the same cartoon-cinematic lighting quality.\nNo photorealistic humans, no anime eyes, no 3D render look.\n\nCHARACTER LOCK (protagonist — do not change between shots unless script explicitly changes wardrobe):\nLocked appearance: teen body, casual_dark outfit, hoodie silhouette, blue_gray color identity.\nAllowed to vary: expression, pose, lighting angle.\nKeep same face design, head shape, body proportions and base outfit as previous shots in this story.\n\nCONTINUITY FROM PREVIOUS SCENE:\nPrevious scene context: calle oscura con neones — se detiene un segundo, mira alrededor, la tensión aumenta, incertidumbre.\nPrevious location was: calle oscura con neones.\nLocation has changed from the previous shot; show a new setting clearly while keeping the same protagonist design.\nKeep protagonist appearance unchanged from CHARACTER LOCK.\nCurrent scene progression: entra al edificio, camina rápido por el pasillo, pasos detrás\n\nCURRENT SCENE:\nLocation: pasillo del edificio.\nAction: entra al edificio, camina rápido por el pasillo, pasos detrás.\nMood: calm.\nKey visual element: walls, floor, door or window.\n\nNarrative device:\nempty_room_tension.\nRepresentation mode:\nliteral.\nScene focus:\nprotagonist_face.\n\nSYMBOLIC OVERLAY (compatible):\nempty room tension, empty chair facing the protagonist, single desk lamp as main light source, door.\n(overlay compatible with scene_type)\n\nCAMERA:\nwide shot (director note: wide_shot, position frontal).\n\nHARD RULES:\nOne clear narrative image.\nClear visual focus.\nNo empty background.\n16:9 frame.\nDo not contradict the continuity block or character lock.\n\nTheme:\ngeneric.",
+  "gen_meta": {
+    "seed_material": "tituloaqui|3|pasillo_del_edificio|teen_body_casual_dark_outfit_hoodie_silhouette_blue_gray_color_identity",
+    "location_id": "pasillo del edificio",
+    "resolved_camera": "wide shot"
+  }
+}

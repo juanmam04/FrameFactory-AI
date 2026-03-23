@@ -112,3 +112,17 @@ scene_devices:
       - door
       - long_shadows
 
+  dynamic_interaction:
+    preferred_elements:
+      - clear_body_gesture
+      - environmental_depth
+      - mid_action_pose
+      - readable_spatial_staging
+
+  group_interaction:
+    preferred_elements:
+      - multiple_characters_mid_action
+      - focal_interaction_between_subjects
+      - shared_environment_context
+      - clear_group_staging
+

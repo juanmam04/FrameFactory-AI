@@ -1,5 +1,6 @@
 """Carga de configuración: biblia visual y plantillas."""
 import json
+import os
 from pathlib import Path
 import yaml
 
@@ -100,6 +101,34 @@ def get_character_references() -> dict:
     """Devuelve rutas relativas a las imágenes de referencia del personaje."""
     vb = get_visual_bible()
     return vb.get("character_reference", {})
+
+
+def get_character_reference_mode() -> str:
+    """
+    Cómo interpretar el PNG del protagonista para Kontext.
+    ``identity_sheet`` (default): ancla identidad, no composición/fondo de la ficha.
+    ``scene_reference``: el input ya es una escena; no se añade el bloque anti–model-sheet.
+    """
+    from .kontext_prompt import normalize_character_reference_mode
+
+    return normalize_character_reference_mode(os.getenv("CHARACTER_REFERENCE_MODE"))
+
+
+def get_kontext_context_instruction() -> str:
+    """
+    Instrucción corta para modelos imagen+texto (ej. FLUX Kontext) cuando hay referencia de personaje.
+    Si no está en visual_bible, usa un texto por defecto alineado al style_lock actual.
+    """
+    vb = get_visual_bible()
+    raw = (vb.get("kontext_context_instruction") or "").strip()
+    if raw:
+        return raw
+    return (
+        "Cinematic cartoon storyboard style. Same visual language as the reference image. "
+        "Keep character identity from the reference (head shape, eyes, body proportions, line work, lighting). "
+        "Adapt pose, expression and outfit to this scene while keeping the character recognizable. "
+        "Clear readable action and location. No UI, no text, no photorealism."
+    )
 
 
 def get_visual_references() -> dict:

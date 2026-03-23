@@ -236,6 +236,8 @@ def _pick_scene_focus(base_meta: Dict[str, Any], visual_device: str) -> str:
 
 
 def _pick_camera_priority(scene_focus: str) -> str:
+    if scene_focus == "full_body_action":
+        return "medium shot"
     if scene_focus == "protagonist_face":
         return "close up"
     if scene_focus == "phone_screen":
@@ -281,4 +283,15 @@ def enrich_scene_visual_meta(base_meta: Dict[str, Any], video_theme: str | None 
 def enrich_beat_visual_meta(base_meta: Dict[str, Any], video_theme: str | None = None) -> Dict[str, Any]:
     """Igual que enrich_scene_visual_meta pero para beats."""
     return enrich_scene_visual_meta(base_meta, video_theme=video_theme)
+
+
+def refresh_symbolic_metadata(meta: Dict[str, Any]) -> Dict[str, Any]:
+    """Recalcula symbolic_tags y symbolic_descriptions tras cambiar ``visual_device``."""
+    m = dict(meta)
+    thematic = m.get("thematic_context")
+    vd = m.get("visual_device") or "literal"
+    tags = _build_symbolic_tags(thematic, vd)
+    m["symbolic_tags"] = tags
+    m["symbolic_descriptions"] = [_symbol_tag_to_phrase(tag) for tag in tags]
+    return m
 
