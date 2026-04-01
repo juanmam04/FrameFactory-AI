@@ -1,5 +1,6 @@
 """FASE 11: Script maestro – ejecuta todo el pipeline con un solo comando."""
 import argparse
+import os
 import re
 from pathlib import Path
 
@@ -12,14 +13,19 @@ except ImportError:
         return None
 from .script_generator import generar_guion, guardar_guion, count_words
 from .scene_splitter import dividir_en_escenas, escenas_a_texto_continuo, Escena
-from .prompt_builder import prompts_para_escenas, prompts_para_beats, emotion_to_expression_key, get_outfit_key_for_beat
-from .image_generator import generar_lote, OUTPUT_IMAGES
+from .prompt_builder import get_outfit_key_for_beat
+from .image_generator import generar_imagen, OUTPUT_IMAGES
 from .voice_generator import generar_voz
 from .video_assembler import montar_video
 from .regeneration import guardar_prompts_por_escena
 from .metadata_youtube import generar_metadata_completa
 from .history import guardar_en_historial
 from .visual_beats import generar_beats_para_escenas, guardar_beats, generar_subtitulos_srt
+from .frame_director import beats_a_frame_specs
+from .frame_prompt_builder import prompt_desde_frame_spec
+from .frame_spec import guardar_frame_specs
+from .frame_validator import validar_frame
+from .frame_regenerator import patch_framespec_para_regeneracion, build_corrective_prompt_from_reasons
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -124,6 +130,9 @@ def run(
     # Obtener segundos por imagen
     seg_por_img = segundos_por_imagen or 5.0
     
+    attempts_per_frame = int(os.getenv("ATTEMPTS_PER_FRAME", "4"))
+    if attempts_per_frame < 1:
+        attempts_per_frame = 1
     word_count = 0
     estimated_minutes = 0.0
     
@@ -180,33 +189,191 @@ def run(
 
     beats = generar_beats_para_escenas(escenas, tema=tema_para_desc, max_beats_total=max_beats_total)
     guardar_beats(beats, proy)
-    beats_con_prompts = prompts_para_beats(
-        beats, video_theme=tema_para_desc, project_id=proy
-    )
+    # V2: beat -> FrameSpec -> prompt; prompts JSON sigue llevando outfit/seed por compatibilidad con la UI
+    frame_specs = beats_a_frame_specs(beats)
+    guardar_frame_specs(frame_specs, proy)
 
-    # Adaptar beats → estructura Escena para reutilizar regeneración y montaje; expression_key y outfit_key para Kontext/outfit ref
     escenas_con_prompts: list[tuple[Escena, str, str | None, str, str]] = [
         (
             Escena(
-                numero=beat.beat_id,
-                texto=beat.original_text,
+                numero=spec.frame_id,
+                texto=spec.story_step or spec.action,
                 duracion_segundos=seg_por_img,
             ),
-            prompt,
-            emotion_to_expression_key(beat.emotion),
+            prompt_desde_frame_spec(spec),
+            spec.expression_key,
             get_outfit_key_for_beat(beat),
-            (gen_meta or {}).get("seed_material", ""),
+            "",
         )
-        for beat, prompt, gen_meta in beats_con_prompts
+        for spec, beat in zip(frame_specs, beats, strict=True)
     ]
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 
     lista_imagenes: list[Path] = []
     if not skip_imagenes:
         n_imgs = len(escenas_con_prompts)
-        print(f"🖼️ Generando {n_imgs} imágenes (puede tardar varios minutos)...")
-        lista_imagenes = generar_lote(escenas_con_prompts, subcarpeta=proy, width=width, height=height)
-        print(f"✅ Imágenes generadas: {len(lista_imagenes)}")
+        print(f"🖼️ Generando {n_imgs} imágenes (multi-attempts por frame: {attempts_per_frame})...")
+        carpeta_frames = OUTPUT_IMAGES / proy
+        carpeta_attempts = carpeta_frames / "_attempts"
+        carpeta_frames.mkdir(parents=True, exist_ok=True)
+        carpeta_attempts.mkdir(parents=True, exist_ok=True)
+        validas = 0
+        lista_imagenes = []
+        frame_metrics: list[dict] = []
+
+        def _candidate_rank(result) -> tuple[float, float, float, float]:
+            # Prioridad solicitada:
+            # 1) imágenes válidas
+            # 2) mayor event_match_score
+            # 3) mayor action_score
+            # 4) mayor score total
+            return (
+                1.0 if result.is_valid else 0.0,
+                float(result.event_match_score),
+                float(result.action_score),
+                float(result.score),
+            )
+
+        for idx, spec in enumerate(frame_specs):
+            current = carpeta_frames / f"escena_{spec.frame_id:04d}.png"
+            prev = carpeta_frames / f"escena_{spec.frame_id - 1:04d}.png" if spec.frame_id > 1 else None
+            best_result = None
+            best_path = None
+            total_attempts_done = 0
+            valid_attempts = 0
+            regenerated = False
+            hard_fail_event = False
+            event_fail_count = 0
+
+            # 1) Multi-generation inicial (N intentos)
+            for intento in range(1, attempts_per_frame + 1):
+                attempt_scene_num = spec.frame_id * 100 + intento
+                attempt_path = generar_imagen(
+                    prompt_desde_frame_spec(spec, attempt_index=intento, event_failures=event_fail_count),
+                    attempt_scene_num,
+                    carpeta_attempts,
+                    width=width,
+                    height=height,
+                    expression_key=spec.expression_key,
+                )
+                if not attempt_path:
+                    continue
+                total_attempts_done += 1
+                debug_name = carpeta_attempts / f"escena_{spec.frame_id:04d}_try{intento}.png"
+                try:
+                    debug_name.write_bytes(attempt_path.read_bytes())
+                    attempt_path = debug_name
+                except Exception:
+                    pass
+                result = validar_frame(spec=spec, image_path=attempt_path, prev_image_path=prev)
+                if float(result.event_match_score) < 0.80:
+                    event_fail_count += 1
+                if result.is_valid:
+                    valid_attempts += 1
+                if best_result is None or _candidate_rank(result) > _candidate_rank(best_result):
+                    best_result = result
+                    best_path = attempt_path
+                # Corte duro: si falla match de evento 2 veces, marcar FAIL real y no seguir generando basura.
+                if event_fail_count >= 2:
+                    hard_fail_event = True
+                    break
+
+            # 2) Si ninguna válida, regeneración semántica agresiva (máx 2 rondas)
+            if not hard_fail_event and (best_result is None or not best_result.is_valid):
+                reasons = best_result.reasons if best_result else ["no valid candidate generated"]
+                for _ in range(2):
+                    regenerated = True
+                    patched = patch_framespec_para_regeneracion(spec, reasons)
+                    corrective_prompt = build_corrective_prompt_from_reasons(reasons)
+                    frame_specs[idx] = patched
+
+                    local_best_res = None
+                    local_best_path = None
+                    for intento in range(1, attempts_per_frame + 1):
+                        attempt_scene_num = spec.frame_id * 1000 + 100 + intento
+                        attempt_path = generar_imagen(
+                            prompt_desde_frame_spec(
+                                patched,
+                                corrective_prompt=corrective_prompt,
+                                attempt_index=intento + 1,
+                                event_failures=event_fail_count,
+                            ),
+                            attempt_scene_num,
+                            carpeta_attempts,
+                            width=width,
+                            height=height,
+                            expression_key=patched.expression_key,
+                        )
+                        if not attempt_path:
+                            continue
+                        total_attempts_done += 1
+                        debug_name = carpeta_attempts / f"escena_{spec.frame_id:04d}_regen_try{intento}.png"
+                        try:
+                            debug_name.write_bytes(attempt_path.read_bytes())
+                            attempt_path = debug_name
+                        except Exception:
+                            pass
+                        result = validar_frame(spec=patched, image_path=attempt_path, prev_image_path=prev)
+                        if float(result.event_match_score) < 0.80:
+                            event_fail_count += 1
+                        if result.is_valid:
+                            valid_attempts += 1
+                        if local_best_res is None or _candidate_rank(result) > _candidate_rank(local_best_res):
+                            local_best_res = result
+                            local_best_path = attempt_path
+                        if event_fail_count >= 2:
+                            hard_fail_event = True
+                            break
+                    if hard_fail_event:
+                        break
+
+                    if local_best_res is not None and (best_result is None or _candidate_rank(local_best_res) > _candidate_rank(best_result)):
+                        best_result = local_best_res
+                        best_path = local_best_path
+                    if best_result is not None and best_result.is_valid:
+                        break
+                    reasons = best_result.reasons if best_result else reasons
+
+            # 3) Seleccionar la mejor (válida si existe, sino mayor score) y materializar archivo final del frame
+            if not hard_fail_event and best_path and best_path.exists():
+                current.write_bytes(best_path.read_bytes())
+                lista_imagenes.append(current)
+                if best_result and best_result.is_valid:
+                    validas += 1
+            elif hard_fail_event:
+                print(
+                    f"❌ Frame {spec.frame_id}: FAIL real por event_match_score < 0.8 en 2 intentos. "
+                    "Se detiene generación de basura para este frame."
+                )
+            frame_metrics.append(
+                {
+                    "frame": spec.frame_id,
+                    "attempts": total_attempts_done,
+                    "valid": valid_attempts,
+                    "best_score": float(best_result.score) if best_result else 0.0,
+                    "regenerated": regenerated,
+                    "hard_fail_event": hard_fail_event,
+                }
+            )
+            if best_result is not None:
+                print(
+                    f"Frame {spec.frame_id}: attempts={total_attempts_done} | "
+                    f"valid={valid_attempts} | best_score={best_result.score:.2f} | regenerated={regenerated} | hard_fail_event={hard_fail_event}"
+                )
+            else:
+                print(
+                    f"Frame {spec.frame_id}: attempts={total_attempts_done} | "
+                    f"valid={valid_attempts} | best_score=0.00 | regenerated={regenerated} | hard_fail_event={hard_fail_event}"
+                )
+
+            if on_progress_imagenes:
+                try:
+                    on_progress_imagenes(idx + 1, len(frame_specs))
+                except Exception:
+                    pass
+        guardar_frame_specs(frame_specs, proy)
+        print(f"✅ Frames válidos tras validación/regeneración: {validas}/{len(frame_specs)}")
+        print(f"✅ Imágenes finalistas generadas: {len(lista_imagenes)}")
     else:
         lista_imagenes = sorted((OUTPUT_IMAGES / proy).glob("escena_*.png"))
 

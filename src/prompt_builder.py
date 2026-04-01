@@ -34,13 +34,50 @@ from .storyboard_debug import (
     write_beat_debug_json,
 )
 
+# Mapeo emoción del beat → clave en character_reference (Kontext)
+_EMOTION_TO_EXPRESSION_KEY: dict[str, str] = {
+    "alegría": "happy",
+    "alegria": "happy",
+    "happy": "happy",
+    "joy": "happy",
+    "felicidad": "happy",
+    "determinación": "determined",
+    "determinacion": "determined",
+    "determined": "determined",
+    "sorpresa": "surprised",
+    "surprised": "surprised",
+    "sorprendido": "surprised",
+    "miedo": "scared",
+    "scared": "scared",
+    "fear": "scared",
+    "asustado": "scared",
+    "enojo": "angry",
+    "angry": "angry",
+    "ira": "angry",
+    "rabia": "angry",
+    "shock": "shocked",
+    "shocked": "shocked",
+    "neutral": "neutral",
+    "calma": "neutral",
+    "calm": "neutral",
+    "tensión": "neutral",
+    "tension": "neutral",
+    "intensidad": "neutral",
+    "conflicto": "neutral",
+    "duda": "neutral",
+    "decisión": "determined",
+    "decision": "determined",
+    "resolución": "neutral",
+    "resolucion": "neutral",
+}
+
 
 def emotion_to_expression_key(emotion: str | None) -> str | None:
-    """
-    Compatibilidad: antes devolvía una clave de expresión para Kontext.
-    En la nueva arquitectura no se usa, se mantiene firma y devuelve None.
-    """
-    return None
+    """Clave de referencia de expresión para Kontext (happy, determined, …) o None → usar front."""
+    if not (emotion or "").strip():
+        return None
+    e = emotion.strip().lower()
+    return _EMOTION_TO_EXPRESSION_KEY.get(e)
 
 
 def _camera_options() -> list[str]:

@@ -1164,6 +1164,14 @@ if tiene_video or es_revision_imagenes:
                                 st.session_state.video_path = video_path
                                 st.session_state.video_bytes = video_path.read_bytes()
                                 st.session_state.video_name = video_path.name
+                                # Guardar metadata y miniatura en session_state si existen,
+                                # igual que en el flujo de "Generar video completo".
+                                if metadata_path and metadata_path.exists():
+                                    st.session_state.metadata_path = metadata_path
+                                    st.session_state.metadata_text = metadata_path.read_text(encoding="utf-8")
+                                if thumbnail_path and thumbnail_path.exists():
+                                    st.session_state.thumbnail_path = thumbnail_path
+                                    st.session_state.thumbnail_bytes = thumbnail_path.read_bytes()
                                 st.session_state.modo_revision_imagenes = False
                                 st.success("Video generado con las imágenes aprobadas.")
                                 st.rerun()

@@ -74,7 +74,13 @@ def _montar_video_con_zoom_y_transiciones(
         "-pix_fmt", "yuv420p",
         str(video_solo),
     ])
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    try:
+        # Timeout de seguridad: si FFmpeg se cuelga (por filtros o archivos raros),
+        # no bloquear todo el pipeline; lanzamos error y el caller hará fallback a montaje estático.
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(f"FFmpeg (zoom+transiciones) excedió el tiempo límite: {e}")
+
     if result.returncode != 0:
         raise RuntimeError(f"FFmpeg (zoom+transiciones) falló: {result.stderr[:500]}")
 
