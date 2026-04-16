@@ -339,6 +339,8 @@ def _init_state() -> None:
     st.session_state.nav = "Dashboard"
     st.session_state.create_step = 1
     st.session_state.create_topic = ""
+    st.session_state.create_twist = ""
+    st.session_state.create_idea_pack = None
     st.session_state.create_duration = 4
     st.session_state.create_character = list(CHARACTERS.keys())[0]
     st.session_state.create_background = list(BACKGROUNDS.keys())[0]
@@ -474,6 +476,91 @@ def page_dashboard() -> None:
                     st.rerun()
 
 
+def _build_video_topic() -> str:
+    base = (st.session_state.get("create_topic") or "").strip()
+    twist = (st.session_state.get("create_twist") or "").strip()
+    if twist:
+        return f"{base}\n\nVariación o detalle extra: {twist}".strip()
+    return base
+
+
+def _heuristic_video_ideas(pm: dict, mem: str) -> list[dict[str, str]]:
+    niche = (pm.get("niche") or "").strip() or "tu nicho"
+    tone = (pm.get("tone") or "").strip() or "conversacional"
+    who = str((pm.get("audience") or {}).get("who") or "").strip() or "tu audiencia"
+    hook = (pm.get("hook_style") or "").strip() or "un gancho claro al inicio"
+    pillars = (pm.get("channel") or {}).get("content_pillars") or ""
+    lines = [
+        f"Video para {who}: explicar con ejemplos concretos por qué importa «{niche}», tono {tone}, con {hook}. Duración mental ~4 min.",
+        f"Historia en segunda persona dentro del universo de «{niche}»: un día que lo cambia todo, arco con tensión y cierre, tono {tone}.",
+        f"Listado accionable: 5 errores típicos en «{niche}» y cómo evitarlos; lenguaje directo, tono {tone}.",
+        f"Mito vs realidad sobre «{niche}»; confrontar creencias comunes con datos o escenas, tono {tone}, {hook}.",
+        f"Mini caso: un personaje (el espectador) enfrenta un obstáculo clásico de «{niche}» y muestra la lección sin moralina forzada.",
+    ]
+    if pillars.strip():
+        lines.append(f"Video alineado a pilares del canal ({pillars[:180]}…): propuesta concreta en «{niche}», tono {tone}.")
+    if mem.strip():
+        lines.append(
+            f"Video coherente con la línea de la sesión: {mem[:300].strip()}{'…' if len(mem) > 300 else ''} "
+            f"— encuadrá el tema «{niche}» con tono {tone}."
+        )
+    out: list[dict[str, str]] = []
+    for i, prompt in enumerate(lines[:7]):
+        short = prompt[:100] + ("…" if len(prompt) > 100 else "")
+        out.append({"title": f"Propuesta {i + 1}", "hook": short, "prompt": prompt})
+    return out
+
+
+def _ia_video_idea_pack(pm: dict, mem: str, messages: list[dict]) -> list[dict[str, str]]:
+    client = _get_openai_client()
+    if not client:
+        return _heuristic_video_ideas(pm, mem)
+    slim: list[dict[str, str]] = []
+    for m in messages[-16:]:
+        if not isinstance(m, dict) or m.get("role") not in ("user", "assistant"):
+            continue
+        c = str(m.get("content") or "")
+        if len(c) > 2400:
+            c = c[:2400] + "…"
+        slim.append({"role": m["role"], "content": c})
+    system = (
+        "Sos planner de contenidos YouTube. Español. Devolvé SOLO JSON con clave 'ideas' (array de 5 a 8 objetos). "
+        "Cada objeto: title (corto), hook (una línea), prompt (texto largo en español neutro para que otro modelo escriba el guion: "
+        "tema, público, tono, qué debe pasar en el video, duración aproximada en minutos, y CTA o cierre deseado). "
+        "Basate en el perfil, la memoria de sesión y el chat. Sin markdown fuera del JSON."
+    )
+    user = json.dumps(
+        {"perfil": merge_profile_disk(pm), "memoria_sesion": (mem or "")[:4000], "chat_reciente": slim},
+        ensure_ascii=False,
+    )
+    try:
+        r = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            temperature=0.55,
+            max_tokens=3500,
+            response_format={"type": "json_object"},
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        )
+        raw = (r.choices[0].message.content or "").strip()
+        parsed = parse_llm_json_object(raw) or {}
+        ideas = parsed.get("ideas")
+        if not isinstance(ideas, list) or not ideas:
+            return _heuristic_video_ideas(pm, mem)
+        out: list[dict[str, str]] = []
+        for it in ideas[:8]:
+            if not isinstance(it, dict):
+                continue
+            title = str(it.get("title") or "Idea").strip()[:80]
+            hook = str(it.get("hook") or "").strip()[:200]
+            prompt = str(it.get("prompt") or "").strip()
+            if len(prompt) < 40:
+                continue
+            out.append({"title": title, "hook": hook or prompt[:120], "prompt": prompt})
+        return out if out else _heuristic_video_ideas(pm, mem)
+    except Exception:
+        return _heuristic_video_ideas(pm, mem)
+
+
 def _pick_card(title: str, options: list[str], state_key: str, fmt=None) -> None:
     st.markdown(f"#### {title}")
     cols = st.columns(min(4, len(options)))
@@ -495,18 +582,91 @@ def page_create() -> None:
     st.progress((st.session_state.create_step - 1) / 3)
 
     if st.session_state.create_step == 1:
-        st.markdown("### Tu idea")
+        pm = merge_profile_disk(st.session_state.creative_profile)
+        mem = str(st.session_state.get("session_memory_summary") or "")
+
+        st.markdown("### 1 · Contexto de esta sesión")
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            _card_metric("Nicho", (pm.get("niche") or "—")[:36] or "—")
+        with c2:
+            _card_metric("Tono", (pm.get("tone") or "—")[:36] or "—")
+        with c3:
+            _card_metric("Hook", (pm.get("hook_style") or "—")[:36] or "—")
+        with c4:
+            vid = pm.get("video") or {}
+            _card_metric("Formato", str(vid.get("primary_format") or "—")[:28])
+        with st.expander("Perfil resumido (audiencia, visual, montaje)", expanded=False):
+            st.markdown(f"**Público:** {(pm.get('audience') or {}).get('who') or '—'}")
+            st.markdown(f"**Pilares:** {(pm.get('channel') or {}).get('content_pillars') or '—'}")
+            st.markdown(f"**Look:** {(pm.get('visual') or {}).get('look') or '—'}")
+            st.markdown(f"**Montaje:** {(pm.get('editing') or {}).get('notes_for_ai_director') or '—'}")
+        if mem.strip():
+            with st.expander("Memoria larga de la sesión (IA)", expanded=False):
+                st.write(mem[:6000])
+        elif not (pm.get("niche") or "").strip() and not (pm.get("tone") or "").strip():
+            st.info("Si el perfil está vacío, andá a **Perfil** y charlá con el asistente o completá el formulario: así las sugerencias serán mucho más acertadas.")
+
+        st.markdown("### 2 · Ideas sugeridas para el próximo video")
+        st.caption("Generamos propuestas con tu perfil, la memoria de sesión y el chat reciente. Podés usar una tal cual o editarla abajo.")
+        g1, g2, g3 = st.columns([1, 1, 2])
+        with g1:
+            if st.button("Generar ideas con IA", type="primary", use_container_width=True, key="saas_gen_ideas"):
+                st.session_state.create_idea_pack = _ia_video_idea_pack(
+                    pm, mem, st.session_state.agent_messages
+                )
+                st.rerun()
+        with g2:
+            if st.button("Ideas rápidas (sin API)", use_container_width=True, key="saas_heur_ideas"):
+                st.session_state.create_idea_pack = _heuristic_video_ideas(pm, mem)
+                st.rerun()
+        with g3:
+            if st.button("Ir a Perfil", use_container_width=True, key="saas_goto_prof"):
+                st.session_state.nav = "Profile"
+                st.rerun()
+
+        pack = st.session_state.get("create_idea_pack")
+        if isinstance(pack, list) and pack:
+            for row_start in range(0, len(pack), 2):
+                cols = st.columns(2)
+                for j in range(2):
+                    idx = row_start + j
+                    if idx >= len(pack):
+                        break
+                    it = pack[idx]
+                    with cols[j]:
+                        st.markdown(f"**{it.get('title', 'Idea')}**")
+                        st.caption(it.get("hook", ""))
+                        with st.expander("Ver prompt completo"):
+                            st.write(it.get("prompt", ""))
+                        if st.button("Usar esta idea", key=f"use_idea_{idx}", use_container_width=True):
+                            st.session_state.create_topic = str(it.get("prompt") or "")
+                            st.session_state.create_twist = ""
+                            st.rerun()
+
+        st.markdown("### 3 · Tema final del video (obligatorio)")
+        st.caption(
+            "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** vas a elegir personaje, fondo, voz, duración objetivo, música y SFX — no hace falta repetir eso acá."
+        )
         idea = st.text_area(
-            " ",
+            "Tema / brief para el guion",
             value=st.session_state.create_topic,
-            height=220,
-            placeholder="Ej.: mini historias de terror narradas, 5 minutos, tono cinematográfico…",
-            label_visibility="collapsed",
+            height=200,
+            placeholder="Ej.: historia de terror en segunda persona, 5 minutos, final agridulce…",
+            help="Podés partir de una sugerencia del bloque 2 y editarla.",
         )
         st.session_state.create_topic = idea
+        twist = st.text_input(
+            "Variación o detalle extra (opcional)",
+            value=st.session_state.get("create_twist", ""),
+            placeholder="Ej.: mencionar producto X, época de los 90, final abierto…",
+        )
+        st.session_state.create_twist = twist
+
+        combined = _build_video_topic()
         _, r = st.columns([3, 1])
         with r:
-            if st.button("Siguiente", type="primary", disabled=not idea.strip(), use_container_width=True):
+            if st.button("Siguiente", type="primary", disabled=not combined.strip(), use_container_width=True):
                 st.session_state.create_step = 2
                 st.rerun()
 
@@ -605,6 +765,7 @@ def page_create() -> None:
 
     else:
         st.markdown("### Listo para generar")
+        topic_final = _build_video_topic()
         ch = get_character(st.session_state.create_character)
         bgm_note = "No"
         if st.session_state.get("create_use_bgm"):
@@ -616,7 +777,7 @@ def page_create() -> None:
                 bgm_note = "Sí (sin pista; revisá carpeta o .env)"
         sfx_note = "Sí" if st.session_state.get("create_use_sfx") and st.session_state.get("create_safe_sfx_path") else "No"
         st.markdown(
-            f"**Idea:** {st.session_state.create_topic[:200]}\n\n"
+            f"**Tema (guion):** {topic_final[:320]}{'…' if len(topic_final) > 320 else ''}\n\n"
             f"**Personaje:** {ch.get('name')} · **Fondo:** {st.session_state.create_background} · "
             f"**Voz:** {st.session_state.create_voice} · **Preset:** {st.session_state.create_preset} · "
             f"**Duración:** {st.session_state.create_duration} min\n\n"
@@ -634,7 +795,7 @@ def page_create() -> None:
                 _append_project(
                     {
                         "id": pid,
-                        "topic": st.session_state.create_topic.strip(),
+                        "topic": topic_final,
                         "status": "rendering",
                         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
                         "video_path": "",
@@ -653,7 +814,7 @@ def page_create() -> None:
                 )
                 st.session_state.render = {
                     "project_id": pid,
-                    "topic": st.session_state.create_topic.strip(),
+                    "topic": topic_final,
                     "holder": [None],
                     "err": [None],
                     "started": False,

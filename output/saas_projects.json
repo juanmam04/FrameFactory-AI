@@ -1,5 +1,23 @@
 [
   {
+    "id": "20260416181331",
+    "topic": "En este video, exploraremos la historia de un joven que se ve envuelto en el mundo del crimen organizado tras una decisión desesperada. El público objetivo son aquellos amantes del cine y las narrativas intensas. El tono será directo y envolvente. El video debe narrar cómo el protagonista, enfrentando una situación crítica, elige un camino oscuro que lo lleva a convertirse en un líder de una organización criminal. La duración aproximada será de 15 minutos, y se cerrará con una invitación a reflexionar sobre las decisiones que tomamos y sus consecuencias.",
+    "status": "rendering",
+    "created_at": "2026-04-16 18:13",
+    "video_path": "",
+    "character_id": "cartoon_biz_1",
+    "background_id": "dark_studio",
+    "voice_id": "male_sharp",
+    "duration_target_min": 4,
+    "preset": "clean_youtube",
+    "use_bgm": true,
+    "use_sfx": false,
+    "safe_music_path": null,
+    "safe_sfx_path": null,
+    "use_env_music": false,
+    "session_id": "20260416_180807_d268a985"
+  },
+  {
     "id": "20260414035957",
     "topic": "Why most people fail at making money",
     "status": "ready",
