@@ -13,7 +13,7 @@ PyYAML>=6.0
 pydub>=0.25.0
 
 # Frontend
-streamlit>=1.28.0
+streamlit>=1.41.0
 
 # Imágenes (ComfyUI, Replicate FLUX)
 Pillow>=10.0.0

@@ -1,14 +1,11 @@
 # Visual Bible – cartoon cinematográfico + referencia de personaje (Kontext / prompts)
 
 style_lock: |
-  Cinematic cartoon storyboard illustration, clean bold outlines, soft directional lighting.
-  Main character: always the same design in every frame.
-  Large perfectly white spherical head (emoji-like); two simple black oval eyes; no realistic nose or mouth unless the scene needs a tiny simple mouth line.
-  Young-adult human body proportions (not a stick figure): same limb length, torso width and head scale in all scenes.
-  Default outfit unless the script overrides: dark zip hoodie (often open) over white tee, blue jeans, grey low-top sneakers.
-  Consistent line thickness, readable silhouette, subtle shading for depth (not flat poster style, not 3D Pixar).
-  Backgrounds: narrative and readable, with clear depth; match the same cartoon-cinematic lighting quality.
-  No photorealistic humans, no anime eyes, no 3D render look.
+  Cinematic 2D storyboard / explainer style: clean bold outlines, flat or soft cel shading, readable silhouette.
+  Protagonist is ALWAYS the same stick-figure / minimalist design as the reference image: large white round head, simple black eyes (dots or ovals), thin limbs, same body scale in every shot.
+  When Replicate uses a character reference PNG (Kontext), copy that exact head shape, eye style, line weight and outfit colors—do not invent a different face or body type.
+  Backgrounds: narrative and readable with depth; match the same 2D cartoon lighting language.
+  No photorealistic humans, no anime eyes, no 3D Pixar render look.
 
 character_universe_rule: |
   All characters share the same cinematic cartoon universe.
@@ -36,15 +33,15 @@ negative_prompt: >
   overly detailed painting, hyper textured skin, messy composition,
   duplicate characters, extra arms, extra legs, extra fingers, extra heads,
   text overlay, subtitles, UI, video player, controls, timeline, watermark,
-  empty white background
+  empty white background, letterboxing, black bars, pillarboxing, widescreen mattes
 
 # Referencias de personaje (rutas relativas al raíz del proyecto).
-# Colocá tu PNG en references/character_reference/character_reference_front.png
-# Replicate: con REPLICATE_API_TOKEN, todas las escenas usan FLUX Kontext con este PNG (input_image) si el archivo existe.
+# La app Streamlit guarda subidas en character_reference/ — estas rutas deben coincidir.
+# Replicate: con REPLICATE_API_TOKEN, Kontext usa este PNG (input_image) si el archivo existe.
 character_reference:
-  front: "references/character_reference/character_reference_front.png"
-  # side: "references/character_reference/character_reference_side.png"
-  # closeup: "references/character_reference/character_reference_closeup.png"
+  front: "character_reference/character_reference_front.png"
+  side: "character_reference/character_reference_side.png"
+  # closeup: "character_reference/character_reference_closeup.png"
 
 # Opcional: sobrescribe la instrucción que se antepone al prompt en Kontext.
 # kontext_context_instruction: |

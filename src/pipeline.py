@@ -2,6 +2,9 @@
 import argparse
 import os
 import re
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 from .config_loader import BASE, get_subtitle_styles, get_visual_bible
@@ -14,7 +17,7 @@ except ImportError:
 from .script_generator import generar_guion, guardar_guion, count_words
 from .scene_splitter import dividir_en_escenas, escenas_a_texto_continuo, Escena
 from .prompt_builder import get_outfit_key_for_beat
-from .image_generator import generar_imagen, OUTPUT_IMAGES
+from .image_generator import OUTPUT_IMAGES
 from .voice_generator import generar_voz
 from .video_assembler import montar_video
 from .regeneration import guardar_prompts_por_escena
@@ -24,8 +27,10 @@ from .visual_beats import generar_beats_para_escenas, guardar_beats, generar_sub
 from .frame_director import beats_a_frame_specs
 from .frame_prompt_builder import prompt_desde_frame_spec
 from .frame_spec import guardar_frame_specs
-from .frame_validator import validar_frame
-from .frame_regenerator import patch_framespec_para_regeneracion, build_corrective_prompt_from_reasons
+from .frame_image_pipeline import generar_imagenes_desde_frame_specs
+from .catalog_service import get_character, get_background, get_voice, ensure_catalog_dirs
+from .scene_planner import plan_scenes
+from .character_video_provider import render_block
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -62,10 +67,10 @@ def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float)
 def sanitizar_nombre_proyecto(nombre: str) -> str:
     """
     Sanitiza el nombre del proyecto eliminando caracteres inválidos para Windows.
-    Caracteres inválidos: < > : " | ? * \
+    Caracteres inválidos: < > : " | ? * \\ /
     """
-    # Caracteres inválidos en Windows
-    caracteres_invalidos = r'[<>:"|?*\\]'
+    # Caracteres inválidos en Windows (y / para rutas seguras en cualquier SO)
+    caracteres_invalidos = r'[<>:"|?*\\/]'
     # Reemplazar caracteres inválidos con guión bajo
     nombre_limpio = re.sub(caracteres_invalidos, '_', nombre)
     # Reemplazar espacios múltiples con uno solo
@@ -108,7 +113,7 @@ def run(
     Pipeline completo:
     Entrada: tema (para generar guion) o ruta a guion existente.
     Salida: (video_path, metadata_path, thumbnail_path, info_dict)
-    - info_dict contiene: word_count, estimated_minutes
+    - info_dict contiene: word_count, estimated_minutes, frame_metrics (si se generaron imágenes)
     """
     # Compatibilidad con parámetros legacy: convertir duración a palabras
     if target_words is None:
@@ -210,170 +215,16 @@ def run(
     guardar_prompts_por_escena(escenas_con_prompts, proy)
 
     lista_imagenes: list[Path] = []
+    frame_metrics: list[dict] = []
     if not skip_imagenes:
-        n_imgs = len(escenas_con_prompts)
-        print(f"🖼️ Generando {n_imgs} imágenes (multi-attempts por frame: {attempts_per_frame})...")
-        carpeta_frames = OUTPUT_IMAGES / proy
-        carpeta_attempts = carpeta_frames / "_attempts"
-        carpeta_frames.mkdir(parents=True, exist_ok=True)
-        carpeta_attempts.mkdir(parents=True, exist_ok=True)
-        validas = 0
-        lista_imagenes = []
-        frame_metrics: list[dict] = []
-
-        def _candidate_rank(result) -> tuple[float, float, float, float]:
-            # Prioridad solicitada:
-            # 1) imágenes válidas
-            # 2) mayor event_match_score
-            # 3) mayor action_score
-            # 4) mayor score total
-            return (
-                1.0 if result.is_valid else 0.0,
-                float(result.event_match_score),
-                float(result.action_score),
-                float(result.score),
-            )
-
-        for idx, spec in enumerate(frame_specs):
-            current = carpeta_frames / f"escena_{spec.frame_id:04d}.png"
-            prev = carpeta_frames / f"escena_{spec.frame_id - 1:04d}.png" if spec.frame_id > 1 else None
-            best_result = None
-            best_path = None
-            total_attempts_done = 0
-            valid_attempts = 0
-            regenerated = False
-            hard_fail_event = False
-            event_fail_count = 0
-
-            # 1) Multi-generation inicial (N intentos)
-            for intento in range(1, attempts_per_frame + 1):
-                attempt_scene_num = spec.frame_id * 100 + intento
-                attempt_path = generar_imagen(
-                    prompt_desde_frame_spec(spec, attempt_index=intento, event_failures=event_fail_count),
-                    attempt_scene_num,
-                    carpeta_attempts,
-                    width=width,
-                    height=height,
-                    expression_key=spec.expression_key,
-                )
-                if not attempt_path:
-                    continue
-                total_attempts_done += 1
-                debug_name = carpeta_attempts / f"escena_{spec.frame_id:04d}_try{intento}.png"
-                try:
-                    debug_name.write_bytes(attempt_path.read_bytes())
-                    attempt_path = debug_name
-                except Exception:
-                    pass
-                result = validar_frame(spec=spec, image_path=attempt_path, prev_image_path=prev)
-                if float(result.event_match_score) < 0.80:
-                    event_fail_count += 1
-                if result.is_valid:
-                    valid_attempts += 1
-                if best_result is None or _candidate_rank(result) > _candidate_rank(best_result):
-                    best_result = result
-                    best_path = attempt_path
-                # Corte duro: si falla match de evento 2 veces, marcar FAIL real y no seguir generando basura.
-                if event_fail_count >= 2:
-                    hard_fail_event = True
-                    break
-
-            # 2) Si ninguna válida, regeneración semántica agresiva (máx 2 rondas)
-            if not hard_fail_event and (best_result is None or not best_result.is_valid):
-                reasons = best_result.reasons if best_result else ["no valid candidate generated"]
-                for _ in range(2):
-                    regenerated = True
-                    patched = patch_framespec_para_regeneracion(spec, reasons)
-                    corrective_prompt = build_corrective_prompt_from_reasons(reasons)
-                    frame_specs[idx] = patched
-
-                    local_best_res = None
-                    local_best_path = None
-                    for intento in range(1, attempts_per_frame + 1):
-                        attempt_scene_num = spec.frame_id * 1000 + 100 + intento
-                        attempt_path = generar_imagen(
-                            prompt_desde_frame_spec(
-                                patched,
-                                corrective_prompt=corrective_prompt,
-                                attempt_index=intento + 1,
-                                event_failures=event_fail_count,
-                            ),
-                            attempt_scene_num,
-                            carpeta_attempts,
-                            width=width,
-                            height=height,
-                            expression_key=patched.expression_key,
-                        )
-                        if not attempt_path:
-                            continue
-                        total_attempts_done += 1
-                        debug_name = carpeta_attempts / f"escena_{spec.frame_id:04d}_regen_try{intento}.png"
-                        try:
-                            debug_name.write_bytes(attempt_path.read_bytes())
-                            attempt_path = debug_name
-                        except Exception:
-                            pass
-                        result = validar_frame(spec=patched, image_path=attempt_path, prev_image_path=prev)
-                        if float(result.event_match_score) < 0.80:
-                            event_fail_count += 1
-                        if result.is_valid:
-                            valid_attempts += 1
-                        if local_best_res is None or _candidate_rank(result) > _candidate_rank(local_best_res):
-                            local_best_res = result
-                            local_best_path = attempt_path
-                        if event_fail_count >= 2:
-                            hard_fail_event = True
-                            break
-                    if hard_fail_event:
-                        break
-
-                    if local_best_res is not None and (best_result is None or _candidate_rank(local_best_res) > _candidate_rank(best_result)):
-                        best_result = local_best_res
-                        best_path = local_best_path
-                    if best_result is not None and best_result.is_valid:
-                        break
-                    reasons = best_result.reasons if best_result else reasons
-
-            # 3) Seleccionar la mejor (válida si existe, sino mayor score) y materializar archivo final del frame
-            if not hard_fail_event and best_path and best_path.exists():
-                current.write_bytes(best_path.read_bytes())
-                lista_imagenes.append(current)
-                if best_result and best_result.is_valid:
-                    validas += 1
-            elif hard_fail_event:
-                print(
-                    f"❌ Frame {spec.frame_id}: FAIL real por event_match_score < 0.8 en 2 intentos. "
-                    "Se detiene generación de basura para este frame."
-                )
-            frame_metrics.append(
-                {
-                    "frame": spec.frame_id,
-                    "attempts": total_attempts_done,
-                    "valid": valid_attempts,
-                    "best_score": float(best_result.score) if best_result else 0.0,
-                    "regenerated": regenerated,
-                    "hard_fail_event": hard_fail_event,
-                }
-            )
-            if best_result is not None:
-                print(
-                    f"Frame {spec.frame_id}: attempts={total_attempts_done} | "
-                    f"valid={valid_attempts} | best_score={best_result.score:.2f} | regenerated={regenerated} | hard_fail_event={hard_fail_event}"
-                )
-            else:
-                print(
-                    f"Frame {spec.frame_id}: attempts={total_attempts_done} | "
-                    f"valid={valid_attempts} | best_score=0.00 | regenerated={regenerated} | hard_fail_event={hard_fail_event}"
-                )
-
-            if on_progress_imagenes:
-                try:
-                    on_progress_imagenes(idx + 1, len(frame_specs))
-                except Exception:
-                    pass
-        guardar_frame_specs(frame_specs, proy)
-        print(f"✅ Frames válidos tras validación/regeneración: {validas}/{len(frame_specs)}")
-        print(f"✅ Imágenes finalistas generadas: {len(lista_imagenes)}")
+        lista_imagenes, frame_metrics, frame_specs = generar_imagenes_desde_frame_specs(
+            frame_specs,
+            proy,
+            width=width,
+            height=height,
+            attempts_per_frame=attempts_per_frame,
+            on_progress_imagenes=on_progress_imagenes,
+        )
     else:
         lista_imagenes = sorted((OUTPUT_IMAGES / proy).glob("escena_*.png"))
 
@@ -538,6 +389,7 @@ def run(
         "duracion_audio_segundos": duracion_audio_segundos,
         "velocidad_voz_usada": velocidad_voz,
         "palabras_narracion": palabras_narracion,
+        "frame_metrics": frame_metrics,
     }
     
     # Guardar en historial (con guion completo, no cortado)
@@ -564,6 +416,118 @@ def run(
     return video_path, metadata_path, thumbnail_path, info_dict
 
 
+def run_saas_mvp(topic: str) -> Path:
+    """
+    MVP SaaS mínimo:
+    guion -> bloques -> audio -> clips por bloque (imagen fija + audio) -> concat final.
+    """
+    print("🚀 [MVP] Iniciando run_saas_mvp...")
+    if not topic or not topic.strip():
+        raise ValueError("topic es obligatorio para run_saas_mvp.")
+
+    # ─── Estructura mínima ───────────────────────────────────────────────────
+    output_dir = BASE / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    chars_dir, bgs_dir = ensure_catalog_dirs()
+    _ = bgs_dir  # catálogo requerido aunque en MVP no compongamos fondo en el clip
+
+    # ─── Catálogo fijo del MVP ───────────────────────────────────────────────
+    character = get_character("cartoon_biz_1")
+    background = get_background("dark_studio")
+    voice = get_voice("male_sharp")
+    print(f"🎭 [MVP] Character: {character['id']}")
+    print(f"🖼️ [MVP] Background catalog: {background['id']}")
+    print(f"🎙️ [MVP] Voice catalog: {voice['id']} ({voice['provider']})")
+
+    # Crear personaje placeholder si no existe (garantiza ejecución determinista del MVP)
+    character_img = BASE / character["base_image_uri"]
+    if not character_img.exists():
+        print(f"⚠️ [MVP] No existe {character_img}; creando placeholder.")
+        from PIL import Image, ImageDraw
+
+        character_img.parent.mkdir(parents=True, exist_ok=True)
+        img = Image.new("RGB", (1280, 720), (24, 24, 24))
+        draw = ImageDraw.Draw(img)
+        draw.ellipse((500, 120, 780, 400), fill=(255, 255, 255), outline=(0, 0, 0), width=6)
+        draw.text((430, 440), "Business Cartoon MVP", fill=(230, 230, 230))
+        img.save(character_img)
+    if not character_img.exists():
+        raise FileNotFoundError(f"[MVP] No se pudo preparar imagen de personaje: {character_img}")
+
+    # ─── Script y escenas ────────────────────────────────────────────────────
+    print("📝 [MVP] Generando guion...")
+    script_text, word_count, _mins = generar_guion(
+        tema=topic.strip(),
+        target_words=420,  # ~3 min base
+        plantilla="explicativo",
+        segundos_por_imagen=6.0,
+    )
+    print(f"📊 [MVP] Guion generado: {word_count} palabras")
+
+    blocks = plan_scenes(script_text)
+    if not blocks:
+        raise RuntimeError("[MVP] plan_scenes devolvió 0 bloques.")
+    print(f"🎬 [MVP] Bloques: {len(blocks)}")
+
+    # ─── Voz única del proyecto ──────────────────────────────────────────────
+    audio_path = generar_voz(script_text, nombre_archivo="saas_mvp_narracion", velocidad=1.0)
+    if not audio_path.exists() or audio_path.stat().st_size == 0:
+        raise RuntimeError(f"[MVP] Audio inválido o vacío: {audio_path}")
+    print(f"🔊 [MVP] Audio generado: {audio_path.resolve()}")
+
+    # ─── Clips por bloque ────────────────────────────────────────────────────
+    clips: list[Path] = []
+    for i, block in enumerate(blocks, start=1):
+        clip = output_dir / f"clip_{i:04d}.mp4"
+        print(f"🎞️ [MVP] Render bloque {i}/{len(blocks)} -> {clip.name}")
+        render_block(
+            block=block,
+            audio_path=audio_path,
+            character_image=character_img,
+            output_path=clip,
+        )
+        if not clip.exists() or clip.stat().st_size == 0:
+            raise RuntimeError(f"[MVP] Clip inválido: {clip}")
+        clips.append(clip)
+
+    if not clips:
+        raise RuntimeError("[MVP] No se generaron clips.")
+
+    # ─── Concat final ────────────────────────────────────────────────────────
+    if not shutil.which("ffmpeg"):
+        raise RuntimeError("[MVP] FFmpeg no está instalado o no está en PATH.")
+    list_file = output_dir / "clips.txt"
+    with open(list_file, "w", encoding="utf-8") as f:
+        for c in clips:
+            f.write(f"file '{c.resolve()}'\n")
+
+    final_path = output_dir / "final.mp4"
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        str(list_file.resolve()),
+        "-c",
+        "copy",
+        str(final_path.resolve()),
+    ]
+    print(f"🏁 [MVP] Concatenando clips en {final_path.resolve()}...")
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        msg = (e.stderr or e.stdout or str(e))[-500:]
+        raise RuntimeError(f"[MVP] Error en concat final FFmpeg: {msg}") from e
+
+    if not final_path.exists() or final_path.stat().st_size == 0:
+        raise RuntimeError(f"[MVP] Video final no generado correctamente: {final_path}")
+    print(f"✅ [MVP] Video final listo: {final_path.resolve()}")
+    return final_path
+
+
 def main():
     parser = argparse.ArgumentParser(description="FrameFactory-AI: pipeline de video desde guion o tema")
     g = parser.add_mutually_exclusive_group(required=True)
@@ -578,7 +542,7 @@ def main():
     args = parser.parse_args()
 
     musica = args.musica if args.musica and args.musica.exists() else None
-    video_path, metadata_path = run(
+    video_path, metadata_path, thumbnail_path, info_dict = run(
         tema=args.tema,
         guion_path=args.guion,
         duracion_min=args.duracion,
@@ -591,7 +555,14 @@ def main():
     print(f"Video generado: {video_path}")
     if metadata_path:
         print(f"Metadata YouTube: {metadata_path}")
+    if thumbnail_path:
+        print(f"Miniatura: {thumbnail_path}")
+    if info_dict.get("frame_metrics"):
+        print(f"Métricas por frame: {len(info_dict['frame_metrics'])} entradas")
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        main()
+    else:
+        run_saas_mvp("Why most people fail at making money")

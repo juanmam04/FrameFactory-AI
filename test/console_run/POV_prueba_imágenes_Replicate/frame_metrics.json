@@ -1,0 +1,10 @@
+[
+  {
+    "frame": 1,
+    "attempts": 3,
+    "valid": 0,
+    "best_score": 0.49,
+    "regenerated": true,
+    "hard_fail_event": true
+  }
+]

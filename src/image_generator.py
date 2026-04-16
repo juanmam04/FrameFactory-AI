@@ -1,6 +1,7 @@
 """FASE 6: Generación de imágenes con ComfyUI (local o RunPod)."""
 import os
 import shutil
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -56,12 +57,50 @@ REPLICATE_MODEL_TEXT = (
 REPLICATE_MODEL_KONTEXT = os.getenv(
     "REPLICATE_IMAGE_MODEL_WITH_REF", "black-forest-labs/flux-kontext-dev"
 ).strip()
-# Si hay character_reference en visual_bible pero falta el archivo, fallar en lugar de texto solo.
-REPLICATE_FORCE_KONTEXT = os.getenv("REPLICATE_FORCE_KONTEXT", "1").strip().lower() not in (
+# Si hay character_reference en visual_bible: preferir Kontext cuando el PNG existe.
+# Si las rutas están pero el archivo no está en disco: fallback a FLUX solo texto (un aviso, no error).
+REPLICATE_FORCE_KONTEXT = os.getenv("REPLICATE_FORCE_KONTEXT", "0").strip().lower() not in (
     "0",
     "false",
     "no",
 )
+_warned_kontext_missing_ref: bool = False
+
+# Replicate (cuenta con poco crédito): ~6 predicciones/min y burst 1 → espaciar inicios de request.
+_replicate_spacing_lock = threading.Lock()
+_replicate_last_prediction_mono: float = 0.0
+
+
+def _replicate_min_interval_sec() -> float:
+    """Segundos mínimos entre el inicio de cada predicción. Default 11s si no configurás nada (≈6/min)."""
+    raw = os.getenv("REPLICATE_MIN_INTERVAL_SEC")
+    if raw is not None and str(raw).strip() != "":
+        try:
+            return max(0.0, float(raw))
+        except ValueError:
+            pass
+    raw2 = os.getenv("REPLICATE_INTER_FRAME_DELAY_SEC")
+    if raw2 is not None and str(raw2).strip() != "":
+        try:
+            return max(0.0, float(raw2))
+        except ValueError:
+            pass
+    return 11.0
+
+
+def _replicate_spacing_wait() -> None:
+    """Evita 429 al encadenar muchas escenas; no afecta a ComfyUI."""
+    global _replicate_last_prediction_mono
+    interval = _replicate_min_interval_sec()
+    if interval <= 0:
+        return
+    with _replicate_spacing_lock:
+        now = time.monotonic()
+        if _replicate_last_prediction_mono > 0:
+            wait = interval - (now - _replicate_last_prediction_mono)
+            if wait > 0:
+                time.sleep(wait)
+        _replicate_last_prediction_mono = time.monotonic()
 
 
 def _replicate_text_model_input(prompt: str, aspect_ratio: str) -> dict:
@@ -509,8 +548,50 @@ def _protagonist_ref_misconfigured_message() -> str | None:
             return None
     first = configured[0]
     return (
-        "Replicate Kontext: en visual_bible hay character_reference pero no existe ningún PNG en disco "
-        f"(ej. {first}). Colocá el archivo o poné REPLICATE_FORCE_KONTEXT=0 para generar sin referencia."
+        "visual_bible define character_reference pero ningún PNG válido en disco "
+        f"(ej. {BASE / first}). Colocá el archivo en esa ruta o quitá las entradas vacías en la bible."
+    )
+
+
+def _replicate_run_with_retry(run_fn, max_retries: int | None = None):
+    """
+    Replicate suele responder 429 con poco crédito o burst bajo; reintenta con backoff.
+    REPLICATE_MAX_RETRIES (default 6), REPLICATE_RETRY_BASE_SEC (default 12).
+    """
+    if max_retries is None:
+        max_retries = int(os.getenv("REPLICATE_MAX_RETRIES", "6"))
+    base = float(os.getenv("REPLICATE_RETRY_BASE_SEC", "15"))
+    last_err: Exception | None = None
+    for attempt in range(max_retries):
+        try:
+            return run_fn()
+        except Exception as e:
+            last_err = e
+            err_s = str(e).lower()
+            is_rate = "429" in err_s or "throttl" in err_s or "rate limit" in err_s
+            if not is_rate or attempt >= max_retries - 1:
+                break
+            wait = base * (attempt + 1)
+            print(f"   ⏳ Replicate ocupado/límite ({e}); reintento en {wait:.0f}s…")
+            time.sleep(wait)
+    if last_err:
+        raise last_err
+    raise RuntimeError("Replicate: sin respuesta tras reintentos")
+
+
+def _is_missing_character_ref_kontext_error(exc: BaseException) -> bool:
+    """True si el fallo es por bible con character_reference pero sin PNG (msg viejo o nuevo)."""
+    s = str(exc).lower()
+    if "character_reference" not in s:
+        return False
+    return (
+        "kontext" in s
+        or "replicate kontext" in s
+        or "no existe" in s
+        or "ningún png" in s
+        or "ningun png" in s
+        or "sin referencia" in s
+        or "png en disco" in s
     )
 
 
@@ -522,6 +603,8 @@ def _generar_imagen_replicate(
     height: int = 576,
     expression_key: str | None = None,
     outfit_key: str | None = None,
+    *,
+    text_only: bool = False,
 ) -> Path | None:
     """Genera una imagen con Replicate.
     - Con PNG de personaje en visual_bible: siempre FLUX Kontext con ``input_image`` (prioridad ``front``).
@@ -534,11 +617,21 @@ def _generar_imagen_replicate(
     if not prompt:
         return None
 
-    image_ref_path = _resolve_protagonist_reference_path(expression_key)
-    if image_ref_path is None and REPLICATE_FORCE_KONTEXT:
+    _replicate_spacing_wait()
+
+    image_ref_path = None if text_only else _resolve_protagonist_reference_path(expression_key)
+    if image_ref_path is None and REPLICATE_FORCE_KONTEXT and not text_only:
         msg = _protagonist_ref_misconfigured_message()
         if msg:
-            raise RuntimeError(msg)
+            global _warned_kontext_missing_ref
+            if not _warned_kontext_missing_ref:
+                print(f"⚠️ {msg}")
+                print(
+                    "   → Fallback automático: FLUX solo texto (sin Kontext) hasta que exista el PNG. "
+                    "(Esta advertencia no se repite.)"
+                )
+                _warned_kontext_missing_ref = True
+            # No lanzar: misma rama que sin referencia → modelo texto→imagen
 
     if image_ref_path:
         context_instruction = get_kontext_context_instruction()
@@ -550,9 +643,9 @@ def _generar_imagen_replicate(
         )
         aspect_ratio = _aspect_ratio_from_size(width, height)
         seed = (escena_num * 12345 + (hash(prompt) % 100000)) % (2**31)
-        try:
+        def _run_kontext():
             with open(image_ref_path, "rb") as f:
-                output = replicate_client.run(
+                return replicate_client.run(
                     REPLICATE_MODEL_KONTEXT,
                     input={
                         "prompt": prompt_kontext,
@@ -563,8 +656,8 @@ def _generar_imagen_replicate(
                         "seed": seed,
                     },
                 )
-        except Exception as e:
-            raise RuntimeError(f"Replicate FLUX Kontext no pudo generar la imagen: {e}") from e
+
+        output = _replicate_run_with_retry(_run_kontext)
     else:
         # Solo texto, sin referencia: usar modelo configurable (REPLICATE_MODEL_TEXT)
         aspect_ratio = "16:9"
@@ -576,13 +669,13 @@ def _generar_imagen_replicate(
                 aspect_ratio = "16:9"
             elif abs(r - 1.0) < 0.2:
                 aspect_ratio = "1:1"
-        try:
-            output = replicate_client.run(
+        def _run_text():
+            return replicate_client.run(
                 REPLICATE_MODEL_TEXT,
                 input=_replicate_text_model_input(prompt, aspect_ratio),
             )
-        except Exception as e:
-            raise RuntimeError(f"Replicate FLUX no pudo generar la imagen: {e}") from e
+
+        output = _replicate_run_with_retry(_run_text)
     if not output:
         return None
     # output puede ser lista de URLs o un FileOutput
@@ -756,6 +849,8 @@ def generar_imagen(
     expression_key: str | None = None,
     outfit_key: str | None = None,
     comfy_seed: int | None = None,
+    *,
+    replicate_text_only: bool = False,
 ) -> Path | None:
     """Genera una imagen con Replicate (FLUX) o ComfyUI. En Replicate, la referencia del protagonista es solo ``character_reference`` (Kontext); outfit_key no reemplaza al PNG del personaje."""
     instrucciones = get_instrucciones_imagenes()
@@ -769,10 +864,29 @@ def generar_imagen(
                 path = _generar_imagen_replicate(
                     prompt, carpeta, escena_num, img_width, img_height,
                     expression_key=expression_key, outfit_key=outfit_key,
+                    text_only=replicate_text_only,
                 )
                 if path:
                     return path
-            except RuntimeError:
+            except RuntimeError as e:
+                if (
+                    not replicate_text_only
+                    and _is_missing_character_ref_kontext_error(e)
+                ):
+                    path = _generar_imagen_replicate(
+                        prompt, carpeta, escena_num, img_width, img_height,
+                        expression_key=expression_key, outfit_key=outfit_key,
+                        text_only=True,
+                    )
+                    if path:
+                        global _warned_kontext_missing_ref
+                        if not _warned_kontext_missing_ref:
+                            print(
+                                "⚠️ Referencia Kontext no disponible; se usa FLUX solo texto "
+                                "(reintento automático por escena)."
+                            )
+                            _warned_kontext_missing_ref = True
+                        return path
                 raise
             except Exception as e:
                 if intento < MAX_REINTENTOS - 1:
@@ -884,6 +998,31 @@ def generar_lote(
                         )
                         time.sleep(espera)
                         continue
+                # Kontext exigido pero sin PNG (código viejo en memoria o FORCE=1): FLUX texto, no placeholder.
+                if _is_missing_character_ref_kontext_error(e):
+                    try:
+                        path = _generar_imagen_replicate(
+                            prompt,
+                            carpeta,
+                            escena.numero,
+                            img_w,
+                            img_h,
+                            expression_key=expression_key,
+                            outfit_key=outfit_key,
+                            text_only=True,
+                        )
+                        if path:
+                            global _warned_kontext_missing_ref
+                            if not _warned_kontext_missing_ref:
+                                print(
+                                    "⚠️ Sin PNG de personaje para Kontext: usando FLUX solo texto "
+                                    "(fallback en lote; reiniciá Streamlit para cargar el último código)."
+                                )
+                                _warned_kontext_missing_ref = True
+                            break
+                    except Exception as e2:
+                        e = e2
+                        msg = str(e2)
                 # Otros errores (o demasiados 429): usar placeholder y seguir
                 print(f"   ⚠️ Escena {escena.numero}: falló ({e}). Usando placeholder.")
                 path = _escribir_placeholder_png(carpeta, escena.numero, img_w, img_h)

@@ -1,0 +1,9 @@
+tema: POV: despertás en un tren vacío de madrugada
+proyecto: POV_despertás_en_un_tren_vacío_de_madrugada
+palabras_guion: 292
+escenas: 23
+beats: 1
+framespecs: 1
+
+Primeros beats (texto):
+  - [1] Abres los ojos y te encuentras en un tren vacío, con la luz tenue de los fluorescentes parpadeando sobre tu rostro.…

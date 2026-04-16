@@ -1,0 +1,14 @@
+[
+  {
+    "id": "20260414035957",
+    "topic": "Why most people fail at making money",
+    "status": "ready",
+    "created_at": "2026-04-14 03:59",
+    "video_path": "/Users/juanmamartinez/FrameFactory-AI/output/final.mp4",
+    "character_id": "cartoon_biz_1",
+    "background_id": "dark_studio",
+    "voice_id": "male_sharp",
+    "duration_target_min": 4,
+    "preset": "clean_youtube"
+  }
+]

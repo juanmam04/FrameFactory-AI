@@ -1,0 +1,10 @@
+tema: POV: prueba automática CI
+proyecto: POV_prueba_automática_CI
+palabras_guion: 336
+escenas: 22
+beats: 2
+framespecs: 2
+
+Primeros beats (texto):
+  - [1] Este eres tú.…
+  - [2] Estás en una sala oscura, con el zumbido de los equipos de computación llenando el aire.…

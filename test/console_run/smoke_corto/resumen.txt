@@ -1,0 +1,9 @@
+tema: smoke corto
+proyecto: smoke_corto
+palabras_guion: 239
+escenas: 18
+beats: 1
+framespecs: 1
+
+Primeros beats (texto):
+  - [1] Era un día gris y nublado cuando te encontraste frente al espejo, observando tu reflejo.…

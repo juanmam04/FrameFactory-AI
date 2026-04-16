@@ -124,9 +124,10 @@ def get_kontext_context_instruction() -> str:
     if raw:
         return raw
     return (
-        "Cinematic cartoon storyboard style. Same visual language as the reference image. "
-        "Keep character identity from the reference (head shape, eyes, body proportions, line work, lighting). "
-        "Adapt pose, expression and outfit to this scene while keeping the character recognizable. "
+        "2D stick-figure / minimalist storyboard style matching the reference PNG exactly for the protagonist. "
+        "Keep the same head shape, eyes, limb style, line weight and default outfit colors from the input image. "
+        "Adapt only pose, expression and scene action; do not redesign the character into a different art style. "
+        "Full frame composition edge to edge—no letterboxing or black bars. "
         "Clear readable action and location. No UI, no text, no photorealism."
     )
 

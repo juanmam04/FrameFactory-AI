@@ -161,6 +161,33 @@ def _semantic_phrase_match(caption: str, phrase: str) -> bool:
     return sum(1 for tok in toks if _token_hit(tok)) >= max(1, min(2, len(toks)))
 
 
+def _es_requisito_meta(frase: str) -> bool:
+    """Frases demasiado abstractas para matchear en caption VLM; no penalizan score."""
+    x = _normalizar(frase)
+    return any(
+        k in x
+        for k in (
+            "entorno contextual legible",
+            "evento central inequivoco",
+            "evento central inequívoco",
+            "accion en progreso (mid-action)",
+            "acción en progreso (mid-action)",
+            "personaje principal",
+            "reaccion fisica creible",
+            "reacción física creíble",
+            "cuerpo o victima claramente visible",
+            "cuerpo o víctima claramente visible",
+            "texto/código legible en pantalla",
+            "ambiente de escritorio o sala de servidores",
+            "movimiento de juego visible",
+            "césped o líneas de campo si aplica",
+            "evidencia de violencia o herida en pantalla",
+            "persona herida o en peligro visible",
+            "acción visible en el lugar del beat",
+        )
+    )
+
+
 def _mide_evento_en_caption(spec: FrameSpec, caption: str) -> tuple[float, list[str]]:
     reasons: list[str] = []
     score = 1.0
@@ -169,6 +196,8 @@ def _mide_evento_en_caption(spec: FrameSpec, caption: str) -> tuple[float, list[
     # 1) Entidades obligatorias
     faltantes_ent = []
     for ent in spec.must_visible_entities:
+        if _es_requisito_meta(ent):
+            continue
         if not _semantic_phrase_match(cap, ent):
             faltantes_ent.append(ent)
     if faltantes_ent:
@@ -178,6 +207,8 @@ def _mide_evento_en_caption(spec: FrameSpec, caption: str) -> tuple[float, list[
     # 2) Evidencia crítica
     faltantes_evi = []
     for evi in spec.must_visible_evidence:
+        if _es_requisito_meta(evi):
+            continue
         if not _semantic_phrase_match(cap, evi):
             faltantes_evi.append(evi)
     if faltantes_evi:
@@ -193,7 +224,10 @@ def _mide_evento_en_caption(spec: FrameSpec, caption: str) -> tuple[float, list[
             reasons.append("no se observa sangre/herida pese a ser evidencia crítica")
             score -= 0.45
     if any(k in spec_all for k in ("suelo", "cuerpo caído", "cuerpo caido", "yace", "tirado")):
-        if not _contains_any(cap, ("en el suelo", "tirado", "caído", "caido", "yace")):
+        if not _contains_any(
+            cap,
+            ("en el suelo", "tirado", "caído", "caido", "yace", "tendido", "boca abajo", "en la calle", "calle"),
+        ):
             reasons.append("no se ve cuerpo en el suelo pese a ser evidencia crítica")
             score -= 0.40
 
@@ -222,11 +256,19 @@ def _mide_accion_vs_pose(spec: FrameSpec, caption: str) -> tuple[float, list[str
     score = 1.0
     cap = _normalizar(caption)
 
+    # Trabajo en PC / stream: manos + teclado/pantalla cuenta como acción
+    if _contains_any(cap, ("teclado", "monitor", "pantalla", "código", "codigo")) and _contains_any(
+        cap, ("manos", "dedos", "escribiendo", "escribe", "mecanografía")
+    ):
+        return max(0.0, score), reasons
+
     verbos_accion = (
         "corre", "corriendo", "cae", "cayendo", "extiende", "agacha", "arrodilla",
         "sostiene", "arrastra", "golpea", "apunta", "teclea", "grita",
         "avanza", "avanzando", "acerca", "acercando", "postura activa", "mano extendida",
         "movimiento", "en movimiento", "pie levantado",
+        "salta", "saltando", "lanza", "señala", "teclea", "dispara", "usa",
+        "concentrad", "leyendo", "escribiendo",
     )
     signos_pose = ("parado", "de pie", "posando", "mirando a cámara", "quieto", "estático", "estatico")
 

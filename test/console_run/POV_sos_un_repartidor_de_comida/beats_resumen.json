@@ -1,0 +1,18 @@
+[
+  {
+    "beat_id": 1,
+    "scene": 1,
+    "original_text": "Eres un repartidor de comida en la caótica Ciudad de México.",
+    "action": "Repartidor de comida pedaleando rápidamente por una calle llena de tráfico.",
+    "location": "Calle concurrida de la Ciudad de México.",
+    "emotion": "Urgencia"
+  },
+  {
+    "beat_id": 2,
+    "scene": 2,
+    "original_text": "Son las 6 de la tarde y el tráfico se intensifica.",
+    "action": "El repartidor navega entre los coches en un tráfico denso.",
+    "location": "Una calle urbana.",
+    "emotion": "Frustración y concentración."
+  }
+]

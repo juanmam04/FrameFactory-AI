@@ -32,6 +32,8 @@ class FrameSpec:
     delta_from_previous: list[str] = field(default_factory=list)
     story_step: str = ""
     expression_key: str | None = None
+    # Líneas en inglés, imperativas, para STRUCTURAL CORE (evitar prompt fijo a un solo tipo de escena)
+    structural_core_lines: list[str] = field(default_factory=list)
 
 
 def framespec_to_dict(spec: FrameSpec) -> dict[str, Any]:
@@ -62,6 +64,7 @@ def framespec_from_dict(data: dict[str, Any]) -> FrameSpec:
         delta_from_previous=list(data.get("delta_from_previous") or []),
         story_step=str(data.get("story_step", "")).strip(),
         expression_key=(str(data.get("expression_key")).strip() if data.get("expression_key") else None),
+        structural_core_lines=list(data.get("structural_core_lines") or []),
     )
 
 

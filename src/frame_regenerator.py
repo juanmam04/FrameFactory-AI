@@ -7,13 +7,12 @@ from .frame_spec import FrameSpec
 def build_corrective_prompt_from_reasons(reasons: list[str]) -> str:
     motivos = "; ".join((reasons or [])[:8]) if reasons else "central event not visible"
     return (
-        "The previous image failed because the central event was not visible.\n"
+        "The previous image failed validation: the central story beat was not clear enough.\n"
         f"Detected issues: {motivos}.\n"
-        "Correct these errors strictly.\n"
-        "Ensure the injured friend is clearly visible and clearly injured if required.\n"
-        "Ensure required blood/evidence is visible if requested.\n"
-        "Ensure environment matches the requested scene (no safe interior substitutions).\n"
-        "Reject calm standing/posed compositions."
+        "Fix strictly: show the exact action, props, and setting this beat requires.\n"
+        "If the story implies violence/injury, show clear physical evidence on screen.\n"
+        "If the story is tech/sports/streaming, show the correct devices and environment.\n"
+        "Reject calm poster poses and wrong locations (e.g. kitchen for hacking)."
     )
 
 

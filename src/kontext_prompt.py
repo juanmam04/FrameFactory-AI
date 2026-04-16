@@ -32,11 +32,13 @@ def kontext_identity_sheet_composition_guard() -> str:
     return (
         "COMPOSITION AND REFERENCE USE: Use the input image ONLY to preserve character identity "
         "(face design, head shape, body proportions, line weight) and consistent outfit colors. "
+        "Mirrors, reflections, and glass: the reflected figure must wear the SAME outfit colors as the real character—no palette swap. "
         "Do NOT copy the plain white, gray, or flat studio background from the reference—the environment "
         "must follow the CURRENT SCENE text, not the backdrop in the reference image. "
         "Do NOT keep the same neutral standing pose or centered model-sheet framing unless the scene explicitly requires it; "
         "match a dynamic pose and camera to the action described. "
         "Generate a full narrative setting with cinematic depth, readable space, and no blank void backdrop. "
+        "Full bleed to frame edges: no letterboxing, no black bars, no cinematic mattes unless the scene explicitly demands it. "
         "Overall composition and layout must follow this scene’s description, not the reference image layout."
     )
 

@@ -1,15 +1,13 @@
-# Referencia del protagonista
+# Referencia del protagonista (Kontext)
 
-Para que **Replicate (FLUX Kontext)** mantenga la misma cara y cuerpo entre escenas:
+Para que **Replicate (FLUX Kontext)** use tu personaje real como `input_image`:
 
-1. Guardá tu imagen de referencia (cuerpo completo o tres cuartos, buena luz) como:
+1. Colocá el PNG en la raíz del repo, carpeta **`character_reference/`** (mismo lugar donde la app Streamlit sube archivos), por ejemplo:
 
-   **`character_reference_front.png`**
+   **`character_reference/character_reference_front.png`**
 
-   en esta carpeta (`references/character_reference/`).
+2. En `config/visual_bible.yaml`, `character_reference.front` debe apuntar a esa ruta relativa (p. ej. `character_reference/character_reference_front.png`).
 
-2. En `config/visual_bible.yaml`, la clave `character_reference.front` ya apunta a esa ruta. Podés añadir `side` o `closeup` si agregás más archivos.
+3. Si el archivo **no existe** o la ruta no coincide con la YAML, el generador usa **solo texto** y el modelo inventa otro diseño de personaje.
 
-3. Si la imagen no existe, el generador sigue con texto solo (o outfit ref si aplica).
-
-**Nota:** Si Cursor guardó tu PNG en `.cursor/projects/.../assets/` con un nombre largo, copiá y renombrá el archivo manualmente a `character_reference_front.png` aquí.
+**Nota:** La carpeta `references/character_reference/` (solo con este README) no es donde busca el código por defecto; antes la YAML apuntaba ahí y muchas pruebas parecían “mal” porque Kontext nunca veía el PNG.

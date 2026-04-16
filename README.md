@@ -87,8 +87,8 @@ Las **locaciones abstractas o con nombres ficticios** (p. ej. “Campo de Arkenv
 Texto→imagen por defecto: **`black-forest-labs/flux-dev`** (configurable con `REPLICATE_IMAGE_MODEL` o `REPLICATE_FLUX_MODEL`). Imagen+texto: **`black-forest-labs/flux-kontext-dev`** (`REPLICATE_IMAGE_MODEL_WITH_REF`).
 
 Colocá una PNG del protagonista en  
-`references/character_reference/character_reference_front.png`  
-(ver `references/character_reference/README.md`). En `config/visual_bible.yaml`, `character_reference.front` debe apuntar a ese archivo. **Todas las escenas** usan ese archivo como `input_image` en Kontext (prioridad `front` para máxima consistencia). Si declarás rutas en `character_reference` pero falta el archivo, la generación falla salvo que pongas `REPLICATE_FORCE_KONTEXT=0` (solo entonces se usa el modelo solo texto). Opcional: `REPLICATE_FLUX_DEV_STEPS`, `REPLICATE_FLUX_DEV_GUIDANCE`.
+`character_reference/character_reference_front.png`  
+(ver `references/character_reference/README.md`). En `config/visual_bible.yaml`, `character_reference.front` debe apuntar a esa ruta relativa (la app Streamlit guarda en la misma carpeta). **Todas las escenas** usan ese archivo como `input_image` en Kontext (prioridad `front`). Si falta el archivo o la ruta no coincide con la YAML, se usa modelo solo texto y el personaje no queda anclado. Opcional: `REPLICATE_FORCE_KONTEXT`, `REPLICATE_FLUX_DEV_STEPS`, `REPLICATE_FLUX_DEV_GUIDANCE`.
 
 **`CHARACTER_REFERENCE_MODE`** (default `identity_sheet`): con una ficha sobre fondo neutro, Kontext recibe un bloque extra en el prompt para **no copiar** pose centrada ni fondo de estudio—solo anclar identidad. Si tu PNG ya es una escena con entorno, probá `scene_reference` para omitir ese bloque (ensamblado en `src/kontext_prompt.py`).
 

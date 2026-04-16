@@ -3,12 +3,18 @@
 Incluye:
 - flujo completo de generación/regeneración (manual)
 - pruebas CONTROLADAS del validador (3 casos) con caption forzado
+
+Variables útiles al generar (`--mode generate`):
+- TEST_CANONICAL=best (default): `test/escena_0001.png` copia el intento con mejor score del validador.
+- TEST_CANONICAL=first: `test/escena_0001.png` copia siempre el **primer** intento (si te gusta más que el que aprueba el validador).
+- Los PNG sueltos van a `test/_attempts/` (cada intento con nombre único).
 """
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import os
+import shutil
+from pathlib import Path
 
 from PIL import Image, ImageDraw
 
@@ -83,6 +89,13 @@ def _crear_spec_evento_herido() -> FrameSpec:
         delta_from_previous=["establecer contexto inicial de alto impacto narrativo"],
         story_step="Primer encuentro con el evento traumático principal.",
         expression_key="shocked",
+        structural_core_lines=[
+            "Injured or endangered person clearly visible if the story requires it",
+            "If collapse: body horizontal on ground, readable pose",
+            "Blood or wound visible when the beat implies injury (clear red, not hidden)",
+            "Second figure allowed: witness, responder, or threat — OR clear POV toward the victim",
+            "No single calm portrait; show the crisis moment",
+        ],
     )
 
 
@@ -101,6 +114,44 @@ def _decidir_final(result, strict_event: bool) -> bool:
     if strict_event and result.event_match_score < 0.8:
         return False
     return result.is_valid
+
+
+def _rank_key(result, strict_event: bool) -> tuple[float, float, float, float]:
+    return (
+        1.0 if _decidir_final(result, strict_event) else 0.0,
+        float(result.event_match_score),
+        float(result.action_score),
+        float(result.score),
+    )
+
+
+def _canonical_mode() -> str:
+    """best = mejor score (validador). first = siempre el primer intento generado (útil si te gusta más el 1)."""
+    return os.getenv("TEST_CANONICAL", "best").strip().lower()
+
+
+def _copiar_escena_canonica(
+    test_dir: Path,
+    attempts: list[tuple[Path, object]],
+    strict_event: bool,
+) -> None:
+    """
+    Deja un solo `escena_0001.png` en test/ como referencia clara.
+    Los intentos suelen quedar en test/_attempts/ con nombres únicos.
+    """
+    if not attempts:
+        return
+    mode = _canonical_mode()
+    if mode == "first":
+        src = attempts[0][0]
+        label = "primer intento (TEST_CANONICAL=first)"
+    else:
+        best = max(attempts, key=lambda t: _rank_key(t[1], strict_event))
+        src = best[0]
+        label = "mejor score del validador (TEST_CANONICAL=best)"
+    if src.exists():
+        shutil.copy2(src, test_dir / "escena_0001.png")
+        print(f"\n📌 escena_0001.png = {label}\n   ← {src}")
 
 
 def run_controlled_validator_tests(strict_event: bool) -> None:
@@ -154,7 +205,9 @@ def run_controlled_validator_tests(strict_event: bool) -> None:
 
 def run_generation_flow(strict_event: bool) -> None:
     test_dir = BASE / "test"
+    attempts_dir = test_dir / "_attempts"
     test_dir.mkdir(parents=True, exist_ok=True)
+    attempts_dir.mkdir(parents=True, exist_ok=True)
     spec = _crear_spec_evento_herido()
 
     attempts_per_round = max(1, int(os.getenv("TEST_ATTEMPTS_PER_ROUND", "4")))
@@ -162,6 +215,8 @@ def run_generation_flow(strict_event: bool) -> None:
     scene_seed_base = 1
     prev_image: Path | None = None
     current_spec = spec
+    # Todos los intentos de la sesión (para copiar el canónico y no mezclar 0001/0002/0003 confusos)
+    session_attempts: list[tuple[Path, object]] = []
 
     for round_idx in range(1, max_rounds + 1):
         prompt = prompt_desde_frame_spec(current_spec)
@@ -170,34 +225,48 @@ def run_generation_flow(strict_event: bool) -> None:
         print("\n=====================================================================\n")
 
         best: tuple[Path, object] | None = None
+        round_attempts: list[tuple[Path, object]] = []
         for local_attempt in range(1, attempts_per_round + 1):
+            # escena_num único → seed distinto en Replicate; guardamos en _attempts/ para no pisar escena_0001.png
             scene_num = scene_seed_base + local_attempt - 1
             img = generar_imagen(
                 prompt=prompt,
                 escena_num=scene_num,
-                carpeta=test_dir,
+                carpeta=attempts_dir,
                 width=1920,
                 height=1080,
                 expression_key=current_spec.expression_key,
             )
             if not img:
                 continue
+            labeled = attempts_dir / f"r{round_idx}_t{local_attempt}_{img.name}"
+            try:
+                shutil.copy2(img, labeled)
+            except OSError:
+                labeled = img
             res = validar_frame(spec=current_spec, image_path=img, prev_image_path=prev_image)
-            tag = f"RONDA {round_idx} - INTENTO {local_attempt} (escena_num={scene_num})"
+            session_attempts.append((img, res))
+            round_attempts.append((img, res))
+            tag = f"RONDA {round_idx} - INTENTO {local_attempt} (guardado: {labeled.name})"
             _print_scores(tag, res)
             print(f"decision_final: {'APROBADA' if _decidir_final(res, strict_event) else 'RECHAZADA'}")
             if best is None:
                 best = (img, res)
             else:
                 prev_best = best[1]
-                cur_key = (_decidir_final(res, strict_event), res.event_match_score, res.action_score, res.score)
-                best_key = (_decidir_final(prev_best, strict_event), prev_best.event_match_score, prev_best.action_score, prev_best.score)
+                cur_key = _rank_key(res, strict_event)
+                best_key = _rank_key(prev_best, strict_event)
                 if cur_key > best_key:
                     best = (img, res)
 
             if _decidir_final(res, strict_event):
                 print(f"\n✅ Aprobada en ronda {round_idx}, intento {local_attempt}.")
-                print(f"Imagen elegida: {img}")
+                print(f"Archivo bruto: {img}")
+                _copiar_escena_canonica(test_dir, session_attempts, strict_event)
+                print(
+                    f"\nIntentos de esta sesión: {len(session_attempts)} (ver {attempts_dir}). "
+                    f"Referencia única: {test_dir / 'escena_0001.png'}"
+                )
                 print(f"\nListo. Imágenes guardadas en: {test_dir}")
                 return
 
@@ -216,6 +285,11 @@ def run_generation_flow(strict_event: bool) -> None:
         else:
             print("\nNo se alcanzó aprobación dentro de las rondas configuradas.")
 
+    _copiar_escena_canonica(test_dir, session_attempts, strict_event)
+    print(
+        f"\nIntentos en {attempts_dir}; referencia canónica: {test_dir / 'escena_0001.png'} "
+        f"(modo TEST_CANONICAL={_canonical_mode()})"
+    )
     print(f"\nListo. Imágenes guardadas en: {test_dir}")
 
 

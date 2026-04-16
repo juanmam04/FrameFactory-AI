@@ -1,0 +1,10 @@
+tema: POV: sos un repartidor de comida
+proyecto: POV_sos_un_repartidor_de_comida
+palabras_guion: 218
+escenas: 17
+beats: 2
+framespecs: 2
+
+Primeros beats (texto):
+  - [1] Eres un repartidor de comida en la caótica Ciudad de México.…
+  - [2] Son las 6 de la tarde y el tráfico se intensifica.…
