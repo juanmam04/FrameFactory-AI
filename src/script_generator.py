@@ -33,6 +33,8 @@ def generar_guion(
     max_words: int | None = None,
     plantilla: str = "explicativo",
     segundos_por_imagen: float = 5.0,
+    creative_context: str | None = None,
+    force_este_eres_tu_opening: bool = True,
 ) -> tuple[str, int, float]:
     """
     Genera un guion con un número objetivo de palabras usando generación en 2 pasos.
@@ -44,6 +46,8 @@ def generar_guion(
         max_words: Máximo de palabras (opcional, por defecto 120% de target_words)
         plantilla: Plantilla de guion a usar
         segundos_por_imagen: Segundos por imagen/escena
+        creative_context: Texto opcional con perfil del creador (inyectado al system prompt).
+        force_este_eres_tu_opening: Si False, no se fuerza la apertura fija "Este eres tú." (SaaS + perfil).
     
     Returns:
         tuple[str, int, float]: (guion_texto, word_count, estimated_minutes)
@@ -86,7 +90,14 @@ Evita solo el gore gráfico o descripciones extremadamente detalladas de daño f
 """
     
     system = f"{system_base}\n\n{system_extra}\n\n{style_instructions}" if system_extra else f"{system_base}\n\n{style_instructions}"
-    
+    if creative_context and str(creative_context).strip():
+        system += (
+            "\n\nCONTEXTO DEL CREADOR (adaptá tono, registro, estructura y público; "
+            "si pide un registro no cinematográfico o educativo, suavizá las instrucciones de crudeza oscura "
+            "y priorizá coherencia con el nicho y topics_to_avoid):\n"
+            + str(creative_context).strip()
+        )
+
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         guion_fallback = _guion_fallback_words(tema, target_words)
@@ -111,7 +122,18 @@ Evita solo el gore gráfico o descripciones extremadamente detalladas de daño f
 IMPORTANTE - EXTENSIÓN OBLIGATORIA: Este guion debe tener APROXIMADAMENTE {target_words} palabras (unas {paginas_aprox} páginas).
 No escribas una historia corta. Desarrollá bien la trama: varias escenas, descripciones concretas, tensión, reacciones.
 Si escribís menos de {int(target_words * 0.7)} palabras no cumple. Acercate siempre al objetivo de {target_words} palabras."""
-        
+
+        if force_este_eres_tu_opening:
+            apertura_instrucciones = """APERTURA OBLIGATORIA (NO NEGOCIABLE):
+- La PRIMERA oración del guion debe ser exactamente "Este eres tú." (o "Este eres tú,") seguida de la primera escena. Ejemplo: "Este eres tú. Tienes 9 años y el balón es demasiado grande para tus pies."
+- PROHIBIDO empezar con: "Hoy vamos a hablar de...", "En este video...", "Te invito a...", "¿Alguna vez te preguntaste...?", "En el día de hoy...", o cualquier intro de youtuber o presentador. El espectador ES el protagonista desde la primera palabra; no hay presentación del tema.
+- Si el tema incluye un título o descripción, NO lo repitas como intro; empieza directo con "Este eres tú." y la primera escena de la vida del personaje."""
+        else:
+            apertura_instrucciones = """APERTURA (según CONTEXTO DEL CREADOR en el system):
+- Respetá script.opening_style, hook_style y tono del perfil. No uses la fórmula fija "Este eres tú." salvo que el perfil lo pida explícitamente.
+- PROHIBIDO empezar con: "Hoy vamos a hablar de...", "En este video...", "Te invito a...", "¿Alguna vez te preguntaste...?", "En el día de hoy...", o intros genéricas de presentador.
+- Empezá directo con tensión o curiosidad acorde al nicho, sin meta-comentarios sobre el video."""
+
         prompt_borrador = f"""Escribe la VIDA COMPLETA del personaje, no una escena ni un resumen. El guion debe sentirse como una PELÍCULA DE CINE: una historia con TRAMA CONCRETA.
 
 TRAMA COMO PELÍCULA (OBLIGATORIO):
@@ -122,10 +144,7 @@ TRAMA COMO PELÍCULA (OBLIGATORIO):
 
 Regla clave: {frase_clave}
 
-APERTURA OBLIGATORIA (NO NEGOCIABLE):
-- La PRIMERA oración del guion debe ser exactamente "Este eres tú." (o "Este eres tú,") seguida de la primera escena. Ejemplo: "Este eres tú. Tienes 9 años y el balón es demasiado grande para tus pies."
-- PROHIBIDO empezar con: "Hoy vamos a hablar de...", "En este video...", "Te invito a...", "¿Alguna vez te preguntaste...?", "En el día de hoy...", o cualquier intro de youtuber o presentador. El espectador ES el protagonista desde la primera palabra; no hay presentación del tema.
-- Si el tema incluye un título o descripción, NO lo repitas como intro; empieza directo con "Este eres tú." y la primera escena de la vida del personaje.
+{apertura_instrucciones}
 
 - ESPAÑOL NEUTRO OBLIGATORIO: usa tuteo (tú, tienes, sabes, eres, estás, puedes). NUNCA voseo (vos, tenés, sabés, sos, podés) ni regionalismos. El guion debe ser comprensible en toda Hispanoamérica y España.
 - Cuenta todo el recorrido: infancia, dificultades, rechazos, sacrificios, debut, fama, presión, decisiones difíciles, gloria, caídas. Escenas concretas (lugares, horarios, dinero, titulares), crudo y realista. Sin frases motivacionales ni intros promocionales ("este video te llevará…", "no te pierdas…"). No resumir momentos clave; narrarlos en escena.
@@ -161,21 +180,22 @@ Tema: {tema}"""
             temperature=0.7,  # Más creatividad en el borrador
         )
         borrador = (r1.choices[0].message.content or "").strip()
-        # Forzar apertura POV: si el modelo puso "Hoy vamos a hablar..." u otra intro, quitarla y empezar con "Este eres tú."
-        borrador_lower = borrador.lower()
-        intro_prohibida = (
-            borrador_lower.startswith("hoy vamos a hablar")
-            or borrador_lower.startswith("en este video")
-            or borrador_lower.startswith("te invito a")
-            or (borrador_lower.startswith("¿alguna vez") and "preguntaste" in borrador_lower[:80])
-        )
-        empieza_con_este_eres_tu = borrador_lower.startswith("este eres tú") or borrador_lower.startswith("este eres tu")
-        if intro_prohibida:
-            first_line = borrador.split("\n")[0].strip() if borrador else ""
-            rest = borrador[len(first_line):].lstrip() if len(first_line) > 5 else borrador
-            borrador = f"Este eres tú. {rest}"
-        elif not empieza_con_este_eres_tu and borrador:
-            borrador = f"Este eres tú. {borrador}"
+        if force_este_eres_tu_opening:
+            # Forzar apertura POV: si el modelo puso "Hoy vamos a hablar..." u otra intro, quitarla y empezar con "Este eres tú."
+            borrador_lower = borrador.lower()
+            intro_prohibida = (
+                borrador_lower.startswith("hoy vamos a hablar")
+                or borrador_lower.startswith("en este video")
+                or borrador_lower.startswith("te invito a")
+                or (borrador_lower.startswith("¿alguna vez") and "preguntaste" in borrador_lower[:80])
+            )
+            empieza_con_este_eres_tu = borrador_lower.startswith("este eres tú") or borrador_lower.startswith("este eres tu")
+            if intro_prohibida:
+                first_line = borrador.split("\n")[0].strip() if borrador else ""
+                rest = borrador[len(first_line):].lstrip() if len(first_line) > 5 else borrador
+                borrador = f"Este eres tú. {rest}"
+            elif not empieza_con_este_eres_tu and borrador:
+                borrador = f"Este eres tú. {borrador}"
         word_count_borrador = count_words(borrador)
         
         print(f"📊 Borrador generado: {word_count_borrador} palabras (objetivo: {target_words})")

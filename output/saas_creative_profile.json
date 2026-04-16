@@ -1,0 +1,50 @@
+{
+  "updated_at": "2026-04-16T18:08:53",
+  "profile": {
+    "niche": "Cine y narración de historias sobre crimen organizado y corrupción",
+    "audience": {
+      "who": "Espectadores interesados en narrativas de crimen y corrupción",
+      "pain_points": "Deseo de historias cautivadoras y emocionantes",
+      "reading_level": "general"
+    },
+    "tone": "Directo",
+    "hook_style": "Pregunta + promesa",
+    "pacing": "Rápido",
+    "narrator_preference": "male_sharp",
+    "language_register": "Español neutro, tuteo",
+    "topics_to_avoid": "",
+    "channel": {
+      "name": "Cine Crudo",
+      "tagline": "Historias que desafían la moral",
+      "content_pillars": "Narrativas de crimen, análisis de decisiones, desarrollo de personajes complejos"
+    },
+    "script": {
+      "structure_preference": "Narrativa cinematográfica",
+      "forbidden_phrases": "políticamente correcto",
+      "cta_style": "Invitación a reflexionar sobre decisiones",
+      "opening_style": "Narrador presenta la historia de manera inmersiva"
+    },
+    "video": {
+      "primary_format": "youtube_long_16_9",
+      "target_length_category": "medium",
+      "aspect_notes": "Entre 10 y 20 minutos, pura acción sin relleno"
+    },
+    "visual": {
+      "look": "Estilo cinematográfico",
+      "color_mood": "Oscuro y dramático",
+      "shot_preferences": "Cercanos y dinámicos",
+      "b_roll_style": "Imágenes generadas por IA que complementen la narrativa",
+      "reference_moodboards": "Cine de crimen y drama"
+    },
+    "editing": {
+      "cut_rhythm": "rápido",
+      "transitions_default": "corte limpio",
+      "lower_thirds": "no",
+      "subtitles_intent": "ninguno_en_mvp",
+      "music_role": "bajo_voz para aumentar la inmersión",
+      "pacing_visual": "dinámico y envolvente",
+      "notes_for_ai_director": "Incluir giros inesperados y transiciones que reflejen el ascenso o caída del personaje"
+    },
+    "notes_freeform": "Las historias deben ser impactantes, con giros inesperados y desarrollo de personajes complejos. Se busca mantener al espectador inmerso en la narrativa, similar a una película."
+  }
+}

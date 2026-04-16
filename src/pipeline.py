@@ -1,5 +1,6 @@
 """FASE 11: Script maestro – ejecuta todo el pipeline con un solo comando."""
 import argparse
+import json
 import os
 import re
 import shutil
@@ -28,9 +29,11 @@ from .frame_director import beats_a_frame_specs
 from .frame_prompt_builder import prompt_desde_frame_spec
 from .frame_spec import guardar_frame_specs
 from .frame_image_pipeline import generar_imagenes_desde_frame_specs
-from .catalog_service import get_character, get_background, get_voice, ensure_catalog_dirs
+from .catalog_service import VOICES, get_character, get_background, get_voice, ensure_catalog_dirs
 from .scene_planner import plan_scenes
 from .character_video_provider import render_block
+from .saas_creative_profile import merge_profile_disk, profile_to_script_context
+from .saas_edit_planner import annotate_blocks_with_editing
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -416,14 +419,130 @@ def run(
     return video_path, metadata_path, thumbnail_path, info_dict
 
 
-def run_saas_mvp(topic: str) -> Path:
+def _saas_post_mix_ambient(
+    video_path: Path,
+    music: Path | None,
+    sfx: Path | None,
+    music_volume: float,
+    sfx_volume: float,
+) -> Path:
+    """
+    Mezcla la pista de audio del MP4 (narración) con música y/o SFX de ambiente.
+    Si falla FFmpeg, devuelve el video original sin modificar.
+    """
+    if not music and not sfx:
+        return video_path
+    if not shutil.which("ffmpeg"):
+        print("⚠️ [MVP] FFmpeg ausente: no se mezcla música/SFX.")
+        return video_path
+    if not video_path.exists():
+        return video_path
+
+    music_ok = bool(music and music.exists())
+    sfx_ok = bool(sfx and sfx.exists())
+    if not music_ok and not sfx_ok:
+        return video_path
+
+    out = video_path.with_name(video_path.stem + "_audio.mp4")
+    cmd: list[str] = ["ffmpeg", "-y", "-i", str(video_path.resolve())]
+    n_extra = 0
+    if music_ok:
+        cmd.extend(["-i", str(music.resolve())])
+        n_extra += 1
+    if sfx_ok:
+        cmd.extend(["-i", str(sfx.resolve())])
+        n_extra += 1
+
+    if music_ok and sfx_ok:
+        fc = (
+            f"[1:a]volume={music_volume:.3f}[m];"
+            f"[2:a]volume={sfx_volume:.3f}[s];"
+            f"[m][s]amix=inputs=2:duration=longest[bg];"
+            f"[0:a][bg]amix=inputs=2:duration=first[aout]"
+        )
+    elif music_ok:
+        fc = f"[1:a]volume={music_volume:.3f}[m];[0:a][m]amix=inputs=2:duration=first[aout]"
+    else:
+        fc = f"[1:a]volume={sfx_volume:.3f}[s];[0:a][s]amix=inputs=2:duration=first[aout]"
+
+    cmd.extend(
+        [
+            "-filter_complex",
+            fc,
+            "-map",
+            "0:v",
+            "-map",
+            "[aout]",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-shortest",
+            str(out.resolve()),
+        ]
+    )
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️ [MVP] Mezcla música/SFX falló, se deja video sin post-mix: {(e.stderr or '')[-400:]}")
+        return video_path
+    if out.exists() and out.stat().st_size > 0:
+        return out
+    return video_path
+
+
+def _saas_write_progress(progress_path: Path | None, step: str, pct: float) -> None:
+    if not progress_path:
+        return
+    try:
+        progress_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = progress_path.with_suffix(progress_path.suffix + ".tmp")
+        tmp.write_text(
+            json.dumps({"step": step, "pct": max(0.0, min(100.0, pct))}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        tmp.replace(progress_path)
+    except Exception:
+        pass
+
+
+def run_saas_mvp(
+    topic: str,
+    progress_path: Path | None = None,
+    music_path: Path | None = None,
+    sfx_path: Path | None = None,
+    music_volume: float | None = None,
+    sfx_volume: float | None = None,
+    use_env_music_if_no_upload: bool = True,
+    creative_profile: dict | None = None,
+    session_context: str | None = None,
+) -> Path:
     """
     MVP SaaS mínimo:
     guion -> bloques -> audio -> clips por bloque (imagen fija + audio) -> concat final.
+    progress_path: si se pasa, escribe JSON {step, pct} para UI de progreso.
+    music_path / sfx_path: archivos opcionales mezclados bajo la narración al final.
+    Si music_path es None y use_env_music_if_no_upload, usa BACKGROUND_MUSIC_PATH del .env.
+    creative_profile: perfil SaaS (guion, visual, montaje); guía al LLM y al plan por bloque.
+    session_context: texto con memoria y chat de la sesión (congelado al iniciar el render).
     """
     print("🚀 [MVP] Iniciando run_saas_mvp...")
     if not topic or not topic.strip():
         raise ValueError("topic es obligatorio para run_saas_mvp.")
+    _saas_write_progress(progress_path, "Inicio", 0.0)
+
+    prof = merge_profile_disk(creative_profile or {})
+    script_ctx = profile_to_script_context(prof)
+    if session_context and str(session_context).strip():
+        script_ctx = (
+            script_ctx
+            + "\n\n=== LO HABLADO EN ESTA SESIÓN (prioridad con el tema del video) ===\n"
+            + str(session_context).strip()[:24000]
+        )
+    script_opening = (prof.get("script") or {}).get("opening_style") or ""
+    force_pov = not bool(str(script_opening).strip())
 
     # ─── Estructura mínima ───────────────────────────────────────────────────
     output_dir = BASE / "output"
@@ -434,7 +553,11 @@ def run_saas_mvp(topic: str) -> Path:
     # ─── Catálogo fijo del MVP ───────────────────────────────────────────────
     character = get_character("cartoon_biz_1")
     background = get_background("dark_studio")
-    voice = get_voice("male_sharp")
+    pref_v = prof.get("narrator_preference")
+    if isinstance(pref_v, str) and pref_v.strip() in VOICES:
+        voice = get_voice(pref_v.strip())
+    else:
+        voice = get_voice("male_sharp")
     print(f"🎭 [MVP] Character: {character['id']}")
     print(f"🖼️ [MVP] Background catalog: {background['id']}")
     print(f"🎙️ [MVP] Voice catalog: {voice['id']} ({voice['provider']})")
@@ -456,20 +579,42 @@ def run_saas_mvp(topic: str) -> Path:
 
     # ─── Script y escenas ────────────────────────────────────────────────────
     print("📝 [MVP] Generando guion...")
+    _saas_write_progress(progress_path, "Guion", 12.0)
     script_text, word_count, _mins = generar_guion(
         tema=topic.strip(),
         target_words=420,  # ~3 min base
         plantilla="explicativo",
         segundos_por_imagen=6.0,
+        creative_context=script_ctx,
+        force_este_eres_tu_opening=force_pov,
     )
     print(f"📊 [MVP] Guion generado: {word_count} palabras")
 
+    _saas_write_progress(progress_path, "Escenas", 26.0)
     blocks = plan_scenes(script_text)
     if not blocks:
         raise RuntimeError("[MVP] plan_scenes devolvió 0 bloques.")
     print(f"🎬 [MVP] Bloques: {len(blocks)}")
+    _saas_write_progress(progress_path, "Montaje (IA)", 30.0)
+    blocks = annotate_blocks_with_editing(
+        blocks,
+        prof,
+        session_context=session_context,
+    )
+    try:
+        (output_dir / "saas_last_mvp_meta.json").write_text(
+            json.dumps(
+                {"script": script_text, "blocks": blocks, "word_count": word_count},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+    except Exception:
+        pass
 
     # ─── Voz única del proyecto ──────────────────────────────────────────────
+    _saas_write_progress(progress_path, "Voz", 42.0)
     audio_path = generar_voz(script_text, nombre_archivo="saas_mvp_narracion", velocidad=1.0)
     if not audio_path.exists() or audio_path.stat().st_size == 0:
         raise RuntimeError(f"[MVP] Audio inválido o vacío: {audio_path}")
@@ -477,9 +622,12 @@ def run_saas_mvp(topic: str) -> Path:
 
     # ─── Clips por bloque ────────────────────────────────────────────────────
     clips: list[Path] = []
+    n_blocks = max(1, len(blocks))
     for i, block in enumerate(blocks, start=1):
         clip = output_dir / f"clip_{i:04d}.mp4"
         print(f"🎞️ [MVP] Render bloque {i}/{len(blocks)} -> {clip.name}")
+        pct = 48.0 + (40.0 * (i - 1) / n_blocks)
+        _saas_write_progress(progress_path, f"Clip {i}/{len(blocks)}", pct)
         render_block(
             block=block,
             audio_path=audio_path,
@@ -516,6 +664,7 @@ def run_saas_mvp(topic: str) -> Path:
         str(final_path.resolve()),
     ]
     print(f"🏁 [MVP] Concatenando clips en {final_path.resolve()}...")
+    _saas_write_progress(progress_path, "Montaje final", 94.0)
     try:
         subprocess.run(cmd, check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as e:
@@ -525,6 +674,21 @@ def run_saas_mvp(topic: str) -> Path:
     if not final_path.exists() or final_path.stat().st_size == 0:
         raise RuntimeError(f"[MVP] Video final no generado correctamente: {final_path}")
     print(f"✅ [MVP] Video final listo: {final_path.resolve()}")
+
+    mv = 0.18 if music_volume is None else max(0.0, min(0.6, float(music_volume)))
+    sv = 0.08 if sfx_volume is None else max(0.0, min(0.4, float(sfx_volume)))
+    eff_music = music_path if (music_path and music_path.exists()) else None
+    if eff_music is None and use_env_music_if_no_upload:
+        eff_music = get_background_music_path()
+        if eff_music is not None and not eff_music.exists():
+            eff_music = None
+    eff_sfx = sfx_path if (sfx_path and sfx_path.exists()) else None
+    if eff_music or eff_sfx:
+        _saas_write_progress(progress_path, "Música y ambiente", 97.0)
+        final_path = _saas_post_mix_ambient(final_path, eff_music, eff_sfx, mv, sv)
+        print(f"🎵 [MVP] Post-mix audio: {final_path.resolve()}")
+
+    _saas_write_progress(progress_path, "Listo", 100.0)
     return final_path
 
 
