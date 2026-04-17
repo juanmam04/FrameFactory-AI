@@ -1,0 +1,19 @@
+{% extends "layouts/base_public.html" %}
+{% block title %}Recuperar contraseña — FrameFactory{% endblock %}
+{% block body %}
+<section class="ff-section" style="max-width:440px;padding-top:56px;">
+  <h1 class="ff-page-title">Recuperar acceso</h1>
+  <p class="ff-page-sub">Te indicamos el enlace de restablecimiento (en producción iría por email).</p>
+  {% if error %}<div class="ff-alert ff-alert-error">{{ error }}</div>{% endif %}
+  {% if reset_link %}
+  <div class="ff-alert ff-alert-info">Enlace temporal: <a href="{{ reset_link }}">{{ reset_link }}</a></div>
+  {% endif %}
+  <form method="post" class="ff-card">
+    <div class="ff-form-row">
+      <label class="ff-label" for="email">Email</label>
+      <input class="ff-input" id="email" name="email" type="email" required/>
+    </div>
+    <button type="submit" class="ff-btn ff-btn-primary" style="width:100%;">Enviar instrucciones</button>
+  </form>
+</section>
+{% endblock %}

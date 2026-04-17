@@ -1,0 +1,586 @@
+{
+  "version": 1,
+  "project_id": "20260417162923",
+  "topic": "Imagina que eres el protagonista de una historia en la que tu mejor amigo, quien te ha apoyado durante años, se convierte en un traidor. Explora cómo tomas decisiones difíciles para manejar la situación y cómo esto afecta tu vida en el crimen organizado. El video deberá sumergir al espectador en la narrativa, utilizando un tono directo y envolvente. La historia debe durar entre 12 y 15 minutos, con un cierre que invite a reflexionar sobre la lealtad y las decisiones. ¡No olvides incluir giros inesperados!",
+  "video_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\final_subburn.mp4",
+  "script": "Estás en el barrio más peligroso de Ciudad de México, escuchando el eco de las sirenas de la policía mientras el sol se oculta. Te llamas Marco y, a tus 32 años, has construido un pequeño imperio en el crimen organizado. Desde los catorce, te has movido entre las sombras, aprendiendo las reglas de un juego que no permite errores. Tu mejor amigo, Luis, ha sido tu compañero en cada paso, desde los días de robos menores hasta las operaciones más grandes. La lealtad es sagrada, o al menos así lo creías.\n\nLa noche avanza y te reúnes con Luis en un bar clandestino. Estás nervioso; tienes un trato con un cartel rival y necesitas su apoyo. Mientras bebes una cerveza, le explicas el plan: un envío de drogas que podría catapultar tu negocio. Luis frunce el ceño y te dice que no está seguro, que ha oído rumores de traiciones. Lo miras a los ojos, buscando alguna señal de desconfianza. “¿Cómo puedes dudar de mí?”, preguntas, sintiendo un nudo en el estómago. Esa noche se siente distinta.\n\nPasaron dos semanas desde aquel encuentro. La operación avanza, pero la presión aumenta. La policía comienza a realizar redadas y el cartel rival parece estar al tanto de tus movimientos. Decides hacer una reunión con tus hombres. Es un grupo leal, pero la tensión está en el aire. Entre ellos, notas a Luis inquieto, mirando su teléfono constantemente. Te preguntas si está en contacto con alguien que no deberías.\n\nUn día, mientras conduces hacia una entrega, recibes un mensaje anónimo: “Cuidado con Luis. No es de fiar.” Las palabras retumban en tu cabeza. Al llegar a la cita, ves a Luis hablando con un extraño. La traición golpea como un puño. Decides actuar. “¿Qué haces aquí, Luis?”, le gritas, generando miradas de incomprensión. Él intenta calmarte, pero ya no confías en él. La conversación se torna violenta. Te sientes traicionado y, a la vez, impotente.\n\nCon un nudo en el estómago, decides que no puedes dejarlo ir. Tienes que proteger tu negocio, y eso significa tomar decisiones difíciles. La lealtad que una vez compartieron se convierte en un arma de doble filo. Esa noche, te sientas con tu grupo y planificas lo inevitable. “Luis tiene que desaparecer”, dices, y aunque tus hombres asienten, sientes el peso de la decisión.\n\nLos días pasan mientras preparas el golpe. La noche de la confrontación llega. Te reúnes con Luis en un lugar apartado, donde solían soñar con un futuro mejor. “Lo siento, hermano, pero no puedo dejar que me traiciones”, le dices, mientras sacas tu arma. Él se ríe, pero la risa se apaga rápidamente al ver la determinación en tu rostro.\n\nLa tensión se corta con un cuchillo. “Siempre estuviste celoso de mí, Marco”, dice, y en su mirada ves un destello de verdad. Te detienes. Antes de que puedas responder, un estruendo de balas interrumpe la conversación. El cartel rival ha llegado, y en el caos, todo se descontrola. Te ves obligado a elegir: salvar a Luis o asegurarte de que la entrega no se pierda. En un instante, tomas una decisión que cambiará tu vida para siempre.\n\nDisparos por todas partes. Luis cae al suelo, y tú, en un impulso, decides cubrirlo. La traición se convierte en salvación. Juntos, logran escapar, pero el precio es alto. En la sombra de la noche, la lealtad ha sido puesta a prueba, y el costo de la amistad es más caro de lo que imaginabas.\n\nLos días que siguen son un torbellino de emociones. El cartel rival no se detendrá, y ahora tienes a Luis, un traidor que aún se aferra a la esperanza de redención. A medida que los días se convierten en semanas, la lealtad se redefine entre ustedes. Aprendes que la traición no siempre es un final; a veces, es un nuevo comienzo. Sin embargo, siempre queda la pregunta: ¿puedes volver a confiar en alguien que ha estado tan cerca de apuñalarte por la espalda? La historia de la traición y la redención continúa, y cada elección que haces podría llevarte más cerca de la gloria o a tu propia destrucción.",
+  "blocks": [
+    {
+      "id": "scene_0001",
+      "text": "Estás en el barrio más peligroso de Ciudad de México, escuchando el eco de las sirenas de la policía mientras el sol se oculta.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general del barrio al atardecer, con sirenas de fondo.",
+      "b_roll_suggestion": "Imágenes de sirenas y sombras alargadas.",
+      "on_screen_text": "El barrio más peligroso"
+    },
+    {
+      "id": "scene_0002",
+      "text": "Te llamas Marco y, a tus 32 años, has construido un pequeño imperio en el crimen organizado.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Primer plano del protagonista, mostrando determinación.",
+      "b_roll_suggestion": "Imágenes de un imperio criminal en acción.",
+      "on_screen_text": "Marco, 32 años"
+    },
+    {
+      "id": "scene_0003",
+      "text": "Desde los catorce, te has movido entre las sombras, aprendiendo las reglas de un juego que no permite errores.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano medio del protagonista en una sombra.",
+      "b_roll_suggestion": "Flashbacks de su juventud en el crimen.",
+      "on_screen_text": "Entre las sombras"
+    },
+    {
+      "id": "scene_0004",
+      "text": "Tu mejor amigo, Luis, ha sido tu compañero en cada paso, desde los días de robos menores hasta las operaciones más grandes.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de los dos amigos en un bar.",
+      "b_roll_suggestion": "Imágenes de robos menores.",
+      "on_screen_text": "Luis, tu mejor amigo"
+    },
+    {
+      "id": "scene_0005",
+      "text": "La lealtad es sagrada, o al menos así lo creías.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, mostrando confusión.",
+      "b_roll_suggestion": "Imágenes de lealtad y traición.",
+      "on_screen_text": "La lealtad es sagrada"
+    },
+    {
+      "id": "scene_0006",
+      "text": "La noche avanza y te reúnes con Luis en un bar clandestino.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano del bar clandestino, con luces tenues.",
+      "b_roll_suggestion": "Imágenes de clientes sospechosos.",
+      "on_screen_text": "Bar clandestino"
+    },
+    {
+      "id": "scene_0007",
+      "text": "Estás nervioso; tienes un trato con un cartel rival y necesitas su apoyo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano medio del protagonista, nervioso.",
+      "b_roll_suggestion": "Imágenes de un trato peligroso.",
+      "on_screen_text": "Un trato arriesgado"
+    },
+    {
+      "id": "scene_0008",
+      "text": "Mientras bebes una cerveza, le explicas el plan: un envío de drogas que podría catapultar tu negocio.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre cercano de la cerveza en la mesa.",
+      "b_roll_suggestion": "Gráficos de un envío de drogas.",
+      "on_screen_text": "El plan"
+    },
+    {
+      "id": "scene_0009",
+      "text": "Luis frunce el ceño y te dice que no está seguro, que ha oído rumores de traiciones.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano de Luis, frunciendo el ceño.",
+      "b_roll_suggestion": "Imágenes de rumores en el barrio.",
+      "on_screen_text": "Rumores de traición"
+    },
+    {
+      "id": "scene_0010",
+      "text": "Lo miras a los ojos, buscando alguna señal de desconfianza.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de los ojos del protagonista.",
+      "b_roll_suggestion": "Imágenes de desconfianza.",
+      "on_screen_text": "Buscando señales"
+    },
+    {
+      "id": "scene_0011",
+      "text": "“¿Cómo puedes dudar de mí?”, preguntas, sintiendo un nudo en el estómago.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, angustiado.",
+      "b_roll_suggestion": "Imágenes de tensión.",
+      "on_screen_text": "¿Cómo puedes dudar de mí?"
+    },
+    {
+      "id": "scene_0012",
+      "text": "Esa noche se siente distinta.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano general de la noche oscura.",
+      "b_roll_suggestion": "Imágenes de un ambiente tenso.",
+      "on_screen_text": "Una noche distinta"
+    },
+    {
+      "id": "scene_0013",
+      "text": "Pasaron dos semanas desde aquel encuentro.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano medio de la rutina diaria.",
+      "b_roll_suggestion": "Imágenes de la operación en marcha.",
+      "on_screen_text": "Dos semanas después"
+    },
+    {
+      "id": "scene_0014",
+      "text": "La operación avanza, pero la presión aumenta.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la presión en el rostro del protagonista.",
+      "b_roll_suggestion": "Imágenes de redadas policiales.",
+      "on_screen_text": "La presión aumenta"
+    },
+    {
+      "id": "scene_0015",
+      "text": "La policía comienza a realizar redadas y el cartel rival parece estar al tanto de tus movimientos.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano de la policía en acción.",
+      "b_roll_suggestion": "Imágenes de un cartel rival.",
+      "on_screen_text": "El cartel rival"
+    },
+    {
+      "id": "scene_0016",
+      "text": "Decides hacer una reunión con tus hombres.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la reunión con los hombres.",
+      "b_roll_suggestion": "Imágenes de tensión en el grupo.",
+      "on_screen_text": "Reunión con los hombres"
+    },
+    {
+      "id": "scene_0017",
+      "text": "Es un grupo leal, pero la tensión está en el aire.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano de un hombre nervioso.",
+      "b_roll_suggestion": "Imágenes de inquietud.",
+      "on_screen_text": "Tensión en el aire"
+    },
+    {
+      "id": "scene_0018",
+      "text": "Entre ellos, notas a Luis inquieto, mirando su teléfono constantemente.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de Luis mirando su teléfono.",
+      "b_roll_suggestion": "Imágenes de mensajes sospechosos.",
+      "on_screen_text": "Luis inquieto"
+    },
+    {
+      "id": "scene_0019",
+      "text": "Te preguntas si está en contacto con alguien que no deberías.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, preocupado.",
+      "b_roll_suggestion": "Imágenes de desconfianza.",
+      "on_screen_text": "¿Está en contacto?"
+    },
+    {
+      "id": "scene_0020",
+      "text": "Un día, mientras conduces hacia una entrega, recibes un mensaje anónimo: “Cuidado con Luis.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano de la carretera mientras conduce.",
+      "b_roll_suggestion": "Imágenes de un mensaje en el teléfono.",
+      "on_screen_text": "Cuidado con Luis"
+    },
+    {
+      "id": "scene_0021",
+      "text": "No es de fiar.” Las palabras retumban en tu cabeza.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del mensaje en el teléfono.",
+      "b_roll_suggestion": "Imágenes de la mente del protagonista.",
+      "on_screen_text": "No es de fiar"
+    },
+    {
+      "id": "scene_0022",
+      "text": "Al llegar a la cita, ves a Luis hablando con un extraño.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de Luis hablando con un extraño.",
+      "b_roll_suggestion": "Imágenes de traición.",
+      "on_screen_text": "La traición golpea"
+    },
+    {
+      "id": "scene_0023",
+      "text": "La traición golpea como un puño.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, furioso.",
+      "b_roll_suggestion": "Imágenes de confrontación.",
+      "on_screen_text": "Decides actuar"
+    },
+    {
+      "id": "scene_0024",
+      "text": "Decides actuar.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la escena de confrontación.",
+      "b_roll_suggestion": "Imágenes de miradas intensas.",
+      "on_screen_text": "¿Qué haces aquí, Luis?"
+    },
+    {
+      "id": "scene_0025",
+      "text": "“¿Qué haces aquí, Luis?”, le gritas, generando miradas de incomprensión.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano de Luis intentando calmar.",
+      "b_roll_suggestion": "Imágenes de tensión creciente.",
+      "on_screen_text": "Confianza perdida"
+    },
+    {
+      "id": "scene_0026",
+      "text": "Él intenta calmarte, pero ya no confías en él.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la discusión volviéndose intensa.",
+      "b_roll_suggestion": "Imágenes de violencia inminente.",
+      "on_screen_text": "La conversación se torna violenta"
+    },
+    {
+      "id": "scene_0027",
+      "text": "La conversación se torna violenta.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, sintiendo traición.",
+      "b_roll_suggestion": "Imágenes de impotencia.",
+      "on_screen_text": "Te sientes traicionado"
+    },
+    {
+      "id": "scene_0028",
+      "text": "Te sientes traicionado y, a la vez, impotente.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la decisión difícil.",
+      "b_roll_suggestion": "Imágenes de decisiones fatales.",
+      "on_screen_text": "Decisiones difíciles"
+    },
+    {
+      "id": "scene_0029",
+      "text": "Con un nudo en el estómago, decides que no puedes dejarlo ir.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano medio del protagonista, decidido.",
+      "b_roll_suggestion": "Imágenes de determinación.",
+      "on_screen_text": "No puedes dejarlo ir"
+    },
+    {
+      "id": "scene_0030",
+      "text": "Tienes que proteger tu negocio, y eso significa tomar decisiones difíciles.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la planificación del golpe.",
+      "b_roll_suggestion": "Imágenes de estrategia.",
+      "on_screen_text": "Proteger tu negocio"
+    },
+    {
+      "id": "scene_0031",
+      "text": "La lealtad que una vez compartieron se convierte en un arma de doble filo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, reflexionando.",
+      "b_roll_suggestion": "Imágenes de lealtad rota.",
+      "on_screen_text": "Un arma de doble filo"
+    },
+    {
+      "id": "scene_0032",
+      "text": "Esa noche, te sientas con tu grupo y planificas lo inevitable.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la reunión del grupo.",
+      "b_roll_suggestion": "Imágenes de planificación oscura.",
+      "on_screen_text": "Planificando lo inevitable"
+    },
+    {
+      "id": "scene_0033",
+      "text": "“Luis tiene que desaparecer”, dices, y aunque tus hombres asienten, sientes el peso de la decisión.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, decidido.",
+      "b_roll_suggestion": "Imágenes de asentimientos del grupo.",
+      "on_screen_text": "Luis tiene que desaparecer"
+    },
+    {
+      "id": "scene_0034",
+      "text": "Los días pasan mientras preparas el golpe.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de los días que pasan.",
+      "b_roll_suggestion": "Imágenes de preparación.",
+      "on_screen_text": "Preparando el golpe"
+    },
+    {
+      "id": "scene_0035",
+      "text": "La noche de la confrontación llega.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano de la noche oscura.",
+      "b_roll_suggestion": "Imágenes de tensión en el aire.",
+      "on_screen_text": "La noche de la confrontación"
+    },
+    {
+      "id": "scene_0036",
+      "text": "Te reúnes con Luis en un lugar apartado, donde solían soñar con un futuro mejor.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la reunión en un lugar apartado.",
+      "b_roll_suggestion": "Imágenes de recuerdos felices.",
+      "on_screen_text": "Donde solían soñar"
+    },
+    {
+      "id": "scene_0037",
+      "text": "“Lo siento, hermano, pero no puedo dejar que me traiciones”, le dices, mientras sacas tu arma.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, con el arma lista.",
+      "b_roll_suggestion": "Imágenes de tensión máxima.",
+      "on_screen_text": "No puedo dejar que me traiciones"
+    },
+    {
+      "id": "scene_0038",
+      "text": "Él se ríe, pero la risa se apaga rápidamente al ver la determinación en tu rostro.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de Luis riéndose nerviosamente.",
+      "b_roll_suggestion": "Imágenes de la risa apagándose.",
+      "on_screen_text": "La risa se apaga"
+    },
+    {
+      "id": "scene_0039",
+      "text": "La tensión se corta con un cuchillo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano medio de la tensión en el aire.",
+      "b_roll_suggestion": "Imágenes de la atmósfera cargada.",
+      "on_screen_text": "La tensión se corta"
+    },
+    {
+      "id": "scene_0040",
+      "text": "“Siempre estuviste celoso de mí, Marco”, dice, y en su mirada ves un destello de verdad.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Primer plano de Luis, revelando celos.",
+      "b_roll_suggestion": "Imágenes de celos y rivalidad.",
+      "on_screen_text": "Siempre estuviste celoso"
+    },
+    {
+      "id": "scene_0041",
+      "text": "Te detienes.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Encuadre del protagonista, sorprendido.",
+      "b_roll_suggestion": "Imágenes de revelaciones.",
+      "on_screen_text": "Te detienes"
+    },
+    {
+      "id": "scene_0042",
+      "text": "Antes de que puedas responder, un estruendo de balas interrumpe la conversación.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio de la conversación interrumpida.",
+      "b_roll_suggestion": "Imágenes de balas volando.",
+      "on_screen_text": "Un estruendo de balas"
+    },
+    {
+      "id": "scene_0043",
+      "text": "El cartel rival ha llegado, y en el caos, todo se descontrola.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Encuadre del caos que se desata.",
+      "b_roll_suggestion": "Imágenes de confusión y pánico.",
+      "on_screen_text": "Todo se descontrola"
+    },
+    {
+      "id": "scene_0044",
+      "text": "Te ves obligado a elegir: salvar a Luis o asegurarte de que la entrega no se pierda.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Primer plano del protagonista, enfrentando una decisión.",
+      "b_roll_suggestion": "Imágenes de decisiones críticas.",
+      "on_screen_text": "Elegir entre salvar o perder"
+    },
+    {
+      "id": "scene_0045",
+      "text": "En un instante, tomas una decisión que cambiará tu vida para siempre.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Encuadre del protagonista tomando una decisión.",
+      "b_roll_suggestion": "Imágenes de un futuro incierto.",
+      "on_screen_text": "Decisión que cambiará todo"
+    },
+    {
+      "id": "scene_0046",
+      "text": "Disparos por todas partes.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano de disparos en acción.",
+      "b_roll_suggestion": "Imágenes de caos y disparos.",
+      "on_screen_text": "Disparos por todas partes"
+    },
+    {
+      "id": "scene_0047",
+      "text": "Luis cae al suelo, y tú, en un impulso, decides cubrirlo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano de Luis cayendo.",
+      "b_roll_suggestion": "Imágenes de un acto heroico.",
+      "on_screen_text": "Decides cubrirlo"
+    },
+    {
+      "id": "scene_0048",
+      "text": "La traición se convierte en salvación.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de ambos escapando juntos.",
+      "b_roll_suggestion": "Imágenes de una huida.",
+      "on_screen_text": "La traición se convierte en salvación"
+    },
+    {
+      "id": "scene_0049",
+      "text": "Juntos, logran escapar, pero el precio es alto.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general de la noche oscura.",
+      "b_roll_suggestion": "Imágenes de consecuencias.",
+      "on_screen_text": "El precio es alto"
+    },
+    {
+      "id": "scene_0050",
+      "text": "En la sombra de la noche, la lealtad ha sido puesta a prueba, y el costo de la amistad es más caro de lo que imaginabas.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre del protagonista reflexionando.",
+      "b_roll_suggestion": "Imágenes de amistad y traición.",
+      "on_screen_text": "La lealtad puesta a prueba"
+    },
+    {
+      "id": "scene_0051",
+      "text": "Los días que siguen son un torbellino de emociones.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, confundido.",
+      "b_roll_suggestion": "Imágenes de emociones encontradas.",
+      "on_screen_text": "Torbellino de emociones"
+    },
+    {
+      "id": "scene_0052",
+      "text": "El cartel rival no se detendrá, y ahora tienes a Luis, un traidor que aún se aferra a la esperanza de redención.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre de la tensión entre ellos.",
+      "b_roll_suggestion": "Imágenes de un traidor.",
+      "on_screen_text": "Luis, un traidor"
+    },
+    {
+      "id": "scene_0053",
+      "text": "A medida que los días se convierten en semanas, la lealtad se redefine entre ustedes.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano medio de los días que pasan.",
+      "b_roll_suggestion": "Imágenes de redefinición de la lealtad.",
+      "on_screen_text": "La lealtad se redefine"
+    },
+    {
+      "id": "scene_0054",
+      "text": "Aprendes que la traición no siempre es un final; a veces, es un nuevo comienzo.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre del protagonista, reflexionando sobre la traición.",
+      "b_roll_suggestion": "Imágenes de nuevos comienzos.",
+      "on_screen_text": "La traición, un nuevo comienzo"
+    },
+    {
+      "id": "scene_0055",
+      "text": "Sin embargo, siempre queda la pregunta: ¿puedes volver a confiar en alguien que ha estado tan cerca de apuñalarte por la espalda?",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista, dudando.",
+      "b_roll_suggestion": "Imágenes de confianza rota.",
+      "on_screen_text": "¿Volver a confiar?"
+    },
+    {
+      "id": "scene_0056",
+      "text": "La historia de la traición y la redención continúa, y cada elección que haces podría llevarte más cerca de la gloria o a tu propia destrucción.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Encuadre del protagonista, enfrentando su destino.",
+      "b_roll_suggestion": "Imágenes de decisiones cruciales.",
+      "on_screen_text": "La historia continúa"
+    }
+  ],
+  "word_count": 689,
+  "character_id": "cartoon_biz_1",
+  "background_id": "dark_studio",
+  "voice_id": "male_sharp",
+  "duration_target_min": 4,
+  "target_words": 560,
+  "voice_speed": 1.0,
+  "subtitles_enabled": true,
+  "subtitle_style": "default",
+  "preset": "clean_youtube",
+  "session_id": "20260416_180807_d268a985",
+  "created_at": "2026-04-17 16:29",
+  "use_bgm": true,
+  "use_sfx": false,
+  "safe_music_path": null,
+  "safe_sfx_path": null,
+  "use_env_music": false
+}

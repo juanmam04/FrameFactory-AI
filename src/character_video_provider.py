@@ -347,6 +347,157 @@ def _render_block_heygen_with_audio(block: dict, audio_path: Path, output_path: 
     return output_path
 
 
+def _render_block_ffmpeg_layers(
+    block: dict,
+    audio_path: Path,
+    background_path: Path,
+    character_image: Path,
+    support_image: Path | None,
+    output_path: Path,
+) -> Path:
+    """
+    Fondo + (opcional) imagen de apoyo Replicate mezclada al 50% + personaje encima + audio.
+    """
+    if not shutil.which("ffmpeg"):
+        raise RuntimeError("FFmpeg no está instalado o no está en PATH.")
+    for p in (background_path, character_image, audio_path):
+        if not p.exists():
+            raise FileNotFoundError(str(p))
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _ffprobe_duration_seconds(media_path: Path) -> float:
+        if not shutil.which("ffprobe"):
+            return 0.0
+        try:
+            r = subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-show_entries",
+                    "format=duration",
+                    "-of",
+                    "default=noprint_wrappers=1:nokey=1",
+                    str(media_path.resolve()),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            return max(0.0, float((r.stdout or "").strip()))
+        except Exception:
+            return 0.0
+
+    text = (block.get("text") or "").strip()
+    audio_dur = _ffprobe_duration_seconds(audio_path)
+    if audio_dur <= 0.0:
+        words = len(text.split()) if text else 8
+        audio_dur = max(2.0, min(120.0, words / 2.2))
+    fade_out_start = max(0.0, audio_dur - 0.26)
+
+    fps = 24
+    motion = str(block.get("motion") or "static").strip().lower()
+    if motion not in ("static", "slow_push"):
+        motion = "static"
+    tin = str(block.get("transition_in") or "none").strip().lower()
+    tout = str(block.get("transition_out") or "none").strip().lower()
+    if tin not in ("none", "fade"):
+        tin = "none"
+    if tout not in ("none", "fade"):
+        tout = "none"
+
+    use_sup = bool(support_image and support_image.exists())
+    bg_s = str(background_path.resolve())
+    ch_s = str(character_image.resolve())
+    au_s = str(audio_path.resolve())
+
+    if use_sup:
+        sup_s = str(support_image.resolve())
+        compose = (
+            "[0:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p,setsar=1[bg0];"
+            "[1:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p,setsar=1[su0];"
+            "[bg0][su0]blend=all_mode=average:shortest=1[bx0];"
+            "[2:v]scale=-1:620:force_original_aspect_ratio=decrease,format=rgba,setsar=1[ch0];"
+            "[bx0][ch0]overlay=x=24:y=main_h-overlay_h-24:format=auto[vcmp]"
+        )
+        inputs: list[str] = [
+            "-y",
+            "-loop",
+            "1",
+            "-i",
+            bg_s,
+            "-loop",
+            "1",
+            "-i",
+            sup_s,
+            "-loop",
+            "1",
+            "-i",
+            ch_s,
+            "-i",
+            au_s,
+        ]
+        audio_idx = "3"
+    else:
+        compose = (
+            "[0:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p,setsar=1[bg0];"
+            "[1:v]scale=-1:620:force_original_aspect_ratio=decrease,format=rgba,setsar=1[ch0];"
+            "[bg0][ch0]overlay=x=24:y=main_h-overlay_h-24:format=auto[vcmp]"
+        )
+        inputs = ["-y", "-loop", "1", "-i", bg_s, "-loop", "1", "-i", ch_s, "-i", au_s]
+        audio_idx = "2"
+
+    if motion == "slow_push":
+        motion_chain = (
+            f"[vcmp]scale=iw*2:ih*2,"
+            f"zoompan=z='min(zoom+0.0014,1.22)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1280x720:fps={fps}[vmid]"
+        )
+    else:
+        motion_chain = (
+            "[vcmp]scale=1280:720:force_original_aspect_ratio=decrease,"
+            "pad=1280:720:(ow-iw)/2:(oh-ih)/2:color=black[vmid]"
+        )
+
+    fade_parts: list[str] = []
+    if tin == "fade":
+        fade_parts.append("fade=t=in:st=0:d=0.22")
+    if tout == "fade":
+        fade_parts.append(f"fade=t=out:st={fade_out_start:.2f}:d=0.24")
+    post = ",".join(fade_parts) if fade_parts else "format=yuv420p"
+    out_chain = f"[vmid]{post}[vout]"
+    fc_body = f"{compose};{motion_chain};{out_chain}"
+
+    cmd = [
+        "ffmpeg",
+        *inputs,
+        "-filter_complex",
+        fc_body,
+        "-map",
+        "[vout]",
+        "-map",
+        f"{audio_idx}:a",
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(fps),
+        "-c:a",
+        "aac",
+        "-b:a",
+        "192k",
+        "-shortest",
+        str(output_path.resolve()),
+    ]
+
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️ FFmpeg capas falló ({(e.stderr or '')[-500:]}); fallback personaje solo.")
+        return _render_block_ffmpeg(block, audio_path, character_image, output_path)
+    return output_path
+
+
 def _render_block_ffmpeg(block: dict, audio_path: Path, character_image: Path, output_path: Path) -> Path:
     """
     Genera un clip mp4 reproducible:
@@ -470,18 +621,171 @@ def _render_block_ffmpeg(block: dict, audio_path: Path, character_image: Path, o
     return output_path
 
 
-def render_block(block: dict, audio_path: Path, character_image: Path, output_path: Path) -> Path:
+def _render_block_ffmpeg_background_only(
+    block: dict,
+    audio_path: Path,
+    background_path: Path,
+    support_image: Path | None,
+    output_path: Path,
+) -> Path:
+    """Fondo + apoyo opcional + audio (sin personaje; storytime / Reddit)."""
+    if not shutil.which("ffmpeg"):
+        raise RuntimeError("FFmpeg no está instalado o no está en PATH.")
+    if not background_path.exists():
+        raise FileNotFoundError(str(background_path))
+    if not audio_path.exists():
+        raise FileNotFoundError(str(audio_path))
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _ffprobe_duration_seconds(media_path: Path) -> float:
+        if not shutil.which("ffprobe"):
+            return 0.0
+        try:
+            r = subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-show_entries",
+                    "format=duration",
+                    "-of",
+                    "default=noprint_wrappers=1:nokey=1",
+                    str(media_path.resolve()),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            return max(0.0, float((r.stdout or "").strip()))
+        except Exception:
+            return 0.0
+
+    text = (block.get("text") or "").strip()
+    audio_dur = _ffprobe_duration_seconds(audio_path)
+    if audio_dur <= 0.0:
+        words = len(text.split()) if text else 8
+        audio_dur = max(2.0, min(120.0, words / 2.2))
+    fade_out_start = max(0.0, audio_dur - 0.26)
+
+    fps = 24
+    motion = str(block.get("motion") or "static").strip().lower()
+    if motion not in ("static", "slow_push"):
+        motion = "static"
+    tin = str(block.get("transition_in") or "none").strip().lower()
+    tout = str(block.get("transition_out") or "none").strip().lower()
+    if tin not in ("none", "fade"):
+        tin = "none"
+    if tout not in ("none", "fade"):
+        tout = "none"
+
+    use_sup = bool(support_image and support_image.exists())
+    bg_s = str(background_path.resolve())
+    au_s = str(audio_path.resolve())
+
+    if use_sup:
+        sup_s = str(support_image.resolve())
+        compose = (
+            "[0:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p,setsar=1[bg0];"
+            "[1:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p,setsar=1[su0];"
+            "[bg0][su0]blend=all_mode=average:shortest=1[vcmp]"
+        )
+        inputs: list[str] = ["-y", "-loop", "1", "-i", bg_s, "-loop", "1", "-i", sup_s, "-i", au_s]
+        audio_idx = "2"
+    else:
+        compose = (
+            "[0:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p,setsar=1[vcmp]"
+        )
+        inputs = ["-y", "-loop", "1", "-i", bg_s, "-i", au_s]
+        audio_idx = "1"
+
+    if motion == "slow_push":
+        motion_chain = (
+            f"[vcmp]scale=iw*2:ih*2,"
+            f"zoompan=z='min(zoom+0.0014,1.22)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1280x720:fps={fps}[vmid]"
+        )
+    else:
+        motion_chain = (
+            "[vcmp]scale=1280:720:force_original_aspect_ratio=decrease,"
+            "pad=1280:720:(ow-iw)/2:(oh-ih)/2:color=black[vmid]"
+        )
+
+    fade_parts: list[str] = []
+    if tin == "fade":
+        fade_parts.append("fade=t=in:st=0:d=0.22")
+    if tout == "fade":
+        fade_parts.append(f"fade=t=out:st={fade_out_start:.2f}:d=0.24")
+    post = ",".join(fade_parts) if fade_parts else "format=yuv420p"
+    out_chain = f"[vmid]{post}[vout]"
+    fc_body = f"{compose};{motion_chain};{out_chain}"
+
+    cmd = [
+        "ffmpeg",
+        *inputs,
+        "-filter_complex",
+        fc_body,
+        "-map",
+        "[vout]",
+        "-map",
+        f"{audio_idx}:a",
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(fps),
+        "-c:a",
+        "aac",
+        "-b:a",
+        "192k",
+        "-shortest",
+        str(output_path.resolve()),
+    ]
+    subprocess.run(cmd, check=True, capture_output=True, text=True)
+    return output_path
+
+
+def render_block(
+    block: dict,
+    audio_path: Path,
+    character_image: Path,
+    output_path: Path,
+    *,
+    background_static: Path | None = None,
+    support_image: Path | None = None,
+    narration_background_only: bool = False,
+) -> Path:
     """
     Render de bloque con estrategia configurable:
     - CHARACTER_ANIMATOR_PROVIDER=external -> API externa (avatar hablante)
     - CHARACTER_ANIMATOR_PROVIDER=heygen -> HeyGen API (avatar + lipsync con audio)
-    - cualquier otro valor -> fallback FFmpeg imagen fija
+    - cualquier otro valor -> FFmpeg: fondo + apoyo + personaje, o solo personaje si no hay fondo.
+
+    background_static / support_image: solo usados en rama FFmpeg estática (no HeyGen).
+    narration_background_only: si True, solo fondo + apoyo + audio (formato Reddit / storytime).
     """
     global _heygen_runtime_disabled, _heygen_timeout_streak
+
+    if narration_background_only and background_static and background_static.exists():
+        return _render_block_ffmpeg_background_only(
+            block=block,
+            audio_path=audio_path,
+            background_path=background_static,
+            support_image=support_image,
+            output_path=output_path,
+        )
 
     provider = os.getenv("CHARACTER_ANIMATOR_PROVIDER", "ffmpeg_static").strip().lower()
     if provider == "heygen":
         if _heygen_runtime_disabled is not None:
+            if background_static and background_static.exists():
+                return _render_block_ffmpeg_layers(
+                    block=block,
+                    audio_path=audio_path,
+                    background_path=background_static,
+                    character_image=character_image,
+                    support_image=support_image,
+                    output_path=output_path,
+                )
             return _render_block_ffmpeg(
                 block=block,
                 audio_path=audio_path,
@@ -519,6 +823,15 @@ def render_block(block: dict, audio_path: Path, character_image: Path, output_pa
                     print(f"⚠️ HeyGen (bloque {bid}): {e}. FFmpeg este bloque; se reintentará HeyGen en el siguiente.")
             else:
                 print(f"⚠️ HeyGen (bloque {bid}): {e}. FFmpeg este bloque.")
+            if background_static and background_static.exists():
+                return _render_block_ffmpeg_layers(
+                    block=block,
+                    audio_path=audio_path,
+                    background_path=background_static,
+                    character_image=character_image,
+                    support_image=support_image,
+                    output_path=output_path,
+                )
             return _render_block_ffmpeg(
                 block=block,
                 audio_path=audio_path,
@@ -535,6 +848,15 @@ def render_block(block: dict, audio_path: Path, character_image: Path, output_pa
             )
         except Exception as e:
             print(f"⚠️ API externa de animación falló: {e}. Usando fallback FFmpeg estático.")
+    if background_static and background_static.exists():
+        return _render_block_ffmpeg_layers(
+            block=block,
+            audio_path=audio_path,
+            background_path=background_static,
+            character_image=character_image,
+            support_image=support_image,
+            output_path=output_path,
+        )
     return _render_block_ffmpeg(
         block=block,
         audio_path=audio_path,

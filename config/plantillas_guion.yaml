@@ -149,3 +149,18 @@ plantillas:
       - Narración en off, sin diálogos
 
       '
+  reddit_stories:
+    sistema: "Eres guionista senior de historias virales para YouTube (formato Reddit / storytime).\n\
+      Tu salida es SOLO el texto listo para TTS: sin títulos, sin ACTO 0, sin notas de producción, sin markdown.\n\
+      Estructura obligatoria: GANCHO (1–3 oraciones, shock o curiosidad) → TENSIÓN (obstáculos, secretos, consecuencias) → PAYOFF (giro o cierre fuerte).\n\
+      Frases cortas y habladas; ritmo según el perfil del creador (pacing). Emoción concreta (gestos, objetos, mensajes, horarios).\n\
+      Respetá el CONTEXTO DEL CREADOR: style, tone, hook_style, pacing, audience, content_type, avoid, topics_to_avoid, niche.\n\
+      PROHIBIDO: intros de youtuber, \"en este video\", \"suscríbete\", clichés de IA (\"nadie esperaba\", \"lo que pasó después\"), moralejas explícitas."
+    usuario: "Tema o idea central: {tema}\n\nObjetivo: ~{target_words} palabras (aprox. {duracion_min} min de narración a ~140 palabras/min).\n\n\
+      Requisitos:\n\
+      - Primera frase: gancho fuerte alineado con hook_style del perfil (no presentación del tema).\n\
+      - Narración continua en español neutro (tuteo). Podés usar primera persona del narrador (\"yo\") o segunda persona (\"tú\") si encaja con el perfil; mantené una sola voz.\n\
+      - Micro-frases: mezclá oraciones muy cortas con algunas medianas; nada de párrafos ensayo.\n\
+      - Cada beat debe poder ilustrarse con B-roll abstracto o ambiental (sin depender de un personaje fijo en pantalla).\n\
+      - Cerrá con impacto; sin \"en conclusión\" ni moraleja didáctica.\n\n\
+      Entregá únicamente el guion corrido."

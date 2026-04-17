@@ -1,12 +1,28 @@
+# Estilos ASS (force_style) para FFmpeg subtitles=.
+# Fuentes del sistema comunes (sin descargas): Arial, Impact, Georgia — uso libre en el dispositivo del usuario.
+
 default:
   description: "Subtítulo blanco centrado abajo, limpio."
   force_style: "Fontname=Arial,Fontsize=40,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=3,Shadow=0,Alignment=2,MarginV=50"
 
+# Caja oscura detrás del texto + sans-serif blanco + trazo negro (referencia “reunión 10:00”).
+studio_lower:
+  description: "Barra inferior oscura, texto blanco centrado, contorno negro fino (estilo reunión)."
+  force_style: "Fontname=Arial,Fontsize=34,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=2,Shadow=0,Alignment=2,MarginV=72,MarginL=40,MarginR=40,BackColour=&HA0101010"
+
 tiktok_karaoke:
   description: "Estilo TikTok: texto grande amarillo con borde negro, centrado."
-  force_style: "Fontname=Montserrat SemiBold,Fontsize=52,PrimaryColour=&H0000FFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=4,Shadow=0,Alignment=2,MarginV=40"
+  force_style: "Fontname=Impact,Fontsize=52,PrimaryColour=&H0000FFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=4,Shadow=0,Alignment=2,MarginV=40"
 
 clean_center:
   description: "Blanco sin borde, centrado en el medio (para shorts muy limpios)."
   force_style: "Fontname=Arial,Fontsize=44,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=0,Shadow=0,Alignment=5,MarginV=0"
+
+soft_bar:
+  description: "Franja oscura suave abajo, texto blanco legible."
+  force_style: "Fontname=Georgia,Fontsize=38,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=0,Shadow=0,Alignment=2,MarginV=36,BackColour=&H80000000"
+
+news_banner:
+  description: "Cinta superior amarilla, texto negro (estilo noticiero)."
+  force_style: "Fontname=Arial,Fontsize=36,PrimaryColour=&H00000000,OutlineColour=&H00000000,BorderStyle=3,Outline=0,Shadow=0,Alignment=8,MarginV=28,BackColour=&H00D7FF"
 

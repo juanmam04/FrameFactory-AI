@@ -55,8 +55,8 @@ def generar_guion(
     # Validar target_words
     if target_words < 80:
         target_words = 80
-    if target_words > 5000:
-        target_words = 5000
+    if target_words > 10000:
+        target_words = 10000
     
     # Calcular min/max si no se proporcionan
     if min_words is None:
@@ -75,11 +75,28 @@ def generar_guion(
     t = templates.get(plantilla, templates.get("explicativo", {}))
     
     rules = get_narrative_rules()
-    system_base = t.get("sistema", "Eres un guionista para videos. Narración continua, concreta, sin poesía ni moralejas explícitas.")
     system_extra = (rules.get("system_extra") or "").strip()
-    
-    # Agregar instrucciones de estilo al system prompt
-    style_instructions = """
+
+    if plantilla == "reddit_stories":
+        reddit_sys = (t.get("sistema") or "").strip() or (
+            "Eres guionista senior de historias virales tipo Reddit / storytime para YouTube."
+        )
+        anti_generic = (
+            "\n\nANTI-GENERIC-AI: prohibido «en un mundo lleno de», «lo que pasó a continuación», «nadie esperaba», "
+            "«esto cambiará todo», pedir suscripción, mencionar algoritmo o \"este video\"."
+        )
+        system = reddit_sys + (("\n\n" + system_extra) if system_extra else "") + anti_generic
+        if creative_context and str(creative_context).strip():
+            system += (
+                "\n\nCONTEXTO DEL CREADOR (obligatorio — tono, estilo, pacing, público, qué evitar):\n"
+                + str(creative_context).strip()
+            )
+    else:
+        system_base = t.get(
+            "sistema",
+            "Eres un guionista para videos. Narración continua, concreta, sin poesía ni moralejas explícitas.",
+        )
+        style_instructions = """
 Narración continua, concreta, sin poesía ni moralejas explícitas.
 POV en segunda persona hablándole al espectador.
 Tono cinematográfico, oscuro y tenso cuando aplique.
@@ -88,15 +105,18 @@ Mucha crudeza: muestra decisiones duras, fracasos, traiciones, violencia implíc
 No seas políticamente correcto: los personajes pueden cometer errores graves, ser egoístas, ambiciosos o crueles; tu trabajo es contar la historia como una película intensa y entretenida, no juzgarla.
 Evita solo el gore gráfico o descripciones extremadamente detalladas de daño físico; enfócate en la tensión, el impacto emocional y las consecuencias.
 """
-    
-    system = f"{system_base}\n\n{system_extra}\n\n{style_instructions}" if system_extra else f"{system_base}\n\n{style_instructions}"
-    if creative_context and str(creative_context).strip():
-        system += (
-            "\n\nCONTEXTO DEL CREADOR (adaptá tono, registro, estructura y público; "
-            "si pide un registro no cinematográfico o educativo, suavizá las instrucciones de crudeza oscura "
-            "y priorizá coherencia con el nicho y topics_to_avoid):\n"
-            + str(creative_context).strip()
+        system = (
+            f"{system_base}\n\n{system_extra}\n\n{style_instructions}"
+            if system_extra
+            else f"{system_base}\n\n{style_instructions}"
         )
+        if creative_context and str(creative_context).strip():
+            system += (
+                "\n\nCONTEXTO DEL CREADOR (adaptá tono, registro, estructura y público; "
+                "si pide un registro no cinematográfico o educativo, suavizá las instrucciones de crudeza oscura "
+                "y priorizá coherencia con el nicho y topics_to_avoid):\n"
+                + str(creative_context).strip()
+            )
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -114,6 +134,7 @@ Evita solo el gore gráfico o descripciones extremadamente detalladas de daño f
         
         # Frase clave desde config (mejora mucho el resultado)
         frase_clave = (rules.get("frase_clave") or "No escribas una escena. Escribe la vida completa del personaje.").strip()
+        duracion_min = max(1, int(round(target_words / 140.0)))
         # Para guiones largos (>1000 palabras) ser muy explícito: debe aproximarse al número
         longitud_guidance = ""
         if target_words >= 1000:
@@ -123,18 +144,36 @@ IMPORTANTE - EXTENSIÓN OBLIGATORIA: Este guion debe tener APROXIMADAMENTE {targ
 No escribas una historia corta. Desarrollá bien la trama: varias escenas, descripciones concretas, tensión, reacciones.
 Si escribís menos de {int(target_words * 0.7)} palabras no cumple. Acercate siempre al objetivo de {target_words} palabras."""
 
-        if force_este_eres_tu_opening:
-            apertura_instrucciones = """APERTURA OBLIGATORIA (NO NEGOCIABLE):
+        if plantilla == "reddit_stories":
+            user_tpl = (t.get("usuario") or "").strip()
+            if not user_tpl:
+                user_tpl = "Escribí un guion narrado en español neutro sobre: {tema}. Objetivo ~{target_words} palabras."
+            try:
+                prompt_borrador = user_tpl.format(
+                    tema=tema,
+                    duracion_min=duracion_min,
+                    target_words=target_words,
+                )
+            except KeyError:
+                prompt_borrador = (
+                    user_tpl.replace("{tema}", str(tema))
+                    .replace("{duracion_min}", str(duracion_min))
+                    .replace("{target_words}", str(target_words))
+                )
+            prompt_borrador = f"{prompt_borrador}\n\n{longitud_guidance}".strip()
+        else:
+            if force_este_eres_tu_opening:
+                apertura_instrucciones = """APERTURA OBLIGATORIA (NO NEGOCIABLE):
 - La PRIMERA oración del guion debe ser exactamente "Este eres tú." (o "Este eres tú,") seguida de la primera escena. Ejemplo: "Este eres tú. Tienes 9 años y el balón es demasiado grande para tus pies."
 - PROHIBIDO empezar con: "Hoy vamos a hablar de...", "En este video...", "Te invito a...", "¿Alguna vez te preguntaste...?", "En el día de hoy...", o cualquier intro de youtuber o presentador. El espectador ES el protagonista desde la primera palabra; no hay presentación del tema.
 - Si el tema incluye un título o descripción, NO lo repitas como intro; empieza directo con "Este eres tú." y la primera escena de la vida del personaje."""
-        else:
-            apertura_instrucciones = """APERTURA (según CONTEXTO DEL CREADOR en el system):
+            else:
+                apertura_instrucciones = """APERTURA (según CONTEXTO DEL CREADOR en el system):
 - Respetá script.opening_style, hook_style y tono del perfil. No uses la fórmula fija "Este eres tú." salvo que el perfil lo pida explícitamente.
 - PROHIBIDO empezar con: "Hoy vamos a hablar de...", "En este video...", "Te invito a...", "¿Alguna vez te preguntaste...?", "En el día de hoy...", o intros genéricas de presentador.
 - Empezá directo con tensión o curiosidad acorde al nicho, sin meta-comentarios sobre el video."""
 
-        prompt_borrador = f"""Escribe la VIDA COMPLETA del personaje, no una escena ni un resumen. El guion debe sentirse como una PELÍCULA DE CINE: una historia con TRAMA CONCRETA.
+            prompt_borrador = f"""Escribe la VIDA COMPLETA del personaje, no una escena ni un resumen. El guion debe sentirse como una PELÍCULA DE CINE: una historia con TRAMA CONCRETA.
 
 TRAMA COMO PELÍCULA (OBLIGATORIO):
 - Inventá una historia concreta, no una vida genérica. Que algo PASE: una misión, un objetivo claro, un conflicto que se resuelve (o no).
@@ -168,7 +207,7 @@ Tema: {tema}"""
         # Calcular max_tokens para el borrador: permitir salida larga (hasta 4096+ para 3000 palabras)
         tokens_por_palabra = 1.4  # español
         max_tokens_borrador = int(target_words * tokens_por_palabra * 1.4)  # margen 40%
-        max_tokens_borrador = max(1000, min(max_tokens_borrador, 16000))  # mínimo 1000, máximo 16k para guiones largos
+        max_tokens_borrador = max(1000, min(max_tokens_borrador, 16384))  # tope típico de salida por request
         
         r1 = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

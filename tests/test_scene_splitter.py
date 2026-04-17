@@ -68,3 +68,20 @@ def test_escenas_a_texto_continuo_preserva_todo():
     
     # Debe tener al menos el 90% de las palabras (puede haber espacios diferentes)
     assert len(palabras_reconstruidas & palabras_originales) >= len(palabras_originales) * 0.9
+
+
+def test_plan_scenes_reddit_segments_chunking():
+    from src.scene_planner import plan_scenes_reddit_segments
+
+    words = " ".join([f"w{i}" for i in range(25)])
+    blocks = plan_scenes_reddit_segments(words, words_per_segment=10)
+    assert len(blocks) == 3
+    assert all("text" in b and "id" in b for b in blocks)
+
+
+def test_is_reddit_story_profile():
+    from src.reddit_story_mode import is_reddit_story_profile
+
+    assert is_reddit_story_profile({"content_type": "reddit stories"}) is True
+    assert is_reddit_story_profile({"video": {"narration_format": "reddit_background"}}) is True
+    assert is_reddit_story_profile({"content_type": "educativo"}) is False

@@ -11,25 +11,53 @@ load_dotenv(BASE / ".env")
 OUTPUT_AUDIO = BASE / "output" / "audio"
 
 
-def generar_voz(texto: str, nombre_archivo: str = "narracion", formato: str = "mp3", velocidad: float = 1.0) -> Path:
+def generar_voz(
+    texto: str,
+    nombre_archivo: str = "narracion",
+    formato: str = "mp3",
+    velocidad: float = 1.0,
+    *,
+    voice_catalog: dict | None = None,
+    elevenlabs_voice_id: str | None = None,
+    openai_tts_voice: str | None = None,
+) -> Path:
     """
     Genera audio de narración con API de voz IA (ElevenLabs o OpenAI TTS).
     Exporta en mp3 o wav.
     velocidad: 1.0 = normal, 1.2 = 20% más rápido, 0.8 = 20% más lento
+    elevenlabs_voice_id: si viene, sustituye a ELEVENLABS_VOICE_ID del .env (catálogo SaaS).
+    openai_tts_voice: nombre de voz OpenAI TTS (p. ej. alloy, nova) si usás ese proveedor.
+    voice_catalog: entrada del catálogo SaaS (provider openai|elevenlabs, openai_voice, elevenlabs_voice_id).
     """
     OUTPUT_AUDIO.mkdir(parents=True, exist_ok=True)
     path = OUTPUT_AUDIO / f"{nombre_archivo}.{formato}"
 
     # Generar audio base
     audio_base = None
-    
-    # ElevenLabs: si tenés API key y voz configurada, siempre se usa esa voz (incluso textos largos, por chunks)
+
+    vc = voice_catalog if isinstance(voice_catalog, dict) else {}
+    pref_openai = str(vc.get("provider") or "").lower() == "openai"
+    el_cat = vc.get("elevenlabs_voice_id")
+    if isinstance(el_cat, str) and el_cat.strip():
+        elevenlabs_voice_id = el_cat.strip()
+    oa_cat = vc.get("openai_voice")
+    if isinstance(oa_cat, str) and oa_cat.strip():
+        openai_tts_voice = oa_cat.strip()
+
     api_key = (os.getenv("ELEVENLABS_API_KEY") or "").strip()
-    voice_id = (os.getenv("ELEVENLABS_VOICE_ID") or "21m00Tcm4TlvDq8ikWAM").strip() or "21m00Tcm4TlvDq8ikWAM"
+    openai_key = (os.getenv("OPENAI_API_KEY") or "").strip()
+    voice_id = (elevenlabs_voice_id or os.getenv("ELEVENLABS_VOICE_ID") or "21m00Tcm4TlvDq8ikWAM").strip() or "21m00Tcm4TlvDq8ikWAM"
     solo_elevenlabs = os.getenv("ELEVENLABS_SOLO", "").strip().lower() in ("1", "true", "yes")
     caracteres = len(texto)
-    
-    if api_key:
+
+    if pref_openai:
+        if openai_key:
+            audio_base = _openai_tts(texto, path, formato, voice=openai_tts_voice)
+        elif api_key:
+            audio_base = _elevenlabs(texto, path, api_key, voice_id)
+        else:
+            audio_base = None
+    elif api_key:
         try:
             audio_base = _elevenlabs(texto, path, api_key, voice_id)
         except Exception as e:
@@ -37,19 +65,14 @@ def generar_voz(texto: str, nombre_archivo: str = "narracion", formato: str = "m
                 raise RuntimeError(
                     f"ElevenLabs falló y tenés ELEVENLABS_SOLO: se usa solo la voz de ElevenLabs. Error: {e}"
                 ) from e
-            # Fallback opcional a OpenAI solo si no está ELEVENLABS_SOLO
             print(f"⚠️ ElevenLabs falló ({e})")
             print(f"   💡 Usando OpenAI TTS como alternativa...")
-            openai_key = os.getenv("OPENAI_API_KEY")
             if openai_key:
-                audio_base = _openai_tts(texto, path, formato)
+                audio_base = _openai_tts(texto, path, formato, voice=openai_tts_voice)
             else:
                 audio_base = None
-    else:
-        # Sin ElevenLabs: OpenAI TTS
-        openai_key = os.getenv("OPENAI_API_KEY")
-        if openai_key:
-            audio_base = _openai_tts(texto, path, formato)
+    elif openai_key:
+        audio_base = _openai_tts(texto, path, formato, voice=openai_tts_voice)
 
     if not audio_base:
         # Sin API: crear archivo vacío o avisar
@@ -269,7 +292,7 @@ def _elevenlabs(texto: str, path: Path, api_key: str, voice_id: str) -> Path:
         raise
 
 
-def _openai_tts(texto: str, path: Path, formato: str) -> Path:
+def _openai_tts(texto: str, path: Path, formato: str, voice: str | None = None) -> Path:
     from openai import OpenAI
     client = OpenAI()
     ext = "mp3" if formato == "mp3" else "wav"
@@ -288,7 +311,7 @@ def _openai_tts(texto: str, path: Path, formato: str) -> Path:
         
         # Obtener modelo y voz una sola vez para mantener consistencia
         modelo = os.getenv("OPENAI_TTS_MODEL", "tts-1-hd")
-        voz = os.getenv("OPENAI_TTS_VOICE", "alloy")
+        voz = (voice or os.getenv("OPENAI_TTS_VOICE", "alloy")).strip() or "alloy"
         print(f"   🎤 Usando modelo: {modelo}, voz: {voz} (consistente para todos los chunks)")
         
         chunks = []
@@ -422,9 +445,10 @@ def _openai_tts(texto: str, path: Path, formato: str) -> Path:
                 return path.with_suffix(f".{ext}")
     else:
         # Texto normal, generar directamente
+        voz_single = (voice or os.getenv("OPENAI_TTS_VOICE", "alloy")).strip() or "alloy"
         response = client.audio.speech.create(
             model=os.getenv("OPENAI_TTS_MODEL", "tts-1-hd"),
-            voice=os.getenv("OPENAI_TTS_VOICE", "alloy"),
+            voice=voz_single,
             input=texto,
         )
         path = path.with_suffix(f".{ext}")

@@ -1,0 +1,21 @@
+{% extends "layouts/base_app.html" %}
+{% block title %}Editor · FrameFactory{% endblock %}
+{% block content %}
+<h1 class="ff-page-title">Proyecto #{{ project.id }}</h1>
+<p class="ff-page-sub">Estado: <span class="ff-badge ff-badge-muted">{{ project.status }}</span></p>
+{% if project.error_message %}
+<div class="ff-alert ff-alert-error" style="white-space:pre-wrap;font-size:0.85rem;">{{ project.error_message[:2000] }}</div>
+{% endif %}
+{% if project.video_relpath %}
+<div class="ff-card" style="margin-bottom:16px;">
+  <video controls style="width:100%;max-height:480px;border-radius:10px;background:#000;" src="/app/media/project/{{ project.id }}/video"></video>
+  <p style="margin-top:10px;"><a class="ff-btn ff-btn-ghost" href="/app/media/project/{{ project.id }}/video" download>Descargar</a></p>
+</div>
+{% else %}
+<div class="ff-empty ff-card"><p>El video aún no está listo o falló el render. Refrescá la página más tarde.</p></div>
+{% endif %}
+<div class="ff-card">
+  <h3 style="margin-top:0;">Metadatos</h3>
+  <p style="color:var(--ff-muted);font-size:0.9rem;">Regeneración fina y storyboard avanzado: <code>TODO</code> — conectar al motor de frames v2.</p>
+</div>
+{% endblock %}

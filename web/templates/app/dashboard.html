@@ -1,0 +1,23 @@
+{% extends "layouts/base_app.html" %}
+{% block title %}Inicio · FrameFactory{% endblock %}
+{% block content %}
+<h1 class="ff-page-title">Hola, {{ user.name or user.email }}</h1>
+<p class="ff-page-sub">Panel de trabajo · generación con control de costos.</p>
+{% if not user.onboarding_completed_at %}
+<div class="ff-alert ff-alert-info">Completá el onboarding para desbloquear el tour guiado. <a href="/app/onboarding">Continuar</a></div>
+{% elif show_tour %}
+<div class="ff-tour-hint" data-tour="1"><strong>Tour:</strong> Usá la barra lateral para <em>Nuevo video</em>, revisá <em>Uso y tokens</em> antes de escalar, y visitá <em>Facturación</em> para el plan.</div>
+{% endif %}
+<div class="ff-kpi-row">
+  <div class="ff-kpi"><div class="v">{{ projects_count }}</div><div class="l">Proyectos</div></div>
+  <div class="ff-kpi"><div class="v">{{ ready_count }}</div><div class="l">Videos listos</div></div>
+  {% if user.role != 'admin' %}
+  <div class="ff-kpi"><div class="v">{{ token_balance }}</div><div class="l">Tokens disponibles</div></div>
+  <div class="ff-kpi"><div class="v">{{ token_cost }}</div><div class="l">Coste por render</div></div>
+  {% endif %}
+</div>
+<div class="ff-grid cols-2">
+  <div class="ff-card"><h3>Crear video</h3><p>Encolá un render largo con tu perfil y catálogos.</p><a class="ff-btn ff-btn-primary" href="/app/create" style="margin-top:10px;">Nuevo video</a></div>
+  <div class="ff-card"><h3>Biblioteca</h3><p>Estado de jobs, descargas y metadatos.</p><a class="ff-btn ff-btn-ghost" href="/app/library" style="margin-top:10px;">Abrir biblioteca</a></div>
+</div>
+{% endblock %}

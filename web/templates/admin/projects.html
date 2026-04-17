@@ -1,0 +1,21 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Admin · Proyectos{% endblock %}
+{% block content %}
+<h1 class="ff-page-title">Proyectos</h1>
+<div class="ff-table-wrap">
+  <table class="ff-table">
+    <thead><tr><th>ID</th><th>Usuario</th><th>Estado</th><th>Tema</th><th>Video</th></tr></thead>
+    <tbody>
+      {% for p in projects %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.owner_email }}</td>
+        <td>{{ p.status }}</td>
+        <td>{{ p.topic[:70] }}{% if p.topic|length > 70 %}…{% endif %}</td>
+        <td>{% if p.video_relpath %}<a href="/app/media/project/{{ p.id }}/video?admin=1">ver</a>{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "project_id": "20260417143334",
+  "topic": "Crea un video que sumerja al espectador en la vida de un criminal que tiene que mantener su vida criminal oculta a sus conocidos, y que experimenta un ascenso meteórico seguido de una caída dramática. La historia debe ser rica en detalles y decisiones críticas. Mantén un tono directo y emocionante, con una duración de 10 a 15 minutos. Cierra el video invitando a los espectadores a pensar en las decisiones que podrían cambiar su vida.",
+  "video_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\final.mp4",
+  "script": "La noche cae sobre la ciudad y tú estás en el bar de siempre, con una cerveza en la mano y el ruido de las conversaciones de fondo. La luz tenue apenas ilumina tu rostro, pero los ojos de los que te rodean no saben que, detrás de esa sonrisa despreocupada, eres un criminal. Has construido una vida doble, una fachada que protege tus verdaderas acciones. Desde afuera, eres un tipo común, un vendedor de autos usados, pero en las sombras, te mueves en el mundo del tráfico de drogas.\n\nTodo comenzó hace cinco años. Tenías apenas 25 años y te encontrabas atrapado en un trabajo que no te daba más que deudas. Un día, un viejo conocido se te acercó y te ofreció una oportunidad: “Haz un par de entregas, y te pagaré bien.” Sin pensarlo, aceptaste. La adrenalina te empujó a seguir, y pronto te descubriste disfrutando del poder que venía con cada paquete que entregabas. Tus ingresos se dispararon, y empezaste a vivir la vida que siempre soñaste.\n\nLos primeros meses fueron un torbellino: fiestas, coches lujosos y mujeres que se acercaban a ti por tu nueva imagen. Sin embargo, cada vez que sonaba el teléfono, una sombra de miedo se cernía sobre ti. Sabías que una llamada podía significar problemas. Un día, recibiste un mensaje de tu proveedor: “La policía está tras de nosotros.” La tensión aumentó. Decidiste mantenerte al margen, pero la ambición creció desmesuradamente.\n\nCon el tiempo, lograste establecerte como uno de los distribuidores más importantes de la ciudad. La presión de ocultar tu verdadera vida comenzó a desgastarte. Cada vez que te reunías con tu familia, sonreías y fingías ser el hijo ejemplar, mientras por dentro sabías que estabas arriesgando todo. Las decisiones difíciles comenzaron a acecharte: ¿deberías salir del negocio y perder lo que habías construido, o arriesgarte a caer en un juego que no puedes controlar?\n\nUn giro inesperado cambió el rumbo de tu vida. Alguien de tu círculo cercano fue arrestado y, en una operación encubierta, la policía empezó a atar cabos sueltos. La presión se intensificó. Una noche, mientras regresabas a casa, te interceptaron. La mirada de los agentes, fría y calculadora, te hizo temblar. Te arrestaron, y en ese instante, comprendiste que todo había terminado.\n\nEn la cárcel, tus sueños se desmoronaron. Los días se convirtieron en un ciclo interminable de recuerdos y arrepentimientos. La fama que habías obtenido no significaba nada ahora. Sin embargo, en ese encierro, comenzaste a pensar en las decisiones que tomaste a lo largo de tu vida. Te diste cuenta de que la ambición sin límites solo conduce a la soledad.\n\nFinalmente, al salir de prisión, solo tenías el eco de tu pasado y la certeza de que debías reconstruir tu vida desde cero. Volviste al bar donde todo comenzó. La vida te había dado una segunda oportunidad, pero ahora sabes que cada decisión cuenta. Reflexionas sobre el camino que elegiste y cómo una simple elección puede cambiarlo todo.",
+  "blocks": [
+    {
+      "id": "scene_0001",
+      "text": "La noche cae sobre la ciudad y tú estás en el bar de siempre, con una cerveza en la mano y el ruido de las conversaciones de fondo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general del bar con luces tenues.",
+      "b_roll_suggestion": "Imágenes de la ciudad de noche.",
+      "on_screen_text": "La noche cae sobre la ciudad"
+    },
+    {
+      "id": "scene_0002",
+      "text": "La luz tenue apenas ilumina tu rostro, pero los ojos de los que te rodean no saben que, detrás de esa sonrisa despreocupada, eres un criminal.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Primer plano del rostro del protagonista.",
+      "b_roll_suggestion": "Enfoque en los ojos de los clientes.",
+      "on_screen_text": "Eres un criminal disfrazado"
+    },
+    {
+      "id": "scene_0003",
+      "text": "Has construido una vida doble, una fachada que protege tus verdaderas acciones.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano medio del protagonista en la barra.",
+      "b_roll_suggestion": "Imágenes de su vida doble.",
+      "on_screen_text": "Una vida doble"
+    },
+    {
+      "id": "scene_0004",
+      "text": "Desde afuera, eres un tipo común, un vendedor de autos usados, pero en las sombras, te mueves en el mundo del tráfico de drogas.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano detalle de un auto usado.",
+      "b_roll_suggestion": "Imágenes de tráfico de drogas.",
+      "on_screen_text": "Vendedor de autos usados"
+    },
+    {
+      "id": "scene_0005",
+      "text": "Todo comenzó hace cinco años.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general del protagonista reflexionando.",
+      "b_roll_suggestion": "Flashbacks de su vida anterior.",
+      "on_screen_text": "Todo comenzó hace cinco años"
+    },
+    {
+      "id": "scene_0006",
+      "text": "Tenías apenas 25 años y te encontrabas atrapado en un trabajo que no te daba más que deudas.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista en su trabajo.",
+      "b_roll_suggestion": "Imágenes de deudas acumulándose.",
+      "on_screen_text": "Atrapado en deudas"
+    },
+    {
+      "id": "scene_0007",
+      "text": "Un día, un viejo conocido se te acercó y te ofreció una oportunidad: “Haz un par de entregas, y te pagaré bien.” Sin pensarlo, aceptaste.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano detalle de una mano extendida.",
+      "b_roll_suggestion": "Imágenes de la oferta del conocido.",
+      "on_screen_text": "Una oportunidad inesperada"
+    },
+    {
+      "id": "scene_0008",
+      "text": "La adrenalina te empujó a seguir, y pronto te descubriste disfrutando del poder que venía con cada paquete que entregabas.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista sonriendo.",
+      "b_roll_suggestion": "Imágenes de adrenalina y entregas.",
+      "on_screen_text": "Disfrutando del poder"
+    },
+    {
+      "id": "scene_0009",
+      "text": "Tus ingresos se dispararon, y empezaste a vivir la vida que siempre soñaste.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general de fiestas y lujos.",
+      "b_roll_suggestion": "Imágenes de su nueva vida.",
+      "on_screen_text": "Ingresos disparados"
+    },
+    {
+      "id": "scene_0010",
+      "text": "Los primeros meses fueron un torbellino: fiestas, coches lujosos y mujeres que se acercaban a ti por tu nueva imagen.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio de fiestas.",
+      "b_roll_suggestion": "Imágenes de coches lujosos.",
+      "on_screen_text": "Un torbellino de excesos"
+    },
+    {
+      "id": "scene_0011",
+      "text": "Sin embargo, cada vez que sonaba el teléfono, una sombra de miedo se cernía sobre ti.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del teléfono sonando.",
+      "b_roll_suggestion": "Imágenes de tensión en su rostro.",
+      "on_screen_text": "Sombra de miedo"
+    },
+    {
+      "id": "scene_0012",
+      "text": "Sabías que una llamada podía significar problemas.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista pensativo.",
+      "b_roll_suggestion": "Imágenes de llamadas inquietantes.",
+      "on_screen_text": "Una llamada peligrosa"
+    },
+    {
+      "id": "scene_0013",
+      "text": "Un día, recibiste un mensaje de tu proveedor: “La policía está tras de nosotros.” La tensión aumentó.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano detalle del mensaje en el teléfono.",
+      "b_roll_suggestion": "Imágenes de la policía en acción.",
+      "on_screen_text": "La policía está tras de nosotros"
+    },
+    {
+      "id": "scene_0014",
+      "text": "Decidiste mantenerte al margen, pero la ambición creció desmesuradamente.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista angustiado.",
+      "b_roll_suggestion": "Imágenes de ambición desmedida.",
+      "on_screen_text": "Ambición creciente"
+    },
+    {
+      "id": "scene_0015",
+      "text": "Con el tiempo, lograste establecerte como uno de los distribuidores más importantes de la ciudad.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general de la ciudad.",
+      "b_roll_suggestion": "Imágenes de su ascenso en el negocio.",
+      "on_screen_text": "Distribuidor importante"
+    },
+    {
+      "id": "scene_0016",
+      "text": "La presión de ocultar tu verdadera vida comenzó a desgastarte.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista cansado.",
+      "b_roll_suggestion": "Imágenes de estrés acumulado.",
+      "on_screen_text": "La presión aumenta"
+    },
+    {
+      "id": "scene_0017",
+      "text": "Cada vez que te reunías con tu familia, sonreías y fingías ser el hijo ejemplar, mientras por dentro sabías que estabas arriesgando todo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano detalle de una reunión familiar.",
+      "b_roll_suggestion": "Imágenes de su doble vida.",
+      "on_screen_text": "Hijo ejemplar"
+    },
+    {
+      "id": "scene_0018",
+      "text": "Las decisiones difíciles comenzaron a acecharte: ¿deberías salir del negocio y perder lo que habías construido, o arriesgarte a caer en un juego que no puedes controlar?",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista en conflicto.",
+      "b_roll_suggestion": "Imágenes de decisiones difíciles.",
+      "on_screen_text": "Decisiones difíciles"
+    },
+    {
+      "id": "scene_0019",
+      "text": "Un giro inesperado cambió el rumbo de tu vida.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general de un giro inesperado.",
+      "b_roll_suggestion": "Imágenes de su vida cambiando.",
+      "on_screen_text": "Un giro inesperado"
+    },
+    {
+      "id": "scene_0020",
+      "text": "Alguien de tu círculo cercano fue arrestado y, en una operación encubierta, la policía empezó a atar cabos sueltos.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio de la noticia del arresto.",
+      "b_roll_suggestion": "Imágenes de la policía investigando.",
+      "on_screen_text": "Un arresto cercano"
+    },
+    {
+      "id": "scene_0021",
+      "text": "La presión se intensificó.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general de la presión aumentando.",
+      "b_roll_suggestion": "Imágenes de tensión en el ambiente.",
+      "on_screen_text": "La presión se intensifica"
+    },
+    {
+      "id": "scene_0022",
+      "text": "Una noche, mientras regresabas a casa, te interceptaron.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista regresando a casa.",
+      "b_roll_suggestion": "Imágenes de su angustia.",
+      "on_screen_text": "Interceptado en la noche"
+    },
+    {
+      "id": "scene_0023",
+      "text": "La mirada de los agentes, fría y calculadora, te hizo temblar.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano de los agentes.",
+      "b_roll_suggestion": "Imágenes de la detención.",
+      "on_screen_text": "Miradas frías"
+    },
+    {
+      "id": "scene_0024",
+      "text": "Te arrestaron, y en ese instante, comprendiste que todo había terminado.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del arresto.",
+      "b_roll_suggestion": "Imágenes de la caída del protagonista.",
+      "on_screen_text": "Todo ha terminado"
+    },
+    {
+      "id": "scene_0025",
+      "text": "En la cárcel, tus sueños se desmoronaron.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general de la cárcel.",
+      "b_roll_suggestion": "Imágenes de la vida en prisión.",
+      "on_screen_text": "Sueños desmoronados"
+    },
+    {
+      "id": "scene_0026",
+      "text": "Los días se convirtieron en un ciclo interminable de recuerdos y arrepentimientos.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista reflexionando.",
+      "b_roll_suggestion": "Imágenes de recuerdos tristes.",
+      "on_screen_text": "Ciclo interminable"
+    },
+    {
+      "id": "scene_0027",
+      "text": "La fama que habías obtenido no significaba nada ahora.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general de la fama perdida.",
+      "b_roll_suggestion": "Imágenes de su pasado glorioso.",
+      "on_screen_text": "La fama no significa nada"
+    },
+    {
+      "id": "scene_0028",
+      "text": "Sin embargo, en ese encierro, comenzaste a pensar en las decisiones que tomaste a lo largo de tu vida.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista en la cárcel.",
+      "b_roll_suggestion": "Imágenes de reflexión y arrepentimiento.",
+      "on_screen_text": "Pensando en el pasado"
+    },
+    {
+      "id": "scene_0029",
+      "text": "Te diste cuenta de que la ambición sin límites solo conduce a la soledad.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Primer plano del protagonista.",
+      "b_roll_suggestion": "Imágenes de soledad.",
+      "on_screen_text": "Ambición sin límites"
+    },
+    {
+      "id": "scene_0030",
+      "text": "Finalmente, al salir de prisión, solo tenías el eco de tu pasado y la certeza de que debías reconstruir tu vida desde cero.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista saliendo de prisión.",
+      "b_roll_suggestion": "Imágenes de un nuevo comienzo.",
+      "on_screen_text": "Reconstruir desde cero"
+    },
+    {
+      "id": "scene_0031",
+      "text": "Volviste al bar donde todo comenzó.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano general del bar.",
+      "b_roll_suggestion": "Imágenes de recuerdos del pasado.",
+      "on_screen_text": "Volviendo al inicio"
+    },
+    {
+      "id": "scene_0032",
+      "text": "La vida te había dado una segunda oportunidad, pero ahora sabes que cada decisión cuenta.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "Plano medio del protagonista reflexionando.",
+      "b_roll_suggestion": "Imágenes de decisiones pasadas.",
+      "on_screen_text": "Segunda oportunidad"
+    },
+    {
+      "id": "scene_0033",
+      "text": "Reflexionas sobre el camino que elegiste y cómo una simple elección puede cambiarlo todo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "Plano detalle de su rostro pensativo.",
+      "b_roll_suggestion": "Imágenes de elecciones críticas.",
+      "on_screen_text": "Cada decisión cuenta"
+    }
+  ],
+  "word_count": 496,
+  "character_id": "cartoon_biz_1",
+  "background_id": "dark_studio",
+  "voice_id": "male_sharp",
+  "duration_target_min": 3,
+  "preset": "clean_youtube",
+  "session_id": "20260416_180807_d268a985",
+  "created_at": "2026-04-17 14:33",
+  "use_bgm": true,
+  "use_sfx": false,
+  "safe_music_path": null,
+  "safe_sfx_path": null,
+  "use_env_music": false
+}

@@ -1,0 +1,546 @@
+{
+  "version": 1,
+  "project_id": "20260417155749",
+  "topic": "Crea una narrativa que siga a un personaje que toma decisiones cruciales en un solo día, llevándolo del anonimato a ser parte del crimen organizado. El público es joven adulto interesado en historias de crimen y corrupción. Mantén un tono directo y envolvente, con giros inesperados. Al final, el espectador se preguntará cómo sus propias decisiones pueden cambiar su vida. Duración aproximada: 15 minutos. CTA: Invita a la audiencia a reflexionar sobre las decisiones que han tomado y cómo estas podrían haber cambiado su propio destino.",
+  "video_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\final_subburn.mp4",
+  "script": "La lluvia cae sobre la ciudad, empapando las calles grises y desiertas. Es de noche y la luz de los faroles apenas logra atravesar la oscuridad. Tú estás en la esquina de una calle poco transitada, con solo diecisiete años y el corazón latiendo con fuerza. Hoy es el día que cambiará tu vida para siempre.\n\nEres un chico común, un estudiante que apenas logra salir adelante en un mundo donde las oportunidades son escasas. Tu familia no tiene dinero, y las deudas ahogan a tu madre, quien trabaja largas horas en un restaurante. Tienes sueños, pero esos sueños parecen lejanos, como las estrellas que apenas puedes ver en el cielo nublado. Sin embargo, esta noche, un encuentro inesperado te empujará hacia un camino oscuro.\n\nMientras esperas a tu amigo, ves a un grupo de hombres salir de un coche negro. Son imponentes, con miradas duras y una actitud que grita poder. Uno de ellos, un tipo alto con una cicatriz en la mejilla, se acerca a ti. Te mira de arriba abajo y, en lugar de intimidarte, sientes una extraña mezcla de miedo y adrenalina. Te pregunta si necesitas trabajo. Sin pensarlo, respondes que sí. En ese instante, haces una elección que te llevará al abismo.\n\nTe conviertes en mensajero de un cartel local, una posición que te da acceso a un mundo que jamás imaginaste. Al principio, todo parece emocionante. Te pagan en efectivo y te sientes importante. Sin embargo, la emoción se ve rápidamente opacada por la realidad cruda que te rodea: la violencia, la traición y la constante desconfianza.\n\nA medida que entregas paquetes y recoges dinero, te das cuenta de que las decisiones que tomas son cada vez más arriesgadas. Un cliente te pide que entregues una bolsa a un edificio abandonado. Te advierten que no hables con nadie y que no mires a los ojos a las personas que encuentres en el camino. Te sientes como un personaje de película, pero el miedo apremiante te recuerda que esto es real.\n\nLlegas al edificio y, mientras esperas, escuchas gritos. El tiempo se detiene. Sabes que algo está mal. De repente, un grupo de hombres armados irrumpe en la escena. Te miran y, en un instante, comprendes que han llegado para limpiar. Te sientes atrapado entre la lealtad hacia tus nuevos jefes y el instinto de supervivencia que te grita que huyas. Sin pensar, decides salir corriendo. Miras hacia atrás y ves cómo se desata el caos.\n\nLogras escapar y, en tu huida, te encuentras con un viejo amigo de la escuela. Te pregunta qué ha pasado y, en ese momento, tienes que tomar otra decisión: contarle la verdad y arriesgarte a involucrarlo, o mentir y protegerlo. Optas por la mentira, porque sabes que la verdad podría ponerlo en peligro. Pero cada mentira que cuentas se convierte en una cadena que te ata más a este mundo del que intentas escapar.\n\nAl caer la noche, regresas a casa. Tu madre te mira con preocupación, pero no puedes contarle lo que realmente haces. Te sientes atrapado en una doble vida. Esa noche, cuando te acuestas, la incertidumbre te atormenta. ¿Es este el camino que quieres seguir? ¿Te has convertido en lo que siempre temiste?\n\nEl día siguiente trae una nueva misión, pero esta vez te enfrentas a un dilema aún mayor: el cartel te pide que traiciones a un rival. La presión aumenta y tus decisiones comienzan a definir quién eres. Finalmente, en una reunión en un bar oscuro, te ofrecen una oportunidad para ascender, pero debes eliminar a un compañero que sabe demasiado. Mirando su rostro, ves el reflejo de quien solías ser.\n\nDecides rechazar la oferta. Te das cuenta de que no puedes permitir que la ambición te consuma. Con un corazón pesado, te alejas de la vida criminal. Sin embargo, el costo de tus decisiones anteriores comienza a hacerse evidente, y sabes que no podrás volver a ser el mismo.\n\nMientras caminas por las calles que solías recorrer, la lluvia vuelve a caer. Te preguntas si alguna vez podrás liberarte de las cadenas que tú mismo has forjado. Este día, que comenzó como una oportunidad, se convierte en una lección dolorosa sobre cómo las decisiones pueden cambiar el rumbo de tu vida para siempre.",
+  "blocks": [
+    {
+      "id": "scene_0001",
+      "text": "La lluvia cae sobre la ciudad, empapando las calles grises y desiertas.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de la ciudad bajo la lluvia",
+      "b_roll_suggestion": "Imágenes de calles vacías y lluvia cayendo",
+      "on_screen_text": "La lluvia cae sobre la ciudad"
+    },
+    {
+      "id": "scene_0002",
+      "text": "Es de noche y la luz de los faroles apenas logra atravesar la oscuridad.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano detalle de faroles encendidos",
+      "b_roll_suggestion": "Close-up de faroles iluminando la oscuridad",
+      "on_screen_text": "Es de noche"
+    },
+    {
+      "id": "scene_0003",
+      "text": "Tú estás en la esquina de una calle poco transitada, con solo diecisiete años y el corazón latiendo con fuerza.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio del protagonista en la esquina",
+      "b_roll_suggestion": "Imágenes de un joven nervioso en la calle",
+      "on_screen_text": "Con solo diecisiete años"
+    },
+    {
+      "id": "scene_0004",
+      "text": "Hoy es el día que cambiará tu vida para siempre.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano del rostro del protagonista",
+      "b_roll_suggestion": "Imágenes de su corazón latiendo",
+      "on_screen_text": "Hoy es el día"
+    },
+    {
+      "id": "scene_0005",
+      "text": "Eres un chico común, un estudiante que apenas logra salir adelante en un mundo donde las oportunidades son escasas.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de un hogar humilde",
+      "b_roll_suggestion": "Imágenes de una familia luchando",
+      "on_screen_text": "Eres un chico común"
+    },
+    {
+      "id": "scene_0006",
+      "text": "Tu familia no tiene dinero, y las deudas ahogan a tu madre, quien trabaja largas horas en un restaurante.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano detalle de manos trabajando",
+      "b_roll_suggestion": "Imágenes de una madre en un restaurante",
+      "on_screen_text": "Tu familia no tiene dinero"
+    },
+    {
+      "id": "scene_0007",
+      "text": "Tienes sueños, pero esos sueños parecen lejanos, como las estrellas que apenas puedes ver en el cielo nublado.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general del cielo nublado",
+      "b_roll_suggestion": "Imágenes de estrellas apenas visibles",
+      "on_screen_text": "Tus sueños parecen lejanos"
+    },
+    {
+      "id": "scene_0008",
+      "text": "Sin embargo, esta noche, un encuentro inesperado te empujará hacia un camino oscuro.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista mirando",
+      "b_roll_suggestion": "Imágenes de un encuentro inesperado",
+      "on_screen_text": "Un encuentro inesperado"
+    },
+    {
+      "id": "scene_0009",
+      "text": "Mientras esperas a tu amigo, ves a un grupo de hombres salir de un coche negro.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano detalle de un coche negro",
+      "b_roll_suggestion": "Imágenes de hombres saliendo del coche",
+      "on_screen_text": "Ves a un grupo de hombres"
+    },
+    {
+      "id": "scene_0010",
+      "text": "Son imponentes, con miradas duras y una actitud que grita poder.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio de los hombres",
+      "b_roll_suggestion": "Imágenes de miradas duras",
+      "on_screen_text": "Con miradas duras"
+    },
+    {
+      "id": "scene_0011",
+      "text": "Uno de ellos, un tipo alto con una cicatriz en la mejilla, se acerca a ti.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano del hombre con cicatriz",
+      "b_roll_suggestion": "Imágenes de su cicatriz",
+      "on_screen_text": "Un tipo alto se acerca"
+    },
+    {
+      "id": "scene_0012",
+      "text": "Te mira de arriba abajo y, en lugar de intimidarte, sientes una extraña mezcla de miedo y adrenalina.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano detalle de la expresión del protagonista",
+      "b_roll_suggestion": "Imágenes de miedo y adrenalina",
+      "on_screen_text": "Una mezcla de miedo"
+    },
+    {
+      "id": "scene_0013",
+      "text": "Te pregunta si necesitas trabajo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio del diálogo",
+      "b_roll_suggestion": "Imágenes del hombre hablando",
+      "on_screen_text": "Te pregunta si necesitas trabajo"
+    },
+    {
+      "id": "scene_0014",
+      "text": "Sin pensarlo, respondes que sí.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano del protagonista asintiendo",
+      "b_roll_suggestion": "Imágenes de una decisión tomada",
+      "on_screen_text": "Respondes que sí"
+    },
+    {
+      "id": "scene_0015",
+      "text": "En ese instante, haces una elección que te llevará al abismo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de la ciudad oscura",
+      "b_roll_suggestion": "Imágenes de la noche oscura",
+      "on_screen_text": "Haces una elección"
+    },
+    {
+      "id": "scene_0016",
+      "text": "Te conviertes en mensajero de un cartel local, una posición que te da acceso a un mundo que jamás imaginaste.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista recibiendo un paquete",
+      "b_roll_suggestion": "Imágenes de un cartel local",
+      "on_screen_text": "Te conviertes en mensajero"
+    },
+    {
+      "id": "scene_0017",
+      "text": "Al principio, todo parece emocionante.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de su rostro emocionado",
+      "b_roll_suggestion": "Imágenes de dinero en efectivo",
+      "on_screen_text": "Todo parece emocionante"
+    },
+    {
+      "id": "scene_0018",
+      "text": "Te pagan en efectivo y te sientes importante.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano detalle de billetes",
+      "b_roll_suggestion": "Imágenes de un joven sintiéndose importante",
+      "on_screen_text": "Te sientes importante"
+    },
+    {
+      "id": "scene_0019",
+      "text": "Sin embargo, la emoción se ve rápidamente opacada por la realidad cruda que te rodea: la violencia, la traición y la constante desconfianza.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de un entorno violento",
+      "b_roll_suggestion": "Imágenes de violencia y traición",
+      "on_screen_text": "La realidad cruda"
+    },
+    {
+      "id": "scene_0020",
+      "text": "A medida que entregas paquetes y recoges dinero, te das cuenta de que las decisiones que tomas son cada vez más arriesgadas.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista entregando un paquete",
+      "b_roll_suggestion": "Imágenes de decisiones arriesgadas",
+      "on_screen_text": "Decisiones cada vez más arriesgadas"
+    },
+    {
+      "id": "scene_0021",
+      "text": "Un cliente te pide que entregues una bolsa a un edificio abandonado.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de un edificio abandonado",
+      "b_roll_suggestion": "Imágenes de un cliente misterioso",
+      "on_screen_text": "Un cliente te pide que entregues"
+    },
+    {
+      "id": "scene_0022",
+      "text": "Te advierten que no hables con nadie y que no mires a los ojos a las personas que encuentres en el camino.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano detalle de advertencias",
+      "b_roll_suggestion": "Imágenes de advertencias sobre el camino",
+      "on_screen_text": "Te advierten que no hables"
+    },
+    {
+      "id": "scene_0023",
+      "text": "Te sientes como un personaje de película, pero el miedo apremiante te recuerda que esto es real.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio del protagonista asustado",
+      "b_roll_suggestion": "Imágenes de su miedo",
+      "on_screen_text": "Te sientes como un personaje"
+    },
+    {
+      "id": "scene_0024",
+      "text": "Llegas al edificio y, mientras esperas, escuchas gritos.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano general del edificio",
+      "b_roll_suggestion": "Imágenes de gritos desde dentro",
+      "on_screen_text": "Escuchas gritos"
+    },
+    {
+      "id": "scene_0025",
+      "text": "El tiempo se detiene.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano detalle del tiempo deteniéndose",
+      "b_roll_suggestion": "Imágenes de un reloj",
+      "on_screen_text": "El tiempo se detiene"
+    },
+    {
+      "id": "scene_0026",
+      "text": "Sabes que algo está mal.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano del protagonista preocupado",
+      "b_roll_suggestion": "Imágenes de su intuición",
+      "on_screen_text": "Sabes que algo está mal"
+    },
+    {
+      "id": "scene_0027",
+      "text": "De repente, un grupo de hombres armados irrumpe en la escena.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de hombres armados",
+      "b_roll_suggestion": "Imágenes de la irrupción",
+      "on_screen_text": "Un grupo de hombres armados"
+    },
+    {
+      "id": "scene_0028",
+      "text": "Te miran y, en un instante, comprendes que han llegado para limpiar.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio de los hombres mirando al protagonista",
+      "b_roll_suggestion": "Imágenes de la tensión",
+      "on_screen_text": "Comprendes que han llegado"
+    },
+    {
+      "id": "scene_0029",
+      "text": "Te sientes atrapado entre la lealtad hacia tus nuevos jefes y el instinto de supervivencia que te grita que huyas.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano detalle de la lucha interna del protagonista",
+      "b_roll_suggestion": "Imágenes de su dilema",
+      "on_screen_text": "Te sientes atrapado"
+    },
+    {
+      "id": "scene_0030",
+      "text": "Sin pensar, decides salir corriendo.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista corriendo",
+      "b_roll_suggestion": "Imágenes de su huida",
+      "on_screen_text": "Decides salir corriendo"
+    },
+    {
+      "id": "scene_0031",
+      "text": "Miras hacia atrás y ves cómo se desata el caos.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano detalle de su mirada hacia atrás",
+      "b_roll_suggestion": "Imágenes del caos detrás",
+      "on_screen_text": "Miras hacia atrás"
+    },
+    {
+      "id": "scene_0032",
+      "text": "Logras escapar y, en tu huida, te encuentras con un viejo amigo de la escuela.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano general de su encuentro con un amigo",
+      "b_roll_suggestion": "Imágenes de un viejo amigo",
+      "on_screen_text": "Te encuentras con un viejo amigo"
+    },
+    {
+      "id": "scene_0033",
+      "text": "Te pregunta qué ha pasado y, en ese momento, tienes que tomar otra decisión: contarle la verdad y arriesgarte a involucrarlo, o mentir y protegerlo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio del diálogo entre amigos",
+      "b_roll_suggestion": "Imágenes de la conversación",
+      "on_screen_text": "Tienes que tomar otra decisión"
+    },
+    {
+      "id": "scene_0034",
+      "text": "Optas por la mentira, porque sabes que la verdad podría ponerlo en peligro.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano del protagonista dudando",
+      "b_roll_suggestion": "Imágenes de su dilema moral",
+      "on_screen_text": "Optas por la mentira"
+    },
+    {
+      "id": "scene_0035",
+      "text": "Pero cada mentira que cuentas se convierte en una cadena que te ata más a este mundo del que intentas escapar.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de la vida del protagonista",
+      "b_roll_suggestion": "Imágenes de cadenas simbólicas",
+      "on_screen_text": "Cada mentira te ata más"
+    },
+    {
+      "id": "scene_0036",
+      "text": "Al caer la noche, regresas a casa.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista llegando a casa",
+      "b_roll_suggestion": "Imágenes de una casa oscura",
+      "on_screen_text": "Regresas a casa"
+    },
+    {
+      "id": "scene_0037",
+      "text": "Tu madre te mira con preocupación, pero no puedes contarle lo que realmente haces.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de la madre preocupada",
+      "b_roll_suggestion": "Imágenes de su preocupación",
+      "on_screen_text": "Tu madre te mira"
+    },
+    {
+      "id": "scene_0038",
+      "text": "Te sientes atrapado en una doble vida.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista sintiéndose atrapado",
+      "b_roll_suggestion": "Imágenes de su conflicto interno",
+      "on_screen_text": "Te sientes atrapado"
+    },
+    {
+      "id": "scene_0039",
+      "text": "Esa noche, cuando te acuestas, la incertidumbre te atormenta.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de la noche oscura",
+      "b_roll_suggestion": "Imágenes de la incertidumbre",
+      "on_screen_text": "La incertidumbre te atormenta"
+    },
+    {
+      "id": "scene_0040",
+      "text": "¿Es este el camino que quieres seguir?",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano de su rostro pensativo",
+      "b_roll_suggestion": "Imágenes de sus pensamientos",
+      "on_screen_text": "¿Es este el camino?"
+    },
+    {
+      "id": "scene_0041",
+      "text": "¿Te has convertido en lo que siempre temiste?",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio del protagonista reflexionando",
+      "b_roll_suggestion": "Imágenes de su lucha interna",
+      "on_screen_text": "¿Te has convertido en lo que temías?"
+    },
+    {
+      "id": "scene_0042",
+      "text": "El día siguiente trae una nueva misión, pero esta vez te enfrentas a un dilema aún mayor: el cartel te pide que traiciones a un rival.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano general de la nueva misión",
+      "b_roll_suggestion": "Imágenes de tensión en el aire",
+      "on_screen_text": "El día siguiente trae una nueva misión"
+    },
+    {
+      "id": "scene_0043",
+      "text": "La presión aumenta y tus decisiones comienzan a definir quién eres.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio de la presión aumentando",
+      "b_roll_suggestion": "Imágenes de decisiones difíciles",
+      "on_screen_text": "La presión aumenta"
+    },
+    {
+      "id": "scene_0044",
+      "text": "Finalmente, en una reunión en un bar oscuro, te ofrecen una oportunidad para ascender, pero debes eliminar a un compañero que sabe demasiado.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano de la reunión en el bar",
+      "b_roll_suggestion": "Imágenes de una oferta tentadora",
+      "on_screen_text": "Te ofrecen una oportunidad"
+    },
+    {
+      "id": "scene_0045",
+      "text": "Mirando su rostro, ves el reflejo de quien solías ser.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio del rostro del compañero",
+      "b_roll_suggestion": "Imágenes de su reflejo",
+      "on_screen_text": "Ves el reflejo de quien eras"
+    },
+    {
+      "id": "scene_0046",
+      "text": "Decides rechazar la oferta.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano del protagonista rechazando la oferta",
+      "b_roll_suggestion": "Imágenes de su decisión",
+      "on_screen_text": "Decides rechazar la oferta"
+    },
+    {
+      "id": "scene_0047",
+      "text": "Te das cuenta de que no puedes permitir que la ambición te consuma.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de su camino",
+      "b_roll_suggestion": "Imágenes de su reflexión",
+      "on_screen_text": "No puedes permitirte caer"
+    },
+    {
+      "id": "scene_0048",
+      "text": "Con un corazón pesado, te alejas de la vida criminal.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista alejándose",
+      "b_roll_suggestion": "Imágenes de su despedida del crimen",
+      "on_screen_text": "Te alejas de la vida criminal"
+    },
+    {
+      "id": "scene_0049",
+      "text": "Sin embargo, el costo de tus decisiones anteriores comienza a hacerse evidente, y sabes que no podrás volver a ser el mismo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano general de la lluvia cayendo",
+      "b_roll_suggestion": "Imágenes de las consecuencias",
+      "on_screen_text": "El costo de tus decisiones"
+    },
+    {
+      "id": "scene_0050",
+      "text": "Mientras caminas por las calles que solías recorrer, la lluvia vuelve a caer.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista caminando",
+      "b_roll_suggestion": "Imágenes de la lluvia en las calles",
+      "on_screen_text": "Mientras caminas por las calles"
+    },
+    {
+      "id": "scene_0051",
+      "text": "Te preguntas si alguna vez podrás liberarte de las cadenas que tú mismo has forjado.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de su rostro pensativo",
+      "b_roll_suggestion": "Imágenes de su lucha interna",
+      "on_screen_text": "Te preguntas si podrás liberarte"
+    },
+    {
+      "id": "scene_0052",
+      "text": "Este día, que comenzó como una oportunidad, se convierte en una lección dolorosa sobre cómo las decisiones pueden cambiar el rumbo de tu vida para siempre.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano general de la ciudad bajo la lluvia",
+      "b_roll_suggestion": "Imágenes de la lección aprendida",
+      "on_screen_text": "Una lección dolorosa"
+    }
+  ],
+  "word_count": 710,
+  "character_id": "cartoon_biz_1",
+  "background_id": "dark_studio",
+  "voice_id": "male_sharp",
+  "duration_target_min": 4,
+  "target_words": 560,
+  "voice_speed": 1.1,
+  "subtitles_enabled": true,
+  "subtitle_style": "default",
+  "preset": "clean_youtube",
+  "session_id": "20260416_180807_d268a985",
+  "created_at": "2026-04-17 15:57",
+  "use_bgm": true,
+  "use_sfx": false,
+  "safe_music_path": null,
+  "safe_sfx_path": null,
+  "use_env_music": false
+}

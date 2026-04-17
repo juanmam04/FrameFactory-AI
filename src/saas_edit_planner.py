@@ -72,16 +72,20 @@ def annotate_blocks_with_editing(
         return _heuristic_annotate(blocks, prof)
 
     client = OpenAI(api_key=api_key)
-    compact = [
-        {"id": b.get("id"), "text": (b.get("text") or "")[:320]}
-        for b in blocks
-    ]
+    compact = []
+    for b in blocks:
+        row = {"id": b.get("id"), "text": (b.get("text") or "")[:320]}
+        v = (b.get("visual") or "").strip()
+        if v:
+            row["visual"] = v[:200]
+        compact.append(row)
     system = (
         "Sos director de montaje para YouTube. Español. "
         "Devolvé SOLO JSON válido con forma: {\"blocks\": [ ... ]}. "
         "Cada elemento debe tener: id (igual al entrante), motion (static|slow_push), "
         "transition_in (none|fade), transition_out (none|fade), "
         "visual_direction (1 frase: plano, luz, encuadre sugerido para ilustrar o B-roll), "
+        "Si el bloque trae \"visual\" (intención storytime), alineá visual_direction y b_roll_suggestion con eso. "
         "b_roll_suggestion (idea concreta de insert o overlay), "
         "on_screen_text (máx. 6 palabras o cadena vacía si no aplica). "
         "Respetá el ritmo de corte del perfil: cut_rhythm lento = más static y fades suaves; "

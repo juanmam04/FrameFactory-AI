@@ -1,0 +1,33 @@
+{% extends "layouts/base_app.html" %}
+{% block title %}Onboarding · FrameFactory{% endblock %}
+{% block content %}
+<h1 class="ff-page-title">Configurá tu estudio</h1>
+<p class="ff-page-sub">Cuatro respuestas alinean guiones y visuales a tu canal.</p>
+<form method="post" class="ff-card" style="max-width:640px;">
+  <div class="ff-form-row">
+    <label class="ff-label" for="niche">¿Qué nicho publicás?</label>
+    <input class="ff-input" id="niche" name="niche" required placeholder="Ej: finanzas personales para jóvenes profesionales"/>
+  </div>
+  <div class="ff-form-row">
+    <label class="ff-label" for="tone">Tono principal</label>
+    <select class="ff-select" id="tone" name="tone">
+      <option>Serio y claro</option>
+      <option>Cercano y humor ligero</option>
+      <option>Docente / tutorial</option>
+      <option>Storytelling cinematográfico</option>
+    </select>
+  </div>
+  <div class="ff-form-row">
+    <label class="ff-label" for="format">Formato principal</label>
+    <select class="ff-select" id="format" name="format">
+      <option value="youtube_long_16_9">YouTube horizontal 16:9</option>
+      <option value="short_vertical_9_16">Short vertical 9:16</option>
+    </select>
+  </div>
+  <div class="ff-form-row">
+    <label class="ff-label" for="notes">Nota para el director creativo (opcional)</label>
+    <textarea class="ff-textarea" id="notes" name="notes" rows="3" placeholder="Evitar slang, priorizar hooks en los primeros 20s…"></textarea>
+  </div>
+  <button type="submit" class="ff-btn ff-btn-primary">Finalizar y ver el tour</button>
+</form>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Admin · Movimientos de tokens{% endblock %}
+{% block content %}
+<h1 class="ff-page-title">Movimientos recientes</h1>
+<div class="ff-table-wrap">
+  <table class="ff-table">
+    <thead><tr><th>ID</th><th>Usuario</th><th>Fecha</th><th>Monto</th><th>Saldo tras</th><th>Motivo</th><th>Ref</th></tr></thead>
+    <tbody>
+      {% for t in transactions %}
+      <tr>
+        <td>{{ t.id }}</td>
+        <td>{{ t.user_email }}</td>
+        <td style="font-size:0.85rem;">{{ t.created_at }}</td>
+        <td>{{ t.amount }}</td>
+        <td>{{ t.balance_after }}</td>
+        <td>{{ t.reason }}</td>
+        <td style="font-size:0.85rem;">{{ t.ref_type }} {{ t.ref_id }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

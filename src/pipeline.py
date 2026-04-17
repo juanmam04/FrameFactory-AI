@@ -29,11 +29,25 @@ from .frame_director import beats_a_frame_specs
 from .frame_prompt_builder import prompt_desde_frame_spec
 from .frame_spec import guardar_frame_specs
 from .frame_image_pipeline import generar_imagenes_desde_frame_specs
-from .catalog_service import VOICES, get_character, get_background, get_voice, ensure_catalog_dirs
-from .scene_planner import plan_scenes
+from .catalog_service import (
+    VOICES,
+    ensure_catalog_dirs,
+    ensure_default_catalog_assets,
+    materialize_background_image,
+    resolve_background_id,
+    resolve_character_id,
+    resolve_saas_character_image_path,
+    resolve_voice_id,
+)
+from .image_generator import generar_imagen_apoyo_replicate
+from .scene_planner import plan_scenes, plan_scenes_reddit_segments
+from .reddit_story_mode import is_reddit_story_profile, words_per_reddit_segment
+from .scene_visual_intent import enrich_blocks_with_visual_intent
+from .reddit_publication_bundle import generar_bundle_publicacion_youtube
 from .character_video_provider import render_block, reset_heygen_runtime_state
 from .saas_creative_profile import merge_profile_disk, profile_to_script_context
 from .saas_edit_planner import annotate_blocks_with_editing
+from .saas_subtitles import burn_subtitles_on_video, list_subtitle_style_keys, write_ass_from_block_audios
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -419,6 +433,23 @@ def run(
     return video_path, metadata_path, thumbnail_path, info_dict
 
 
+def _saas_support_image_prompt(block: dict) -> str:
+    """Prompt solo-texto para Replicate (B-roll sin personaje)."""
+    vis_story = (block.get("visual") or "").strip()
+    if vis_story:
+        core = vis_story
+    else:
+        vd = (block.get("visual_direction") or "").strip()
+        br = (block.get("b_roll_suggestion") or "").strip()
+        parts = [x for x in (vd, br) if x]
+        core = ". ".join(parts) if parts else (block.get("text") or "").strip()[:280]
+    suffix = (
+        " Wide illustrative B-roll or environment shot, cinematic lighting, "
+        "no people, no faces, no characters, no text, no watermark, no logos."
+    )
+    return (core + ". " + suffix).strip()[:3500]
+
+
 def _saas_post_mix_ambient(
     video_path: Path,
     music: Path | None,
@@ -518,6 +549,14 @@ def run_saas_mvp(
     use_env_music_if_no_upload: bool = True,
     creative_profile: dict | None = None,
     session_context: str | None = None,
+    target_words: int = 420,
+    voice_speed: float = 1.0,
+    subtitles_enabled: bool = True,
+    subtitle_style_key: str = "default",
+    character_id: str | None = None,
+    background_id: str | None = None,
+    voice_id: str | None = None,
+    workspace_subdir: str | None = None,
 ) -> Path:
     """
     MVP SaaS mínimo:
@@ -527,11 +566,22 @@ def run_saas_mvp(
     Si music_path es None y use_env_music_if_no_upload, usa BACKGROUND_MUSIC_PATH del .env.
     creative_profile: perfil SaaS (guion, visual, montaje); guía al LLM y al plan por bloque.
     session_context: texto con memoria y chat de la sesión (congelado al iniciar el render).
+    target_words: objetivo de palabras del guion (80–10000; se acota internamente).
+    voice_speed: velocidad TTS (0.5–2.0); 1.0 = normal.
+    subtitles_enabled: si True, quema subtítulos sincronizados por bloque (tras el concat).
+    subtitle_style_key: clave en config/subtitle_styles.yaml (force_style ASS).
+    character_id / background_id / voice_id: elecciones del Studio SaaS (catálogo).
+    workspace_subdir: si se indica, toda la salida va a output/<subdir>/ (evita colisiones entre renders).
     """
     print("🚀 [MVP] Iniciando run_saas_mvp...")
     if not topic or not topic.strip():
         raise ValueError("topic es obligatorio para run_saas_mvp.")
     _saas_write_progress(progress_path, "Inicio", 0.0)
+
+    tw = int(target_words) if target_words is not None else 420
+    tw = max(80, min(10000, tw))
+    vs = float(voice_speed) if voice_speed is not None else 1.0
+    vs = max(0.5, min(2.0, vs))
 
     prof = merge_profile_disk(creative_profile or {})
     script_ctx = profile_to_script_context(prof)
@@ -543,57 +593,93 @@ def run_saas_mvp(
         )
     script_opening = (prof.get("script") or {}).get("opening_style") or ""
     force_pov = not bool(str(script_opening).strip())
+    reddit_mode = is_reddit_story_profile(prof)
+    if reddit_mode:
+        print("📖 [MVP] Modo historia viral (perfil): Reddit / storytime — segmentos cortos, solo fondo+B-roll.")
+        force_pov = False
 
     # ─── Estructura mínima ───────────────────────────────────────────────────
-    output_dir = BASE / "output"
+    base_output = BASE / "output"
+    base_output.mkdir(parents=True, exist_ok=True)
+    if workspace_subdir and str(workspace_subdir).strip():
+        safe = "".join(c for c in str(workspace_subdir).strip() if c.isalnum() or c in ("-", "_"))[:96]
+        if not safe:
+            safe = "workspace"
+        output_dir = (base_output / safe).resolve()
+        try:
+            output_dir.relative_to(base_output.resolve())
+        except ValueError as e:
+            raise ValueError("workspace_subdir escapa de output/") from e
+    else:
+        output_dir = base_output
     output_dir.mkdir(parents=True, exist_ok=True)
     chars_dir, bgs_dir = ensure_catalog_dirs()
-    _ = bgs_dir  # catálogo requerido aunque en MVP no compongamos fondo en el clip
+    _ = bgs_dir
+    ensure_default_catalog_assets()
 
-    # ─── Catálogo fijo del MVP ───────────────────────────────────────────────
-    character = get_character("cartoon_biz_1")
-    background = get_background("dark_studio")
+    character = resolve_character_id(character_id)
+    background = resolve_background_id(background_id)
     pref_v = prof.get("narrator_preference")
-    if isinstance(pref_v, str) and pref_v.strip() in VOICES:
-        voice = get_voice(pref_v.strip())
+    if (voice_id or "").strip():
+        voice = resolve_voice_id(voice_id)
+    elif isinstance(pref_v, str) and pref_v.strip() in VOICES:
+        voice = resolve_voice_id(pref_v.strip())
     else:
-        voice = get_voice("male_sharp")
+        voice = resolve_voice_id("male_sharp")
     print(f"🎭 [MVP] Character: {character['id']}")
     print(f"🖼️ [MVP] Background catalog: {background['id']}")
     print(f"🎙️ [MVP] Voice catalog: {voice['id']} ({voice['provider']})")
 
-    # Crear personaje placeholder si no existe (garantiza ejecución determinista del MVP)
-    character_img = BASE / character["base_image_uri"]
-    if not character_img.exists():
-        print(f"⚠️ [MVP] No existe {character_img}; creando placeholder.")
-        from PIL import Image, ImageDraw
+    scratch_assets = output_dir / "_saas_scratch"
+    scratch_assets.mkdir(parents=True, exist_ok=True)
+    bg_static_path = materialize_background_image(background, scratch_assets)
+    print(f"🖼️ [MVP] Fondo materializado: {bg_static_path.resolve()}")
 
-        character_img.parent.mkdir(parents=True, exist_ok=True)
-        img = Image.new("RGB", (1280, 720), (24, 24, 24))
-        draw = ImageDraw.Draw(img)
-        draw.ellipse((500, 120, 780, 400), fill=(255, 255, 255), outline=(0, 0, 0), width=6)
-        draw.text((430, 440), "Business Cartoon MVP", fill=(230, 230, 230))
-        img.save(character_img)
-    if not character_img.exists():
-        raise FileNotFoundError(f"[MVP] No se pudo preparar imagen de personaje: {character_img}")
+    if reddit_mode:
+        character_img = bg_static_path
+        print("🎭 [MVP] Narración sin personaje en pantalla (solo fondo / apoyo).")
+    else:
+        catalog_char = BASE / character["base_image_uri"]
+        character_img = resolve_saas_character_image_path(catalog_char)
+        if character_img.resolve() != catalog_char.resolve():
+            print(f"🎭 [MVP] Personaje desde .env o visual_bible: {character_img.resolve()}")
+        # Solo el PNG del catálogo recibe placeholder automático; env/biblia deben apuntar a un archivo real.
+        if character_img.resolve() == catalog_char.resolve() and (
+            not character_img.exists() or character_img.stat().st_size == 0
+        ):
+            print(f"⚠️ [MVP] No hay PNG válido en {character_img}; creando placeholder mínimo.")
+            from PIL import Image, ImageDraw
+
+            character_img.parent.mkdir(parents=True, exist_ok=True)
+            img = Image.new("RGB", (1280, 720), (24, 24, 24))
+            draw = ImageDraw.Draw(img)
+            draw.ellipse((500, 120, 780, 400), fill=(255, 255, 255), outline=(0, 0, 0), width=6)
+            draw.text((430, 440), "Business Cartoon MVP", fill=(230, 230, 230))
+            img.save(character_img)
+        if not character_img.exists() or character_img.stat().st_size == 0:
+            raise FileNotFoundError(f"[MVP] Imagen de personaje inválida o vacía: {character_img}")
 
     # ─── Script y escenas ────────────────────────────────────────────────────
     print("📝 [MVP] Generando guion...")
     _saas_write_progress(progress_path, "Guion", 12.0)
+    plantilla_guion = "reddit_stories" if reddit_mode else "explicativo"
     script_text, word_count, _mins = generar_guion(
         tema=topic.strip(),
-        target_words=420,  # ~3 min base
-        plantilla="explicativo",
-        segundos_por_imagen=6.0,
+        target_words=tw,
+        plantilla=plantilla_guion,
+        segundos_por_imagen=4.0 if reddit_mode else 6.0,
         creative_context=script_ctx,
-        force_este_eres_tu_opening=force_pov,
+        force_este_eres_tu_opening=False if reddit_mode else force_pov,
     )
     print(f"📊 [MVP] Guion generado: {word_count} palabras")
 
     _saas_write_progress(progress_path, "Escenas", 26.0)
-    blocks = plan_scenes(script_text)
+    if reddit_mode:
+        blocks = plan_scenes_reddit_segments(script_text, words_per_segment=words_per_reddit_segment(prof))
+    else:
+        blocks = plan_scenes(script_text)
     if not blocks:
-        raise RuntimeError("[MVP] plan_scenes devolvió 0 bloques.")
+        raise RuntimeError("[MVP] planificador de escenas devolvió 0 bloques.")
     print(f"🎬 [MVP] Bloques: {len(blocks)}")
     _saas_write_progress(progress_path, "Montaje (IA)", 30.0)
     blocks = annotate_blocks_with_editing(
@@ -601,10 +687,33 @@ def run_saas_mvp(
         prof,
         session_context=session_context,
     )
+    if reddit_mode:
+        blocks = enrich_blocks_with_visual_intent(blocks, prof)
+    pub_bundle = generar_bundle_publicacion_youtube(
+        topic=topic.strip(),
+        script_text=script_text,
+        scenes=blocks,
+        profile=prof,
+    )
     try:
         (output_dir / "saas_last_mvp_meta.json").write_text(
             json.dumps(
                 {"script": script_text, "blocks": blocks, "word_count": word_count},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        (output_dir / "saas_publication_bundle.json").write_text(
+            json.dumps(
+                {
+                    "script": script_text,
+                    "scenes": blocks,
+                    "title": pub_bundle.get("title"),
+                    "alt_titles": pub_bundle.get("alt_titles"),
+                    "description": pub_bundle.get("description"),
+                    "thumbnail": pub_bundle.get("thumbnail"),
+                },
                 ensure_ascii=False,
                 indent=2,
             ),
@@ -623,6 +732,7 @@ def run_saas_mvp(
         return f"saas_mvp_{safe}"
 
     clips: list[Path] = []
+    block_audios: list[Path] = []
     n_blocks = max(1, len(blocks))
     for i, block in enumerate(blocks, start=1):
         bid = block.get("id", f"scene_{i:04d}")
@@ -634,10 +744,27 @@ def run_saas_mvp(
         print(f"🔊 [MVP] Bloque audio | id={bid} | chars={len(btext)} | stem={audio_stem}")
         print(f"    texto: {btext[:200]}{'…' if len(btext) > 200 else ''}")
 
-        block_audio = generar_voz(btext, nombre_archivo=audio_stem, velocidad=1.0)
+        block_audio = generar_voz(
+            btext,
+            nombre_archivo=audio_stem,
+            velocidad=vs,
+            voice_catalog=voice,
+        )
         if not block_audio.exists() or block_audio.stat().st_size == 0:
             raise RuntimeError(f"[MVP] Audio de bloque inválido o vacío: {block_audio}")
         print(f"    audio_path: {block_audio.resolve()}")
+        block_audios.append(block_audio)
+
+        sup_file: Path | None = None
+        sup_cand = output_dir / f"saas_support_{i:04d}.png"
+        pct_img = 48.0 + (38.0 * (i - 1) / n_blocks)
+        _saas_write_progress(progress_path, f"Imagen apoyo {i}/{len(blocks)}", min(86.0, pct_img))
+        got = generar_imagen_apoyo_replicate(_saas_support_image_prompt(block), sup_cand, escena_num=i)
+        if got and got.exists() and got.stat().st_size > 0:
+            sup_file = got
+            print(f"    apoyo_replicate: {sup_file.resolve()}")
+        else:
+            print("    apoyo_replicate: (omitida)")
 
         clip = output_dir / f"clip_{i:04d}.mp4"
         print(f"🎞️ [MVP] Render bloque {i}/{len(blocks)} -> {clip.name}")
@@ -648,6 +775,9 @@ def run_saas_mvp(
             audio_path=block_audio,
             character_image=character_img,
             output_path=clip,
+            background_static=bg_static_path,
+            support_image=sup_file,
+            narration_background_only=reddit_mode,
         )
         if not clip.exists() or clip.stat().st_size == 0:
             raise RuntimeError(f"[MVP] Clip inválido: {clip}")
@@ -662,7 +792,8 @@ def run_saas_mvp(
     list_file = output_dir / "clips.txt"
     with open(list_file, "w", encoding="utf-8") as f:
         for c in clips:
-            f.write(f"file '{c.resolve()}'\n")
+            seg = str(c.resolve()).replace("\\", "/")
+            f.write(f"file '{seg}'\n")
 
     final_path = output_dir / "final.mp4"
     cmd = [
@@ -689,6 +820,30 @@ def run_saas_mvp(
     if not final_path.exists() or final_path.stat().st_size == 0:
         raise RuntimeError(f"[MVP] Video final no generado correctamente: {final_path}")
     print(f"✅ [MVP] Video final listo: {final_path.resolve()}")
+
+    if subtitles_enabled:
+        try:
+            styles = get_subtitle_styles()
+            sk = str(subtitle_style_key or "default").strip()
+            valid = list_subtitle_style_keys(styles)
+            if sk not in valid:
+                sk = "default" if "default" in valid else (valid[0] if valid else "default")
+            ass_path = output_dir / "saas_mvp_subs.ass"
+            write_ass_from_block_audios(
+                blocks,
+                block_audios,
+                ass_path,
+                subtitle_style_key=sk,
+            )
+            if ass_path.exists() and ass_path.stat().st_size > 80:
+                burned = output_dir / "final_subburn.mp4"
+                _saas_write_progress(progress_path, "Subtítulos", 95.0)
+                final_path = burn_subtitles_on_video(final_path, ass_path, None, burned)
+                print(f"📝 [MVP] Subtítulos quemados: {final_path.resolve()}")
+            else:
+                print("⚠️ [MVP] SRT de subtítulos vacío; se omite quemado.")
+        except Exception as e:
+            print(f"⚠️ [MVP] Subtítulos omitidos (se deja video sin quemar): {e}")
 
     mv = 0.18 if music_volume is None else max(0.0, min(0.6, float(music_volume)))
     sv = 0.08 if sfx_volume is None else max(0.0, min(0.4, float(sfx_volume)))

@@ -1,0 +1,47 @@
+{% extends "layouts/base_app.html" %}
+{% block title %}Nuevo video · FrameFactory{% endblock %}
+{% block content %}
+<h1 class="ff-page-title">Nuevo video</h1>
+<p class="ff-page-sub">El motor ejecuta el pipeline completo en segundo plano. Podés seguir el progreso en la biblioteca.</p>
+{% if block_reason %}
+<div class="ff-alert ff-alert-error">{{ block_reason }}</div>
+{% endif %}
+<form method="post" class="ff-card" style="max-width:720px;">
+  <div class="ff-form-row">
+    <label class="ff-label" for="topic">Tema / título del video</label>
+    <textarea class="ff-textarea" id="topic" name="topic" rows="3" required placeholder="De qué habla el video y qué debe sentir el espectador."></textarea>
+  </div>
+  <div class="ff-grid cols-2">
+    <div class="ff-form-row">
+      <label class="ff-label" for="character_id">Personaje</label>
+      <select class="ff-select" id="character_id" name="character_id">
+        {% for cid, c in characters.items() %}
+        <option value="{{ cid }}" {% if cid==default_char %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="ff-form-row">
+      <label class="ff-label" for="background_id">Fondo</label>
+      <select class="ff-select" id="background_id" name="background_id">
+        {% for bid, b in backgrounds.items() %}
+        <option value="{{ bid }}" {% if bid==default_bg %}selected{% endif %}>{{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="ff-form-row">
+      <label class="ff-label" for="voice_id">Voz</label>
+      <select class="ff-select" id="voice_id" name="voice_id">
+        {% for vid, v in voices.items() %}
+        <option value="{{ vid }}" {% if vid==default_voice %}selected{% endif %}>{{ v.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="ff-form-row">
+      <label class="ff-label" for="target_words">Palabras objetivo</label>
+      <input class="ff-input" id="target_words" name="target_words" type="number" min="80" max="2000" value="420"/>
+    </div>
+  </div>
+  <p style="font-size:0.88rem;color:var(--ff-muted);">Coste estimado: <strong>{{ token_cost }} tokens</strong> por render{% if user.role=='admin' %} · <span class="ff-badge ff-badge-success">Admin sin consumo</span>{% endif %}.</p>
+  <button type="submit" class="ff-btn ff-btn-primary" {% if block_reason %}disabled{% endif %}>Encolar generación</button>
+</form>
+{% endblock %}

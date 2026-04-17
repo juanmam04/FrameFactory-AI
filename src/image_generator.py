@@ -695,6 +695,44 @@ def _generar_imagen_replicate(
     return path
 
 
+def generar_imagen_apoyo_replicate(
+    prompt: str,
+    destino_png: Path,
+    *,
+    escena_num: int = 1,
+    width: int = 1280,
+    height: int = 720,
+) -> Path | None:
+    """
+    B-roll / imagen de apoyo con Replicate en modo solo texto (sin input_image del personaje).
+    Requiere REPLICATE_API_TOKEN.
+    """
+    if not _usar_replicate():
+        print("⚠️ [apoyo] Sin REPLICATE_API_TOKEN: se omite imagen Replicate.")
+        return None
+    destino_png.parent.mkdir(parents=True, exist_ok=True)
+    tmp = _generar_imagen_replicate(
+        (prompt or "").strip(),
+        destino_png.parent,
+        escena_num=int(escena_num) % 90000 + 1,
+        width=width,
+        height=height,
+        text_only=True,
+    )
+    if tmp and tmp.exists():
+        if tmp.resolve() != destino_png.resolve():
+            try:
+                shutil.move(str(tmp.resolve()), str(destino_png.resolve()))
+            except OSError:
+                destino_png.write_bytes(tmp.read_bytes())
+                try:
+                    tmp.unlink()
+                except OSError:
+                    pass
+        return destino_png if destino_png.exists() else None
+    return None
+
+
 def _prompt_fallback_stickman(escena_num: int) -> str:
     """Prompt de respaldo en estilo stickman cuando hay rechazo o error; evita fotos realistas aleatorias."""
     estilo = get_estilo_base()

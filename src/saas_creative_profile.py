@@ -10,6 +10,9 @@ from .catalog_service import VOICES
 
 def default_creative_profile() -> dict[str, Any]:
     return {
+        "style": "",
+        "content_type": "",
+        "avoid": [],
         "niche": "",
         "audience": {
             "who": "",
@@ -37,6 +40,8 @@ def default_creative_profile() -> dict[str, Any]:
             "primary_format": "youtube_long_16_9",
             "target_length_category": "medium",
             "aspect_notes": "",
+            "content_type": "",
+            "narration_format": "",
         },
         "visual": {
             "look": "",
@@ -167,11 +172,17 @@ def profile_to_edit_planner_context(profile: dict[str, Any]) -> str:
     p = merge_profile_disk(profile)
     return json.dumps(
         {
+            "style": p.get("style", ""),
+            "content_type": p.get("content_type", ""),
+            "avoid": p.get("avoid", []),
             "visual": p.get("visual", {}),
             "editing": p.get("editing", {}),
             "video": p.get("video", {}),
             "tone": p.get("tone", ""),
+            "hook_style": p.get("hook_style", ""),
+            "pacing": p.get("pacing", ""),
             "niche": p.get("niche", ""),
+            "audience": p.get("audience", {}),
         },
         ensure_ascii=False,
         indent=2,

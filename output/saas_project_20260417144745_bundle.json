@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "project_id": "20260417144745",
+  "topic": "La narrativa sigue un día clave en tu vida como un político corrupto. Se presentan las decisiones que tomaste que te llevaron a perderlo todo, explorando cómo una elección puede llevarte a la ruina o al poder absoluto. Este video debe atraer a aquellos fascinados por historias de corrupción y sus consecuencias, utilizando un tono cinematográfico y ágil en la edición. Duración ideal de 15 minutos, con un cierre reflexivo sobre la fragilidad del poder.",
+  "video_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\final.mp4",
+  "script": "La lluvia golpea el cristal de tu oficina en el séptimo piso. Son las 7:00 a.m. y el café humeante es tu único consuelo en un día decisivo. Un escándalo de corrupción amenaza tu carrera política. Recuerdas el trato oscuro con el cartel local que te llevó a la cima, pero ahora la prensa tiene pruebas. ¿Te atreverás a jugar tu última carta?\n\nA las 10:00 a.m., te reúnes con tu asesor. Propone desviar la atención hacia un rival, incriminándolo en un escándalo mayor. Decides arriesgarte. La tarde avanza y, en la asamblea, defiendes tu inocencia mientras atacas a tu rival. Sin embargo, un periodista no se dejará engañar.\n\nA las 5:00 p.m., recibes una llamada: el periodista tiene un testimonio que podría derrumbarte. Te diriges a un bar oscuro y ofreces una negociación al cartel. Regresas a casa sintiéndote invencible, pero esa noche, un video tuyo es filtrado. \n\nA la mañana siguiente, la policía toca a tu puerta. Mientras te llevan, oyes a la multitud gritar tu nombre, pero son gritos de repudio. En el centro de detención, observas la vida pasar y te preguntas si valió la pena. Un día eres el rey, al siguiente, un paria.",
+  "blocks": [
+    {
+      "id": "scene_0001",
+      "text": "La lluvia golpea el cristal de tu oficina en el séptimo piso.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de la lluvia golpeando el cristal",
+      "b_roll_suggestion": "imágenes de lluvia en la ciudad",
+      "on_screen_text": "La lluvia golpea el cristal"
+    },
+    {
+      "id": "scene_0002",
+      "text": "Son las 7:00 a.m.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio de un reloj marcando las 7:00 a.m.",
+      "b_roll_suggestion": "overlay de un reloj en movimiento",
+      "on_screen_text": "Son las 7:00 a.m."
+    },
+    {
+      "id": "scene_0003",
+      "text": "y el café humeante es tu único consuelo en un día decisivo.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de una taza de café humeante",
+      "b_roll_suggestion": "imágenes de café sirviéndose",
+      "on_screen_text": "Tu único consuelo"
+    },
+    {
+      "id": "scene_0004",
+      "text": "Un escándalo de corrupción amenaza tu carrera política.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio de un hombre preocupado en su oficina",
+      "b_roll_suggestion": "insert de documentos sobre corrupción",
+      "on_screen_text": "Un escándalo de corrupción"
+    },
+    {
+      "id": "scene_0005",
+      "text": "Recuerdas el trato oscuro con el cartel local que te llevó a la cima, pero ahora la prensa tiene pruebas.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de un rostro angustiado",
+      "b_roll_suggestion": "overlay de recortes de prensa",
+      "on_screen_text": "Recuerdas el trato oscuro"
+    },
+    {
+      "id": "scene_0006",
+      "text": "¿Te atreverás a jugar tu última carta?",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio de un hombre pensativo",
+      "b_roll_suggestion": "imágenes de un juego de cartas",
+      "on_screen_text": "¿Te atreverás a jugar?"
+    },
+    {
+      "id": "scene_0007",
+      "text": "A las 10:00 a.m., te reúnes con tu asesor.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de una oficina con un asesor",
+      "b_roll_suggestion": "insert de un gráfico de estrategia",
+      "on_screen_text": "Te reúnes con tu asesor"
+    },
+    {
+      "id": "scene_0008",
+      "text": "Propone desviar la atención hacia un rival, incriminándolo en un escándalo mayor.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del asesor hablando",
+      "b_roll_suggestion": "overlay de un rival en la prensa",
+      "on_screen_text": "Incriminar a un rival"
+    },
+    {
+      "id": "scene_0009",
+      "text": "Decides arriesgarte.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de un hombre decidido",
+      "b_roll_suggestion": "imágenes de una decisión crucial",
+      "on_screen_text": "Decides arriesgarte"
+    },
+    {
+      "id": "scene_0010",
+      "text": "La tarde avanza y, en la asamblea, defiendes tu inocencia mientras atacas a tu rival.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de un hombre defendiendo su inocencia",
+      "b_roll_suggestion": "overlay de un debate intenso",
+      "on_screen_text": "Defiendes tu inocencia"
+    },
+    {
+      "id": "scene_0011",
+      "text": "Sin embargo, un periodista no se dejará engañar.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de un periodista escéptico",
+      "b_roll_suggestion": "insert de un micrófono",
+      "on_screen_text": "Un periodista no se engañará"
+    },
+    {
+      "id": "scene_0012",
+      "text": "A las 5:00 p.m., recibes una llamada: el periodista tiene un testimonio que podría derrumbarte.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de un teléfono sonando",
+      "b_roll_suggestion": "overlay de un mensaje de texto",
+      "on_screen_text": "Recibes una llamada"
+    },
+    {
+      "id": "scene_0013",
+      "text": "Te diriges a un bar oscuro y ofreces una negociación al cartel.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de un bar oscuro",
+      "b_roll_suggestion": "imágenes de un trato clandestino",
+      "on_screen_text": "Ofreces una negociación"
+    },
+    {
+      "id": "scene_0014",
+      "text": "Regresas a casa sintiéndote invencible, pero esa noche, un video tuyo es filtrado.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de un hombre regresando a casa",
+      "b_roll_suggestion": "overlay de un video filtrado",
+      "on_screen_text": "Regresas sintiéndote invencible"
+    },
+    {
+      "id": "scene_0015",
+      "text": "A la mañana siguiente, la policía toca a tu puerta.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de una puerta siendo golpeada",
+      "b_roll_suggestion": "imágenes de la policía",
+      "on_screen_text": "La policía toca a tu puerta"
+    },
+    {
+      "id": "scene_0016",
+      "text": "Mientras te llevan, oyes a la multitud gritar tu nombre, pero son gritos de repudio.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de un hombre siendo llevado",
+      "b_roll_suggestion": "overlay de gritos de la multitud",
+      "on_screen_text": "Gritos de repudio"
+    },
+    {
+      "id": "scene_0017",
+      "text": "En el centro de detención, observas la vida pasar y te preguntas si valió la pena.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de un centro de detención",
+      "b_roll_suggestion": "imágenes de la vida pasando",
+      "on_screen_text": "Te preguntas si valió la pena"
+    },
+    {
+      "id": "scene_0018",
+      "text": "Un día eres el rey, al siguiente, un paria.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de un hombre reflexionando",
+      "b_roll_suggestion": "overlay de imágenes de su ascenso",
+      "on_screen_text": "Un día eres el rey"
+    }
+  ],
+  "word_count": 199,
+  "character_id": "cartoon_biz_1",
+  "background_id": "dark_studio",
+  "voice_id": "male_sharp",
+  "duration_target_min": 1,
+  "target_words": 140,
+  "voice_speed": 1.2,
+  "subtitles_enabled": true,
+  "subtitle_style": "default",
+  "preset": "clean_youtube",
+  "session_id": "20260416_180807_d268a985",
+  "created_at": "2026-04-17 14:47",
+  "use_bgm": true,
+  "use_sfx": false,
+  "safe_music_path": null,
+  "safe_sfx_path": null,
+  "use_env_music": false
+}

@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import os
+import random
+import secrets
 import threading
 import time
 from datetime import datetime
@@ -12,7 +14,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.catalog_service import BACKGROUNDS, CHARACTERS, VOICES, get_background, get_character, get_voice
-from src.config_loader import BASE, get_background_music_path
+from src.config_loader import BASE, get_background_music_path, get_subtitle_styles
 from src.pipeline import run_saas_mvp
 from src.saas_audio_catalog import ensure_audio_dirs, list_safe_music, list_safe_sfx
 from src.saas_creative_profile import (
@@ -35,6 +37,7 @@ from src.saas_sessions import (
 )
 from src.scene_planner import plan_scenes
 from src.script_generator import generar_guion
+from src.saas_subtitles import list_subtitle_style_keys, subtitle_style_preview_html
 
 load_dotenv(BASE / ".env")
 
@@ -45,6 +48,23 @@ CHAT_STORE = OUTPUT_DIR / "saas_agent_chat.json"
 RENDER_PROGRESS = OUTPUT_DIR / ".saas_render_progress.json"
 
 PRESETS = ["clean_youtube", "dynamic_punchy", "minimal_subtle"]
+
+# Ritmo de referencia solo para estimaciones en la UI (no afecta al modelo).
+_SAAS_WORDS_PER_MIN = 140.0
+
+
+def _saas_estimated_speech_minutes(words: int, voice_speed: float = 1.0) -> tuple[float, float]:
+    """(minutos de guion a ritmo ~140 ppm, minutos de audio si el TTS va a esa velocidad)."""
+    w = max(0, int(words))
+    sp = max(0.5, min(2.0, float(voice_speed)))
+    base = w / _SAAS_WORDS_PER_MIN if _SAAS_WORDS_PER_MIN else 0.0
+    playback = base / sp if sp > 0 else base
+    return base, playback
+
+
+def _saas_duration_min_from_words(words: int) -> int:
+    """Minutos enteros para metadatos (misma referencia ~140 palabras/min)."""
+    return max(1, int(round(max(0, int(words)) / _SAAS_WORDS_PER_MIN)))
 
 
 def _ensure_dirs() -> None:
@@ -82,6 +102,76 @@ def _update_project(project_id: str, **fields: object) -> None:
             items[i] = {**it, **fields}
             break
     _save_projects(items)
+
+
+def _project_bundle_path(project_id: str) -> Path:
+    return OUTPUT_DIR / f"saas_project_{project_id}_bundle.json"
+
+
+def _write_project_bundle(
+    project_id: str,
+    *,
+    video_path: str,
+    topic: str,
+    script: str,
+    blocks: list,
+    word_count: int | None,
+    job: dict | None,
+    project_row: dict | None,
+) -> Path | None:
+    """Guarda guion, bloques y metadatos para la biblioteca."""
+    row = project_row or {}
+    jb = job or {}
+    data = {
+        "version": 1,
+        "project_id": str(project_id),
+        "topic": topic,
+        "video_path": video_path,
+        "script": script,
+        "blocks": blocks,
+        "word_count": word_count,
+        "character_id": row.get("character_id") or jb.get("character_id"),
+        "background_id": row.get("background_id") or jb.get("background_id"),
+        "voice_id": row.get("voice_id") or jb.get("voice_id"),
+        "duration_target_min": row.get("duration_target_min") or jb.get("duration_target_min"),
+        "target_words": row.get("target_words") or jb.get("target_words"),
+        "voice_speed": row.get("voice_speed") if row.get("voice_speed") is not None else jb.get("voice_speed"),
+        "subtitles_enabled": row.get("subtitles_enabled") if row.get("subtitles_enabled") is not None else jb.get("subtitles_enabled"),
+        "subtitle_style": row.get("subtitle_style") or jb.get("subtitle_style"),
+        "preset": row.get("preset") or jb.get("preset"),
+        "session_id": row.get("session_id") or jb.get("session_id"),
+        "created_at": row.get("created_at"),
+        "use_bgm": row.get("use_bgm"),
+        "use_sfx": row.get("use_sfx"),
+        "safe_music_path": row.get("safe_music_path"),
+        "safe_sfx_path": row.get("safe_sfx_path"),
+        "use_env_music": row.get("use_env_music"),
+    }
+    path = _project_bundle_path(project_id)
+    try:
+        path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        return path
+    except Exception:
+        return None
+
+
+def _load_project_row(project_id: str) -> dict | None:
+    for it in _load_projects():
+        if str(it.get("id")) == str(project_id):
+            return it
+    return None
+
+
+def _read_project_bundle(project_row: dict) -> dict | None:
+    p = project_row.get("bundle_path")
+    cand = Path(p) if p else _project_bundle_path(str(project_row.get("id", "")))
+    if not cand.exists():
+        return None
+    try:
+        raw = json.loads(cand.read_text(encoding="utf-8"))
+        return raw if isinstance(raw, dict) else None
+    except Exception:
+        return None
 
 
 def _load_profile_disk() -> dict | None:
@@ -438,7 +528,10 @@ def _init_state() -> None:
     st.session_state.create_topic = ""
     st.session_state.create_twist = ""
     st.session_state.create_idea_pack = None
-    st.session_state.create_duration = 4
+    st.session_state.create_target_words = 560
+    st.session_state.create_voice_speed = 1.0
+    st.session_state.create_subtitles_enabled = True
+    st.session_state.create_subtitle_style = "default"
     st.session_state.create_character = list(CHARACTERS.keys())[0]
     st.session_state.create_background = list(BACKGROUNDS.keys())[0]
     st.session_state.create_voice = list(VOICES.keys())[0]
@@ -459,6 +552,7 @@ def _init_state() -> None:
     st.session_state.last_blocks = []
     st.session_state.block_approved = {}
     st.session_state.render = None
+    st.session_state.library_selected_pid = None
 
 
 def _nav() -> None:
@@ -515,6 +609,7 @@ def _nav() -> None:
         for label, key in [
             ("Inicio", "Dashboard"),
             ("Nuevo video", "Create"),
+            ("Biblioteca", "Library"),
             ("Render", "Rendering"),
             ("Revisar", "Review"),
             ("Perfil", "Profile"),
@@ -568,8 +663,8 @@ def page_dashboard() -> None:
                 st.caption(f"{badge} · {it.get('created_at', '')}")
             with c_b:
                 if st.button("Abrir", key=f"dash_open_{it['id']}"):
-                    st.session_state.last_video_path = it.get("video_path")
-                    st.session_state.nav = "Review"
+                    st.session_state.library_selected_pid = str(it.get("id", ""))
+                    st.session_state.nav = "Library"
                     st.rerun()
 
 
@@ -581,7 +676,7 @@ def _build_video_topic() -> str:
     return base
 
 
-def _heuristic_video_ideas(pm: dict, mem: str) -> list[dict[str, str]]:
+def _heuristic_video_ideas(pm: dict, mem: str, seed: int | None = None) -> list[dict[str, str]]:
     niche = (pm.get("niche") or "").strip() or "tu nicho"
     tone = (pm.get("tone") or "").strip() or "conversacional"
     who = str((pm.get("audience") or {}).get("who") or "").strip() or "tu audiencia"
@@ -614,17 +709,26 @@ def _heuristic_video_ideas(pm: dict, mem: str) -> list[dict[str, str]]:
             f"Video coherente con la línea de la sesión: {mem[:300].strip()}{'…' if len(mem) > 300 else ''} "
             f"— encuadrá el tema «{niche}» con tono {tone}."
         )
+    rng = random.Random(seed if seed is not None else (time.time_ns() % (2**32)))
+    rng.shuffle(lines)
     out: list[dict[str, str]] = []
     for i, prompt in enumerate(lines[:7]):
         short = prompt[:100] + ("…" if len(prompt) > 100 else "")
-        out.append({"title": f"Propuesta {i + 1}", "hook": short, "prompt": prompt})
+        out.append({"title": f"Propuesta {i + 1} · v{rng.randint(100, 999)}", "hook": short, "prompt": prompt})
     return out
 
 
-def _ia_video_idea_pack(pm: dict, mem: str, messages: list[dict]) -> list[dict[str, str]]:
+def _ia_video_idea_pack(
+    pm: dict,
+    mem: str,
+    messages: list[dict],
+    *,
+    previous_pack: list[dict] | None = None,
+) -> list[dict[str, str]]:
+    seed = time.time_ns() % (2**32)
     client = _get_openai_client()
     if not client:
-        return _heuristic_video_ideas(pm, mem)
+        return _heuristic_video_ideas(pm, mem, seed=seed)
     slim: list[dict[str, str]] = []
     for m in messages[-16:]:
         if not isinstance(m, dict) or m.get("role") not in ("user", "assistant"):
@@ -633,6 +737,32 @@ def _ia_video_idea_pack(pm: dict, mem: str, messages: list[dict]) -> list[dict[s
         if len(c) > 2400:
             c = c[:2400] + "…"
         slim.append({"role": m["role"], "content": c})
+    nonce = f"{secrets.token_hex(6)}-{int(time.time())}"
+    lenses_pool = [
+        "documental breve con dato sorpresa",
+        "historia POV en segunda persona con giro final",
+        "listado contraintuitivo (lo que creés vs lo que pasa)",
+        "formato 'un solo día que lo cambió todo'",
+        "pregunta incómoda + evidencia",
+        "mini caso real ficticio con consecuencias",
+        "versus: dos caminos frente al mismo problema",
+        "cierre abierto que invite al comentario",
+        "analogía fuerte + desmontaje paso a paso",
+        "error común + experimento mental",
+    ]
+    rng = random.Random(seed)
+    lenses = rng.sample(lenses_pool, k=min(4, len(lenses_pool)))
+    prev_digest: list[dict[str, str]] = []
+    if isinstance(previous_pack, list):
+        for it in previous_pack[:10]:
+            if not isinstance(it, dict):
+                continue
+            prev_digest.append(
+                {
+                    "title": str(it.get("title") or "")[:100],
+                    "hook": str(it.get("hook") or "")[:180],
+                }
+            )
     system = (
         "Sos planner de contenidos YouTube. Español. Devolvé SOLO JSON con clave 'ideas' (array de 5 a 8 objetos). "
         "Cada objeto: title (corto), hook (una línea), prompt (texto largo en español neutro para que otro modelo escriba el guion: "
@@ -640,6 +770,9 @@ def _ia_video_idea_pack(pm: dict, mem: str, messages: list[dict]) -> list[dict[s
         "Basate en el perfil, la memoria de sesión y el chat. "
         "Si el perfil trae `idea_generation`, obedecelo al pie de la letra: `brief` define qué clase de ideas querés (género, registro, variedad); "
         "`angles_to_favor` son temas o formatos a priorizar; `angles_to_avoid` es lo que no debe aparecer en ninguna sugerencia. "
+        "IMPORTANTE: cada pedido debe producir ideas NUEVAS (otros formatos, otros conflictos, otros ganchos). "
+        "No repitas títulos ni premises de ideas_anteriores_a_evitar. "
+        "Usá los `lentes_creativos` como estímulo de variedad (no copies literalmente los nombres en todos los títulos). "
         "Sin markdown fuera del JSON."
     )
     user = json.dumps(
@@ -648,22 +781,42 @@ def _ia_video_idea_pack(pm: dict, mem: str, messages: list[dict]) -> list[dict[s
             "memoria_sesion": (mem or "")[:4000],
             "chat_reciente": slim,
             "recordatorio_ideas": "Las propuestas deben alinearse con idea_generation del perfil cuando exista.",
+            "anti_repeticion_nonce": nonce,
+            "lentes_creativos": lenses,
+            "ideas_anteriores_a_evitar": prev_digest,
+            "instruccion": (
+                f"Este es el pedido #{nonce}: generá un lote fresco. "
+                f"Explorá ángulos distintos a los de ideas_anteriores_a_evitar (si viene vacío, igual variá formatos y conflictos)."
+            ),
         },
         ensure_ascii=False,
     )
     try:
-        r = client.chat.completions.create(
+        kwargs = dict(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            temperature=0.55,
+            temperature=0.92,
+            top_p=0.96,
+            frequency_penalty=0.35,
+            presence_penalty=0.25,
             max_tokens=3500,
             response_format={"type": "json_object"},
             messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
         )
+        try:
+            r = client.chat.completions.create(**kwargs)
+        except Exception:
+            kwargs.pop("frequency_penalty", None)
+            kwargs.pop("presence_penalty", None)
+            try:
+                r = client.chat.completions.create(**kwargs)
+            except Exception:
+                kwargs.pop("top_p", None)
+                r = client.chat.completions.create(**kwargs)
         raw = (r.choices[0].message.content or "").strip()
         parsed = parse_llm_json_object(raw) or {}
         ideas = parsed.get("ideas")
         if not isinstance(ideas, list) or not ideas:
-            return _heuristic_video_ideas(pm, mem)
+            return _heuristic_video_ideas(pm, mem, seed=seed)
         out: list[dict[str, str]] = []
         for it in ideas[:8]:
             if not isinstance(it, dict):
@@ -674,9 +827,9 @@ def _ia_video_idea_pack(pm: dict, mem: str, messages: list[dict]) -> list[dict[s
             if len(prompt) < 40:
                 continue
             out.append({"title": title, "hook": hook or prompt[:120], "prompt": prompt})
-        return out if out else _heuristic_video_ideas(pm, mem)
+        return out if out else _heuristic_video_ideas(pm, mem, seed=seed)
     except Exception:
-        return _heuristic_video_ideas(pm, mem)
+        return _heuristic_video_ideas(pm, mem, seed=seed)
 
 
 def _pick_card(title: str, options: list[str], state_key: str, fmt=None) -> None:
@@ -738,13 +891,20 @@ def page_create() -> None:
         g1, g2, g3 = st.columns([1, 1, 2])
         with g1:
             if st.button("Generar ideas con IA", type="primary", use_container_width=True, key="saas_gen_ideas"):
+                prev = st.session_state.get("create_idea_pack")
+                prev_list = prev if isinstance(prev, list) else None
                 st.session_state.create_idea_pack = _ia_video_idea_pack(
-                    pm, mem, st.session_state.agent_messages
+                    pm,
+                    mem,
+                    st.session_state.agent_messages,
+                    previous_pack=prev_list,
                 )
                 st.rerun()
         with g2:
             if st.button("Ideas rápidas (sin API)", use_container_width=True, key="saas_heur_ideas"):
-                st.session_state.create_idea_pack = _heuristic_video_ideas(pm, mem)
+                st.session_state.create_idea_pack = _heuristic_video_ideas(
+                    pm, mem, seed=time.time_ns() % (2**32)
+                )
                 st.rerun()
         with g3:
             if st.button("Ir a Perfil", use_container_width=True, key="saas_goto_prof"):
@@ -772,7 +932,7 @@ def page_create() -> None:
 
         st.markdown("### 3 · Tema final del video (obligatorio)")
         st.caption(
-            "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** vas a elegir personaje, fondo, voz, duración objetivo, música y SFX — no hace falta repetir eso acá."
+            "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** vas a elegir personaje, fondo, voz, velocidad de voz, largo del guion (palabras), subtítulos, música y SFX — no hace falta repetir eso acá."
         )
         idea = st.text_area(
             "Tema / brief para el guion",
@@ -797,6 +957,11 @@ def page_create() -> None:
                 st.rerun()
 
     elif st.session_state.create_step == 2:
+        if "create_target_words" not in st.session_state:
+            d = int(st.session_state.get("create_duration", 4) or 4)
+            st.session_state.create_target_words = max(80, min(10000, d * 140))
+        if "create_voice_speed" not in st.session_state:
+            st.session_state.create_voice_speed = 1.0
         st.markdown("### Estilo del video")
         _pick_card(
             "Personaje",
@@ -806,14 +971,89 @@ def page_create() -> None:
         )
         _pick_card("Fondo", list(BACKGROUNDS.keys()), "create_background", lambda k: k.replace("_", " ").title())
         _pick_card("Voz", list(VOICES.keys()), "create_voice", lambda k: k.replace("_", " ").title())
+        st.session_state.create_voice_speed = float(
+            st.slider(
+                "Velocidad de la voz (TTS)",
+                0.5,
+                2.0,
+                float(st.session_state.get("create_voice_speed", 1.0)),
+                step=0.05,
+                help="1.0 = normal. Más alto = audio más corto (reproducción más rápida).",
+            )
+        )
         _pick_card("Preset", PRESETS, "create_preset", lambda k: k.replace("_", " "))
-        st.session_state.create_duration = st.slider("Duración objetivo (min)", 3, 8, st.session_state.create_duration)
+        tw = int(
+            st.slider(
+                "Palabras del guion (objetivo)",
+                80,
+                10000,
+                int(st.session_state.get("create_target_words", 560)),
+                step=20,
+                help="El generador intenta acercarse a este largo (tope 10000 por límites de la API).",
+            )
+        )
+        st.session_state.create_target_words = tw
+        _bm, _pm = _saas_estimated_speech_minutes(tw, float(st.session_state.create_voice_speed))
+        st.caption(
+            f"Guion: ≈ **{_bm:.1f} min** a ~{int(_SAAS_WORDS_PER_MIN)} palabras/min. "
+            f"Con la velocidad de voz elegida, el audio TTS ≈ **{_pm:.1f} min** (estimación)."
+        )
+
+        st.markdown("#### Subtítulos en el video")
+        st.caption(
+            "Tipografías **del sistema** (p. ej. Arial, Impact) — sin descargas extra; "
+            "elegí el aspecto por la miniatura, no por nombre interno."
+        )
+        st.caption(
+            "Imágenes de apoyo por bloque: Replicate **solo texto** (sin tu personaje en el B-roll). "
+            "Requiere `REPLICATE_API_TOKEN` en `.env`; si falta, el video igual usa fondo + personaje."
+        )
+        st.session_state.create_subtitles_enabled = st.checkbox(
+            "Incluir subtítulos en el MP4",
+            value=bool(st.session_state.get("create_subtitles_enabled", True)),
+        )
+        if st.session_state.create_subtitles_enabled:
+            _styles = get_subtitle_styles()
+            _sub_keys = list_subtitle_style_keys(_styles)
+            if not _sub_keys:
+                st.warning("No hay estilos de subtítulo en config/subtitle_styles.yaml.")
+            else:
+                _cur = str(st.session_state.get("create_subtitle_style") or "default")
+                if _cur not in _sub_keys:
+                    _cur = "default" if "default" in _sub_keys else _sub_keys[0]
+                    st.session_state.create_subtitle_style = _cur
+                _nc = len(_sub_keys)
+                _rows = (_nc + 2) // 3
+                _idx = 0
+                for _r in range(_rows):
+                    _cols = st.columns(3)
+                    for _c in range(3):
+                        if _idx >= _nc:
+                            break
+                        _k = _sub_keys[_idx]
+                        _idx += 1
+                        with _cols[_c]:
+                            _sel = str(st.session_state.get("create_subtitle_style")) == _k
+                            _bcol = "#6366f1" if _sel else "#2d2d3a"
+                            st.markdown(
+                                f'<div style="border:2px solid {_bcol};border-radius:10px;padding:6px;background:#0f0f14;">'
+                                f"{subtitle_style_preview_html(_k)}"
+                                "</div>",
+                                unsafe_allow_html=True,
+                            )
+                            if st.button("Usar este aspecto", key=f"saas_sub_pick_{_k}", use_container_width=True):
+                                st.session_state.create_subtitle_style = _k
+                                st.rerun()
 
         st.markdown("#### Sonido seguro para YouTube")
         st.markdown(
             "Descargá música y SFX **solo** desde la [Biblioteca de audio de YouTube](https://support.google.com/youtube/answer/3376882?hl=es) "
             "(Studio) y colocá los archivos en `assets/saas_youtube_audio/music/` y `.../sfx/`. "
             "Google **no** ofrece API pública para esa biblioteca: la app solo mezcla archivos que vos pongás ahí."
+        )
+        st.caption(
+            "Si el selector de música solo muestra «Ninguna», la carpeta está vacía: agregá ahí `.mp3` o `.wav` "
+            "y recargá la app. Opcional: activá «Usar también BACKGROUND_MUSIC_PATH» si en `.env` tenés una pista local."
         )
         st.session_state.create_use_bgm = st.checkbox(
             "Música bajo la voz",
@@ -902,11 +1142,17 @@ def page_create() -> None:
             elif st.session_state.get("create_use_bgm"):
                 bgm_note = "Sí (sin pista; revisá carpeta o .env)"
         sfx_note = "Sí" if st.session_state.get("create_use_sfx") and st.session_state.get("create_safe_sfx_path") else "No"
+        _sum_tw = int(st.session_state.get("create_target_words", 560))
+        _sum_bm, _sum_pm = _saas_estimated_speech_minutes(_sum_tw, float(st.session_state.get("create_voice_speed", 1.0)))
+        _sub_on = bool(st.session_state.get("create_subtitles_enabled", True))
+        _sub_line = "**Subtítulos:** sí (el aspecto es el que marcaste con la miniatura en el paso anterior)." if _sub_on else "**Subtítulos:** no."
         st.markdown(
             f"**Tema (guion):** {topic_final[:320]}{'…' if len(topic_final) > 320 else ''}\n\n"
             f"**Personaje:** {ch.get('name')} · **Fondo:** {st.session_state.create_background} · "
-            f"**Voz:** {st.session_state.create_voice} · **Preset:** {st.session_state.create_preset} · "
-            f"**Duración:** {st.session_state.create_duration} min\n\n"
+            f"**Voz:** {st.session_state.create_voice} (×{float(st.session_state.get('create_voice_speed', 1.0)):.2f}) · "
+            f"**Preset:** {st.session_state.create_preset} · "
+            f"**Guion:** ~{_sum_tw} palabras (≈{_sum_bm:.1f} min; audio ≈{_sum_pm:.1f} min)\n\n"
+            f"{_sub_line}\n\n"
             f"**Música:** {bgm_note} · **SFX:** {sfx_note}"
         )
         c1, c2 = st.columns(2)
@@ -918,6 +1164,10 @@ def page_create() -> None:
             if st.button("Generar video", type="primary", use_container_width=True):
                 _session_persist()
                 pid = datetime.now().strftime("%Y%m%d%H%M%S")
+                _tw = int(st.session_state.get("create_target_words", 560))
+                _vs = float(st.session_state.get("create_voice_speed", 1.0))
+                _sub_en = bool(st.session_state.get("create_subtitles_enabled", True))
+                _sub_st = str(st.session_state.get("create_subtitle_style") or "default")
                 _append_project(
                     {
                         "id": pid,
@@ -928,7 +1178,11 @@ def page_create() -> None:
                         "character_id": st.session_state.create_character,
                         "background_id": st.session_state.create_background,
                         "voice_id": st.session_state.create_voice,
-                        "duration_target_min": st.session_state.create_duration,
+                        "target_words": _tw,
+                        "voice_speed": _vs,
+                        "duration_target_min": _saas_duration_min_from_words(_tw),
+                        "subtitles_enabled": _sub_en,
+                        "subtitle_style": _sub_st if _sub_en else None,
                         "preset": st.session_state.create_preset,
                         "use_bgm": st.session_state.get("create_use_bgm", True),
                         "use_sfx": st.session_state.get("create_use_sfx", False),
@@ -944,6 +1198,14 @@ def page_create() -> None:
                     "holder": [None],
                     "err": [None],
                     "started": False,
+                    "character_id": st.session_state.create_character,
+                    "background_id": st.session_state.create_background,
+                    "voice_id": st.session_state.create_voice,
+                    "target_words": _tw,
+                    "voice_speed": _vs,
+                    "duration_target_min": _saas_duration_min_from_words(_tw),
+                    "preset": st.session_state.create_preset,
+                    "session_id": str(st.session_state.get("active_session_id") or ""),
                     "use_bgm": st.session_state.get("create_use_bgm", True),
                     "use_sfx": st.session_state.get("create_use_sfx", False),
                     "safe_music_path": st.session_state.get("create_safe_music_path"),
@@ -951,6 +1213,8 @@ def page_create() -> None:
                     "use_env_music": st.session_state.get("create_use_env_music", False),
                     "music_volume": st.session_state.get("create_music_vol", 0.18),
                     "sfx_volume": st.session_state.get("create_sfx_vol", 0.08),
+                    "subtitles_enabled": _sub_en,
+                    "subtitle_style_key": _sub_st if _sub_en else "default",
                     "creative_profile": json.loads(
                         json.dumps(merge_profile_disk(st.session_state.creative_profile), ensure_ascii=False)
                     ),
@@ -1000,6 +1264,13 @@ def _run_mvp_thread(topic: str, holder: list, err: list, opts: dict | None) -> N
             use_env_music_if_no_upload=use_env_flag,
             creative_profile=opts.get("creative_profile"),
             session_context=opts.get("session_context"),
+            target_words=int(opts.get("target_words", 420)),
+            voice_speed=float(opts.get("voice_speed", 1.0)),
+            subtitles_enabled=bool(opts.get("subtitles_enabled", True)),
+            subtitle_style_key=str(opts.get("subtitle_style_key") or "default"),
+            character_id=(str(opts.get("character_id") or "").strip() or None),
+            background_id=(str(opts.get("background_id") or "").strip() or None),
+            voice_id=(str(opts.get("voice_id") or "").strip() or None),
         )
     except Exception as e:
         err[0] = e
@@ -1028,6 +1299,13 @@ def page_rendering() -> None:
             "sfx_volume": job.get("sfx_volume", 0.08),
             "creative_profile": job.get("creative_profile"),
             "session_context": job.get("session_context"),
+            "target_words": int(job.get("target_words", 420)),
+            "voice_speed": float(job.get("voice_speed", 1.0)),
+            "subtitles_enabled": bool(job.get("subtitles_enabled", True)),
+            "subtitle_style_key": str(job.get("subtitle_style_key") or "default"),
+            "character_id": str(job.get("character_id") or ""),
+            "background_id": str(job.get("background_id") or ""),
+            "voice_id": str(job.get("voice_id") or ""),
         }
         t = threading.Thread(
             target=_run_mvp_thread,
@@ -1069,19 +1347,23 @@ def page_rendering() -> None:
 
     st.session_state.last_video_path = str(out)
     meta_path = OUTPUT_DIR / "saas_last_mvp_meta.json"
+    meta: dict = {}
     if meta_path.exists():
         try:
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            if not isinstance(meta, dict):
+                meta = {}
             st.session_state.last_script = str(meta.get("script") or "")
             st.session_state.last_blocks = meta.get("blocks") or []
         except Exception:
+            meta = {}
             prof = merge_profile_disk(st.session_state.get("creative_profile"))
             ctx = profile_to_script_context(prof)
             op = (prof.get("script") or {}).get("opening_style") or ""
             force_pov = not bool(str(op).strip())
             script_text, _, _ = generar_guion(
                 job["topic"],
-                target_words=420,
+                target_words=int(job.get("target_words", 420)),
                 plantilla="explicativo",
                 segundos_por_imagen=6.0,
                 creative_context=ctx,
@@ -1096,7 +1378,7 @@ def page_rendering() -> None:
         force_pov = not bool(str(op).strip())
         script_text, _, _ = generar_guion(
             job["topic"],
-            target_words=420,
+            target_words=int(job.get("target_words", 420)),
             plantilla="explicativo",
             segundos_por_imagen=6.0,
             creative_context=ctx,
@@ -1104,17 +1386,166 @@ def page_rendering() -> None:
         )
         st.session_state.last_script = script_text
         st.session_state.last_blocks = plan_scenes(script_text)
-    _update_project(
+    prow = _load_project_row(pid)
+    wc = meta.get("word_count") if isinstance(meta.get("word_count"), (int, float)) else None
+    bpath = _write_project_bundle(
         pid,
-        status="ready",
         video_path=str(out),
         topic=job["topic"],
+        script=st.session_state.last_script,
+        blocks=st.session_state.last_blocks,
+        word_count=int(wc) if wc is not None else None,
+        job=job,
+        project_row=prow,
     )
+    upd: dict = {
+        "status": "ready",
+        "video_path": str(out),
+        "topic": job["topic"],
+    }
+    if bpath is not None:
+        upd["bundle_path"] = str(bpath.resolve())
+    _update_project(pid, **upd)
     st.session_state.render = None
     st.success("Video listo.")
     st.session_state.nav = "Review"
     time.sleep(0.3)
     st.rerun()
+
+
+def page_library() -> None:
+    st.markdown('<p class="saas-hero">Biblioteca</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="saas-sub">Videos generados: reproducí el MP4, leé el guion completo y el plan por bloque.</p>',
+        unsafe_allow_html=True,
+    )
+    items = _load_projects()
+    if not items:
+        st.info("Todavía no hay proyectos. Creá un video desde **Nuevo video**.")
+        return
+    ids = [str(x.get("id", "")) for x in items]
+    labels = []
+    for x in items:
+        stt = str(x.get("status", ""))
+        lab = {"ready": "Listo", "rendering": "Render", "failed": "Error"}.get(stt, stt)
+        tpc = (x.get("topic") or "Sin título").replace("\n", " ")[:56]
+        labels.append(f"{lab} · {tpc} · {x.get('created_at', '')}")
+
+    default_i = 0
+    want = st.session_state.get("library_selected_pid")
+    if want and str(want) in ids:
+        default_i = ids.index(str(want))
+
+    pick = st.selectbox("Proyecto", list(range(len(items))), index=default_i, format_func=lambda i: labels[i], key="lib_pick")
+    row = items[int(pick)]
+    pid = str(row.get("id", ""))
+    st.session_state.library_selected_pid = pid
+
+    st.divider()
+    st.markdown(f"#### `{pid}`")
+    st.caption(f"Estado: **{row.get('status', '—')}** · Creado: {row.get('created_at', '—')}")
+
+    if row.get("status") == "failed":
+        st.error(row.get("error") or "El render falló.")
+        st.markdown(f"**Tema:** {(row.get('topic') or '')[:2000]}")
+        return
+
+    bundle = _read_project_bundle(row)
+    bd = bundle or {}
+    _sen = row.get("subtitles_enabled")
+    if _sen is None:
+        _sen = bd.get("subtitles_enabled")
+    if _sen is True:
+        st.caption("Subtítulos: **sí** (quemados en el video).")
+    elif _sen is False:
+        st.caption("Subtítulos: **no**.")
+    vp = row.get("video_path") or bd.get("video_path")
+    topic = row.get("topic") or bd.get("topic")
+    script = str(bd.get("script") or "")
+    blocks = bd.get("blocks") if isinstance(bd.get("blocks"), list) else []
+
+    if topic:
+        with st.expander("Tema / brief enviado al generador", expanded=False):
+            st.write(topic)
+
+    if vp:
+        pvp = Path(str(vp))
+        if not pvp.is_absolute():
+            pvp = BASE / pvp
+        if pvp.exists():
+            st.video(str(pvp.resolve()))
+            st.caption(str(pvp.resolve()))
+        else:
+            st.warning(f"No se encuentra el archivo de video: {pvp}")
+    elif row.get("status") == "ready":
+        st.info("Video marcado listo pero sin ruta de archivo.")
+
+    if script.strip():
+        cdl, cdr = st.columns(2)
+        with cdl:
+            st.download_button(
+                "Descargar guion (.txt)",
+                data=str(script).encode("utf-8"),
+                file_name=f"guion_{pid}.txt",
+                mime="text/plain",
+                key=f"dl_txt_{pid}",
+            )
+        with cdr:
+            if bd:
+                st.download_button(
+                    "Descargar paquete (.json)",
+                    data=json.dumps(bd, ensure_ascii=False, indent=2).encode("utf-8"),
+                    file_name=f"proyecto_{pid}.json",
+                    mime="application/json",
+                    key=f"dl_json_{pid}",
+                )
+        if bd.get("word_count") is not None:
+            st.caption(f"Palabras (aprox.): **{bd.get('word_count')}**")
+        st.markdown("##### Guion completo")
+        st.text_area(" ", value=str(script), height=320, disabled=True, label_visibility="collapsed", key=f"lib_script_{pid}")
+    elif row.get("status") == "ready":
+        st.info("Este proyecto no tiene paquete guardado (versión anterior de la app). Solo queda el tema y la ruta de video si existen.")
+
+    twm = row.get("target_words") if row.get("target_words") is not None else bd.get("target_words")
+    dtm = row.get("duration_target_min") or bd.get("duration_target_min")
+    vsp = row.get("voice_speed") if row.get("voice_speed") is not None else bd.get("voice_speed")
+    meta_cols = st.columns(6)
+    with meta_cols[0]:
+        st.metric("Personaje", str(row.get("character_id") or bd.get("character_id") or "—"))
+    with meta_cols[1]:
+        st.metric("Fondo", str(row.get("background_id") or bd.get("background_id") or "—"))
+    with meta_cols[2]:
+        st.metric("Voz", str(row.get("voice_id") or bd.get("voice_id") or "—"))
+    with meta_cols[3]:
+        st.metric("Vel. voz", f"{float(vsp):.2f}×" if vsp is not None else "—")
+    with meta_cols[4]:
+        st.metric("Palabras (obj.)", str(twm) if twm is not None else "—")
+    with meta_cols[5]:
+        st.metric("Min guion (aprox.)", str(dtm) if dtm is not None else "—")
+
+    if isinstance(blocks, list) and blocks:
+        st.markdown("##### Bloques y plan de montaje")
+        for b in blocks[:60]:
+            bid = str(b.get("id", ""))
+            st.markdown(f"**{bid}**")
+            st.caption((b.get("text") or "")[:400])
+            st.caption(
+                f"Movimiento: `{b.get('motion', '—')}` · Transiciones: {b.get('transition_in', '—')} → {b.get('transition_out', '—')}"
+            )
+            vd = (b.get("visual_direction") or "").strip()
+            if vd:
+                st.caption(f"Plano/luz: {vd[:300]}")
+            st.divider()
+
+    if script.strip() and st.button("Abrir en pestaña Revisión", key=f"lib_to_rev_{pid}"):
+        pth = Path(str(vp)) if vp else None
+        if pth is not None and not pth.is_absolute():
+            pth = BASE / pth
+        st.session_state.last_video_path = str(pth.resolve()) if pth and pth.exists() else (str(pth) if pth else "")
+        st.session_state.last_script = script
+        st.session_state.last_blocks = list(blocks or [])
+        st.session_state.nav = "Review"
+        st.rerun()
 
 
 def page_review() -> None:
@@ -1133,6 +1564,7 @@ def page_review() -> None:
             st.warning("Archivo de video no encontrado.")
     with right:
         st.markdown("#### Guion por bloques (con plan de montaje IA)")
+        st.info("**Regeneración:** próximamente conectada al pipeline (desde acá podrás re-generar clip, audio o imagen de apoyo por bloque).")
         for b in st.session_state.last_blocks[:40]:
             bid = str(b.get("id", ""))
             approved = st.session_state.block_approved.get(bid, False)
@@ -1152,8 +1584,12 @@ def page_review() -> None:
                 st.caption(f"Texto en pantalla sugerido: **{tx}**")
             c1, c2, c3 = st.columns(3)
             with c1:
-                if st.button("Regenerar", key=f"rg_{bid}"):
-                    st.toast("Regeneración: próximamente conectada al pipeline.")
+                st.button(
+                    "Regenerar",
+                    key=f"rg_{bid}",
+                    disabled=True,
+                    help="Próximamente conectado al pipeline: re-render del bloque sin volver a crear todo el video.",
+                )
             with c2:
                 if st.button("Aprobar", key=f"ap_{bid}"):
                     st.session_state.block_approved[bid] = True
@@ -1424,6 +1860,8 @@ def render_app() -> None:
         page_dashboard()
     elif nav == "Create":
         page_create()
+    elif nav == "Library":
+        page_library()
     elif nav == "Rendering":
         page_rendering()
     elif nav == "Review":

@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "project_id": "20260417150653",
+  "topic": "Imagina ser parte de una jornada típica en la vida de un político corrupto que ha hecho pactos con grupos criminales. A través de esta experiencia inmersiva, explora sus luchas internas y cómo justifica sus acciones mientras se desenvuelve entre corrupción y poder. La narrativa debe ser atrapante con giros inesperados, utilizando recursos visuales potentes generados por IA para reforzar la atmósfera oscura del video, cuya duración oscilará entre 12 y 18 minutos, cerrando con una reflexión sobre ética en política.",
+  "video_path": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\output\\final_subburn.mp4",
+  "script": "La oficina está en penumbra, impregnada de tabaco y café frío. Hoy es el día decisivo: una reunión a las 10:00 a.m. con el cartel más poderoso de la ciudad. Te miras al espejo, ajustas la corbata y te repites que es solo un trato más, un sacrificio por el bien mayor.\n\nA las 9:30 a.m., llegas al restaurante, rodeado de fotos de políticos sonrientes. La voz de tu esposa resuena en tu mente: \"No te conviertas en lo que odias\". Te sientas con el líder del cartel, un hombre de mirada fría. Hablan de contratos y favores, y te das cuenta de que cada pacto te aleja de quien solías ser.\n\nEl almuerzo se complica cuando entran periodistas. Con un movimiento sutil, pasas un sobre bajo la mesa, una donación para su silencio. El sudor recorre tu frente. Al final, has prometido más de lo que puedes cumplir, cegado por la ambición.\n\nMás tarde, un escándalo estalla: un colega es arrestado. El miedo te inunda. Un amigo de la policía te advierte que están tras de ti. La paranoia crece; cada sombra parece un informante. \n\nMientras miras por la ventana, anhelas la vida simple que dejaste atrás. Pero la ambición te recuerda que no hay retorno. La ciudad brilla, pero solo ves oscuridad. Te das cuenta de que el verdadero enemigo eres tú mismo. El ciclo de corrupción sigue girando.",
+  "blocks": [
+    {
+      "id": "scene_0001",
+      "text": "La oficina está en penumbra, impregnada de tabaco y café frío.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano de la oficina oscura",
+      "b_roll_suggestion": "imágenes de café frío y humo de tabaco",
+      "on_screen_text": "La oficina está en penumbra"
+    },
+    {
+      "id": "scene_0002",
+      "text": "Hoy es el día decisivo: una reunión a las 10:00 a.m.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista mirando el reloj",
+      "b_roll_suggestion": "reloj marcando las 9:30 a.m.",
+      "on_screen_text": "Hoy es el día decisivo"
+    },
+    {
+      "id": "scene_0003",
+      "text": "con el cartel más poderoso de la ciudad.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de la ciudad con edificios altos",
+      "b_roll_suggestion": "imágenes del cartel en la ciudad",
+      "on_screen_text": "con el cartel más poderoso"
+    },
+    {
+      "id": "scene_0004",
+      "text": "Te miras al espejo, ajustas la corbata y te repites que es solo un trato más, un sacrificio por el bien mayor.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano del protagonista en el espejo",
+      "b_roll_suggestion": "reflejo del protagonista ajustando la corbata",
+      "on_screen_text": "Es solo un trato más"
+    },
+    {
+      "id": "scene_0005",
+      "text": "A las 9:30 a.m., llegas al restaurante, rodeado de fotos de políticos sonrientes.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano del restaurante con fotos en las paredes",
+      "b_roll_suggestion": "imágenes de políticos sonrientes",
+      "on_screen_text": "Llegas al restaurante"
+    },
+    {
+      "id": "scene_0006",
+      "text": "La voz de tu esposa resuena en tu mente: \"No te conviertas en lo que odias\".",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio del protagonista pensativo",
+      "b_roll_suggestion": "imágenes de recuerdos familiares",
+      "on_screen_text": "No te conviertas en lo que odias"
+    },
+    {
+      "id": "scene_0007",
+      "text": "Te sientas con el líder del cartel, un hombre de mirada fría.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano del líder del cartel en la mesa",
+      "b_roll_suggestion": "primer plano del líder con mirada fría",
+      "on_screen_text": "Te sientas con el líder"
+    },
+    {
+      "id": "scene_0008",
+      "text": "Hablan de contratos y favores, y te das cuenta de que cada pacto te aleja de quien solías ser.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de la mesa con documentos",
+      "b_roll_suggestion": "imágenes de contratos y favores",
+      "on_screen_text": "Cada pacto te aleja de ti"
+    },
+    {
+      "id": "scene_0009",
+      "text": "El almuerzo se complica cuando entran periodistas.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de la entrada del restaurante",
+      "b_roll_suggestion": "imágenes de periodistas entrando",
+      "on_screen_text": "El almuerzo se complica"
+    },
+    {
+      "id": "scene_0010",
+      "text": "Con un movimiento sutil, pasas un sobre bajo la mesa, una donación para su silencio.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano de la mano pasando el sobre",
+      "b_roll_suggestion": "imágenes del sobre bajo la mesa",
+      "on_screen_text": "Una donación para su silencio"
+    },
+    {
+      "id": "scene_0011",
+      "text": "El sudor recorre tu frente.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano del rostro del protagonista",
+      "b_roll_suggestion": "imágenes del sudor en su frente",
+      "on_screen_text": "El sudor recorre tu frente"
+    },
+    {
+      "id": "scene_0012",
+      "text": "Al final, has prometido más de lo que puedes cumplir, cegado por la ambición.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano del protagonista mirando hacia abajo",
+      "b_roll_suggestion": "imágenes de ambición reflejada",
+      "on_screen_text": "Cegado por la ambición"
+    },
+    {
+      "id": "scene_0013",
+      "text": "Más tarde, un escándalo estalla: un colega es arrestado.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de un televisor con noticias",
+      "b_roll_suggestion": "imágenes de un colega siendo arrestado",
+      "on_screen_text": "Un escándalo estalla"
+    },
+    {
+      "id": "scene_0014",
+      "text": "El miedo te inunda.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano del protagonista con expresión de miedo",
+      "b_roll_suggestion": "imágenes de sombras en la calle",
+      "on_screen_text": "El miedo te inunda"
+    },
+    {
+      "id": "scene_0015",
+      "text": "Un amigo de la policía te advierte que están tras de ti.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano del amigo hablando",
+      "b_roll_suggestion": "imágenes de la policía en acción",
+      "on_screen_text": "Un amigo te advierte"
+    },
+    {
+      "id": "scene_0016",
+      "text": "La paranoia crece; cada sombra parece un informante.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano del protagonista mirando por la ventana",
+      "b_roll_suggestion": "imágenes de sombras moviéndose",
+      "on_screen_text": "La paranoia crece"
+    },
+    {
+      "id": "scene_0017",
+      "text": "Mientras miras por la ventana, anhelas la vida simple que dejaste atrás.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano del protagonista anhelando",
+      "b_roll_suggestion": "imágenes de su vida pasada",
+      "on_screen_text": "Anhelas la vida simple"
+    },
+    {
+      "id": "scene_0018",
+      "text": "Pero la ambición te recuerda que no hay retorno.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de la ciudad iluminada",
+      "b_roll_suggestion": "imágenes de luces brillantes",
+      "on_screen_text": "No hay retorno"
+    },
+    {
+      "id": "scene_0019",
+      "text": "La ciudad brilla, pero solo ves oscuridad.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano del protagonista en la oscuridad",
+      "b_roll_suggestion": "imágenes de la ciudad oscura",
+      "on_screen_text": "Solo ves oscuridad"
+    },
+    {
+      "id": "scene_0020",
+      "text": "Te das cuenta de que el verdadero enemigo eres tú mismo.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano del protagonista reflexionando",
+      "b_roll_suggestion": "imágenes de su lucha interna",
+      "on_screen_text": "El verdadero enemigo eres tú"
+    },
+    {
+      "id": "scene_0021",
+      "text": "El ciclo de corrupción sigue girando.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de la ciudad en movimiento",
+      "b_roll_suggestion": "imágenes de corrupción en acción",
+      "on_screen_text": "El ciclo de corrupción sigue"
+    }
+  ],
+  "word_count": 231,
+  "character_id": "cartoon_biz_1",
+  "background_id": "dark_studio",
+  "voice_id": "male_sharp",
+  "duration_target_min": 1,
+  "target_words": 180,
+  "voice_speed": 1.05,
+  "subtitles_enabled": true,
+  "subtitle_style": "default",
+  "preset": "clean_youtube",
+  "session_id": "20260416_180807_d268a985",
+  "created_at": "2026-04-17 15:06",
+  "use_bgm": true,
+  "use_sfx": false,
+  "safe_music_path": null,
+  "safe_sfx_path": null,
+  "use_env_music": false
+}

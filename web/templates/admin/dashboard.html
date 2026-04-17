@@ -1,0 +1,17 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Admin · Resumen{% endblock %}
+{% block content %}
+<h1 class="ff-page-title">Resumen operativo</h1>
+<p class="ff-page-sub">Métricas en tiempo casi real (SQLite local).</p>
+<div class="ff-kpi-row">
+  <div class="ff-kpi"><div class="v">{{ stats.users }}</div><div class="l">Usuarios</div></div>
+  <div class="ff-kpi"><div class="v">{{ stats.projects }}</div><div class="l">Proyectos</div></div>
+  <div class="ff-kpi"><div class="v">{{ stats.jobs_done }}</div><div class="l">Renders OK</div></div>
+  <div class="ff-kpi"><div class="v">{{ stats.jobs_failed }}</div><div class="l">Renders fallidos</div></div>
+</div>
+<div class="ff-card">
+  <h3 style="margin-top:0;">Monitoreo del sistema</h3>
+  <p style="color:var(--ff-muted);">Integración con métricas (Prometheus / OpenTelemetry): <code>TODO</code>.</p>
+  <p style="color:var(--ff-muted);font-size:0.88rem;">Base de datos: <code>{{ db_path }}</code></p>
+</div>
+{% endblock %}
