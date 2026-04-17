@@ -79,11 +79,11 @@ def test_consistencia_palabras():
     from src.script_generator import count_words
     
     textos_prueba = [
-        "Una palabra",
-        "Dos palabras aquí",
-        "Tres palabras en total",
-        "Cuatro palabras en este texto",
-        "Cinco palabras en este texto completo",
+        "Palabra",
+        "Dos términos",
+        "Tres palabras sueltas",
+        "Cuatro palabras en este",
+        "Cinco palabras forman una frase",
     ]
     
     for i, texto in enumerate(textos_prueba, 1):

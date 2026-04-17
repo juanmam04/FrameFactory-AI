@@ -2,7 +2,6 @@
 import pytest
 from pathlib import Path
 import os
-from src.voice_generator import count_words  # Si existe, sino usar el de script_generator
 
 
 def test_elevenlabs_dividir_chunks():

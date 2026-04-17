@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-04-16T18:08:53",
+  "updated_at": "2026-04-17T02:28:52",
   "profile": {
-    "niche": "Cine y narración de historias sobre crimen organizado y corrupción",
+    "niche": "Narración de historias ficticias sobre crimen organizado y corrupción",
     "audience": {
       "who": "Espectadores interesados en narrativas de crimen y corrupción",
       "pain_points": "Deseo de historias cautivadoras y emocionantes",
@@ -44,6 +44,11 @@
       "music_role": "bajo_voz para aumentar la inmersión",
       "pacing_visual": "dinámico y envolvente",
       "notes_for_ai_director": "Incluir giros inesperados y transiciones que reflejen el ascenso o caída del personaje"
+    },
+    "idea_generation": {
+      "brief": "",
+      "angles_to_favor": "",
+      "angles_to_avoid": ""
     },
     "notes_freeform": "Las historias deben ser impactantes, con giros inesperados y desarrollo de personajes complejos. Se busca mantener al espectador inmerso en la narrativa, similar a una película."
   }

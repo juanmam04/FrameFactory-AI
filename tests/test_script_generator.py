@@ -6,7 +6,7 @@ from src.script_generator import count_words, generar_guion
 def test_count_words_basico():
     """Test: Cuenta palabras correctamente"""
     texto = "Este es un texto de prueba con diez palabras exactas aquí"
-    assert count_words(texto) == 10
+    assert count_words(texto) == 11
 
 
 def test_count_words_con_espacios_multiples():

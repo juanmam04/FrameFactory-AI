@@ -54,6 +54,12 @@ def default_creative_profile() -> dict[str, Any]:
             "pacing_visual": "",
             "notes_for_ai_director": "",
         },
+        # Guía para «Ideas sugeridas» en Nuevo video (planner IA + heurística).
+        "idea_generation": {
+            "brief": "",
+            "angles_to_favor": "",
+            "angles_to_avoid": "",
+        },
         "notes_freeform": "",
     }
 

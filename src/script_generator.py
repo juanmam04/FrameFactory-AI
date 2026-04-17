@@ -424,17 +424,25 @@ GUION ACTUAL:
 
 def _guion_fallback_words(tema: str, target_words: int) -> str:
     """Guion de ejemplo cuando no hay API configurada."""
-    palabras_por_parrafo = 50
-    num_parrafos = max(1, target_words // palabras_por_parrafo)
-    
+    min_ok = max(20, int(target_words * 0.75))
     lineas = [
         f"En este video hablaremos sobre: {tema}.",
         "La idea central es muy importante para entender el tema.",
         "Veamos los puntos clave uno por uno.",
     ]
-    while len(lineas) < num_parrafos:
-        lineas.append(f"Aquí desarrollamos otro aspecto de {tema}.")
-    return "\n\n".join(lineas[:num_parrafos])
+    fillers = [
+        f"Aquí desarrollamos otro aspecto de {tema}.",
+        "Esto conecta con lo anterior y profundiza el mensaje principal.",
+        "Seguimos con más detalle para que quede claro el concepto.",
+        "Cada parte suma para tener una visión completa del asunto.",
+    ]
+    i = 0
+    texto = "\n\n".join(lineas)
+    while count_words(texto) < min_ok and len(lineas) < 800:
+        lineas.append(fillers[i % len(fillers)])
+        i += 1
+        texto = "\n\n".join(lineas)
+    return texto
 
 
 def guardar_guion(contenido: str, nombre: str = "guion") -> Path:

@@ -11,6 +11,35 @@ from pathlib import Path
 
 import requests
 
+# HeyGen: evita 30+ llamadas fallidas en el mismo render (404 avatar, timeouts, etc.).
+_heygen_runtime_disabled: str | None = None
+_heygen_timeout_streak: int = 0
+
+
+def reset_heygen_runtime_state() -> None:
+    """Llamar al inicio de cada render completo (p. ej. run_saas_mvp) para reintentar HeyGen una vez por video."""
+    global _heygen_runtime_disabled, _heygen_timeout_streak
+    _heygen_runtime_disabled = None
+    _heygen_timeout_streak = 0
+
+
+def _heygen_failure_is_config_or_hard_stop(exc: BaseException) -> bool:
+    s = str(exc).lower()
+    if "404" in s:
+        return True
+    if "401" in s or "403" in s:
+        return True
+    if "not found" in s and ("avatar" in s or "look" in s):
+        return True
+    if "invalid" in s and ("api" in s or "key" in s or "auth" in s):
+        return True
+    return False
+
+
+def _heygen_failure_is_timeout(exc: BaseException) -> bool:
+    s = str(exc).lower()
+    return "timeout" in s or "timed out" in s
+
 
 def _bool_env(name: str, default: bool = False) -> bool:
     value = os.getenv(name)
@@ -334,10 +363,35 @@ def _render_block_ffmpeg(block: dict, audio_path: Path, character_image: Path, o
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    def _ffprobe_duration_seconds(media_path: Path) -> float:
+        if not shutil.which("ffprobe"):
+            return 0.0
+        try:
+            r = subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-show_entries",
+                    "format=duration",
+                    "-of",
+                    "default=noprint_wrappers=1:nokey=1",
+                    str(media_path.resolve()),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            return max(0.0, float((r.stdout or "").strip()))
+        except Exception:
+            return 0.0
+
     text = (block.get("text") or "").strip()
-    words = len(text.split()) if text else 8
-    # Duración acotada por bloque para MVP (render rápido y estable).
-    clip_seconds = max(2, min(6, int(round(words / 2.5))))
+    audio_dur = _ffprobe_duration_seconds(audio_path)
+    if audio_dur <= 0.0:
+        words = len(text.split()) if text else 8
+        audio_dur = max(2.0, min(120.0, words / 2.2))
+    fade_out_start = max(0.0, audio_dur - 0.26)
 
     fps = 24
     motion = str(block.get("motion") or "static").strip().lower()
@@ -365,8 +419,7 @@ def _render_block_ffmpeg(block: dict, audio_path: Path, character_image: Path, o
     if tin == "fade":
         vf_parts.append("fade=t=in:st=0:d=0.22")
     if tout == "fade":
-        fo = max(0.0, clip_seconds - 0.26)
-        vf_parts.append(f"fade=t=out:st={fo:.2f}:d=0.24")
+        vf_parts.append(f"fade=t=out:st={fade_out_start:.2f}:d=0.24")
     vf = ",".join(vf_parts) if vf_parts else None
 
     def _build_cmd(vf_chain: str | None) -> list[str]:
@@ -394,8 +447,6 @@ def _render_block_ffmpeg(block: dict, audio_path: Path, character_image: Path, o
                 "aac",
                 "-b:a",
                 "192k",
-                "-t",
-                str(clip_seconds),
                 "-shortest",
                 str(output_path.resolve()),
             ]
@@ -414,8 +465,7 @@ def _render_block_ffmpeg(block: dict, audio_path: Path, character_image: Path, o
         if tin == "fade":
             simple += ",fade=t=in:st=0:d=0.22"
         if tout == "fade":
-            fo = max(0.0, clip_seconds - 0.26)
-            simple += f",fade=t=out:st={fo:.2f}:d=0.24"
+            simple += f",fade=t=out:st={fade_out_start:.2f}:d=0.24"
         subprocess.run(_build_cmd(simple), check=True, capture_output=True, text=True)
     return output_path
 
@@ -427,16 +477,54 @@ def render_block(block: dict, audio_path: Path, character_image: Path, output_pa
     - CHARACTER_ANIMATOR_PROVIDER=heygen -> HeyGen API (avatar + lipsync con audio)
     - cualquier otro valor -> fallback FFmpeg imagen fija
     """
+    global _heygen_runtime_disabled, _heygen_timeout_streak
+
     provider = os.getenv("CHARACTER_ANIMATOR_PROVIDER", "ffmpeg_static").strip().lower()
     if provider == "heygen":
+        if _heygen_runtime_disabled is not None:
+            return _render_block_ffmpeg(
+                block=block,
+                audio_path=audio_path,
+                character_image=character_image,
+                output_path=output_path,
+            )
         try:
-            return _render_block_heygen_with_audio(
+            path = _render_block_heygen_with_audio(
                 block=block,
                 audio_path=audio_path,
                 output_path=output_path,
             )
+            _heygen_timeout_streak = 0
+            return path
         except Exception as e:
-            print(f"⚠️ HeyGen falló: {e}. Usando fallback FFmpeg estático.")
+            bid = block.get("id", "?")
+            if _heygen_failure_is_config_or_hard_stop(e):
+                _heygen_runtime_disabled = str(e)[:400]
+                hint = ""
+                if "look" in str(e).lower() or "avatar" in str(e).lower():
+                    hint = "\n   Revisá HEYGEN_AVATAR_ID / estilo en el dashboard de HeyGen (.env)."
+                print(
+                    f"⚠️ HeyGen (bloque {bid}): {e}\n"
+                    f"   → HeyGen desactivado para el resto de **este** render (config o API). Solo FFmpeg.{hint}"
+                )
+            elif _heygen_failure_is_timeout(e):
+                _heygen_timeout_streak += 1
+                if _heygen_timeout_streak >= 2:
+                    _heygen_runtime_disabled = str(e)[:400]
+                    print(
+                        f"⚠️ HeyGen (bloque {bid}): timeouts repetidos.\n"
+                        f"   → HeyGen desactivado para el resto de **este** render. Solo FFmpeg."
+                    )
+                else:
+                    print(f"⚠️ HeyGen (bloque {bid}): {e}. FFmpeg este bloque; se reintentará HeyGen en el siguiente.")
+            else:
+                print(f"⚠️ HeyGen (bloque {bid}): {e}. FFmpeg este bloque.")
+            return _render_block_ffmpeg(
+                block=block,
+                audio_path=audio_path,
+                character_image=character_image,
+                output_path=output_path,
+            )
     if provider == "external":
         try:
             return _render_block_external_api(

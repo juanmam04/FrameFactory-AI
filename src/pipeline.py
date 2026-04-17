@@ -31,7 +31,7 @@ from .frame_spec import guardar_frame_specs
 from .frame_image_pipeline import generar_imagenes_desde_frame_specs
 from .catalog_service import VOICES, get_character, get_background, get_voice, ensure_catalog_dirs
 from .scene_planner import plan_scenes
-from .character_video_provider import render_block
+from .character_video_provider import render_block, reset_heygen_runtime_state
 from .saas_creative_profile import merge_profile_disk, profile_to_script_context
 from .saas_edit_planner import annotate_blocks_with_editing
 
@@ -613,24 +613,39 @@ def run_saas_mvp(
     except Exception:
         pass
 
-    # ─── Voz única del proyecto ──────────────────────────────────────────────
-    _saas_write_progress(progress_path, "Voz", 42.0)
-    audio_path = generar_voz(script_text, nombre_archivo="saas_mvp_narracion", velocidad=1.0)
-    if not audio_path.exists() or audio_path.stat().st_size == 0:
-        raise RuntimeError(f"[MVP] Audio inválido o vacío: {audio_path}")
-    print(f"🔊 [MVP] Audio generado: {audio_path.resolve()}")
+    # ─── Voz + clip POR BLOQUE (cada escena = audio distinto + video distinto) ─
+    _saas_write_progress(progress_path, "Voz por bloque", 42.0)
+    reset_heygen_runtime_state()
 
-    # ─── Clips por bloque ────────────────────────────────────────────────────
+    def _safe_block_audio_stem(block: dict, index: int) -> str:
+        bid = str(block.get("id") or f"block_{index:04d}")
+        safe = re.sub(r"[^\w\-]+", "_", bid, flags=re.UNICODE).strip("_") or f"block_{index:04d}"
+        return f"saas_mvp_{safe}"
+
     clips: list[Path] = []
     n_blocks = max(1, len(blocks))
     for i, block in enumerate(blocks, start=1):
+        bid = block.get("id", f"scene_{i:04d}")
+        btext = (block.get("text") or "").strip()
+        if not btext:
+            raise RuntimeError(f"[MVP] Bloque sin texto: id={bid!r}")
+
+        audio_stem = _safe_block_audio_stem(block, i)
+        print(f"🔊 [MVP] Bloque audio | id={bid} | chars={len(btext)} | stem={audio_stem}")
+        print(f"    texto: {btext[:200]}{'…' if len(btext) > 200 else ''}")
+
+        block_audio = generar_voz(btext, nombre_archivo=audio_stem, velocidad=1.0)
+        if not block_audio.exists() or block_audio.stat().st_size == 0:
+            raise RuntimeError(f"[MVP] Audio de bloque inválido o vacío: {block_audio}")
+        print(f"    audio_path: {block_audio.resolve()}")
+
         clip = output_dir / f"clip_{i:04d}.mp4"
         print(f"🎞️ [MVP] Render bloque {i}/{len(blocks)} -> {clip.name}")
         pct = 48.0 + (40.0 * (i - 1) / n_blocks)
         _saas_write_progress(progress_path, f"Clip {i}/{len(blocks)}", pct)
         render_block(
             block=block,
-            audio_path=audio_path,
+            audio_path=block_audio,
             character_image=character_img,
             output_path=clip,
         )

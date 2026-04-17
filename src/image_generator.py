@@ -135,7 +135,8 @@ def _replicate_disponible() -> bool:
 
 # Timeouts: más largos cuando ComfyUI está en la nube (RunPod, etc.)
 def _is_remote_comfy() -> bool:
-    u = COMFY_URL.lower()
+    # Leer URL en tiempo de ejecución (tests y .env pueden cambiar COMFYUI_URL sin recargar el módulo).
+    u = (os.getenv("COMFYUI_URL") or "http://127.0.0.1:8188").strip().rstrip("/").lower()
     if not u:
         return False
     return "127.0.0.1" not in u and "localhost" not in u

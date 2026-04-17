@@ -193,7 +193,8 @@ class TestGenerarLote:
     """generar_lote exige ComfyUI disponible."""
 
     def test_raise_si_comfy_no_disponible(self):
-        with patch.object(ig, "_comfyui_disponible", return_value=False):
-            with pytest.raises(RuntimeError) as exc:
-                ig.generar_lote([], subcarpeta="test")
-            assert "ComfyUI" in str(exc.value)
+        with patch.object(ig, "_usar_replicate", return_value=False):
+            with patch.object(ig, "_comfyui_disponible", return_value=False):
+                with pytest.raises(RuntimeError) as exc:
+                    ig.generar_lote([], subcarpeta="test")
+                assert "ComfyUI" in str(exc.value)

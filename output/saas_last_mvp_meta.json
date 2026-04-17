@@ -1,416 +1,406 @@
 {
-  "script": "Las luces de neón parpadean en la oscura calle de un barrio marginal de Ciudad Juárez. Es la madrugada y el sonido de sirenas se mezcla con pasos apresurados. A tus 18 años, el hambre y la desesperación te han llevado a un punto sin retorno. Tu familia, antes próspera, se ha desmoronado: tu madre enferma, tu padre ausente; el único camino que ves es el de la calle.\n\nUn día, mientras recorres las calles buscando dinero, te topas con un grupo de hombres en un callejón. Son miembros de una organización criminal local, conocidos por su violencia. Te miran de arriba abajo, evaluando tu potencial. El líder, apodado \"El Lobo\", te ofrece un trato: un trabajo fácil, pero arriesgado. Sin opciones, aceptas. Tu primera misión es llevar un paquete a un cliente. El corazón te late con fuerza, pero el dinero que prometen es tentador.\n\nTus pasos son inseguros mientras caminas hacia el destino. El cliente resulta ser un hombre peligroso y, en un giro inesperado, la transacción se convierte en una emboscada. Logras escapar, pero no sin ver cómo tus nuevos compañeros desatan una brutalidad que te deja marcado. Esa noche, al regresar a casa, sientes que la línea entre el bien y el mal se ha difuminado.\n\nCon el tiempo, te adentras más en el mundo del crimen. Te conviertes en mensajero, luego en cobrador. Aprendes a manejar la pistola y a ganarte el respeto de los demás. Pero cada paso que das te aleja de tu humanidad. Las decisiones que tomas te empujan a un abismo del que parece no haber retorno.\n\nUn año después, El Lobo te ofrece una oportunidad de oro. La organización planea un gran golpe: robar un cargamento de drogas de un cartel rival. Sabes que es peligroso, pero también que podría llevarte a ser uno de los hombres más poderosos de la ciudad. Durante la planificación, forjas alianzas, pero también enemigos. El día del golpe, la tensión es palpable. La adrenalina corre por tus venas mientras te preparas para lo que podría ser tu último acto.\n\nEl asalto es un caos. Disparos, gritos y el olor a pólvora llenan el aire. Logras escapar con el cargamento, pero pierdes a varios de tus hombres. Regresas triunfante, pero la victoria es amarga. Te das cuenta de que has cruzado una línea que no puedes deshacer. Desde ese día, te conviertes en un líder temido y respetado, pero a costa de tu alma.\n\nLa vida que construyes es de lujos y excesos, pero cada decisión trae consigo una sombra. La traición y la violencia se convierten en tus compañeros constantes. Un nuevo rival aparece, y la lucha por el control llega a su clímax. Te enfrentas a una decisión que podría costarte la vida: tomar venganza o buscar una salida.\n\nAl final, decides confrontar a tu enemigo. La batalla es feroz y, aunque logras salir victorioso, las pérdidas son devastadoras. Te miras en el espejo y ya no reconoces al joven que una vez fuiste. Las decisiones que tomaste te han llevado a este momento, y la reflexión te abruma: ¿valió la pena todo lo que perdiste? La oscuridad te rodea, y sabes que el camino que elegiste ha definido no solo tu destino, sino el de muchos otros.",
+  "script": "Las sombras de la ciudad se alargan mientras te preparas para el primer debate de tu carrera como político. A tus 32 años, has trabajado arduamente para construir una imagen pulcra en la política local. Sin embargo, la ambición arde dentro de ti, un fuego que no se apaga con buenas intenciones. Sabes que para ascender, necesitas aliados poderosos.\n\nDurante el debate, un rival inesperado, un veterano político manchado por escándalos de corrupción, te lanza una advertencia: \"En este juego, los ideales son solo un lujo para los que no tienen ambición\". Su mirada fría te inquieta. Esa noche, reflexionas sobre lo que estás dispuesto a hacer para alcanzar el poder. Su eco resuena en tu mente.\n\nPocos días después, un viejo amigo de la infancia, ahora un empresario influyente, te ofrece una oportunidad: un contrato jugoso que requiere tu apoyo para un proyecto de construcción. \"Piensa en el futuro\", dice. \"Podrías ser el próximo alcalde si juegas bien tus cartas\". Te encuentras en una encrucijada. Aceptar el trato significaría cerrar los ojos a las irregularidades, pero la posibilidad de ser alcalde te seduce.\n\nDecides aceptar. Con cada paso, te adentras más en un mundo de sobornos y favores. Las decisiones se vuelven más difíciles. Un día, mientras revisas informes, descubres que el proyecto es un fraude que podría arruinar a muchas familias. La presión aumenta, y tu amigo te ofrece más dinero. \"No te preocupes por el pasado. Piensa en tu futuro\".\n\nMientras la corrupción se convierte en parte de tu rutina, tus ideales se desvanecen. Tu imagen pública comienza a desmoronarse, pero la ambición te ciega. Un día, un periodista empieza a investigar. Las amenazas llegan, y te das cuenta de que tus aliados no son tan leales como pensabas. Te traicionan, y el escándalo estalla. La prensa no te perdona, y el escándalo se convierte en un circo mediático.\n\nEn una reunión de emergencia, te enfrentas a tu amigo. \"Nos atraparon\", le dices, pero él sonríe. \"Es solo el comienzo. Siempre hay una salida\". Sin embargo, dudas. La presión es abrumadora. Sientes el peso de tus decisiones.\n\nFinalmente, enfrentas una elección: asumir la responsabilidad y renunciar o caer más profundo en el sistema corrupto. La tentación de seguir luchando por el poder es fuerte, pero la verdad está al borde de revelarse. En un momento de claridad, decides renunciar. Al hacerlo, sientes que algo se rompe dentro de ti, alejándote de la política y dejando atrás una parte de ti mismo.\n\nMientras te alejas de la sede, el futuro es incierto. Has perdido mucho por el poder, pero también has recuperado lo que realmente importa: tu integridad. La lección es dura, pero ahora entiendes que la ambición desmedida puede destruir incluso al más idealista.",
   "blocks": [
     {
       "id": "scene_0001",
-      "text": "Las luces de neón parpadean en la oscura calle de un barrio marginal de Ciudad Juárez.",
+      "text": "Las sombras de la ciudad se alargan mientras te preparas para el primer debate de tu carrera como político.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano cercano de luces de neón parpadeantes.",
-      "b_roll_suggestion": "Imágenes de calles oscuras y vacías.",
-      "on_screen_text": "Ciudad Juárez, un lugar oscuro."
+      "visual_direction": "Plano general de la ciudad al atardecer.",
+      "b_roll_suggestion": "Imágenes de sombras alargándose en calles vacías.",
+      "on_screen_text": "Las sombras se alargan"
     },
     {
       "id": "scene_0002",
-      "text": "Es la madrugada y el sonido de sirenas se mezcla con pasos apresurados.",
+      "text": "A tus 32 años, has trabajado arduamente para construir una imagen pulcra en la política local.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de una calle desierta con sirenas a lo lejos.",
-      "b_roll_suggestion": "Sonidos de sirenas y pasos apresurados.",
-      "on_screen_text": "La madrugada acecha."
+      "visual_direction": "Primer plano del protagonista pensativo.",
+      "b_roll_suggestion": "Imágenes de recortes de prensa sobre su carrera.",
+      "on_screen_text": "Construyendo una imagen pulcra"
     },
     {
       "id": "scene_0003",
-      "text": "A tus 18 años, el hambre y la desesperación te han llevado a un punto sin retorno.",
+      "text": "Sin embargo, la ambición arde dentro de ti, un fuego que no se apaga con buenas intenciones.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano medio del protagonista con expresión de desesperación.",
-      "b_roll_suggestion": "Imágenes de un joven mirando al horizonte.",
-      "on_screen_text": "Un punto sin retorno."
+      "visual_direction": "Plano medio del protagonista en su oficina.",
+      "b_roll_suggestion": "Imágenes de fuego y ambición.",
+      "on_screen_text": "Ambición desmedida"
     },
     {
       "id": "scene_0004",
-      "text": "Tu familia, antes próspera, se ha desmoronado: tu madre enferma, tu padre ausente; el único camino que ves es el de la calle.",
+      "text": "Sabes que para ascender, necesitas aliados poderosos.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de una casa en ruinas.",
-      "b_roll_suggestion": "Flashbacks de momentos familiares felices.",
-      "on_screen_text": "Una familia desmoronada."
+      "visual_direction": "Plano detalle de manos temblorosas.",
+      "b_roll_suggestion": "Imágenes de alianzas en la política.",
+      "on_screen_text": "Necesitas aliados poderosos"
     },
     {
       "id": "scene_0005",
-      "text": "Un día, mientras recorres las calles buscando dinero, te topas con un grupo de hombres en un callejón.",
+      "text": "Durante el debate, un rival inesperado, un veterano político manchado por escándalos de corrupción, te lanza una advertencia: \"En este juego, los ideales son solo un lujo para los que no tienen ambición\".",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano de un callejón oscuro.",
-      "b_roll_suggestion": "Sombras de hombres en el callejón.",
-      "on_screen_text": "Un encuentro inesperado."
+      "visual_direction": "Plano medio del debate político.",
+      "b_roll_suggestion": "Imágenes de un rival lanzando advertencias.",
+      "on_screen_text": "Advertencia en el debate"
     },
     {
       "id": "scene_0006",
-      "text": "Son miembros de una organización criminal local, conocidos por su violencia.",
+      "text": "Su mirada fría te inquieta.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Plano detalle de manos tatuadas.",
-      "b_roll_suggestion": "Imágenes de violencia en la calle.",
-      "on_screen_text": "La violencia acecha."
+      "visual_direction": "Primer plano del rival con mirada fría.",
+      "b_roll_suggestion": "Imágenes de tensión en el ambiente.",
+      "on_screen_text": "La mirada que inquieta"
     },
     {
       "id": "scene_0007",
-      "text": "Te miran de arriba abajo, evaluando tu potencial.",
+      "text": "Esa noche, reflexionas sobre lo que estás dispuesto a hacer para alcanzar el poder.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Encuadre de miradas desafiantes.",
-      "b_roll_suggestion": "Cámara lenta de la evaluación del protagonista.",
-      "on_screen_text": "Evaluando tu potencial."
+      "visual_direction": "Plano general de la ciudad de noche.",
+      "b_roll_suggestion": "Imágenes de luces parpadeantes.",
+      "on_screen_text": "Reflexionando sobre el poder"
     },
     {
       "id": "scene_0008",
-      "text": "El líder, apodado \"El Lobo\", te ofrece un trato: un trabajo fácil, pero arriesgado.",
+      "text": "Su eco resuena en tu mente.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Plano medio del líder con una sonrisa siniestra.",
-      "b_roll_suggestion": "Imágenes del trato siendo ofrecido.",
-      "on_screen_text": "Un trato arriesgado."
+      "visual_direction": "Primer plano del protagonista pensativo.",
+      "b_roll_suggestion": "Imágenes de recuerdos que lo atormentan.",
+      "on_screen_text": "El eco de la advertencia"
     },
     {
       "id": "scene_0009",
-      "text": "Sin opciones, aceptas.",
+      "text": "Pocos días después, un viejo amigo de la infancia, ahora un empresario influyente, te ofrece una oportunidad: un contrato jugoso que requiere tu apoyo para un proyecto de construcción.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Encuadre del protagonista asintiendo con incertidumbre.",
-      "b_roll_suggestion": "Flashback de la vida anterior.",
-      "on_screen_text": "Sin opciones."
+      "visual_direction": "Plano medio del amigo empresario.",
+      "b_roll_suggestion": "Imágenes de un contrato tentador.",
+      "on_screen_text": "Una oportunidad jugosa"
     },
     {
       "id": "scene_0010",
-      "text": "Tu primera misión es llevar un paquete a un cliente.",
+      "text": "\"Piensa en el futuro\", dice.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Plano de un paquete misterioso en la mano del protagonista.",
-      "b_roll_suggestion": "Imágenes de la ciudad mientras camina.",
-      "on_screen_text": "La misión comienza."
+      "visual_direction": "Primer plano del amigo sonriendo.",
+      "b_roll_suggestion": "Imágenes de un futuro brillante.",
+      "on_screen_text": "Piensa en el futuro"
     },
     {
       "id": "scene_0011",
-      "text": "El corazón te late con fuerza, pero el dinero que prometen es tentador.",
+      "text": "\"Podrías ser el próximo alcalde si juegas bien tus cartas\".",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano cercano del rostro del protagonista, nervioso.",
-      "b_roll_suggestion": "Sonidos de un corazón latiendo.",
-      "on_screen_text": "El dinero es tentador."
+      "visual_direction": "Plano medio del protagonista dudando.",
+      "b_roll_suggestion": "Imágenes de cartas y decisiones.",
+      "on_screen_text": "El próximo alcalde"
     },
     {
       "id": "scene_0012",
-      "text": "Tus pasos son inseguros mientras caminas hacia el destino.",
+      "text": "Te encuentras en una encrucijada.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de pasos titubeantes.",
-      "b_roll_suggestion": "Imágenes de la calle oscura.",
-      "on_screen_text": "Pasos inseguros."
+      "visual_direction": "Plano detalle de un rostro preocupado.",
+      "b_roll_suggestion": "Imágenes de una encrucijada.",
+      "on_screen_text": "Encrucijada decisiva"
     },
     {
       "id": "scene_0013",
-      "text": "El cliente resulta ser un hombre peligroso y, en un giro inesperado, la transacción se convierte en una emboscada.",
+      "text": "Aceptar el trato significaría cerrar los ojos a las irregularidades, pero la posibilidad de ser alcalde te seduce.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano de un hombre peligroso en la sombra.",
-      "b_roll_suggestion": "Imágenes de tensión en el aire.",
-      "on_screen_text": "Una emboscada inesperada."
+      "visual_direction": "Plano medio del protagonista reflexionando.",
+      "b_roll_suggestion": "Imágenes de corrupción en acción.",
+      "on_screen_text": "Cerrar los ojos a la verdad"
     },
     {
       "id": "scene_0014",
-      "text": "Logras escapar, pero no sin ver cómo tus nuevos compañeros desatan una brutalidad que te deja marcado.",
+      "text": "Decides aceptar.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de la brutalidad desatada.",
-      "b_roll_suggestion": "Imágenes de caos y violencia.",
-      "on_screen_text": "Escapando de la brutalidad."
+      "visual_direction": "Primer plano del protagonista tomando una decisión.",
+      "b_roll_suggestion": "Imágenes de un apretón de manos.",
+      "on_screen_text": "Decides aceptar"
     },
     {
       "id": "scene_0015",
-      "text": "Esa noche, al regresar a casa, sientes que la línea entre el bien y el mal se ha difuminado.",
+      "text": "Con cada paso, te adentras más en un mundo de sobornos y favores.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista mirando al suelo.",
-      "b_roll_suggestion": "Imágenes de la casa vacía.",
-      "on_screen_text": "La línea se difumina."
+      "visual_direction": "Plano general de un mundo oscuro.",
+      "b_roll_suggestion": "Imágenes de sobornos y favores.",
+      "on_screen_text": "Adentrándose en la corrupción"
     },
     {
       "id": "scene_0016",
-      "text": "Con el tiempo, te adentras más en el mundo del crimen.",
+      "text": "Las decisiones se vuelven más difíciles.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de un callejón oscuro.",
+      "visual_direction": "Plano medio del protagonista angustiado.",
       "b_roll_suggestion": "Imágenes de decisiones difíciles.",
-      "on_screen_text": "Adentrándose en el crimen."
+      "on_screen_text": "Decisiones cada vez más difíciles"
     },
     {
       "id": "scene_0017",
-      "text": "Te conviertes en mensajero, luego en cobrador.",
+      "text": "Un día, mientras revisas informes, descubres que el proyecto es un fraude que podría arruinar a muchas familias.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano de un grupo de hombres en un bar.",
-      "b_roll_suggestion": "Imágenes de camaradería y respeto.",
-      "on_screen_text": "Mensajero y cobrador."
+      "visual_direction": "Plano detalle de informes en la mesa.",
+      "b_roll_suggestion": "Imágenes de un fraude revelado.",
+      "on_screen_text": "Descubrimiento impactante"
     },
     {
       "id": "scene_0018",
-      "text": "Aprendes a manejar la pistola y a ganarte el respeto de los demás.",
+      "text": "La presión aumenta, y tu amigo te ofrece más dinero.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de un arma en la mano del protagonista.",
-      "b_roll_suggestion": "Imágenes de entrenamiento en el uso de armas.",
-      "on_screen_text": "Ganando respeto."
+      "visual_direction": "Primer plano del amigo ofreciendo dinero.",
+      "b_roll_suggestion": "Imágenes de presión y tentación.",
+      "on_screen_text": "Más dinero, más presión"
     },
     {
       "id": "scene_0019",
-      "text": "Pero cada paso que das te aleja de tu humanidad.",
+      "text": "\"No te preocupes por el pasado.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista con mirada perdida.",
-      "b_roll_suggestion": "Imágenes de la vida que deja atrás.",
-      "on_screen_text": "Alejándose de su humanidad."
+      "visual_direction": "Plano medio del amigo sonriendo.",
+      "b_roll_suggestion": "Imágenes de un futuro incierto.",
+      "on_screen_text": "No te preocupes por el pasado"
     },
     {
       "id": "scene_0020",
-      "text": "Las decisiones que tomas te empujan a un abismo del que parece no haber retorno.",
+      "text": "Piensa en tu futuro\".",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de un abismo oscuro.",
-      "b_roll_suggestion": "Imágenes de decisiones fatales.",
-      "on_screen_text": "Sin retorno."
+      "visual_direction": "Primer plano del protagonista angustiado.",
+      "b_roll_suggestion": "Imágenes de la corrupción como rutina.",
+      "on_screen_text": "La corrupción se vuelve rutina"
     },
     {
       "id": "scene_0021",
-      "text": "Un año después, El Lobo te ofrece una oportunidad de oro.",
+      "text": "Mientras la corrupción se convierte en parte de tu rutina, tus ideales se desvanecen.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano del líder ofreciendo una oportunidad.",
-      "b_roll_suggestion": "Imágenes de tensión y expectativa.",
-      "on_screen_text": "Una oportunidad de oro."
+      "visual_direction": "Plano medio del protagonista en la prensa.",
+      "b_roll_suggestion": "Imágenes de su imagen pública desmoronándose.",
+      "on_screen_text": "La ambición te ciega"
     },
     {
       "id": "scene_0022",
-      "text": "La organización planea un gran golpe: robar un cargamento de drogas de un cartel rival.",
+      "text": "Tu imagen pública comienza a desmoronarse, pero la ambición te ciega.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de un mapa con planes.",
-      "b_roll_suggestion": "Imágenes de la organización planeando.",
-      "on_screen_text": "El gran golpe."
+      "visual_direction": "Primer plano de un periodista investigando.",
+      "b_roll_suggestion": "Imágenes de amenazas y traiciones.",
+      "on_screen_text": "Un periodista empieza a investigar"
     },
     {
       "id": "scene_0023",
-      "text": "Sabes que es peligroso, pero también que podría llevarte a ser uno de los hombres más poderosos de la ciudad.",
+      "text": "Un día, un periodista empieza a investigar.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista dudando.",
-      "b_roll_suggestion": "Imágenes de un cartel rival.",
-      "on_screen_text": "Peligro y poder."
+      "visual_direction": "Plano medio del protagonista recibiendo amenazas.",
+      "b_roll_suggestion": "Imágenes de aliados traicionando.",
+      "on_screen_text": "Amenazas y traiciones"
     },
     {
       "id": "scene_0024",
-      "text": "Durante la planificación, forjas alianzas, pero también enemigos.",
+      "text": "Las amenazas llegan, y te das cuenta de que tus aliados no son tan leales como pensabas.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de alianzas y enemigos.",
-      "b_roll_suggestion": "Imágenes de miradas desafiantes.",
-      "on_screen_text": "Forjando alianzas."
+      "visual_direction": "Plano detalle de un escándalo estallando.",
+      "b_roll_suggestion": "Imágenes de la prensa cubriendo el escándalo.",
+      "on_screen_text": "El escándalo estalla"
     },
     {
       "id": "scene_0025",
-      "text": "El día del golpe, la tensión es palpable.",
+      "text": "Te traicionan, y el escándalo estalla.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano general del lugar del golpe.",
-      "b_roll_suggestion": "Imágenes de la tensión en el aire.",
-      "on_screen_text": "La tensión es palpable."
+      "visual_direction": "Plano medio de una reunión de emergencia.",
+      "b_roll_suggestion": "Imágenes de tensión en la sala.",
+      "on_screen_text": "Reunión de emergencia"
     },
     {
       "id": "scene_0026",
-      "text": "La adrenalina corre por tus venas mientras te preparas para lo que podría ser tu último acto.",
+      "text": "La prensa no te perdona, y el escándalo se convierte en un circo mediático.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de un corazón latiendo.",
-      "b_roll_suggestion": "Imágenes de preparación intensa.",
-      "on_screen_text": "Adrenalina al máximo."
+      "visual_direction": "Primer plano del amigo sonriendo a pesar de todo.",
+      "b_roll_suggestion": "Imágenes de un futuro incierto.",
+      "on_screen_text": "Es solo el comienzo"
     },
     {
       "id": "scene_0027",
-      "text": "El asalto es un caos.",
+      "text": "En una reunión de emergencia, te enfrentas a tu amigo.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano de caos durante el asalto.",
-      "b_roll_suggestion": "Imágenes de disparos y gritos.",
-      "on_screen_text": "El asalto comienza."
+      "visual_direction": "Plano medio del protagonista dudando.",
+      "b_roll_suggestion": "Imágenes de decisiones difíciles.",
+      "on_screen_text": "Dudas y presión"
     },
     {
       "id": "scene_0028",
-      "text": "Disparos, gritos y el olor a pólvora llenan el aire.",
+      "text": "\"Nos atraparon\", le dices, pero él sonríe.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de humo y polvo.",
-      "b_roll_suggestion": "Imágenes de la batalla en curso.",
-      "on_screen_text": "Caos y confusión."
+      "visual_direction": "Primer plano del protagonista sintiendo el peso de sus decisiones.",
+      "b_roll_suggestion": "Imágenes de un dilema moral.",
+      "on_screen_text": "El peso de tus decisiones"
     },
     {
       "id": "scene_0029",
-      "text": "Logras escapar con el cargamento, pero pierdes a varios de tus hombres.",
+      "text": "\"Es solo el comienzo.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista escapando.",
-      "b_roll_suggestion": "Imágenes de pérdidas y dolor.",
-      "on_screen_text": "Una victoria amarga."
+      "visual_direction": "Plano medio del protagonista enfrentando la verdad.",
+      "b_roll_suggestion": "Imágenes de una elección crucial.",
+      "on_screen_text": "Asumir la responsabilidad"
     },
     {
       "id": "scene_0030",
-      "text": "Regresas triunfante, pero la victoria es amarga.",
+      "text": "Siempre hay una salida\".",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre del protagonista reflexionando.",
-      "b_roll_suggestion": "Imágenes de la vida que ha dejado.",
-      "on_screen_text": "Regreso triunfante."
+      "visual_direction": "Primer plano del protagonista decidido.",
+      "b_roll_suggestion": "Imágenes de una decisión final.",
+      "on_screen_text": "La verdad al borde"
     },
     {
       "id": "scene_0031",
-      "text": "Te das cuenta de que has cruzado una línea que no puedes deshacer.",
+      "text": "Sin embargo, dudas.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista mirando al espejo.",
-      "b_roll_suggestion": "Imágenes de su transformación.",
-      "on_screen_text": "Una línea cruzada."
+      "visual_direction": "Plano general del protagonista renunciando.",
+      "b_roll_suggestion": "Imágenes de un nuevo comienzo.",
+      "on_screen_text": "Decides renunciar"
     },
     {
       "id": "scene_0032",
-      "text": "Desde ese día, te conviertes en un líder temido y respetado, pero a costa de tu alma.",
+      "text": "La presión es abrumadora.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de un líder temido.",
-      "b_roll_suggestion": "Imágenes de respeto y miedo.",
-      "on_screen_text": "Líder temido."
+      "visual_direction": "Primer plano del rostro del protagonista roto.",
+      "b_roll_suggestion": "Imágenes de un cambio interno.",
+      "on_screen_text": "Algo se rompe dentro de ti"
     },
     {
       "id": "scene_0033",
-      "text": "La vida que construyes es de lujos y excesos, pero cada decisión trae consigo una sombra.",
+      "text": "Sientes el peso de tus decisiones.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano de lujos y excesos.",
-      "b_roll_suggestion": "Imágenes de una vida de excesos.",
-      "on_screen_text": "La vida de lujos."
+      "visual_direction": "Plano medio del protagonista alejándose.",
+      "b_roll_suggestion": "Imágenes de un futuro incierto.",
+      "on_screen_text": "El futuro es incierto"
     },
     {
       "id": "scene_0034",
-      "text": "La traición y la violencia se convierten en tus compañeros constantes.",
+      "text": "Finalmente, enfrentas una elección: asumir la responsabilidad y renunciar o caer más profundo en el sistema corrupto.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "Encuadre de sombras acechando.",
-      "b_roll_suggestion": "Imágenes de traiciones.",
-      "on_screen_text": "Compañeros constantes."
+      "visual_direction": "Primer plano del protagonista reflexionando.",
+      "b_roll_suggestion": "Imágenes de lo que realmente importa.",
+      "on_screen_text": "Recuperando tu integridad"
     },
     {
       "id": "scene_0035",
-      "text": "Un nuevo rival aparece, y la lucha por el control llega a su clímax.",
+      "text": "La tentación de seguir luchando por el poder es fuerte, pero la verdad está al borde de revelarse.",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "Plano de un nuevo rival.",
-      "b_roll_suggestion": "Imágenes de tensión creciente.",
-      "on_screen_text": "Un nuevo rival."
+      "visual_direction": "Plano medio del protagonista mirando hacia el horizonte.",
+      "b_roll_suggestion": "Imágenes de una lección aprendida.",
+      "on_screen_text": "La ambición puede destruir"
     },
     {
       "id": "scene_0036",
-      "text": "Te enfrentas a una decisión que podría costarte la vida: tomar venganza o buscar una salida.",
-      "motion": "slow_push",
+      "text": "En un momento de claridad, decides renunciar.",
+      "motion": "static",
       "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "Encuadre de decisiones difíciles.",
-      "b_roll_suggestion": "Imágenes de confrontaciones.",
-      "on_screen_text": "Una decisión mortal."
+      "transition_out": "none",
+      "visual_direction": "",
+      "b_roll_suggestion": "",
+      "on_screen_text": ""
     },
     {
       "id": "scene_0037",
-      "text": "Al final, decides confrontar a tu enemigo.",
+      "text": "Al hacerlo, sientes que algo se rompe dentro de ti, alejándote de la política y dejando atrás una parte de ti mismo.",
       "motion": "static",
-      "transition_in": "fade",
+      "transition_in": "none",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista decidido.",
-      "b_roll_suggestion": "Imágenes de la confrontación.",
-      "on_screen_text": "Confrontando al enemigo."
+      "visual_direction": "",
+      "b_roll_suggestion": "",
+      "on_screen_text": ""
     },
     {
       "id": "scene_0038",
-      "text": "La batalla es feroz y, aunque logras salir victorioso, las pérdidas son devastadoras.",
-      "motion": "slow_push",
+      "text": "Mientras te alejas de la sede, el futuro es incierto.",
+      "motion": "static",
       "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "Encuadre de la batalla feroz.",
-      "b_roll_suggestion": "Imágenes de la lucha.",
-      "on_screen_text": "Batalla feroz."
+      "transition_out": "none",
+      "visual_direction": "",
+      "b_roll_suggestion": "",
+      "on_screen_text": ""
     },
     {
       "id": "scene_0039",
-      "text": "Te miras en el espejo y ya no reconoces al joven que una vez fuiste.",
+      "text": "Has perdido mucho por el poder, pero también has recuperado lo que realmente importa: tu integridad.",
       "motion": "static",
-      "transition_in": "fade",
+      "transition_in": "none",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista mirándose al espejo.",
-      "b_roll_suggestion": "Imágenes de su pasado.",
-      "on_screen_text": "Ya no eres tú."
+      "visual_direction": "",
+      "b_roll_suggestion": "",
+      "on_screen_text": ""
     },
     {
       "id": "scene_0040",
-      "text": "Las decisiones que tomaste te han llevado a este momento, y la reflexión te abruma: ¿valió la pena todo lo que perdiste?",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "Encuadre de la oscuridad que rodea al protagonista.",
-      "b_roll_suggestion": "Imágenes de reflexiones sobre decisiones.",
-      "on_screen_text": "¿Valió la pena?"
-    },
-    {
-      "id": "scene_0041",
-      "text": "La oscuridad te rodea, y sabes que el camino que elegiste ha definido no solo tu destino, sino el de muchos otros.",
+      "text": "La lección es dura, pero ahora entiendes que la ambición desmedida puede destruir incluso al más idealista.",
       "motion": "static",
-      "transition_in": "fade",
+      "transition_in": "none",
       "transition_out": "none",
-      "visual_direction": "Plano del protagonista en la oscuridad.",
-      "b_roll_suggestion": "Imágenes de destinos entrelazados.",
-      "on_screen_text": "El camino elegido."
+      "visual_direction": "",
+      "b_roll_suggestion": "",
+      "on_screen_text": ""
     }
   ],
-  "word_count": 545
+  "word_count": 457
 }

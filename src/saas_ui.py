@@ -133,15 +133,39 @@ def _save_chat_disk(messages: list[dict]) -> None:
 
 
 def _session_hydrate_from_disk() -> None:
+    """
+    Sincroniza sesión activa con disco.
+
+    Importante: **no** pisar `agent_messages` en cada rerun de Streamlit si la sesión no cambió:
+    el estado en memoria ya incluye el último turno y recargar desde disco en bucle puede dejar
+    conversaciones “amnésicas” o desincronizadas. Solo recargamos mensajes al cambiar de sesión
+    o si el chat local está vacío.
+    """
     store = ensure_store()
-    sid = store.get("active_id")
-    sess = get_session(store, sid)
+    sid_raw = store.get("active_id")
+    sess = get_session(store, sid_raw)
     if not sess:
         return
-    st.session_state.active_session_id = str(sess.get("id") or sid)
-    st.session_state.agent_messages = list(sess.get("messages") or [{"role": "assistant", "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"}])
-    st.session_state.creative_profile = merge_profile_disk(sess.get("creative_profile"))
+    sid = str(sess.get("id") or sid_raw or "")
+    st.session_state.active_session_id = sid
     st.session_state.session_memory_summary = str(sess.get("memory_summary") or "")
+    st.session_state.creative_profile = merge_profile_disk(sess.get("creative_profile"))
+
+    disk_msgs = sess.get("messages")
+    opening = [{"role": "assistant", "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"}]
+    prev_sid = st.session_state.get("_saas_hydrated_sid")
+    local = st.session_state.get("agent_messages")
+
+    if prev_sid != sid:
+        st.session_state._saas_hydrated_sid = sid
+        st.session_state.agent_messages = list(disk_msgs if isinstance(disk_msgs, list) and disk_msgs else opening)
+        return
+
+    if not isinstance(local, list) or len(local) == 0:
+        if isinstance(disk_msgs, list) and disk_msgs:
+            st.session_state.agent_messages = list(disk_msgs)
+        else:
+            st.session_state.agent_messages = list(opening)
 
 
 def _session_persist() -> None:
@@ -154,18 +178,85 @@ def _session_persist() -> None:
     persist_session(store, str(sid), st.session_state.agent_messages, st.session_state.creative_profile)
 
 
-def _trim_chat_messages(msgs: list[dict], max_chars: int = 28000) -> list[dict]:
+def _summarize_session_chat_to_memory() -> tuple[str | None, str | None]:
+    """
+    Resume el historial del chat + memoria previa y guarda el resultado como memoria larga de sesión
+    (la ven el asistente, el generador de guion y el pipeline).
+    """
+    cl = _get_openai_client()
+    if not cl:
+        return None, "Sin OPENAI_API_KEY no se puede resumir."
+    try:
+        summ = summarize_session_messages(
+            cl,
+            st.session_state.agent_messages,
+            st.session_state.get("session_memory_summary") or "",
+        )
+        summ = (summ or "").strip()
+        if not summ:
+            return None, "El modelo devolvió un resumen vacío."
+        st.session_state.session_memory_summary = summ
+        aid = st.session_state.get("active_session_id")
+        if aid:
+            persist_session_summary(load_store(), str(aid), summ)
+        return summ, None
+    except Exception as e:
+        return None, str(e)
+
+
+def _trim_chat_messages(
+    msgs: list[dict],
+    max_chars: int = 56000,
+    keep_last_messages: int = 48,
+) -> list[dict]:
+    """Preserva los últimos turnos (conversación reciente) y recorta por presupuesto de caracteres."""
+    clean = [m for m in msgs if isinstance(m, dict) and m.get("role") in ("user", "assistant", "system")]
+    if not clean:
+        return []
+    tail = clean[-keep_last_messages:] if len(clean) > keep_last_messages else list(clean)
     out: list[dict] = []
     n = 0
-    for m in reversed(msgs):
-        if not isinstance(m, dict) or m.get("role") not in ("user", "assistant", "system"):
-            continue
+    for m in reversed(tail):
         piece = str(m.get("content") or "")
         if n + len(piece) > max_chars and out:
             break
         out.insert(0, dict(m))
         n += len(piece)
     return out
+
+
+def _profile_slim_for_chat(profile: dict, max_chars: int = 4200) -> str:
+    """Perfil compacto para el system prompt del chat (deja más margen al historial real)."""
+    p = merge_profile_disk(profile)
+    aud = p.get("audience") or {}
+    ch = p.get("channel") or {}
+    vis = p.get("visual") or {}
+    ed = p.get("editing") or {}
+    scr = p.get("script") or {}
+    vid = p.get("video") or {}
+    ig = p.get("idea_generation") if isinstance(p.get("idea_generation"), dict) else {}
+    lines = [
+        f"Nicho: {p.get('niche', '')}",
+        f"Tono: {p.get('tone', '')}",
+        f"Hook: {p.get('hook_style', '')}",
+        f"Pacing: {p.get('pacing', '')}",
+        f"Público: {aud.get('who', '')}",
+        f"Dolores audiencia: {aud.get('pain_points', '')}",
+        f"Pilares canal: {ch.get('content_pillars', '')}",
+        f"Evitar: {p.get('topics_to_avoid', '')}",
+        f"Formato: {vid.get('primary_format', '')}",
+        f"Look visual: {vis.get('look', '')}",
+        f"Montaje / notas IA: {ed.get('notes_for_ai_director', '')}",
+        f"Apertura guion (si aplica): {scr.get('opening_style', '')}",
+        f"Ideas sugeridas — brief: {ig.get('brief', '')}",
+        f"Ideas sugeridas — favor: {ig.get('angles_to_favor', '')}",
+        f"Ideas sugeridas — evitar: {ig.get('angles_to_avoid', '')}",
+        f"Notas libres: {p.get('notes_freeform', '')}",
+    ]
+    blob = "\n".join(lines).strip()
+    if len(blob) <= max_chars:
+        return blob
+    return blob[: max_chars - 1] + "…"
 
 
 def _get_openai_client():
@@ -187,26 +278,29 @@ def _creative_agent_reply(messages: list[dict], profile: dict) -> str:
     mem_block = f"\n\nMEMORIA LARGA DE ESTA SESIÓN (recordá esto al responder):\n{mem}\n" if mem else ""
     system_prompt = (
         "Sos director creativo y de postproducción para YouTube. Español. "
-        "Tenés el historial de esta sesión de trabajo abajo: tratá de ser coherente con todo lo acordado. "
-        "Ayudá a definir con precisión: nicho, público, tono, hooks, ritmo narrativo, formato (largo vs vertical), "
-        "estética visual (luz, color, planos), ritmo de corte, transiciones, texto en pantalla, rol de la música y "
-        "notas para quien edite o para la IA de montaje. "
-        "Preguntá 1–2 cosas muy concretas por turno. Sin markdown largo. No digas que actualizaste el perfil."
+        "Es una **conversación continua**: leé todo el historial que te pasan; no ignores lo que el usuario dijo hace un turno o varios. "
+        "Referenciá concretamente nombres, decisiones y matices que ya mencionó cuando aplique. "
+        "Ayudalo a afinar nicho, público, tono, hooks, ritmo, formato, estética, montaje y voz. "
+        "Si falta algo para decidir, podés hacer **una** pregunta clara; no hagas interrogatorio mecánico ni actúes como si no hubiera contexto previo. "
+        "Para **ideas de video sugeridas** (pantalla Nuevo video), el criterio vive en `idea_generation` del perfil (brief, favor, evitar): "
+        "orientalo y recordá que puede guardarlo en Perfil → Editar perfil o con «Actualizar perfil desde el chat». "
+        "Respuestas útiles y naturales; sin markdown pesado; no digas que ‘actualizaste el perfil’ en el sistema."
     )
     conv = [
         {
             "role": "system",
             "content": system_prompt
             + mem_block
-            + "\nPerfil actual: "
-            + json.dumps(merge_profile_disk(profile), ensure_ascii=False),
+            + "\nPerfil del canal (resumen; el historial manda si hay matices nuevos):\n"
+            + _profile_slim_for_chat(profile),
         }
     ]
-    conv.extend(_trim_chat_messages(messages, 30000))
+    conv.extend(_trim_chat_messages(messages))
     try:
         r = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            temperature=0.65,
+            temperature=0.72,
+            max_tokens=1800,
             messages=conv,
         )
         return r.choices[0].message.content.strip()
@@ -228,7 +322,10 @@ def _extract_profile_from_conversation(messages: list[dict], current: dict) -> t
 
 OBLIGATORIO:
 - Incluí SIEMPRE las claves de primer nivel: niche, tone, hook_style, pacing, narrator_preference, language_register,
-  topics_to_avoid, notes_freeform, audience, channel, script, video, visual, editing (podés anidar objetos).
+  topics_to_avoid, notes_freeform, audience, channel, script, video, visual, editing, idea_generation (podés anidar objetos).
+- idea_generation: objeto con brief (qué clase de propuestas de video quiere ver en «Nuevo video»: géneros, formatos, variedad),
+  angles_to_favor (temas o enfoques a priorizar en las sugerencias), angles_to_avoid (lo que NO debe aparecer en ideas).
+  Si el chat no habló de ideas sugeridas, devolvé idea_generation con strings vacíos o copiá del perfil_actual_como_pista.
 - Cada campo de texto que puedas deducir del chat debe tener al menos una frase concreta (no dejes "" si el usuario dio contexto).
 - Si el usuario fue vago pero dio un tema, inferí tono, hook y look razonables y aclaralo en notes_freeform.
 - pacing: exactamente uno de: Lento, Medio, Rápido.
@@ -490,13 +587,26 @@ def _heuristic_video_ideas(pm: dict, mem: str) -> list[dict[str, str]]:
     who = str((pm.get("audience") or {}).get("who") or "").strip() or "tu audiencia"
     hook = (pm.get("hook_style") or "").strip() or "un gancho claro al inicio"
     pillars = (pm.get("channel") or {}).get("content_pillars") or ""
+    ig = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
+    ig_brief = str(ig.get("brief") or "").strip()
+    ig_favor = str(ig.get("angles_to_favor") or "").strip()
+    ig_avoid = str(ig.get("angles_to_avoid") or "").strip()
+    ig_tail = ""
+    if ig_favor:
+        ig_tail += f" Priorizar: {ig_favor[:220]}{'…' if len(ig_favor) > 220 else ''}"
+    if ig_avoid:
+        ig_tail += f" Evitar en las propuestas: {ig_avoid[:220]}{'…' if len(ig_avoid) > 220 else ''}"
     lines = [
-        f"Video para {who}: explicar con ejemplos concretos por qué importa «{niche}», tono {tone}, con {hook}. Duración mental ~4 min.",
-        f"Historia en segunda persona dentro del universo de «{niche}»: un día que lo cambia todo, arco con tensión y cierre, tono {tone}.",
-        f"Listado accionable: 5 errores típicos en «{niche}» y cómo evitarlos; lenguaje directo, tono {tone}.",
-        f"Mito vs realidad sobre «{niche}»; confrontar creencias comunes con datos o escenas, tono {tone}, {hook}.",
-        f"Mini caso: un personaje (el espectador) enfrenta un obstáculo clásico de «{niche}» y muestra la lección sin moralina forzada.",
+        f"Video para {who}: explicar con ejemplos concretos por qué importa «{niche}», tono {tone}, con {hook}. Duración mental ~4 min.{ig_tail}",
+        f"Historia en segunda persona dentro del universo de «{niche}»: un día que lo cambia todo, arco con tensión y cierre, tono {tone}.{ig_tail}",
+        f"Listado accionable: 5 errores típicos en «{niche}» y cómo evitarlos; lenguaje directo, tono {tone}.{ig_tail}",
+        f"Mito vs realidad sobre «{niche}»; confrontar creencias comunes con datos o escenas, tono {tone}, {hook}.{ig_tail}",
+        f"Mini caso: un personaje (el espectador) enfrenta un obstáculo clásico de «{niche}» y muestra la lección sin moralina forzada.{ig_tail}",
     ]
+    if ig_brief:
+        seed = f"{ig_brief[:380]}{'…' if len(ig_brief) > 380 else ''} — Público: {who}. Nicho: «{niche}». Tono: {tone}.{ig_tail}"
+        lines.insert(0, seed)
+        lines.insert(1, f"Otra variante alineada a tu brief de ideas: {ig_brief[:200]}{'…' if len(ig_brief) > 200 else ''} (formato historia corta, POV, ~4 min).{ig_tail}")
     if pillars.strip():
         lines.append(f"Video alineado a pilares del canal ({pillars[:180]}…): propuesta concreta en «{niche}», tono {tone}.")
     if mem.strip():
@@ -527,10 +637,18 @@ def _ia_video_idea_pack(pm: dict, mem: str, messages: list[dict]) -> list[dict[s
         "Sos planner de contenidos YouTube. Español. Devolvé SOLO JSON con clave 'ideas' (array de 5 a 8 objetos). "
         "Cada objeto: title (corto), hook (una línea), prompt (texto largo en español neutro para que otro modelo escriba el guion: "
         "tema, público, tono, qué debe pasar en el video, duración aproximada en minutos, y CTA o cierre deseado). "
-        "Basate en el perfil, la memoria de sesión y el chat. Sin markdown fuera del JSON."
+        "Basate en el perfil, la memoria de sesión y el chat. "
+        "Si el perfil trae `idea_generation`, obedecelo al pie de la letra: `brief` define qué clase de ideas querés (género, registro, variedad); "
+        "`angles_to_favor` son temas o formatos a priorizar; `angles_to_avoid` es lo que no debe aparecer en ninguna sugerencia. "
+        "Sin markdown fuera del JSON."
     )
     user = json.dumps(
-        {"perfil": merge_profile_disk(pm), "memoria_sesion": (mem or "")[:4000], "chat_reciente": slim},
+        {
+            "perfil": merge_profile_disk(pm),
+            "memoria_sesion": (mem or "")[:4000],
+            "chat_reciente": slim,
+            "recordatorio_ideas": "Las propuestas deben alinearse con idea_generation del perfil cuando exista.",
+        },
         ensure_ascii=False,
     )
     try:
@@ -608,6 +726,14 @@ def page_create() -> None:
             st.info("Si el perfil está vacío, andá a **Perfil** y charlá con el asistente o completá el formulario: así las sugerencias serán mucho más acertadas.")
 
         st.markdown("### 2 · Ideas sugeridas para el próximo video")
+        ig = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
+        if str(ig.get("brief") or "").strip() or str(ig.get("angles_to_favor") or "").strip() or str(ig.get("angles_to_avoid") or "").strip():
+            st.caption(
+                "Criterio de ideas del perfil: **"
+                + (str(ig.get("brief") or "").strip()[:160] or "—")
+                + ("…" if len(str(ig.get("brief") or "")) > 160 else "")
+                + "** · Podés afinarlo en **Perfil → Editar perfil** (sección Ideas sugeridas) o con el asistente + «Actualizar perfil desde el chat»."
+            )
         st.caption("Generamos propuestas con tu perfil, la memoria de sesión y el chat reciente. Podés usar una tal cual o editarla abajo.")
         g1, g2, g3 = st.columns([1, 1, 2])
         with g1:
@@ -1074,6 +1200,10 @@ def page_profile() -> None:
             _card_metric("Look visual", str(vis.get("look") or "—")[:56])
         with c8:
             _card_metric("Ritmo de corte", str(ed.get("cut_rhythm") or "—")[:40])
+        ig = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
+        if str(ig.get("brief") or "").strip():
+            st.markdown("##### Ideas sugeridas (Nuevo video)")
+            st.caption(str(ig.get("brief") or "")[:500] + ("…" if len(str(ig.get("brief") or "")) > 500 else ""))
         with st.expander("Perfil completo (JSON)", expanded=False):
             st.json(pm)
 
@@ -1136,6 +1266,31 @@ def page_profile() -> None:
         e_pvis = st.text_input("Ritmo visual vs audio", value=str(ed.get("pacing_visual") or ""))
         e_notes = st.text_area("Instrucciones para la IA de montaje / editor", value=str(ed.get("notes_for_ai_director") or ""), height=88)
 
+        st.markdown("##### Ideas sugeridas (pantalla «Nuevo video»)")
+        st.caption(
+            "Define qué clase de propuestas debe armar la IA (y las heurísticas sin API). "
+            "Podés charlarlo con el **Asistente** y luego «Actualizar perfil desde el chat»."
+        )
+        ig0 = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
+        ig_brief = st.text_area(
+            "Brief para el planner de ideas",
+            value=str(ig0.get("brief") or ""),
+            height=88,
+            placeholder="Ej.: POV en segunda persona, vidas cotidianas con giro oscuro; variedad de oficios y épocas; nada de política partidaria.",
+        )
+        ig_favor = st.text_area(
+            "Ángulos o temas a favor (priorizar)",
+            value=str(ig0.get("angles_to_favor") or ""),
+            height=56,
+            placeholder="Ej.: supervivencia urbana, relaciones tóxicas, misterios sin resolver…",
+        )
+        ig_avoid = st.text_area(
+            "Lo que no querés en las sugerencias",
+            value=str(ig0.get("angles_to_avoid") or ""),
+            height=56,
+            placeholder="Ej.: narcos genéricos, violencia explícita gratuita, clickbait de políticos…",
+        )
+
         notes_free = st.text_area("Notas libres (cualquier contexto extra)", value=str(pm.get("notes_freeform") or ""), height=80)
 
         env_m = get_background_music_path()
@@ -1183,6 +1338,11 @@ def page_profile() -> None:
                 "pacing_visual": e_pvis.strip(),
                 "notes_for_ai_director": e_notes.strip(),
             }
+            updated["idea_generation"] = {
+                "brief": ig_brief.strip(),
+                "angles_to_favor": ig_favor.strip(),
+                "angles_to_avoid": ig_avoid.strip(),
+            }
             updated["notes_freeform"] = notes_free.strip()
             st.session_state.creative_profile = updated
             _session_persist()
@@ -1191,15 +1351,32 @@ def page_profile() -> None:
 
     with tab_chat:
         st.caption(
-            "Todo queda guardado en la **sesión activa** (sidebar). La IA ve el historial largo + resumen de memoria. "
-            "Ese mismo contexto alimenta el guion y el montaje al generar un video."
+            "Todo queda en la **sesión activa** (sidebar). El asistente usa muchos turnos de historial; "
+            "desde **Historial completo** o con **Condensar memoria** podés generar un resumen con el contexto necesario."
         )
+        preview = st.session_state.pop("_memory_summary_preview", None)
+        if preview:
+            st.success("Resumen guardado: queda en **memoria larga de sesión** (asistente, guion y render lo usan).")
+            with st.expander("Ver último resumen generado", expanded=True):
+                st.markdown(preview)
+
         hist = st.expander("Historial completo", expanded=False)
         with hist:
             for m in st.session_state.agent_messages:
                 role = "Tú" if m["role"] == "user" else "IA"
                 st.markdown(f"**{role}:** {m['content'][:500]}")
-        for m in st.session_state.agent_messages[-6:]:
+            st.divider()
+            st.caption(
+                "Condensa todo el chat (y la memoria previa) en un texto de contexto: decisiones, tono, prohibiciones y detalles que no quieras perder."
+            )
+            if st.button("Resumir historial con contexto", type="primary", use_container_width=True, key="saas_hist_summarize"):
+                summ, err = _summarize_session_chat_to_memory()
+                if err:
+                    st.warning(err)
+                else:
+                    st.session_state._memory_summary_preview = summ
+                    st.rerun()
+        for m in st.session_state.agent_messages[-12:]:
             with st.chat_message(m["role"]):
                 st.write(m["content"])
         if msg := st.chat_input("Mensaje"):
@@ -1222,24 +1399,12 @@ def page_profile() -> None:
             else:
                 st.success("Perfil actualizado desde la conversación.")
         if c2.button("Condensar memoria de sesión"):
-            cl = _get_openai_client()
-            if not cl:
-                st.warning("Sin OPENAI_API_KEY no se puede resumir.")
+            summ, err = _summarize_session_chat_to_memory()
+            if err:
+                st.warning(err)
             else:
-                try:
-                    summ = summarize_session_messages(
-                        cl,
-                        st.session_state.agent_messages,
-                        st.session_state.get("session_memory_summary") or "",
-                    )
-                    st.session_state.session_memory_summary = summ
-                    aid = st.session_state.get("active_session_id")
-                    if aid:
-                        persist_session_summary(load_store(), str(aid), summ)
-                    st.success("Memoria larga actualizada.")
-                    st.rerun()
-                except Exception as e:
-                    st.error(str(e))
+                st.session_state._memory_summary_preview = summ
+                st.rerun()
         if c3.button("Limpiar historial"):
             st.session_state.agent_messages = [{"role": "assistant", "content": "Historial borrado en esta sesión. ¿Por dónde empezamos?"}]
             _session_persist()
