@@ -1,5 +1,23 @@
 [
   {
+    "id": "20260417181514",
+    "topic": "Crea una historia de un personaje que, tras una traición inesperada, se ve envuelto en el mundo del crimen organizado. El espectador es el protagonista, quien toma decisiones cruciales que lo llevan a convertirse en un capo de la mafia. La narrativa debe ser intensa y llena de giros inesperados, mostrando cómo las decisiones del personaje afectan su vida y la de quienes lo rodean. La duración del video debe ser entre 15 y 20 minutos, con un cierre que invite a reflexionar sobre la lealtad y la traición.",
+    "status": "ready",
+    "created_at": "2026-04-17 18:15",
+    "video_path": "/Users/juanmamartinez/FrameFactory-AI/output/final.mp4",
+    "character_id": "cartoon_biz_1",
+    "background_id": "dark_studio",
+    "voice_id": "male_sharp",
+    "duration_target_min": 3,
+    "preset": "clean_youtube",
+    "use_bgm": true,
+    "use_sfx": false,
+    "safe_music_path": null,
+    "safe_sfx_path": null,
+    "use_env_music": false,
+    "session_id": "20260416_180807_d268a985"
+  },
+  {
     "id": "20260417172316",
     "topic": "Imagina que eres el protagonista de una historia en la que tu mejor amigo, quien te ha apoyado durante años, se convierte en un traidor. Explora cómo tomas decisiones difíciles para manejar la situación y cómo esto afecta tu vida en el crimen organizado. El video deberá sumergir al espectador en la narrativa, utilizando un tono directo y envolvente. La historia debe durar entre 12 y 15 minutos, con un cierre que invite a reflexionar sobre la lealtad y las decisiones. ¡No olvides incluir giros inesperados!",
     "status": "ready",
