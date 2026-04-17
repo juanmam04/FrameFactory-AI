@@ -47,7 +47,9 @@ from .reddit_publication_bundle import generar_bundle_publicacion_youtube
 from .character_video_provider import render_block, reset_heygen_runtime_state
 from .saas_creative_profile import merge_profile_disk, profile_to_script_context
 from .saas_edit_planner import annotate_blocks_with_editing
+from .saas_full_package import write_saas_full_package
 from .saas_subtitles import burn_subtitles_on_video, list_subtitle_style_keys, write_ass_from_block_audios
+from .saas_viral_idea_engine import generate_viral_idea_for_profile
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -557,6 +559,8 @@ def run_saas_mvp(
     background_id: str | None = None,
     voice_id: str | None = None,
     workspace_subdir: str | None = None,
+    auto_viral_idea: bool = False,
+    story_background_video: bool = False,
 ) -> Path:
     """
     MVP SaaS mínimo:
@@ -572,10 +576,10 @@ def run_saas_mvp(
     subtitle_style_key: clave en config/subtitle_styles.yaml (force_style ASS).
     character_id / background_id / voice_id: elecciones del Studio SaaS (catálogo).
     workspace_subdir: si se indica, toda la salida va a output/<subdir>/ (evita colisiones entre renders).
+    auto_viral_idea: si True, genera idea + brief de guion desde el Creative Profile (topic puede ir vacío o como nota opcional).
+    story_background_video: si True, fuerza narración solo sobre fondo/B-roll (sin personaje en pantalla), aunque el perfil no sea Reddit.
     """
     print("🚀 [MVP] Iniciando run_saas_mvp...")
-    if not topic or not topic.strip():
-        raise ValueError("topic es obligatorio para run_saas_mvp.")
     _saas_write_progress(progress_path, "Inicio", 0.0)
 
     tw = int(target_words) if target_words is not None else 420
@@ -591,11 +595,33 @@ def run_saas_mvp(
             + "\n\n=== LO HABLADO EN ESTA SESIÓN (prioridad con el tema del video) ===\n"
             + str(session_context).strip()[:24000]
         )
+    viral_pkg: dict | None = None
+    tema_core = (topic or "").strip()
+    if auto_viral_idea:
+        _saas_write_progress(progress_path, "Idea viral", 4.0)
+        viral_pkg = generate_viral_idea_for_profile(prof, session_context)
+        tema_core = (viral_pkg.get("script_seed") or "").strip()
+        if not tema_core:
+            tema_core = (viral_pkg.get("idea") or "").strip()
+        if (topic or "").strip():
+            tema_core = (
+                f"{tema_core}\n\nNotas opcionales del creador (baja prioridad si chocan con la idea central):\n"
+                f"{(topic or '').strip()}"
+            )[:12000]
+        if not tema_core.strip():
+            raise RuntimeError("[MVP] auto_viral_idea no produjo un brief de guion utilizable.")
+    elif not tema_core:
+        raise ValueError("topic es obligatorio para run_saas_mvp (salvo auto_viral_idea=True).")
+
+    pub_topic_one_line = (viral_pkg.get("idea") or "").strip() if viral_pkg else ""
+    if not pub_topic_one_line:
+        pub_topic_one_line = (tema_core.split("\n")[0] or tema_core).strip()[:500]
+
     script_opening = (prof.get("script") or {}).get("opening_style") or ""
     force_pov = not bool(str(script_opening).strip())
-    reddit_mode = is_reddit_story_profile(prof)
+    reddit_mode = bool(is_reddit_story_profile(prof)) or bool(story_background_video)
     if reddit_mode:
-        print("📖 [MVP] Modo historia viral (perfil): Reddit / storytime — segmentos cortos, solo fondo+B-roll.")
+        print("📖 [MVP] Modo historia viral: Reddit / storytime — segmentos cortos, solo fondo+B-roll.")
         force_pov = False
 
     # ─── Estructura mínima ───────────────────────────────────────────────────
@@ -664,7 +690,7 @@ def run_saas_mvp(
     _saas_write_progress(progress_path, "Guion", 12.0)
     plantilla_guion = "reddit_stories" if reddit_mode else "explicativo"
     script_text, word_count, _mins = generar_guion(
-        tema=topic.strip(),
+        tema=tema_core,
         target_words=tw,
         plantilla=plantilla_guion,
         segundos_por_imagen=4.0 if reddit_mode else 6.0,
@@ -690,18 +716,17 @@ def run_saas_mvp(
     if reddit_mode:
         blocks = enrich_blocks_with_visual_intent(blocks, prof)
     pub_bundle = generar_bundle_publicacion_youtube(
-        topic=topic.strip(),
+        topic=pub_topic_one_line,
         script_text=script_text,
         scenes=blocks,
         profile=prof,
     )
     try:
+        _meta_body: dict = {"script": script_text, "blocks": blocks, "word_count": word_count}
+        if viral_pkg:
+            _meta_body["viral_meta"] = viral_pkg
         (output_dir / "saas_last_mvp_meta.json").write_text(
-            json.dumps(
-                {"script": script_text, "blocks": blocks, "word_count": word_count},
-                ensure_ascii=False,
-                indent=2,
-            ),
+            json.dumps(_meta_body, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         (output_dir / "saas_publication_bundle.json").write_text(
@@ -859,6 +884,17 @@ def run_saas_mvp(
         print(f"🎵 [MVP] Post-mix audio: {final_path.resolve()}")
 
     _saas_write_progress(progress_path, "Listo", 100.0)
+    try:
+        write_saas_full_package(
+            output_dir,
+            viral_meta=viral_pkg,
+            script_text=script_text,
+            blocks=blocks,
+            pub_bundle=pub_bundle,
+            final_video=final_path,
+        )
+    except Exception as e:
+        print(f"⚠️ [MVP] No se pudo escribir saas_full_package.json: {e}")
     return final_path
 
 

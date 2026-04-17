@@ -53,17 +53,25 @@ def generar_bundle_publicacion_youtube(
         '{ "title": str, "alt_titles": [str, str], "description": str, '
         '"thumbnail": { "text": str (3-5 palabras), "image_prompt": str (inglés o español, sin texto en imagen), '
         '"layout": str (sugerencia corta: ej. big_text_left, faceless_mood, split_tone) } }\n'
-        "El tono del título y la descripción debe reflejar el perfil (tone, hook_style, style, pacing, audience). "
+        "El tono del título y la descripción debe reflejar el perfil (tone, hook_style, style, pacing, audience, "
+        "title_style, topics_to_focus). La miniatura (text + image_prompt + layout) debe respetar thumbnail_style "
+        "(alto contraste, dramático, minimal, etc.) cuando esté definido. "
         "Historias oscuras/tensas → títulos emocionales o misteriosos; divertidas → curiosidad ligera. "
         "Descripción: gancho corto, resumen 2-3 frases, CTA suave, 3-6 hashtags al final. "
         "Prohibido sonar a plantilla genérica de IA."
     )
+    ttf = p.get("topics_to_focus")
+    if not isinstance(ttf, list):
+        ttf = []
     user = json.dumps(
         {
             "tema": topic,
             "perfil_creador": script_ctx[:8000],
             "guion_extracto": preview,
             "beats_visuales": scene_titles[:2000],
+            "title_style": str(p.get("title_style") or "").strip(),
+            "thumbnail_style": str(p.get("thumbnail_style") or "").strip(),
+            "topics_to_focus": [str(x).strip() for x in ttf[:24] if str(x).strip()],
         },
         ensure_ascii=False,
     )

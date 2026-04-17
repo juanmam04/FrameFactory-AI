@@ -25,6 +25,9 @@ def default_creative_profile() -> dict[str, Any]:
         "narrator_preference": list(VOICES.keys())[0],
         "language_register": "Español neutro, tuteo",
         "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
         "channel": {
             "name": "",
             "tagline": "",

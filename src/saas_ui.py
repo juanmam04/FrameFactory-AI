@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import secrets
 import threading
 import time
@@ -51,6 +52,67 @@ PRESETS = ["clean_youtube", "dynamic_punchy", "minimal_subtle"]
 
 # Ritmo de referencia solo para estimaciones en la UI (no afecta al modelo).
 _SAAS_WORDS_PER_MIN = 140.0
+
+
+def _parse_duration_hint_max_minutes(text: str) -> int | None:
+    """
+    Busca en el texto una duración pedida en minutos y devuelve el tope útil (p. ej. rango 15–20 → 20).
+    None si no hay pista clara. Tope duro 180 min para evitar valores absurdos.
+    """
+    if not text or not str(text).strip():
+        return None
+    t = str(text).lower()
+    pairs: list[tuple[int, int]] = []
+
+    def _push(a: int, b: int) -> None:
+        a0, b0 = min(a, b), max(a, b)
+        if 1 <= a0 <= 180 and 1 <= b0 <= 180:
+            pairs.append((a0, b0))
+
+    for pat in (
+        r"entre\s+(\d+)\s*(?:y|e|a|hasta)\s*(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)",
+        r"between\s+(\d+)\s+and\s+(\d+)\s*(?:minutes?|mins?|min\.?)",
+        r"(\d+)\s*[-–—]\s*(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)",
+        r"(\d+)\s+a\s+(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)",
+    ):
+        for m in re.finditer(pat, t, flags=re.IGNORECASE):
+            _push(int(m.group(1)), int(m.group(2)))
+
+    if pairs:
+        return min(180, max(b for _, b in pairs))
+
+    for pat in (
+        r"(?:unos?|unas?|aprox\.?|~|≈)?\s*(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)\b",
+        r"duraci[oó]n\s*(?:de|:)?\s*(\d+)\s*(?:minutos?|mins?|minutes?)",
+    ):
+        m = re.search(pat, t, flags=re.IGNORECASE)
+        if m:
+            v = int(m.group(1))
+            if 1 <= v <= 180:
+                return v
+    return None
+
+
+def _target_words_floor_from_topic_duration(
+    topic: str,
+    twist: str,
+    current_words: int,
+    *,
+    ignore_topic_duration_hint: bool = False,
+) -> int:
+    """
+    Si el brief pide N minutos de video, sube el objetivo de palabras (no baja el que el usuario subió en el slider).
+    Con ignore_topic_duration_hint=True solo se respeta el tope 80–10000 (p. ej. pruebas cortas aunque el tema diga «15 min»).
+    """
+    if ignore_topic_duration_hint:
+        return max(80, min(10000, int(current_words)))
+    combined = f"{(topic or '').strip()}\n{(twist or '').strip()}"
+    mins = _parse_duration_hint_max_minutes(combined)
+    if mins is None:
+        return max(80, min(10000, int(current_words)))
+    need = int(round(float(mins) * _SAAS_WORDS_PER_MIN))
+    need = max(80, min(10000, need))
+    return max(max(80, min(10000, int(current_words))), need)
 
 
 def _saas_estimated_speech_minutes(words: int, voice_speed: float = 1.0) -> tuple[float, float]:
@@ -118,6 +180,7 @@ def _write_project_bundle(
     word_count: int | None,
     job: dict | None,
     project_row: dict | None,
+    full_package: dict | None = None,
 ) -> Path | None:
     """Guarda guion, bloques y metadatos para la biblioteca."""
     row = project_row or {}
@@ -147,6 +210,8 @@ def _write_project_bundle(
         "safe_sfx_path": row.get("safe_sfx_path"),
         "use_env_music": row.get("use_env_music"),
     }
+    if full_package and isinstance(full_package, dict) and full_package:
+        data["full_package"] = full_package
     path = _project_bundle_path(project_id)
     try:
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -528,7 +593,7 @@ def _init_state() -> None:
     st.session_state.create_topic = ""
     st.session_state.create_twist = ""
     st.session_state.create_idea_pack = None
-    st.session_state.create_target_words = 560
+    st.session_state.create_duration = 4
     st.session_state.create_voice_speed = 1.0
     st.session_state.create_subtitles_enabled = True
     st.session_state.create_subtitle_style = "default"
@@ -553,6 +618,10 @@ def _init_state() -> None:
     st.session_state.block_approved = {}
     st.session_state.render = None
     st.session_state.library_selected_pid = None
+    st.session_state.create_auto_full_package = False
+    st.session_state.create_ignore_topic_duration_hint = False
+    st.session_state._saas_prev_ignore_dur_hint = False
+    st.session_state.last_full_package = {}
 
 
 def _nav() -> None:
@@ -878,6 +947,23 @@ def page_create() -> None:
         elif not (pm.get("niche") or "").strip() and not (pm.get("tone") or "").strip():
             st.info("Si el perfil está vacío, andá a **Perfil** y charlá con el asistente o completá el formulario: así las sugerencias serán mucho más acertadas.")
 
+        st.markdown("#### Paquete completo automático")
+        st.caption(
+            "Un solo clic en el paso final: **idea viral**, **guion**, **escenas**, **título**, **descripción**, "
+            "**miniatura** (texto + prompt + layout) y **video** (voz + fondos + subtítulos), guiado solo por tu "
+            "**Perfil creativo** y el contexto de esta sesión. Narración sobre fondo/B-roll, **sin personaje** en pantalla."
+        )
+        if st.session_state.get("create_auto_full_package"):
+            st.success("Modo **paquete automático** activo: el tema del paso 3 es opcional (podés dejarlo vacío o añadir una pista corta).")
+            if st.button("Salir del modo paquete automático", key="saas_auto_pkg_off"):
+                st.session_state.create_auto_full_package = False
+                st.rerun()
+        elif st.button("Activar modo paquete automático", type="primary", use_container_width=True, key="saas_auto_pkg_on"):
+            st.session_state.create_auto_full_package = True
+            st.session_state.create_topic = ""
+            st.session_state.create_twist = ""
+            st.rerun()
+
         st.markdown("### 2 · Ideas sugeridas para el próximo video")
         ig = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
         if str(ig.get("brief") or "").strip() or str(ig.get("angles_to_favor") or "").strip() or str(ig.get("angles_to_avoid") or "").strip():
@@ -930,10 +1016,17 @@ def page_create() -> None:
                             st.session_state.create_twist = ""
                             st.rerun()
 
-        st.markdown("### 3 · Tema final del video (obligatorio)")
-        st.caption(
-            "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** vas a elegir personaje, fondo, voz, velocidad de voz, largo del guion (palabras), subtítulos, música y SFX — no hace falta repetir eso acá."
-        )
+        if st.session_state.get("create_auto_full_package"):
+            st.markdown("### 3 · Semilla opcional (modo automático)")
+            st.caption(
+                "Si lo dejás vacío, el sistema inventa la **idea viral** y el **brief del guion** solo con tu perfil y la sesión. "
+                "Si escribís algo, se usa como **pista de baja prioridad** si no choca con la idea generada."
+            )
+        else:
+            st.markdown("### 3 · Tema final del video (obligatorio)")
+            st.caption(
+                "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** vas a elegir personaje, fondo, voz, velocidad de voz, largo del guion (palabras), subtítulos, música y SFX — no hace falta repetir eso acá."
+            )
         idea = st.text_area(
             "Tema / brief para el guion",
             value=st.session_state.create_topic,
@@ -952,14 +1045,40 @@ def page_create() -> None:
         combined = _build_video_topic()
         _, r = st.columns([3, 1])
         with r:
-            if st.button("Siguiente", type="primary", disabled=not combined.strip(), use_container_width=True):
+            _can_next = bool(combined.strip()) or bool(st.session_state.get("create_auto_full_package"))
+            if st.button("Siguiente", type="primary", disabled=not _can_next, use_container_width=True):
                 st.session_state.create_step = 2
                 st.rerun()
 
     elif st.session_state.create_step == 2:
+        _ctp = (st.session_state.get("create_topic") or "").strip()
+        _ctw = (st.session_state.get("create_twist") or "").strip()
+        st.markdown("#### Largo del video")
+        st.checkbox(
+            "Prueba corta: ignorar la duración que pide el tema (solo usá minutos y palabras de abajo)",
+            help=(
+                "Si el brief dice «15–20 minutos», el sistema suele subir mucho las palabras. "
+                "Activá esto para iterar rápido con renders cortos sin reescribir el tema."
+            ),
+            key="create_ignore_topic_duration_hint",
+        )
+        _ig = bool(st.session_state.get("create_ignore_topic_duration_hint", False))
+        _prev_ig = bool(st.session_state.get("_saas_prev_ignore_dur_hint", False))
+        if _ig and not _prev_ig:
+            _snap = max(80, int(round(2.0 * _SAAS_WORDS_PER_MIN)))
+            st.session_state.create_target_words = min(int(st.session_state.get("create_target_words", _snap)), _snap)
+        if "create_duration" not in st.session_state:
+            tw0 = int(st.session_state.get("create_target_words", 560) or 560)
+            st.session_state.create_duration = max(1, min(60, int(round(tw0 / max(1.0, _SAAS_WORDS_PER_MIN)))))
         if "create_target_words" not in st.session_state:
-            d = int(st.session_state.get("create_duration", 4) or 4)
-            st.session_state.create_target_words = max(80, min(10000, d * 140))
+            d0 = int(st.session_state.get("create_duration", 4) or 4)
+            d0 = max(1, min(60, d0))
+            st.session_state.create_duration = d0
+            bw0 = max(80, min(10000, int(round(float(d0) * _SAAS_WORDS_PER_MIN))))
+            st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+                _ctp, _ctw, bw0, ignore_topic_duration_hint=_ig
+            )
+            st.session_state._saas_dm_prev = d0
         if "create_voice_speed" not in st.session_state:
             st.session_state.create_voice_speed = 1.0
         st.markdown("### Estilo del video")
@@ -982,22 +1101,70 @@ def page_create() -> None:
             )
         )
         _pick_card("Preset", PRESETS, "create_preset", lambda k: k.replace("_", " "))
+        dm = int(
+            st.slider(
+                "Duración aproximada (minutos de narración)",
+                1,
+                60,
+                int(st.session_state.get("create_duration", 4) or 4),
+                step=1,
+                help=(
+                    f"Objetivo de guion: ~{int(_SAAS_WORDS_PER_MIN)} palabras por minuto de habla. "
+                    "Si en el tema pedís otra duración, por defecto se usa el máximo entre esto y lo detectado en el texto "
+                    "(salvo que actives «Prueba corta» arriba)."
+                ),
+            )
+        )
+        st.session_state.create_duration = dm
+        bw = max(80, min(10000, int(round(float(dm) * _SAAS_WORDS_PER_MIN))))
+        prev_dm = st.session_state.get("_saas_dm_prev")
+        if prev_dm is None:
+            st.session_state._saas_dm_prev = dm
+        elif int(prev_dm) != int(dm):
+            if not _ig:
+                st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+                    _ctp, _ctw, bw, ignore_topic_duration_hint=False
+                )
+            st.session_state._saas_dm_prev = dm
+        _topic_for_hint = _build_video_topic()
+        _hint_m = _parse_duration_hint_max_minutes(_topic_for_hint)
+        if _ig:
+            st.caption(
+                "**Prueba corta activa:** ignoramos la duración del **tema** y los **minutos no imponen un mínimo** de palabras. "
+                f"Podés bajar el deslizador de palabras hasta **80** (referencia: ~{dm} min ≈ **{bw}** palabras si querés algo más largo)."
+            )
+        elif _hint_m is not None:
+            st.caption(
+                f"En el tema detectamos **~{_hint_m} min** de duración pedida; el mínimo de palabras se alinea a eso "
+                f"(≈{int(round(_hint_m * _SAAS_WORDS_PER_MIN))} palabras a ~{int(_SAAS_WORDS_PER_MIN)} pal/min). "
+                "Podés subir minutos o palabras si querés aún más largo, o activar **Prueba corta** para ignorar esta pista."
+            )
+        tw_lo = 80 if _ig else _target_words_floor_from_topic_duration(_ctp, _ctw, bw, ignore_topic_duration_hint=False)
+        cur_tw = int(st.session_state.get("create_target_words", tw_lo))
+        cur_tw = max(tw_lo, min(10000, cur_tw))
         tw = int(
             st.slider(
                 "Palabras del guion (objetivo)",
-                80,
+                tw_lo,
                 10000,
-                int(st.session_state.get("create_target_words", 560)),
+                cur_tw,
                 step=20,
-                help="El generador intenta acercarse a este largo (tope 10000 por límites de la API).",
+                help=(
+                    "En **Prueba corta** el mínimo es 80 palabras (minutos solo orientativos). "
+                    "Sin prueba corta, el mínimo sigue minutos + pistas del tema."
+                ),
             )
         )
-        st.session_state.create_target_words = tw
-        _bm, _pm = _saas_estimated_speech_minutes(tw, float(st.session_state.create_voice_speed))
+        st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+            _ctp, _ctw, tw, ignore_topic_duration_hint=_ig
+        )
+        tw_effective = int(st.session_state.create_target_words)
+        _bm, _pm = _saas_estimated_speech_minutes(tw_effective, float(st.session_state.create_voice_speed))
         st.caption(
             f"Guion: ≈ **{_bm:.1f} min** a ~{int(_SAAS_WORDS_PER_MIN)} palabras/min. "
             f"Con la velocidad de voz elegida, el audio TTS ≈ **{_pm:.1f} min** (estimación)."
         )
+        st.session_state._saas_prev_ignore_dur_hint = _ig
 
         st.markdown("#### Subtítulos en el video")
         st.caption(
@@ -1132,6 +1299,10 @@ def page_create() -> None:
     else:
         st.markdown("### Listo para generar")
         topic_final = _build_video_topic()
+        if st.session_state.get("create_auto_full_package") and not topic_final.strip():
+            topic_final = (
+                "(Paquete automático: idea viral + guion + publicación generados por el sistema según tu perfil creativo)"
+            )
         ch = get_character(st.session_state.create_character)
         bgm_note = "No"
         if st.session_state.get("create_use_bgm"):
@@ -1164,10 +1335,25 @@ def page_create() -> None:
             if st.button("Generar video", type="primary", use_container_width=True):
                 _session_persist()
                 pid = datetime.now().strftime("%Y%m%d%H%M%S")
-                _tw = int(st.session_state.get("create_target_words", 560))
+                _tw = _target_words_floor_from_topic_duration(
+                    st.session_state.get("create_topic") or "",
+                    st.session_state.get("create_twist") or "",
+                    int(st.session_state.get("create_target_words", 560)),
+                    ignore_topic_duration_hint=bool(
+                        st.session_state.get("create_ignore_topic_duration_hint", False)
+                    ),
+                )
+                st.session_state.create_target_words = _tw
                 _vs = float(st.session_state.get("create_voice_speed", 1.0))
                 _sub_en = bool(st.session_state.get("create_subtitles_enabled", True))
                 _sub_st = str(st.session_state.get("create_subtitle_style") or "default")
+                _topic_for_pipeline = (
+                    ""
+                    if st.session_state.get("create_auto_full_package")
+                    and not (st.session_state.get("create_topic") or "").strip()
+                    and not (st.session_state.get("create_twist") or "").strip()
+                    else _build_video_topic()
+                )
                 _append_project(
                     {
                         "id": pid,
@@ -1190,11 +1376,12 @@ def page_create() -> None:
                         "safe_sfx_path": st.session_state.get("create_safe_sfx_path"),
                         "use_env_music": st.session_state.get("create_use_env_music", False),
                         "session_id": str(st.session_state.get("active_session_id") or ""),
+                        "auto_full_package": bool(st.session_state.get("create_auto_full_package")),
                     }
                 )
                 st.session_state.render = {
                     "project_id": pid,
-                    "topic": topic_final,
+                    "topic": _topic_for_pipeline,
                     "holder": [None],
                     "err": [None],
                     "started": False,
@@ -1224,6 +1411,8 @@ def page_create() -> None:
                             "messages": list(st.session_state.agent_messages),
                         }
                     ),
+                    "auto_viral_idea": bool(st.session_state.get("create_auto_full_package")),
+                    "story_background_video": bool(st.session_state.get("create_auto_full_package")),
                 }
                 if RENDER_PROGRESS.exists():
                     try:
@@ -1271,6 +1460,8 @@ def _run_mvp_thread(topic: str, holder: list, err: list, opts: dict | None) -> N
             character_id=(str(opts.get("character_id") or "").strip() or None),
             background_id=(str(opts.get("background_id") or "").strip() or None),
             voice_id=(str(opts.get("voice_id") or "").strip() or None),
+            auto_viral_idea=bool(opts.get("auto_viral_idea")),
+            story_background_video=bool(opts.get("story_background_video")),
         )
     except Exception as e:
         err[0] = e
@@ -1306,6 +1497,8 @@ def page_rendering() -> None:
             "character_id": str(job.get("character_id") or ""),
             "background_id": str(job.get("background_id") or ""),
             "voice_id": str(job.get("voice_id") or ""),
+            "auto_viral_idea": bool(job.get("auto_viral_idea")),
+            "story_background_video": bool(job.get("story_background_video")),
         }
         t = threading.Thread(
             target=_run_mvp_thread,
@@ -1386,6 +1579,15 @@ def page_rendering() -> None:
         )
         st.session_state.last_script = script_text
         st.session_state.last_blocks = plan_scenes(script_text)
+    st.session_state.last_full_package = {}
+    _fp_full = OUTPUT_DIR / "saas_full_package.json"
+    if _fp_full.exists():
+        try:
+            _raw_fp = json.loads(_fp_full.read_text(encoding="utf-8"))
+            if isinstance(_raw_fp, dict):
+                st.session_state.last_full_package = _raw_fp
+        except Exception:
+            pass
     prow = _load_project_row(pid)
     wc = meta.get("word_count") if isinstance(meta.get("word_count"), (int, float)) else None
     bpath = _write_project_bundle(
@@ -1397,11 +1599,13 @@ def page_rendering() -> None:
         word_count=int(wc) if wc is not None else None,
         job=job,
         project_row=prow,
+        full_package=st.session_state.last_full_package if st.session_state.last_full_package else None,
     )
+    _topic_ready = str((prow or {}).get("topic") or "").strip() or str(job.get("topic") or "").strip()
     upd: dict = {
         "status": "ready",
         "video_path": str(out),
-        "topic": job["topic"],
+        "topic": _topic_ready,
     }
     if bpath is not None:
         upd["bundle_path"] = str(bpath.resolve())
@@ -1554,6 +1758,37 @@ def page_review() -> None:
     if not st.session_state.get("last_script"):
         st.info("Generá un video primero.")
         return
+    pkg = st.session_state.get("last_full_package") or {}
+    if isinstance(pkg, dict) and (pkg.get("title") or pkg.get("idea")):
+        with st.expander("Paquete YouTube (automático)", expanded=True):
+            if pkg.get("idea"):
+                st.markdown("**Idea viral**")
+                st.write(str(pkg.get("idea")))
+            al = pkg.get("alt_ideas")
+            if isinstance(al, list) and al:
+                st.caption("Alternativas de idea: " + " · ".join(str(x) for x in al[:5]))
+            if pkg.get("title"):
+                st.markdown("**Título sugerido**")
+                st.write(str(pkg.get("title")))
+            al_t = pkg.get("alt_titles")
+            if isinstance(al_t, list) and al_t:
+                st.caption("Títulos alternativos: " + " · ".join(str(x) for x in al_t[:3]))
+            if pkg.get("description"):
+                st.markdown("**Descripción**")
+                st.text_area(
+                    "Descripción sugerida",
+                    str(pkg.get("description")),
+                    height=160,
+                    disabled=True,
+                    key="review_pkg_desc",
+                )
+            th = pkg.get("thumbnail") if isinstance(pkg.get("thumbnail"), dict) else {}
+            if th:
+                st.markdown("**Miniatura**")
+                st.json(th)
+            if pkg.get("video_path"):
+                st.caption(f"Video exportado: `{pkg.get('video_path')}`")
+        st.divider()
     left, right = st.columns([1.1, 1])
     with left:
         vp = st.session_state.get("last_video_path")
@@ -1654,6 +1889,27 @@ def page_profile() -> None:
         narr = st.selectbox("Voz preferida (MVP)", list(VOICES.keys()))
         lang = st.text_input("Registro lingüístico", value=str(pm.get("language_register") or ""))
         avoid = st.text_area("Temas o enfoques a evitar", value=str(pm.get("topics_to_avoid") or ""), height=72)
+        _ttf0 = pm.get("topics_to_focus")
+        if isinstance(_ttf0, list):
+            focus_default = ", ".join(str(x) for x in _ttf0 if str(x).strip())
+        else:
+            focus_default = str(_ttf0 or "").strip()
+        focus_in = st.text_area(
+            "Temas a priorizar (viral / paquete automático)",
+            value=focus_default,
+            height=56,
+            placeholder="Separá con comas o saltos de línea: traición, dinero, secretos familiares…",
+        )
+        title_style_in = st.text_input(
+            "Estilo de títulos (YouTube)",
+            value=str(pm.get("title_style") or ""),
+            placeholder="Ej.: corto y emocional, curiosidad misteriosa…",
+        )
+        thumb_style_in = st.text_input(
+            "Estilo de miniatura",
+            value=str(pm.get("thumbnail_style") or ""),
+            placeholder="Ej.: alto contraste, dramático, legible en móvil…",
+        )
 
         st.markdown("##### Público y marca")
         aud = pm.get("audience") or {}
@@ -1741,6 +1997,9 @@ def page_profile() -> None:
             updated["narrator_preference"] = narr
             updated["language_register"] = lang.strip()
             updated["topics_to_avoid"] = avoid.strip()
+            updated["topics_to_focus"] = [s.strip() for s in re.split(r"[,;\n]+", focus_in) if s.strip()][:40]
+            updated["title_style"] = title_style_in.strip()
+            updated["thumbnail_style"] = thumb_style_in.strip()
             updated["audience"] = {"who": a_who.strip(), "pain_points": a_pain.strip(), "reading_level": a_read.strip()}
             updated["channel"] = {
                 "name": ch_name.strip(),
