@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import threading
 import traceback
 from datetime import datetime, timezone
@@ -76,6 +77,13 @@ def _run_job_inner(job_id: int) -> None:
         profile_payload = (cp_row.payload if cp_row and isinstance(cp_row.payload, dict) else {}) or {}
         creative_profile = merge_profile_disk(profile_payload)
 
+        gpv = os.getenv("GAMEPLAY_BACKGROUND_VIDEO", "").strip()
+        gp_arg: Path | None = None
+        if gpv:
+            gp_try = Path(gpv).expanduser().resolve()
+            if gp_try.is_file():
+                gp_arg = gp_try
+
         final = run_saas_mvp(
             project.topic,
             progress_path=progress_path,
@@ -89,6 +97,8 @@ def _run_job_inner(job_id: int) -> None:
             background_id=str(project.background_id or None),
             voice_id=str(project.voice_id or None),
             workspace_subdir=ws,
+            gameplay_video_path=gp_arg,
+            video_aspect=(os.getenv("GAMEPLAY_VIDEO_ASPECT", "16:9").strip() or "16:9"),
         )
 
         rel = final.resolve().relative_to(BASE.resolve())

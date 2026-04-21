@@ -39,6 +39,7 @@ from .catalog_service import (
     resolve_saas_character_image_path,
     resolve_voice_id,
 )
+from .gameplay_background_service import probe_media_duration_seconds, render_gameplay_block_clip
 from .image_generator import generar_imagen_apoyo_replicate
 from .scene_planner import plan_scenes, plan_scenes_reddit_segments
 from .reddit_story_mode import is_reddit_story_profile, words_per_reddit_segment
@@ -49,7 +50,7 @@ from .saas_creative_profile import merge_profile_disk, profile_to_script_context
 from .saas_edit_planner import annotate_blocks_with_editing
 from .saas_full_package import write_saas_full_package
 from .saas_subtitles import burn_subtitles_on_video, list_subtitle_style_keys, write_ass_from_block_audios
-from .saas_viral_idea_engine import generate_viral_idea_for_profile
+from .saas_viral_idea_engine import generate_viral_idea_for_profile, generate_viral_story_idea_three_pick_best
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -446,8 +447,9 @@ def _saas_support_image_prompt(block: dict) -> str:
         parts = [x for x in (vd, br) if x]
         core = ". ".join(parts) if parts else (block.get("text") or "").strip()[:280]
     suffix = (
-        " Wide illustrative B-roll or environment shot, cinematic lighting, "
-        "no people, no faces, no characters, no text, no watermark, no logos."
+        " Dark realistic B-roll, uneasy night mood, cinematic low-key lighting, "
+        "empty interior or object close-up, implied tension, "
+        "no people, no faces, no characters, no text, no watermark, no logos, no cheerful stock look."
     )
     return (core + ". " + suffix).strip()[:3500]
 
@@ -561,6 +563,10 @@ def run_saas_mvp(
     workspace_subdir: str | None = None,
     auto_viral_idea: bool = False,
     story_background_video: bool = False,
+    gameplay_video_path: str | Path | None = None,
+    video_aspect: str = "16:9",
+    overlay_text: dict | None = None,
+    skip_support_images: bool = False,
 ) -> Path:
     """
     MVP SaaS mínimo:
@@ -578,6 +584,10 @@ def run_saas_mvp(
     workspace_subdir: si se indica, toda la salida va a output/<subdir>/ (evita colisiones entre renders).
     auto_viral_idea: si True, genera idea + brief de guion desde el Creative Profile (topic puede ir vacío o como nota opcional).
     story_background_video: si True, fuerza narración solo sobre fondo/B-roll (sin personaje en pantalla), aunque el perfil no sea Reddit.
+    gameplay_video_path: si se indica, clips = segmento de este video (loop/trim) + voz; sin Replicate; idea viral 3+mejor; subtítulos forzados.
+    video_aspect: "16:9" (YouTube) o "9:16" (TikTok) cuando hay gameplay.
+    overlay_text: dict opcional {text, x, y, size, color} para drawtext en el primer clip (FFmpeg).
+    skip_support_images: si True (y no hay gameplay), no llama a Replicate por bloque: solo personaje + fondo del catálogo.
     """
     print("🚀 [MVP] Iniciando run_saas_mvp...")
     _saas_write_progress(progress_path, "Inicio", 0.0)
@@ -586,6 +596,29 @@ def run_saas_mvp(
     tw = max(80, min(10000, tw))
     vs = float(voice_speed) if voice_speed is not None else 1.0
     vs = max(0.5, min(2.0, vs))
+
+    gp_path: Path | None = None
+    if gameplay_video_path and str(gameplay_video_path).strip():
+        gp_path = Path(str(gameplay_video_path)).expanduser().resolve()
+        if not gp_path.is_file():
+            raise FileNotFoundError(f"[MVP] gameplay_video_path no es un archivo: {gameplay_video_path}")
+    gameplay_mode = gp_path is not None
+    if gameplay_mode and gp_path is not None:
+        print(f"🎮 [MVP] Gameplay activo — video fuente: {gp_path.resolve()}")
+    aspect_out = str(video_aspect or "16:9").strip()
+
+    sub_on = bool(subtitles_enabled)
+    sub_style = str(subtitle_style_key or "default").strip()
+    if gameplay_mode:
+        sub_on = True
+        styles0 = get_subtitle_styles()
+        valid0 = list_subtitle_style_keys(styles0)
+        if "reddit_gameplay_center" in valid0:
+            sub_style = "reddit_gameplay_center"
+        elif "tiktok_karaoke" in valid0:
+            sub_style = "tiktok_karaoke"
+        elif sub_style not in valid0:
+            sub_style = valid0[0] if valid0 else "default"
 
     prof = merge_profile_disk(creative_profile or {})
     script_ctx = profile_to_script_context(prof)
@@ -597,7 +630,20 @@ def run_saas_mvp(
         )
     viral_pkg: dict | None = None
     tema_core = (topic or "").strip()
-    if auto_viral_idea:
+    if gameplay_mode:
+        _saas_write_progress(progress_path, "Idea viral (3)", 4.0)
+        viral_pkg = generate_viral_story_idea_three_pick_best(prof, session_context)
+        tema_core = (viral_pkg.get("script_seed") or "").strip()
+        if not tema_core:
+            tema_core = (viral_pkg.get("idea") or "").strip()
+        if (topic or "").strip():
+            tema_core = (
+                f"{tema_core}\n\nNotas opcionales del creador (baja prioridad si chocan con la idea central):\n"
+                f"{(topic or '').strip()}"
+            )[:12000]
+        if not tema_core.strip():
+            raise RuntimeError("[MVP] gameplay: la idea viral no produjo un brief de guion utilizable.")
+    elif auto_viral_idea:
         _saas_write_progress(progress_path, "Idea viral", 4.0)
         viral_pkg = generate_viral_idea_for_profile(prof, session_context)
         tema_core = (viral_pkg.get("script_seed") or "").strip()
@@ -611,15 +657,19 @@ def run_saas_mvp(
         if not tema_core.strip():
             raise RuntimeError("[MVP] auto_viral_idea no produjo un brief de guion utilizable.")
     elif not tema_core:
-        raise ValueError("topic es obligatorio para run_saas_mvp (salvo auto_viral_idea=True).")
+        raise ValueError("topic es obligatorio para run_saas_mvp (salvo auto_viral_idea=True o gameplay_video_path).")
 
-    pub_topic_one_line = (viral_pkg.get("idea") or "").strip() if viral_pkg else ""
+    pub_topic_one_line = (
+        (viral_pkg.get("idea") or viral_pkg.get("selected_idea") or "").strip() if viral_pkg else ""
+    )
     if not pub_topic_one_line:
         pub_topic_one_line = (tema_core.split("\n")[0] or tema_core).strip()[:500]
+    if viral_pkg and (viral_pkg.get("selected_idea") or viral_pkg.get("idea")):
+        print(f"💡 [MVP] Idea viral seleccionada: {(viral_pkg.get('selected_idea') or viral_pkg.get('idea') or '')[:200]}")
 
     script_opening = (prof.get("script") or {}).get("opening_style") or ""
     force_pov = not bool(str(script_opening).strip())
-    reddit_mode = bool(is_reddit_story_profile(prof)) or bool(story_background_video)
+    reddit_mode = bool(is_reddit_story_profile(prof)) or bool(story_background_video) or gameplay_mode
     if reddit_mode:
         print("📖 [MVP] Modo historia viral: Reddit / storytime — segmentos cortos, solo fondo+B-roll.")
         force_pov = False
@@ -720,11 +770,17 @@ def run_saas_mvp(
         script_text=script_text,
         scenes=blocks,
         profile=prof,
+        packaging_mode="viral_gameplay" if gameplay_mode else "default",
     )
     try:
         _meta_body: dict = {"script": script_text, "blocks": blocks, "word_count": word_count}
         if viral_pkg:
             _meta_body["viral_meta"] = viral_pkg
+        if skip_support_images and not gameplay_mode:
+            _meta_body["skip_support_images"] = True
+        if gameplay_mode and gp_path:
+            _meta_body["gameplay_video"] = str(gp_path).replace("\\", "/")
+            _meta_body["video_aspect"] = aspect_out
         (output_dir / "saas_last_mvp_meta.json").write_text(
             json.dumps(_meta_body, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -759,6 +815,12 @@ def run_saas_mvp(
     clips: list[Path] = []
     block_audios: list[Path] = []
     n_blocks = max(1, len(blocks))
+    seg_cursor = 0.0
+    gplen = probe_media_duration_seconds(gp_path) if gameplay_mode and gp_path else 0.0
+    if gameplay_mode and gplen <= 0.1:
+        raise RuntimeError("[MVP] No se pudo leer la duración del video de gameplay.")
+    ot_dict = overlay_text if isinstance(overlay_text, dict) else None
+
     for i, block in enumerate(blocks, start=1):
         bid = block.get("id", f"scene_{i:04d}")
         btext = (block.get("text") or "").strip()
@@ -781,29 +843,60 @@ def run_saas_mvp(
         block_audios.append(block_audio)
 
         sup_file: Path | None = None
-        sup_cand = output_dir / f"saas_support_{i:04d}.png"
         pct_img = 48.0 + (38.0 * (i - 1) / n_blocks)
-        _saas_write_progress(progress_path, f"Imagen apoyo {i}/{len(blocks)}", min(86.0, pct_img))
-        got = generar_imagen_apoyo_replicate(_saas_support_image_prompt(block), sup_cand, escena_num=i)
-        if got and got.exists() and got.stat().st_size > 0:
-            sup_file = got
-            print(f"    apoyo_replicate: {sup_file.resolve()}")
+        if gameplay_mode:
+            _saas_write_progress(progress_path, f"Gameplay {i}/{len(blocks)}", min(86.0, pct_img))
+            print("    gameplay: sin imagen apoyo (Replicate omitido)")
+        elif skip_support_images:
+            _saas_write_progress(progress_path, f"Clip {i}/{len(blocks)} (sin IA)", min(86.0, pct_img))
+            print("    apoyo_replicate: omitido (skip_support_images)")
         else:
-            print("    apoyo_replicate: (omitida)")
+            sup_cand = output_dir / f"saas_support_{i:04d}.png"
+            _saas_write_progress(progress_path, f"Imagen apoyo {i}/{len(blocks)}", min(86.0, pct_img))
+            got = generar_imagen_apoyo_replicate(_saas_support_image_prompt(block), sup_cand, escena_num=i)
+            if got and got.exists() and got.stat().st_size > 0:
+                sup_file = got
+                print(f"    apoyo_replicate: {sup_file.resolve()}")
+            else:
+                print("    apoyo_replicate: (omitida)")
 
         clip = output_dir / f"clip_{i:04d}.mp4"
         print(f"🎞️ [MVP] Render bloque {i}/{len(blocks)} -> {clip.name}")
         pct = 48.0 + (40.0 * (i - 1) / n_blocks)
-        _saas_write_progress(progress_path, f"Clip {i}/{len(blocks)}", pct)
-        render_block(
-            block=block,
-            audio_path=block_audio,
-            character_image=character_img,
-            output_path=clip,
-            background_static=bg_static_path,
-            support_image=sup_file,
-            narration_background_only=reddit_mode,
+        _saas_write_progress(
+            progress_path,
+            f"Escena {i}/{len(blocks)} (gameplay)" if gameplay_mode else f"Clip {i}/{len(blocks)}",
+            pct,
         )
+        if gameplay_mode and gp_path is not None:
+            adur = probe_media_duration_seconds(block_audio)
+            if adur <= 0.05:
+                adur = max(2.0, len(btext.split()) / 2.2)
+            start_seg = seg_cursor % gplen
+            draw_ov = ot_dict if (ot_dict and i == 1) else None
+            render_gameplay_block_clip(
+                gp_path,
+                block_audio,
+                clip,
+                segment_start_sec=start_seg,
+                duration_sec=adur,
+                aspect=aspect_out,
+                motion=str(block.get("motion") or "static"),
+                transition_in=str(block.get("transition_in") or "none"),
+                transition_out=str(block.get("transition_out") or "none"),
+                drawtext_overlay=draw_ov,
+            )
+            seg_cursor += adur
+        else:
+            render_block(
+                block=block,
+                audio_path=block_audio,
+                character_image=character_img,
+                output_path=clip,
+                background_static=bg_static_path,
+                support_image=sup_file,
+                narration_background_only=reddit_mode,
+            )
         if not clip.exists() or clip.stat().st_size == 0:
             raise RuntimeError(f"[MVP] Clip inválido: {clip}")
         clips.append(clip)
@@ -835,7 +928,11 @@ def run_saas_mvp(
         str(final_path.resolve()),
     ]
     print(f"🏁 [MVP] Concatenando clips en {final_path.resolve()}...")
-    _saas_write_progress(progress_path, "Montaje final", 94.0)
+    _saas_write_progress(
+        progress_path,
+        "Uniendo escenas (gameplay)" if gameplay_mode else "Montaje final",
+        94.0,
+    )
     try:
         subprocess.run(cmd, check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as e:
@@ -846,10 +943,10 @@ def run_saas_mvp(
         raise RuntimeError(f"[MVP] Video final no generado correctamente: {final_path}")
     print(f"✅ [MVP] Video final listo: {final_path.resolve()}")
 
-    if subtitles_enabled:
+    if sub_on:
         try:
             styles = get_subtitle_styles()
-            sk = str(subtitle_style_key or "default").strip()
+            sk = str(sub_style or "default").strip()
             valid = list_subtitle_style_keys(styles)
             if sk not in valid:
                 sk = "default" if "default" in valid else (valid[0] if valid else "default")
@@ -895,6 +992,35 @@ def run_saas_mvp(
         )
     except Exception as e:
         print(f"⚠️ [MVP] No se pudo escribir saas_full_package.json: {e}")
+    try:
+        idea_line = ""
+        if viral_pkg and isinstance(viral_pkg, dict):
+            idea_line = str(viral_pkg.get("idea") or "").strip()
+        if not idea_line:
+            idea_line = pub_topic_one_line
+        (output_dir / "saas_render_result.json").write_text(
+            json.dumps(
+                {
+                    "idea": idea_line,
+                    "idea_alternatives": (viral_pkg or {}).get("alternatives") if viral_pkg else [],
+                    "viral_meta": viral_pkg,
+                    "script": script_text,
+                    "scenes": blocks,
+                    "title": pub_bundle.get("title"),
+                    "alt_titles": pub_bundle.get("alt_titles"),
+                    "description": pub_bundle.get("description"),
+                    "thumbnail": pub_bundle.get("thumbnail"),
+                    "video_path": str(final_path.resolve()).replace("\\", "/"),
+                    "video_aspect": aspect_out if gameplay_mode else None,
+                    "gameplay_mode": gameplay_mode,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+    except Exception as e:
+        print(f"⚠️ [MVP] No se pudo escribir saas_render_result.json: {e}")
     return final_path
 
 

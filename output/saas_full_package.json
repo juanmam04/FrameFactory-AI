@@ -1,0 +1,87 @@
+{
+  "idea": "¿Qué harías si el amor se convierte en tu peor enemigo?",
+  "alt_ideas": [
+    "Cuando la persona que amas se convierte en tu traición más oscura",
+    "Un secreto de amor que arruinó mi vida: ¿cómo llegué hasta aquí?",
+    "La decisión que me llevó a traicionar a quien más quería"
+  ],
+  "viral_meta": {
+    "idea": "¿Qué harías si el amor se convierte en tu peor enemigo?",
+    "alternatives": [
+      "Cuando la persona que amas se convierte en tu traición más oscura",
+      "Un secreto de amor que arruinó mi vida: ¿cómo llegué hasta aquí?",
+      "La decisión que me llevó a traicionar a quien más quería"
+    ],
+    "script_seed": "Imagina que eres un joven prometedor, lleno de sueños y ambiciones. Conoces a la mujer de tus sueños, pero a medida que la relación avanza, comienzas a darte cuenta de que ella tiene un oscuro secreto que podría destruirlo todo. El conflicto central es la lucha entre tu amor por ella y lo que está dispuesto a hacer para proteger tu futuro. A medida que descubres más sobre su pasado, te enfrentas a giros inesperados: una traición, un dilema moral sobre el perdón y la lealtad, y un punto de quiebre que pone a prueba tu carácter. El tono es intenso y emocional, explorando temas como la confianza, la traición y el sacrificio. El final deseado es que, a pesar de la traición, encuentres la fuerza para levantarte y tomar decisiones que te lleven a un nuevo camino, dejando atrás el pasado. Evita caer en clichés de violencia o situaciones demasiado obvias, enfocándote en el drama emocional y las consecuencias de las decisiones tomadas.",
+    "source": "openai"
+  },
+  "script": "Tienes 25 años y el futuro parece brillante. Conoces a una chica en una fiesta; su risa ilumina la habitación. La química es instantánea, pero pronto surgen pequeñas mentiras. Ella evita hablar de su pasado y, al encontrar una carta, descubres secretos oscuros que te dejan helado. Te enfrentas a un dilema: ¿la amas lo suficiente para perdonarla? La confianza se tambalea. Tras una intensa confrontación, ella te pide una segunda oportunidad. Reflexionas y decides que, aunque el amor es complicado, tu futuro es prioridad. Miras hacia adelante.",
+  "scenes": [
+    {
+      "text": "Tienes 25 años y el futuro parece brillante. Conoces a",
+      "visual": "plano cercano del protagonista mirando al horizonte · imágenes de una ciudad iluminada de noche",
+      "duration": 4.3,
+      "id": "scene_0001"
+    },
+    {
+      "text": "una chica en una fiesta; su risa ilumina la habitación.",
+      "visual": "plano de la fiesta con luces parpadeantes · overlay de risas y música de fondo",
+      "duration": 4.3,
+      "id": "scene_0002"
+    },
+    {
+      "text": "La química es instantánea, pero pronto surgen pequeñas mentiras. Ella",
+      "visual": "plano medio de la pareja conversando · imágenes de miradas cómplices",
+      "duration": 4.3,
+      "id": "scene_0003"
+    },
+    {
+      "text": "evita hablar de su pasado y, al encontrar una carta,",
+      "visual": "plano cercano de la carta en la mano del protagonista · overlay de la carta con sombras",
+      "duration": 4.3,
+      "id": "scene_0004"
+    },
+    {
+      "text": "descubres secretos oscuros que te dejan helado. Te enfrentas a",
+      "visual": "plano de reacción del protagonista · imágenes de recuerdos oscuros",
+      "duration": 4.3,
+      "id": "scene_0005"
+    },
+    {
+      "text": "un dilema: ¿la amas lo suficiente para perdonarla? La confianza",
+      "visual": "plano medio de la confrontación · overlay de tensión en la atmósfera",
+      "duration": 4.3,
+      "id": "scene_0006"
+    },
+    {
+      "text": "se tambalea. Tras una intensa confrontación, ella te pide una",
+      "visual": "plano de la chica pidiendo perdón · imágenes de lágrimas y emociones",
+      "duration": 4.3,
+      "id": "scene_0007"
+    },
+    {
+      "text": "segunda oportunidad. Reflexionas y decides que, aunque el amor es",
+      "visual": "plano del protagonista reflexionando · overlay de pensamientos conflictivos",
+      "duration": 4.3,
+      "id": "scene_0008"
+    },
+    {
+      "text": "complicado, tu futuro es prioridad. Miras hacia adelante.",
+      "visual": "plano del protagonista mirando hacia el futuro · imágenes de un nuevo amanecer",
+      "duration": 3.4,
+      "id": "scene_0009"
+    }
+  ],
+  "title": "Cuando el Amor se Vuelve Peligroso",
+  "alt_titles": [
+    "¿El Amor Puede Ser Tu Enemigo?",
+    "Descubre el Lado Oscuro del Amor"
+  ],
+  "description": "¿Qué harías si el amor que sientes se convierte en tu peor enemigo? En esta intensa historia, te llevaremos a través de giros inesperados y decisiones difíciles que pondrán a prueba tu confianza y tu futuro. Reflexiona sobre la complejidad del amor mientras te sumerges en un relato que no olvidarás. ¿Te atreves a descubrirlo? #AmorPeligroso #HistoriasDeCrimen #Reflexión #NarrativaCinematográfica #CineCrudo",
+  "thumbnail": {
+    "text": "Amor y Peligro",
+    "image_prompt": "A dramatic contrast of a heart and a broken mirror",
+    "layout": "big_text_left"
+  },
+  "video_path": "/Users/juanmamartinez/FrameFactory-AI/output/final.mp4"
+}

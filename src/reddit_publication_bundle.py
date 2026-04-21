@@ -5,6 +5,7 @@ import json
 import os
 from typing import Any
 
+from .config_loader import get_narrative_rules
 from .saas_creative_profile import merge_profile_disk, profile_to_script_context
 
 
@@ -14,6 +15,7 @@ def generar_bundle_publicacion_youtube(
     script_text: str,
     scenes: list[dict[str, Any]],
     profile: dict[str, Any] | None,
+    packaging_mode: str = "default",
 ) -> dict[str, Any]:
     """
     Devuelve dict con: title, alt_titles (2), description, thumbnail{text, image_prompt, layout}.
@@ -48,18 +50,32 @@ def generar_bundle_publicacion_youtube(
         fallback["alt_titles"] = _fallback_alt_titles(topic, p)
         return fallback
 
+    _nr = get_narrative_rules()
+    _bpub = (_nr.get("channel_dark_confession_bible") or "").strip()
+    _bpub = (_bpub[:3500] + "…") if len(_bpub) > 3500 else _bpub
     system = (
         "Sos estratega de contenidos YouTube (español). Devolvé SOLO un JSON con claves exactas:\n"
         '{ "title": str, "alt_titles": [str, str], "description": str, '
         '"thumbnail": { "text": str (3-5 palabras), "image_prompt": str (inglés o español, sin texto en imagen), '
         '"layout": str (sugerencia corta: ej. big_text_left, faceless_mood, split_tone) } }\n'
-        "El tono del título y la descripción debe reflejar el perfil (tone, hook_style, style, pacing, audience, "
-        "title_style, topics_to_focus). La miniatura (text + image_prompt + layout) debe respetar thumbnail_style "
-        "(alto contraste, dramático, minimal, etc.) cuando esté definido. "
-        "Historias oscuras/tensas → títulos emocionales o misteriosos; divertidas → curiosidad ligera. "
-        "Descripción: gancho corto, resumen 2-3 frases, CTA suave, 3-6 hashtags al final. "
-        "Prohibido sonar a plantilla genérica de IA."
+        "Canal: historias ficticias oscuras en primera persona, confesión incómoda, adictivas — NO títulos genéricos de clickbait, "
+        "NO tono ‘IA amable’, NO miniaturas alegres de stock. "
+        "Título: personal, oscuro, específico, curiosidad inmediata (estilo «Algo pasaba con…», «No debí…», «Nunca volví a…»). "
+        "thumbnail.text: pocas palabras, tensión (ej. «LO VI», «CALLÓ TODO», «NO ERA ÉL»). "
+        "image_prompt: escena sombría realista (móvil en la oscuridad, pasillo, puerta entreabierta, silueta sin rostro), "
+        "coherente con el guion; sin texto legible en la imagen. "
+        "Descripción: primera línea = gancho inquietante; 2 frases de tensión; CTA que invite a comentar la parte más incómoda; 3-6 hashtags. "
+        "Respetá perfil (tone, hook_style, title_style, thumbnail_style, topics_to_focus). "
+        "Prohibido plantilla genérica de IA."
+        + (f"\n\n=== BIBLIA DEL CANAL (títulos / miniatura alineados al guion) ===\n{_bpub}" if _bpub else "")
     )
+    if str(packaging_mode or "").strip().lower() in ("viral_gameplay", "viral", "high_impact"):
+        system += (
+            "\nMODO VIRAL GAMEPLAY: título ultra clicable (sin MAYÚSCULAS sostenidas enteras), "
+            "1 emoción fuerte o pregunta imposible de ignorar. thumbnail.text: máximo 3 palabras, "
+            "impacto dramático (ej. «NUNCA VOLVI», «ME MINTIERON»). Descripción: primera línea = gancho emocional; "
+            "luego 2 frases de tensión; CTA que invite a comentar la parte más polémica; hashtags storytime/reddit."
+        )
     ttf = p.get("topics_to_focus")
     if not isinstance(ttf, list):
         ttf = []
@@ -117,10 +133,10 @@ def generar_bundle_publicacion_youtube(
 
 
 def _fallback_alt_titles(topic: str, prof: dict[str, Any]) -> list[str]:
-    hook = str(prof.get("hook_style") or "revelación").strip()
+    base = (topic or "algo que no encajaba").strip()[:72]
     return [
-        f"Esto no debía pasar: {topic[:70]}",
-        f"Final que nadie vio venir · {hook} · {topic[:50]}",
+        f"No debí ignorarlo: {base}",
+        f"Todavía no sé si fui cobarde o listo · {base}",
     ]
 
 
@@ -138,6 +154,6 @@ def _fallback_description(topic: str, preview: str, prof: dict[str, Any]) -> str
 def _fallback_thumb_prompt(prof: dict[str, Any], topic: str) -> str:
     look = str((prof.get("visual") or {}).get("look") or prof.get("style") or "dark cinematic").strip()
     return (
-        f"YouTube thumbnail background, {look}, moody lighting, faceless silhouettes or objects only, "
-        f"no readable text, no logos, 16:9, related to theme: {topic[:120]}"
+        f"YouTube thumbnail, {look}, night interior or phone glow in darkness, hallway tension, "
+        f"faceless figure or hands only, no readable text, no logos, 16:9, uneasy mood, theme: {topic[:120]}"
     )

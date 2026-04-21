@@ -174,8 +174,11 @@ def generar_prompt_miniatura(
     if usar_ia:
         return _generar_prompt_miniatura_con_ia(titulo, tema, guion_resumen)
     
-    # Fallback: prompt simple
-    return f"Miniatura de YouTube sobre {tema}, diseño llamativo, colores vibrantes, texto legible"
+    # Fallback: miniatura mood oscuro (canal storytime / confesión)
+    return (
+        f"YouTube thumbnail, dark cinematic mood, low-key lighting, tension without faces, "
+        f"no readable text in frame, 16:9, theme: {tema[:120]}"
+    )
 
 
 def _generar_prompt_miniatura_con_ia(

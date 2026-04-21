@@ -1,6 +1,6 @@
 {
   "script": "La luz tenue de tu apartamento apenas ilumina el espejo en la pared. Una noche, mientras te preparas para dormir, notas un destello en la superficie. Una sombra fugaz se desliza detrás de ti, y al volverte, la habitación está vacía. Te sacude un escalofrío, pero decides ignorarlo. Sin embargo, la imagen persiste, y cada noche el reflejo se siente más vívido.\n\nTrabajas en una tienda de antigüedades, rodeado de objetos cargados de historia, pero te sientes atrapado en la rutina. La sombra en el espejo se convierte en una obsesión. Comienzas a investigar, buscando respuestas en viejos álbumes familiares y documentos del desván. Lo que encuentras es perturbador: fotos de un pariente cercano con figuras del crimen organizado. Te das cuenta de que tu familia no es quien pensabas.\n\nCon cada descubrimiento, la sombra se torna más clara, hasta que ves un rostro aterrador, el de un hombre que no reconoces, pero que sientes familiar. La traición corre en tus venas. Cuestionas a tu madre y hermanos, y las conversaciones se vuelven tensas, cargadas de secretos. \n\nFinalmente, miras de nuevo en el espejo. La sombra sonríe, como si hubiera estado esperando que te dieras cuenta de la verdad. Te preguntas si podrás escapar de esta oscuridad familiar. La ansiedad te consume, dejando preguntas inquietantes sobre el legado que realmente llevas.",
-  "blocks": [
+  "scenes": [
     {
       "id": "scene_0001",
       "text": "La luz tenue de tu apartamento apenas ilumina el espejo en la pared.",
@@ -172,6 +172,15 @@
       "on_screen_text": "Preguntas inquietantes"
     }
   ],
-  "word_count": 221,
-  "skip_support_images": true
+  "title": "Nunca volví a confiar en mi reflejo",
+  "alt_titles": [
+    "Lo que vi en el espejo",
+    "La sombra de mis secretos"
+  ],
+  "description": "Una noche, noté algo extraño en mi espejo. La sombra que apareció me llevó a descubrir verdades que nunca quise enfrentar. Comenta cuál fue la parte que más te inquietó. #ReflejosOscuros #SecretosFamiliares #CrimenOrganizado #Inquietante #FicciónOscura",
+  "thumbnail": {
+    "text": "NO ERA YO",
+    "image_prompt": "dimly lit room with a mirror reflecting a shadowy figure, unsettling atmosphere",
+    "layout": "big_text_left"
+  }
 }

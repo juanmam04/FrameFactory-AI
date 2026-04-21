@@ -15,8 +15,9 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.catalog_service import BACKGROUNDS, CHARACTERS, VOICES, get_background, get_character, get_voice
-from src.config_loader import BASE, get_background_music_path, get_subtitle_styles
+from src.config_loader import BASE, get_background_music_path, get_narrative_rules, get_subtitle_styles
 from src.pipeline import run_saas_mvp
+from src.saas_viral_idea_engine import REDDIT_STORYTIME_IDEA_RULES
 from src.saas_audio_catalog import ensure_audio_dirs, list_safe_music, list_safe_sfx
 from src.saas_creative_profile import (
     merge_profile_disk,
@@ -93,6 +94,15 @@ def _parse_duration_hint_max_minutes(text: str) -> int | None:
     return None
 
 
+def _brief_for_duration_hint(topic: str, twist: str) -> str:
+    """Mismo cuerpo de texto que usa `_build_video_topic()` para detectar duración en el brief."""
+    base = (topic or "").strip()
+    tw = (twist or "").strip()
+    if tw:
+        return f"{base}\n\nVariación o detalle extra: {tw}".strip()
+    return base
+
+
 def _target_words_floor_from_topic_duration(
     topic: str,
     twist: str,
@@ -102,11 +112,11 @@ def _target_words_floor_from_topic_duration(
 ) -> int:
     """
     Si el brief pide N minutos de video, sube el objetivo de palabras (no baja el que el usuario subió en el slider).
-    Con ignore_topic_duration_hint=True solo se respeta el tope 80–10000 (p. ej. pruebas cortas aunque el tema diga «15 min»).
+    Con ignore_topic_duration_hint=True solo se respeta el tope 80–10000 (comportamiento por defecto en Studio: **vos** elegís minutos/palabras).
     """
     if ignore_topic_duration_hint:
         return max(80, min(10000, int(current_words)))
-    combined = f"{(topic or '').strip()}\n{(twist or '').strip()}"
+    combined = _brief_for_duration_hint(topic, twist)
     mins = _parse_duration_hint_max_minutes(combined)
     if mins is None:
         return max(80, min(10000, int(current_words)))
@@ -608,6 +618,9 @@ def _init_state() -> None:
     st.session_state.create_use_env_music = False
     st.session_state.create_music_vol = 0.18
     st.session_state.create_sfx_vol = 0.08
+    st.session_state.create_gameplay_path = ""
+    st.session_state.create_gameplay_aspect = "16:9"
+    st.session_state.create_skip_support_images = False
     st.session_state.active_session_id = None
     st.session_state.session_memory_summary = ""
     st.session_state.agent_messages = []
@@ -619,8 +632,8 @@ def _init_state() -> None:
     st.session_state.render = None
     st.session_state.library_selected_pid = None
     st.session_state.create_auto_full_package = False
-    st.session_state.create_ignore_topic_duration_hint = False
-    st.session_state._saas_prev_ignore_dur_hint = False
+    st.session_state.create_align_script_to_theme_duration = False
+    st.session_state._saas_prev_align_theme_duration = False
     st.session_state.last_full_package = {}
 
 
@@ -738,18 +751,29 @@ def page_dashboard() -> None:
 
 
 def _build_video_topic() -> str:
-    base = (st.session_state.get("create_topic") or "").strip()
-    twist = (st.session_state.get("create_twist") or "").strip()
-    if twist:
-        return f"{base}\n\nVariación o detalle extra: {twist}".strip()
-    return base
+    return _brief_for_duration_hint(
+        st.session_state.get("create_topic") or "",
+        st.session_state.get("create_twist") or "",
+    )
 
 
-def _heuristic_video_ideas(pm: dict, mem: str, seed: int | None = None) -> list[dict[str, str]]:
-    niche = (pm.get("niche") or "").strip() or "tu nicho"
-    tone = (pm.get("tone") or "").strip() or "conversacional"
-    who = str((pm.get("audience") or {}).get("who") or "").strip() or "tu audiencia"
-    hook = (pm.get("hook_style") or "").strip() or "un gancho claro al inicio"
+def _saas_gameplay_path_filled() -> bool:
+    """True si el usuario configuró ruta de gameplay (modo fondo video, sin personaje ni Replicate)."""
+    return bool((st.session_state.get("create_gameplay_path") or "").strip())
+
+
+def _heuristic_video_ideas(
+    pm: dict,
+    mem: str,
+    seed: int | None = None,
+    *,
+    topic_hint: str = "",
+    twist_hint: str = "",
+) -> list[dict[str, str]]:
+    niche = (pm.get("niche") or "").strip() or "relaciones y confianza rota"
+    tone = (pm.get("tone") or "").strip() or "tenso, incómodo, realista"
+    who = str((pm.get("audience") or {}).get("who") or "").strip() or "adultos jóvenes"
+    hook = (pm.get("hook_style") or "").strip() or "brecha de curiosidad inmediata"
     pillars = (pm.get("channel") or {}).get("content_pillars") or ""
     ig = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
     ig_brief = str(ig.get("brief") or "").strip()
@@ -760,25 +784,57 @@ def _heuristic_video_ideas(pm: dict, mem: str, seed: int | None = None) -> list[
         ig_tail += f" Priorizar: {ig_favor[:220]}{'…' if len(ig_favor) > 220 else ''}"
     if ig_avoid:
         ig_tail += f" Evitar en las propuestas: {ig_avoid[:220]}{'…' if len(ig_avoid) > 220 else ''}"
-    lines = [
-        f"Video para {who}: explicar con ejemplos concretos por qué importa «{niche}», tono {tone}, con {hook}. Duración mental ~4 min.{ig_tail}",
-        f"Historia en segunda persona dentro del universo de «{niche}»: un día que lo cambia todo, arco con tensión y cierre, tono {tone}.{ig_tail}",
-        f"Listado accionable: 5 errores típicos en «{niche}» y cómo evitarlos; lenguaje directo, tono {tone}.{ig_tail}",
-        f"Mito vs realidad sobre «{niche}»; confrontar creencias comunes con datos o escenas, tono {tone}, {hook}.{ig_tail}",
-        f"Mini caso: un personaje (el espectador) enfrenta un obstáculo clásico de «{niche}» y muestra la lección sin moralina forzada.{ig_tail}",
+    hint_block = ""
+    if (topic_hint or "").strip():
+        hint_block = (
+            f" PISTA DE TEMA (obligatorio encuadrar la premisa aquí; desarrollá variaciones sobre esto, no otro género): "
+            f"{topic_hint.strip()[:400]}"
+        )
+        if (twist_hint or "").strip():
+            hint_block += f" · Variación o giro pedido: {twist_hint.strip()[:220]}"
+    no_narco = (
+        " Ficción oscura estilo Reddit / confesión viral: primera persona (yo), creíble, inquietante. "
+        "Sin monstruos ni fantasmas cliché. Sin glorificar narco/carteles."
+    )
+    reddit_templates = [
+        f"Yo llevaba meses notando que mi hermano escondía algo en su cuarto; nadie en casa quería hablar del tema. Tono {tone}.{hook}.{ig_tail}{hint_block}",
+        f"Mi pareja juraba que vivía sola, pero de madrugada oía a otra persona moverse cuando fingía dormir. {hook}.{ig_tail}{hint_block}",
+        f"Alguien usaba mi ordenador mientras dormía: el historial no coincidía con nada de lo que yo había hecho. {tone}.{ig_tail}{hint_block}",
+        f"Revisé su teléfono una sola vez y vi un hilo con mi nombre en un grupo al que yo nunca me uní. {hook}.{ig_tail}{hint_block}",
+        f"Mi padre desapareció tres días y cuando volvió seguía siendo él… pero no del todo. {tone}.{ig_tail}{hint_block}",
+        f"Confié en él, pero cada noche escondía el móvil bajo la almohada y apagaba el sonido. {hook}.{ig_tail}{hint_block}",
+        f"Pensé que estaba solo en casa, pero los pasos en el piso de arriba seguían un ritmo que no era el mío. {tone}.{ig_tail}{hint_block}",
+        f"Encontré mensajes borrados que empezaban con mi nombre y terminaban con una dirección que no reconozco. {hook}.{ig_tail}{hint_block}",
+        f"El vecino me pidió guardar un paquete; el remitente figuraba yo y no recordaba haberlo enviado. {tone}.{ig_tail}{hint_block}",
+        f"En el grupo de WhatsApp del edificio todos recibieron la misma foto borrosa a las 3:12 y nadie supo explicar de dónde salió. {hook}.{ig_tail}{hint_block}",
     ]
+    lines: list[str] = []
     if ig_brief:
-        seed = f"{ig_brief[:380]}{'…' if len(ig_brief) > 380 else ''} — Público: {who}. Nicho: «{niche}». Tono: {tone}.{ig_tail}"
-        lines.insert(0, seed)
-        lines.insert(1, f"Otra variante alineada a tu brief de ideas: {ig_brief[:200]}{'…' if len(ig_brief) > 200 else ''} (formato historia corta, POV, ~4 min).{ig_tail}")
-    if pillars.strip():
-        lines.append(f"Video alineado a pilares del canal ({pillars[:180]}…): propuesta concreta en «{niche}», tono {tone}.")
-    if mem.strip():
         lines.append(
-            f"Video coherente con la línea de la sesión: {mem[:300].strip()}{'…' if len(mem) > 300 else ''} "
-            f"— encuadrá el tema «{niche}» con tono {tone}."
+            f"{ig_brief[:380]}{'…' if len(ig_brief) > 380 else ''} — Público: {who}. "
+            f"Encuadrá como historia inventada tipo Reddit (~4 min), tono {tone}. Nicho solo como atmósfera: «{niche}». {ig_tail}{no_narco}"
+        )
+        lines.append(
+            f"Variante al brief: {ig_brief[:220]}{'…' if len(ig_brief) > 220 else ''} — otro conflicto distinto, mismo registro. {ig_tail}{no_narco}"
         )
     rng = random.Random(seed if seed is not None else (time.time_ns() % (2**32)))
+    pool = list(reddit_templates)
+    rng.shuffle(pool)
+    for t in pool[:6]:
+        lines.append(t + no_narco)
+    lines.append(
+        f"Opción 'nicho suave': drama o curiosidad ligada a «{niche}» como telón de fondo (trabajo, relaciones, errores), "
+        f"nunca como crimen organizado. Público: {who}. {hook}.{ig_tail}{no_narco}"
+    )
+    if pillars.strip():
+        lines.append(
+            f"Idea alineada a pilares del canal ({pillars[:160]}…): una historia inventada con cierre comentable, tono {tone}.{ig_tail}{no_narco}"
+        )
+    if mem.strip():
+        lines.append(
+            f"Inspiración en la charla de la sesión (no copiar literal): {mem[:280].strip()}{'…' if len(mem) > 280 else ''} — "
+            f"convertilo en premisa oscura en primera persona, tono {tone}.{ig_tail}{hint_block}{no_narco}"
+        )
     rng.shuffle(lines)
     out: list[dict[str, str]] = []
     for i, prompt in enumerate(lines[:7]):
@@ -793,11 +849,13 @@ def _ia_video_idea_pack(
     messages: list[dict],
     *,
     previous_pack: list[dict] | None = None,
+    topic_hint: str = "",
+    twist_hint: str = "",
 ) -> list[dict[str, str]]:
     seed = time.time_ns() % (2**32)
     client = _get_openai_client()
     if not client:
-        return _heuristic_video_ideas(pm, mem, seed=seed)
+        return _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
     slim: list[dict[str, str]] = []
     for m in messages[-16:]:
         if not isinstance(m, dict) or m.get("role") not in ("user", "assistant"):
@@ -808,16 +866,14 @@ def _ia_video_idea_pack(
         slim.append({"role": m["role"], "content": c})
     nonce = f"{secrets.token_hex(6)}-{int(time.time())}"
     lenses_pool = [
-        "documental breve con dato sorpresa",
-        "historia POV en segunda persona con giro final",
-        "listado contraintuitivo (lo que creés vs lo que pasa)",
-        "formato 'un solo día que lo cambió todo'",
-        "pregunta incómoda + evidencia",
-        "mini caso real ficticio con consecuencias",
-        "versus: dos caminos frente al mismo problema",
-        "cierre abierto que invite al comentario",
-        "analogía fuerte + desmontaje paso a paso",
-        "error común + experimento mental",
+        "secreto en la familia o pareja que sale a la luz",
+        "algo raro en la convivencia (noche, silencio, puerta, teléfono)",
+        "mentira o doble vida implicada sin explicarla del todo",
+        "vigilancia o sensación de ser observado",
+        "objeto o mensaje que no debería existir",
+        "identidad o pasado de alguien cercano que no cierra",
+        "confianza rota: descubrís algo que no querías saber",
+        "cierre inquietante que deja una pregunta abierta",
     ]
     rng = random.Random(seed)
     lenses = rng.sample(lenses_pool, k=min(4, len(lenses_pool)))
@@ -832,30 +888,41 @@ def _ia_video_idea_pack(
                     "hook": str(it.get("hook") or "")[:180],
                 }
             )
+    bible = (get_narrative_rules().get("channel_dark_confession_bible") or "").strip()
+    bible_snip = (bible[:3200] + "…") if len(bible) > 3200 else bible
     system = (
-        "Sos planner de contenidos YouTube. Español. Devolvé SOLO JSON con clave 'ideas' (array de 5 a 8 objetos). "
-        "Cada objeto: title (corto), hook (una línea), prompt (texto largo en español neutro para que otro modelo escriba el guion: "
-        "tema, público, tono, qué debe pasar en el video, duración aproximada en minutos, y CTA o cierre deseado). "
-        "Basate en el perfil, la memoria de sesión y el chat. "
-        "Si el perfil trae `idea_generation`, obedecelo al pie de la letra: `brief` define qué clase de ideas querés (género, registro, variedad); "
-        "`angles_to_favor` son temas o formatos a priorizar; `angles_to_avoid` es lo que no debe aparecer en ninguna sugerencia. "
-        "IMPORTANTE: cada pedido debe producir ideas NUEVAS (otros formatos, otros conflictos, otros ganchos). "
-        "No repitas títulos ni premises de ideas_anteriores_a_evitar. "
-        "Usá los `lentes_creativos` como estímulo de variedad (no copies literalmente los nombres en todos los títulos). "
-        "Sin markdown fuera del JSON."
+        "Sos el motor de ideas virales OSCURAS para YouTube (español). El canal NO es documental genérico ni listados: "
+        "son historias ficticias estilo Reddit / confesión inquietante, primera persona (yo), creíbles y adictivas.\n\n"
+        "Devolvé SOLO JSON con clave 'ideas' (array de 5 a 8 objetos). Cada objeto:\n"
+        "- title: corto, oscuro, curiosidad inmediata (estilo «No debí…», «Algo no cerraba con…»).\n"
+        "- hook: 1–2 oraciones máximo; primera persona; persona cercana + situación normal + algo que NO cierra (misterio implícito).\n"
+        "- prompt: briefing para otro modelo que escriba el guion COMPLETO: reforzá la misma premisa del hook, tono, "
+        "público, beats (sospecha → escalada → giro → cierre inquietante). Sin CTA de youtuber, sin 'en este video', "
+        "sin fantasmas o monstruos cliché, sin romance dramático vacío.\n\n"
+        "Si `pista_tema_actual` no está vacía, TODAS las ideas deben ser variaciones coherentes con esa pista (mismo eje emocional / conflicto), "
+        "no cambies de género a algo ajeno.\n"
+        "Si el perfil trae `idea_generation`, obedecelo: brief, angles_to_favor, angles_to_avoid.\n"
+        "Ideas NUEVAS respecto a ideas_anteriores_a_evitar. Usá `lentes_creativos` solo como eje de tensión (secreto, vigilancia, etc.), "
+        "no como formato de video distinto (nada de 'documental' o 'listado').\n"
+        + REDDIT_STORYTIME_IDEA_RULES
+        + (f"\n\n=== Biblia del canal (ideas) ===\n{bible_snip}" if bible_snip else "")
     )
+    th = (topic_hint or "").strip()
+    tw = (twist_hint or "").strip()
     user = json.dumps(
         {
             "perfil": merge_profile_disk(pm),
             "memoria_sesion": (mem or "")[:4000],
             "chat_reciente": slim,
-            "recordatorio_ideas": "Las propuestas deben alinearse con idea_generation del perfil cuando exista.",
+            "pista_tema_actual": th[:2000],
+            "variacion_o_giro": tw[:800],
+            "recordatorio_ideas": "Solo ideas oscuras tipo confesión Reddit; encuadrar en pista_tema_actual si viene.",
             "anti_repeticion_nonce": nonce,
             "lentes_creativos": lenses,
             "ideas_anteriores_a_evitar": prev_digest,
             "instruccion": (
-                f"Este es el pedido #{nonce}: generá un lote fresco. "
-                f"Explorá ángulos distintos a los de ideas_anteriores_a_evitar (si viene vacío, igual variá formatos y conflictos)."
+                f"Pedido #{nonce}: lote fresco de premisas inquietantes y distintas entre sí. "
+                f"No repitas ideas_anteriores_a_evitar. Si hay pista_tema_actual, no la ignores."
             ),
         },
         ensure_ascii=False,
@@ -885,7 +952,7 @@ def _ia_video_idea_pack(
         parsed = parse_llm_json_object(raw) or {}
         ideas = parsed.get("ideas")
         if not isinstance(ideas, list) or not ideas:
-            return _heuristic_video_ideas(pm, mem, seed=seed)
+            return _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
         out: list[dict[str, str]] = []
         for it in ideas[:8]:
             if not isinstance(it, dict):
@@ -896,9 +963,9 @@ def _ia_video_idea_pack(
             if len(prompt) < 40:
                 continue
             out.append({"title": title, "hook": hook or prompt[:120], "prompt": prompt})
-        return out if out else _heuristic_video_ideas(pm, mem, seed=seed)
+        return out if out else _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
     except Exception:
-        return _heuristic_video_ideas(pm, mem, seed=seed)
+        return _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
 
 
 def _pick_card(title: str, options: list[str], state_key: str, fmt=None) -> None:
@@ -917,7 +984,8 @@ def page_create() -> None:
     st.markdown('<p class="saas-hero">Nuevo video</p>', unsafe_allow_html=True)
     sid = st.session_state.get("active_session_id") or "—"
     st.caption(
-        f"Paso {st.session_state.create_step} de 3 · Sesión: {sid} — al generar, el guion y el montaje usan el chat y la memoria de esa sesión."
+        f"Paso {st.session_state.create_step} de 3 · Sesión: {sid} — el guion usa el chat y la memoria. "
+        f"Si en el paso 2 configurás **gameplay**, el montaje es solo video de fondo + voz (sin personaje del catálogo)."
     )
     st.progress((st.session_state.create_step - 1) / 3)
 
@@ -973,7 +1041,10 @@ def page_create() -> None:
                 + ("…" if len(str(ig.get("brief") or "")) > 160 else "")
                 + "** · Podés afinarlo en **Perfil → Editar perfil** (sección Ideas sugeridas) o con el asistente + «Actualizar perfil desde el chat»."
             )
-        st.caption("Generamos propuestas con tu perfil, la memoria de sesión y el chat reciente. Podés usar una tal cual o editarla abajo.")
+        st.caption(
+            "Propuestas con perfil, memoria de sesión y chat. Si ya cargaste tema o variación en el paso 3 "
+            "(o volviste con «Atrás»), esas pistas encuadran las ideas en el mismo eje: confesión oscura tipo Reddit."
+        )
         g1, g2, g3 = st.columns([1, 1, 2])
         with g1:
             if st.button("Generar ideas con IA", type="primary", use_container_width=True, key="saas_gen_ideas"):
@@ -984,12 +1055,18 @@ def page_create() -> None:
                     mem,
                     st.session_state.agent_messages,
                     previous_pack=prev_list,
+                    topic_hint=str(st.session_state.get("create_topic") or ""),
+                    twist_hint=str(st.session_state.get("create_twist") or ""),
                 )
                 st.rerun()
         with g2:
             if st.button("Ideas rápidas (sin API)", use_container_width=True, key="saas_heur_ideas"):
                 st.session_state.create_idea_pack = _heuristic_video_ideas(
-                    pm, mem, seed=time.time_ns() % (2**32)
+                    pm,
+                    mem,
+                    seed=time.time_ns() % (2**32),
+                    topic_hint=str(st.session_state.get("create_topic") or ""),
+                    twist_hint=str(st.session_state.get("create_twist") or ""),
                 )
                 st.rerun()
         with g3:
@@ -1025,7 +1102,8 @@ def page_create() -> None:
         else:
             st.markdown("### 3 · Tema final del video (obligatorio)")
             st.caption(
-                "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** vas a elegir personaje, fondo, voz, velocidad de voz, largo del guion (palabras), subtítulos, música y SFX — no hace falta repetir eso acá."
+                "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** elegís voz, largo, subtítulos y audio; "
+                "**personaje y fondo del catálogo** solo se usan si **no** activás modo gameplay (video .mp4 de fondo en el paso 2)."
             )
         idea = st.text_area(
             "Tema / brief para el guion",
@@ -1053,42 +1131,110 @@ def page_create() -> None:
     elif st.session_state.create_step == 2:
         _ctp = (st.session_state.get("create_topic") or "").strip()
         _ctw = (st.session_state.get("create_twist") or "").strip()
+        _gp_ui = _saas_gameplay_path_filled()
+        st.markdown("### Imágenes por escena")
+        if _gp_ui:
+            st.session_state.create_skip_support_images = False
+            st.caption(
+                "Con **gameplay** de fondo no aplica: cada escena es trozo de video + voz (sin Replicate ni personaje del catálogo)."
+            )
+        else:
+            _img_pick = st.radio(
+                "¿Generar imagen de apoyo (IA) por bloque?",
+                ("con_ia", "sin_ia"),
+                index=1 if st.session_state.get("create_skip_support_images") else 0,
+                horizontal=True,
+                format_func=lambda v: (
+                    "Sí — Replicate por escena"
+                    if v == "con_ia"
+                    else "No — solo personaje + fondo del catálogo"
+                ),
+                help=(
+                    "Si elegís «No», el render es más rápido y no usa créditos de imagen: "
+                    "cada clip usa el personaje y el fondo que elegís abajo, sin PNG extra por escena."
+                ),
+            )
+            st.session_state.create_skip_support_images = _img_pick == "sin_ia"
+        st.markdown("### Video de gameplay como fondo (opcional)")
+        with st.expander("Minecraft / parkour / cualquier .mp4 detrás de la historia", expanded=bool(_gp_ui)):
+            st.caption(
+                "Si completás la ruta, el render **solo** usa este video recortado por bloque + voz + subtítulos. "
+                "No se usa personaje del catálogo ni imagen Replicate por escena. Se generan 3 ideas virales y se elige la mejor."
+            )
+            st.session_state.create_gameplay_path = st.text_input(
+                "Ruta absoluta al .mp4",
+                value=st.session_state.get(
+                    "create_gameplay_path", os.getenv("GAMEPLAY_BACKGROUND_VIDEO", "")
+                ),
+                key="saas_create_gameplay_path",
+            )
+            _asp_opts = ["16:9 (YouTube)", "9:16 (TikTok)"]
+            _cur_asp = st.session_state.get("create_gameplay_aspect", "16:9")
+            _asp_idx = 1 if str(_cur_asp).strip() in ("9:16", "vertical") else 0
+            _sel = st.selectbox("Formato de salida", _asp_opts, index=_asp_idx, key="saas_gameplay_aspect")
+            st.session_state.create_gameplay_aspect = "9:16" if "9:16" in _sel else "16:9"
+        if _saas_gameplay_path_filled():
+            st.success(
+                "Modo **gameplay** activo: el paso 2 omite personaje y fondo del catálogo; el progreso dirá «Escena» (segmento de gameplay + audio), no clips con personaje."
+            )
+        if "create_align_script_to_theme_duration" not in st.session_state and "create_ignore_topic_duration_hint" in st.session_state:
+            st.session_state.create_align_script_to_theme_duration = not bool(
+                st.session_state.get("create_ignore_topic_duration_hint")
+            )
         st.markdown("#### Largo del video")
-        st.checkbox(
-            "Prueba corta: ignorar la duración que pide el tema (solo usá minutos y palabras de abajo)",
-            help=(
-                "Si el brief dice «15–20 minutos», el sistema suele subir mucho las palabras. "
-                "Activá esto para iterar rápido con renders cortos sin reescribir el tema."
-            ),
-            key="create_ignore_topic_duration_hint",
+        st.caption(
+            "La longitud del guion la definís **vos** con los deslizadores de abajo (~140 palabras ≈ 1 min de narración). "
+            "El texto del tema no cambia ese objetivo salvo que actives la casilla opcional."
         )
-        _ig = bool(st.session_state.get("create_ignore_topic_duration_hint", False))
-        _prev_ig = bool(st.session_state.get("_saas_prev_ignore_dur_hint", False))
-        if _ig and not _prev_ig:
+        st.checkbox(
+            "Subir el mínimo de palabras si el tema pide más minutos (p. ej. «15–20 min» en el brief)",
+            help=(
+                "Si está activada, el sistema puede **aumentar** el objetivo de palabras cuando detecta una duración "
+                "pedida en el tema o la variación, aunque hayas elegido menos minutos/palabras."
+            ),
+            key="create_align_script_to_theme_duration",
+        )
+        _align_theme = bool(st.session_state.get("create_align_script_to_theme_duration", False))
+        _ignore_theme = not _align_theme
+        _prev_align = bool(st.session_state.get("_saas_prev_align_theme_duration", False))
+        if _align_theme and not _prev_align:
+            _bw_snap = max(80, min(10000, int(round(float(st.session_state.get("create_duration", 4) or 0) * _SAAS_WORDS_PER_MIN))))
+            st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+                _ctp,
+                _ctw,
+                int(st.session_state.get("create_target_words", _bw_snap)),
+                ignore_topic_duration_hint=False,
+            )
+        if not _align_theme and _prev_align:
             _snap = max(80, int(round(2.0 * _SAAS_WORDS_PER_MIN)))
             st.session_state.create_target_words = min(int(st.session_state.get("create_target_words", _snap)), _snap)
         if "create_duration" not in st.session_state:
             tw0 = int(st.session_state.get("create_target_words", 560) or 560)
-            st.session_state.create_duration = max(1, min(60, int(round(tw0 / max(1.0, _SAAS_WORDS_PER_MIN)))))
+            st.session_state.create_duration = max(0, min(60, int(round(tw0 / max(1.0, _SAAS_WORDS_PER_MIN)))))
         if "create_target_words" not in st.session_state:
-            d0 = int(st.session_state.get("create_duration", 4) or 4)
-            d0 = max(1, min(60, d0))
+            d0 = int(st.session_state.get("create_duration", 4) or 0)
+            d0 = max(0, min(60, d0))
             st.session_state.create_duration = d0
             bw0 = max(80, min(10000, int(round(float(d0) * _SAAS_WORDS_PER_MIN))))
             st.session_state.create_target_words = _target_words_floor_from_topic_duration(
-                _ctp, _ctw, bw0, ignore_topic_duration_hint=_ig
+                _ctp, _ctw, bw0, ignore_topic_duration_hint=_ignore_theme
             )
             st.session_state._saas_dm_prev = d0
         if "create_voice_speed" not in st.session_state:
             st.session_state.create_voice_speed = 1.0
         st.markdown("### Estilo del video")
-        _pick_card(
-            "Personaje",
-            list(CHARACTERS.keys()),
-            "create_character",
-            lambda k: CHARACTERS[k].get("name", k),
-        )
-        _pick_card("Fondo", list(BACKGROUNDS.keys()), "create_background", lambda k: k.replace("_", " ").title())
+        if not _saas_gameplay_path_filled():
+            _pick_card(
+                "Personaje",
+                list(CHARACTERS.keys()),
+                "create_character",
+                lambda k: CHARACTERS[k].get("name", k),
+            )
+            _pick_card("Fondo", list(BACKGROUNDS.keys()), "create_background", lambda k: k.replace("_", " ").title())
+        else:
+            st.caption(
+                "**Personaje y fondo del catálogo:** no se usan en este render (solo importan voz, guion y el .mp4 de gameplay)."
+            )
         _pick_card("Voz", list(VOICES.keys()), "create_voice", lambda k: k.replace("_", " ").title())
         st.session_state.create_voice_speed = float(
             st.slider(
@@ -1104,14 +1250,14 @@ def page_create() -> None:
         dm = int(
             st.slider(
                 "Duración aproximada (minutos de narración)",
-                1,
+                0,
                 60,
-                int(st.session_state.get("create_duration", 4) or 4),
+                int(st.session_state.get("create_duration", 4) or 0),
                 step=1,
                 help=(
-                    f"Objetivo de guion: ~{int(_SAAS_WORDS_PER_MIN)} palabras por minuto de habla. "
-                    "Si en el tema pedís otra duración, por defecto se usa el máximo entre esto y lo detectado en el texto "
-                    "(salvo que actives «Prueba corta» arriba)."
+                    f"Referencia: ~{int(_SAAS_WORDS_PER_MIN)} palabras por minuto. **0 min** = solo el tope mínimo técnico "
+                    f"(80 palabras); el máximo real lo marcás con **Palabras del guion**. Por defecto el texto del tema **no** "
+                    "modifica este objetivo (activá la casilla de arriba si querés que sí)."
                 ),
             )
         )
@@ -1121,25 +1267,41 @@ def page_create() -> None:
         if prev_dm is None:
             st.session_state._saas_dm_prev = dm
         elif int(prev_dm) != int(dm):
-            if not _ig:
+            if _align_theme:
                 st.session_state.create_target_words = _target_words_floor_from_topic_duration(
                     _ctp, _ctw, bw, ignore_topic_duration_hint=False
                 )
+            else:
+                _cur_w = int(st.session_state.get("create_target_words", bw))
+                st.session_state.create_target_words = max(bw, min(10000, _cur_w))
             st.session_state._saas_dm_prev = dm
-        _topic_for_hint = _build_video_topic()
+        _topic_for_hint = _brief_for_duration_hint(_ctp, _ctw)
         _hint_m = _parse_duration_hint_max_minutes(_topic_for_hint)
-        if _ig:
-            st.caption(
-                "**Prueba corta activa:** ignoramos la duración del **tema** y los **minutos no imponen un mínimo** de palabras. "
-                f"Podés bajar el deslizador de palabras hasta **80** (referencia: ~{dm} min ≈ **{bw}** palabras si querés algo más largo)."
-            )
+        if not _align_theme:
+            if _hint_m is not None:
+                st.caption(
+                    f"En el tema aparece una pista de **~{_hint_m} min**; **no** cambia el objetivo de palabras mientras la casilla "
+                    "de alinear con el tema esté desactivada. Subí minutos/palabras acá si querés un guion más largo."
+                )
+            else:
+                st.caption(
+                    f"Mínimo de palabras según minutos: **{bw}** (o 80 si elegiste 0 min). Ajustá el deslizador de palabras para el largo final."
+                )
         elif _hint_m is not None:
             st.caption(
-                f"En el tema detectamos **~{_hint_m} min** de duración pedida; el mínimo de palabras se alinea a eso "
-                f"(≈{int(round(_hint_m * _SAAS_WORDS_PER_MIN))} palabras a ~{int(_SAAS_WORDS_PER_MIN)} pal/min). "
-                "Podés subir minutos o palabras si querés aún más largo, o activar **Prueba corta** para ignorar esta pista."
+                f"Alineación con el **tema** activa: detectamos **~{_hint_m} min** en el brief; el mínimo de palabras puede subir "
+                f"hasta ≈{int(round(_hint_m * _SAAS_WORDS_PER_MIN))} (~{int(_SAAS_WORDS_PER_MIN)} pal/min). "
+                "Desactivá la casilla si preferís que solo cuenten los deslizadores."
             )
-        tw_lo = 80 if _ig else _target_words_floor_from_topic_duration(_ctp, _ctw, bw, ignore_topic_duration_hint=False)
+        else:
+            st.caption(
+                "Alineación con el tema activada, pero no hay duración clara en el texto: el piso lo marcan minutos y palabras."
+            )
+        tw_lo = (
+            _target_words_floor_from_topic_duration(_ctp, _ctw, bw, ignore_topic_duration_hint=False)
+            if _align_theme
+            else max(80, bw)
+        )
         cur_tw = int(st.session_state.get("create_target_words", tw_lo))
         cur_tw = max(tw_lo, min(10000, cur_tw))
         tw = int(
@@ -1150,13 +1312,13 @@ def page_create() -> None:
                 cur_tw,
                 step=20,
                 help=(
-                    "En **Prueba corta** el mínimo es 80 palabras (minutos solo orientativos). "
-                    "Sin prueba corta, el mínimo sigue minutos + pistas del tema."
+                    "Por defecto el mínimo sigue los **minutos** (0 min ⇒ 80 palabras). "
+                    "Si activaste alinear con el tema, el mínimo puede subir si el brief pide más duración."
                 ),
             )
         )
         st.session_state.create_target_words = _target_words_floor_from_topic_duration(
-            _ctp, _ctw, tw, ignore_topic_duration_hint=_ig
+            _ctp, _ctw, tw, ignore_topic_duration_hint=_ignore_theme
         )
         tw_effective = int(st.session_state.create_target_words)
         _bm, _pm = _saas_estimated_speech_minutes(tw_effective, float(st.session_state.create_voice_speed))
@@ -1164,22 +1326,31 @@ def page_create() -> None:
             f"Guion: ≈ **{_bm:.1f} min** a ~{int(_SAAS_WORDS_PER_MIN)} palabras/min. "
             f"Con la velocidad de voz elegida, el audio TTS ≈ **{_pm:.1f} min** (estimación)."
         )
-        st.session_state._saas_prev_ignore_dur_hint = _ig
+        st.session_state._saas_prev_align_theme_duration = _align_theme
 
         st.markdown("#### Subtítulos en el video")
         st.caption(
             "Tipografías **del sistema** (p. ej. Arial, Impact) — sin descargas extra; "
             "elegí el aspecto por la miniatura, no por nombre interno."
         )
-        st.caption(
-            "Imágenes de apoyo por bloque: Replicate **solo texto** (sin tu personaje en el B-roll). "
-            "Requiere `REPLICATE_API_TOKEN` en `.env`; si falta, el video igual usa fondo + personaje."
-        )
+        if _saas_gameplay_path_filled():
+            st.caption(
+                "Modo gameplay: los subtítulos **siempre** van en el MP4 (estilo grande centrado lo aplica el sistema al renderizar)."
+            )
+        else:
+            st.caption(
+                "Imágenes de apoyo por bloque: Replicate **solo texto** (sin tu personaje en el B-roll). "
+                "Requiere `REPLICATE_API_TOKEN` en `.env`; si falta, el video igual usa fondo + personaje."
+            )
         st.session_state.create_subtitles_enabled = st.checkbox(
             "Incluir subtítulos en el MP4",
-            value=bool(st.session_state.get("create_subtitles_enabled", True)),
+            value=True if _saas_gameplay_path_filled() else bool(st.session_state.get("create_subtitles_enabled", True)),
+            disabled=bool(_saas_gameplay_path_filled()),
+            help="En gameplay los subtítulos van siempre; el checkbox queda fijado en sí.",
         )
-        if st.session_state.create_subtitles_enabled:
+        if _saas_gameplay_path_filled():
+            st.session_state.create_subtitles_enabled = True
+        if st.session_state.create_subtitles_enabled and not _saas_gameplay_path_filled():
             _styles = get_subtitle_styles()
             _sub_keys = list_subtitle_style_keys(_styles)
             if not _sub_keys:
@@ -1298,12 +1469,21 @@ def page_create() -> None:
 
     else:
         st.markdown("### Listo para generar")
+        _gp = (st.session_state.get("create_gameplay_path") or "").strip()
         topic_final = _build_video_topic()
+        _ignore3 = not bool(st.session_state.get("create_align_script_to_theme_duration", False))
+        _tw_ready = _target_words_floor_from_topic_duration(
+            st.session_state.get("create_topic") or "",
+            st.session_state.get("create_twist") or "",
+            int(st.session_state.get("create_target_words", 560)),
+            ignore_topic_duration_hint=_ignore3,
+        )
+        st.session_state.create_target_words = _tw_ready
         if st.session_state.get("create_auto_full_package") and not topic_final.strip():
             topic_final = (
                 "(Paquete automático: idea viral + guion + publicación generados por el sistema según tu perfil creativo)"
             )
-        ch = get_character(st.session_state.create_character)
+        ch = get_character(st.session_state.create_character) if not _gp else None
         bgm_note = "No"
         if st.session_state.get("create_use_bgm"):
             if st.session_state.get("create_safe_music_path"):
@@ -1313,18 +1493,59 @@ def page_create() -> None:
             elif st.session_state.get("create_use_bgm"):
                 bgm_note = "Sí (sin pista; revisá carpeta o .env)"
         sfx_note = "Sí" if st.session_state.get("create_use_sfx") and st.session_state.get("create_safe_sfx_path") else "No"
-        _sum_tw = int(st.session_state.get("create_target_words", 560))
+        _sum_tw = int(_tw_ready)
         _sum_bm, _sum_pm = _saas_estimated_speech_minutes(_sum_tw, float(st.session_state.get("create_voice_speed", 1.0)))
         _sub_on = bool(st.session_state.get("create_subtitles_enabled", True))
-        _sub_line = "**Subtítulos:** sí (el aspecto es el que marcaste con la miniatura en el paso anterior)." if _sub_on else "**Subtítulos:** no."
+        _sub_line = (
+            "**Subtítulos:** sí, estilo fijado por el sistema (gameplay)."
+            if _gp
+            else (
+                "**Subtítulos:** sí (el aspecto es el que marcaste con la miniatura en el paso anterior)."
+                if _sub_on
+                else "**Subtítulos:** no."
+            )
+        )
+        _gp_line = ""
+        if _gp:
+            _ga = str(st.session_state.get("create_gameplay_aspect") or "16:9")
+            _gp_line = (
+                f"\n\n**Montaje:** solo **gameplay** — un .mp4 de fondo recortado por **escena** + voz (no hay clips con personaje ni Replicate).\n"
+                f"**Archivo:** `{_gp[:100]}{'…' if len(_gp) > 100 else ''}` · formato **{_ga}**."
+            )
+        _gp_ok = True
+        if _gp:
+            try:
+                _gchk = Path(_gp).expanduser().resolve()
+                _gp_ok = _gchk.is_file()
+            except Exception:
+                _gp_ok = False
+            if not _gp_ok:
+                st.error(
+                    "La ruta de gameplay **no existe** o no es un archivo `.mp4` accesible. "
+                    "Volvé al **paso 2** y poné la ruta **absoluta** (ej. `/Users/vos/Videos/parkour.mp4`). "
+                    "Si queda vacío, el render usa **fondo del catálogo** (y Replicate por escena salvo que elijas «sin imágenes IA» en el paso 2), no Minecraft."
+                )
+            else:
+                st.caption(f"Gameplay: archivo encontrado (`{Path(_gp).expanduser().resolve().name}`).")
+        _char_bg = ""
+        if not _gp and ch is not None:
+            _char_bg = f"**Personaje:** {ch.get('name')} · **Fondo:** {st.session_state.create_background} · "
+        _img_line = ""
+        if not _gp:
+            if st.session_state.get("create_skip_support_images"):
+                _img_line = "\n\n**Imágenes por escena:** no — solo personaje + fondo del catálogo (sin Replicate)."
+            else:
+                _img_line = "\n\n**Imágenes por escena:** sí — imagen de apoyo con Replicate por bloque."
         st.markdown(
             f"**Tema (guion):** {topic_final[:320]}{'…' if len(topic_final) > 320 else ''}\n\n"
-            f"**Personaje:** {ch.get('name')} · **Fondo:** {st.session_state.create_background} · "
+            f"{_char_bg}"
             f"**Voz:** {st.session_state.create_voice} (×{float(st.session_state.get('create_voice_speed', 1.0)):.2f}) · "
             f"**Preset:** {st.session_state.create_preset} · "
             f"**Guion:** ~{_sum_tw} palabras (≈{_sum_bm:.1f} min; audio ≈{_sum_pm:.1f} min)\n\n"
             f"{_sub_line}\n\n"
             f"**Música:** {bgm_note} · **SFX:** {sfx_note}"
+            f"{_gp_line}"
+            f"{_img_line}"
         )
         c1, c2 = st.columns(2)
         with c1:
@@ -1332,20 +1553,27 @@ def page_create() -> None:
                 st.session_state.create_step = 2
                 st.rerun()
         with c2:
-            if st.button("Generar video", type="primary", use_container_width=True):
+            if st.button(
+                "Generar video",
+                type="primary",
+                use_container_width=True,
+                disabled=bool(_gp) and not _gp_ok,
+            ):
                 _session_persist()
                 pid = datetime.now().strftime("%Y%m%d%H%M%S")
                 _tw = _target_words_floor_from_topic_duration(
                     st.session_state.get("create_topic") or "",
                     st.session_state.get("create_twist") or "",
                     int(st.session_state.get("create_target_words", 560)),
-                    ignore_topic_duration_hint=bool(
-                        st.session_state.get("create_ignore_topic_duration_hint", False)
+                    ignore_topic_duration_hint=not bool(
+                        st.session_state.get("create_align_script_to_theme_duration", False)
                     ),
                 )
                 st.session_state.create_target_words = _tw
                 _vs = float(st.session_state.get("create_voice_speed", 1.0))
                 _sub_en = bool(st.session_state.get("create_subtitles_enabled", True))
+                if (st.session_state.get("create_gameplay_path") or "").strip():
+                    _sub_en = True
                 _sub_st = str(st.session_state.get("create_subtitle_style") or "default")
                 _topic_for_pipeline = (
                     ""
@@ -1377,6 +1605,7 @@ def page_create() -> None:
                         "use_env_music": st.session_state.get("create_use_env_music", False),
                         "session_id": str(st.session_state.get("active_session_id") or ""),
                         "auto_full_package": bool(st.session_state.get("create_auto_full_package")),
+                        "skip_support_images": bool(st.session_state.get("create_skip_support_images")),
                     }
                 )
                 st.session_state.render = {
@@ -1413,6 +1642,9 @@ def page_create() -> None:
                     ),
                     "auto_viral_idea": bool(st.session_state.get("create_auto_full_package")),
                     "story_background_video": bool(st.session_state.get("create_auto_full_package")),
+                    "gameplay_video_path": (st.session_state.get("create_gameplay_path") or "").strip(),
+                    "video_aspect": str(st.session_state.get("create_gameplay_aspect") or "16:9"),
+                    "skip_support_images": bool(st.session_state.get("create_skip_support_images")),
                 }
                 if RENDER_PROGRESS.exists():
                     try:
@@ -1443,6 +1675,14 @@ def _run_mvp_thread(topic: str, holder: list, err: list, opts: dict | None) -> N
             if env_p and env_p.exists():
                 m_path = env_p
         use_env_flag = use_env and m_path is None
+        gpv = (opts.get("gameplay_video_path") or os.getenv("GAMEPLAY_BACKGROUND_VIDEO") or "").strip()
+        gpath: Path | None = None
+        if gpv:
+            gpath = Path(gpv).expanduser().resolve()
+            if not gpath.is_file():
+                raise FileNotFoundError(f"Video de gameplay no encontrado: {gpv}")
+        asp = str(opts.get("video_aspect") or os.getenv("GAMEPLAY_VIDEO_ASPECT") or "16:9").strip()
+        ot = opts.get("overlay_text")
         holder[0] = run_saas_mvp(
             topic,
             progress_path=RENDER_PROGRESS,
@@ -1462,6 +1702,10 @@ def _run_mvp_thread(topic: str, holder: list, err: list, opts: dict | None) -> N
             voice_id=(str(opts.get("voice_id") or "").strip() or None),
             auto_viral_idea=bool(opts.get("auto_viral_idea")),
             story_background_video=bool(opts.get("story_background_video")),
+            gameplay_video_path=gpath,
+            video_aspect=asp,
+            overlay_text=ot if isinstance(ot, dict) else None,
+            skip_support_images=bool(opts.get("skip_support_images")),
         )
     except Exception as e:
         err[0] = e
@@ -1477,6 +1721,18 @@ def page_rendering() -> None:
             st.session_state.nav = "Create"
             st.rerun()
         return
+
+    _gp_job = (job.get("gameplay_video_path") or "").strip()
+    if _gp_job:
+        st.info(
+            "**Modo gameplay:** cada paso une **voz + trozo del video de fondo** (escenas). "
+            "No se generan imágenes por bloque ni personaje del catálogo."
+        )
+    elif job.get("skip_support_images"):
+        st.info(
+            "**Sin imágenes IA por escena:** cada clip usa **solo personaje + fondo** del catálogo (sin Replicate). "
+            "El guion y la voz son iguales; el render suele ser más rápido."
+        )
 
     if not job.get("started"):
         job["started"] = True
@@ -1499,6 +1755,9 @@ def page_rendering() -> None:
             "voice_id": str(job.get("voice_id") or ""),
             "auto_viral_idea": bool(job.get("auto_viral_idea")),
             "story_background_video": bool(job.get("story_background_video")),
+            "gameplay_video_path": (job.get("gameplay_video_path") or "").strip(),
+            "video_aspect": str(job.get("video_aspect") or "16:9"),
+            "skip_support_images": bool(job.get("skip_support_images")),
         }
         t = threading.Thread(
             target=_run_mvp_thread,
@@ -1518,6 +1777,9 @@ def page_rendering() -> None:
             step = str(d.get("step", step))
         except Exception:
             pass
+
+    if _gp_job and "Clip " in step:
+        step = step.replace("Clip ", "Escena ")
 
     st.progress(min(1.0, pct / 100.0))
     st.caption(f"{int(pct)}% · {step}")

@@ -5,6 +5,7 @@ import json
 import os
 from typing import Any
 
+from .config_loader import get_narrative_rules
 from .saas_creative_profile import merge_profile_disk, parse_llm_json_object, profile_to_edit_planner_context
 
 
@@ -28,13 +29,17 @@ def enrich_blocks_with_visual_intent(blocks: list[dict[str, Any]], profile: dict
         return _heuristic_visuals(blocks, prof)
 
     compact = [{"id": b.get("id"), "text": (b.get("text") or "")[:400]} for b in blocks]
+    _mood = (get_narrative_rules().get("channel_visual_mood_line") or "").strip()
     system = (
-        "Sos director de fotografía para videos storytime / Reddit. Español.\n"
+        "Sos director de fotografía para videos storytime oscuros / confesión. Español.\n"
         "Devolvé SOLO JSON: {\"visuals\": [ {\"id\": \"...\", \"visual\": \"...\" }, ... ]}.\n"
         "La lista visuals debe tener EXACTAMENTE la misma longitud y mismos ids que los bloques entrantes.\n"
-        "Cada \"visual\" es UNA frase corta de intención de plano B-roll: ambiente, objeto, manos genéricas, silueta lejana, clima, luz, textura. "
-        "Sin caras reconocibles, sin personaje protagonista en primer plano, sin texto en imagen.\n"
-        "Alineá mood con el perfil del creador (tone, style, visual.look, pacing)."
+        "Cada \"visual\" es UNA frase corta de B-roll tenso y realista: dormitorio oscuro, luz de móvil, pasillo de noche, "
+        "puerta entreabierta, cocina en silencio, pantalla en penumbra, manos genéricas, silueta lejana, objeto clave del miedo. "
+        "Sin caras reconocibles, sin protagonista en primer plano, sin texto en imagen, nada ‘stock feliz’ ni decorativo.\n"
+        "Alineá el beat emocional del texto del bloque (sospecha, escalada, revelación).\n"
+        "Perfil (tone, style, visual.look, pacing)."
+        + (f"\nReferencia de mood: {_mood}" if _mood else "")
     )
     user = json.dumps(
         {"perfil": profile_to_edit_planner_context(prof), "bloques": compact},

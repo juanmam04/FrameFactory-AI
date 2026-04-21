@@ -11,55 +11,12 @@ Style: Default,Arial,38,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:05.39,Default,,0,0,0,,{\an2}un concepto frágil, y que el verdadero precio del poder es la soledad.
-Dialogue: 0,0:00:05.39,0:00:08.22,Default,,0,0,0,,{\an2}El sonido de disparos resonaba en la lejanía.
-Dialogue: 0,0:00:08.22,0:00:14.30,Default,,0,0,0,,{\an2}La noche estaba oscura y húmeda en las calles de Medellín, y la tensión se sentía en el aire.
-Dialogue: 0,0:00:14.30,0:00:20.94,Default,,0,0,0,,{\an2}Te encontrabas en una esquina, observando cómo tu mejor amigo, Javier, se reunía con un grupo desconocido.
-Dialogue: 0,0:00:20.94,0:00:27.12,Default,,0,0,0,,{\an2}Él había sido tu apoyo incondicional desde que te metiste en el peligroso mundo del crimen organizado.
-Dialogue: 0,0:00:27.12,0:00:32.69,Default,,0,0,0,,{\an2}Pero esa lealtad que una vez te dio seguridad ahora se sentía como una sombra ominosa.
-Dialogue: 0,0:00:32.69,0:00:40.96,Default,,0,0,0,,{\an2}Desde niño, siempre te enseñaron que la familia es lo primero, y para ti, Javier era más que un amigo; era tu hermano.
-Dialogue: 0,0:00:40.96,0:00:44.35,Default,,0,0,0,,{\an2}Creciste en un barrio donde las decisiones eran difíciles.
-Dialogue: 0,0:00:44.35,0:00:47.65,Default,,0,0,0,,{\an2}A los 15 años, te uniste a una pandilla local.
-Dialogue: 0,0:00:47.65,0:00:53.08,Default,,0,0,0,,{\an2}Con el tiempo, escalaste posiciones, convirtiéndote en un hombre temido y respetado.
-Dialogue: 0,0:00:53.08,0:00:59.63,Default,,0,0,0,,{\an2}Junto a Javier, construiste un imperio de narcotráfico, controlando rutas y ganando enemigos.
-Dialogue: 0,0:00:59.63,0:01:03.20,Default,,0,0,0,,{\an2}Pero el poder nunca es suficiente, y la ambición creció.
-Dialogue: 0,0:01:03.20,0:01:08.08,Default,,0,0,0,,{\an2}La primera señal de alerta llegó cuando Javier comenzó a actuar de manera extraña.
-Dialogue: 0,0:01:08.08,0:01:10.73,Default,,0,0,0,,{\an2}Se reunía con personas que no conocías.
-Dialogue: 0,0:01:10.73,0:01:17.23,Default,,0,0,0,,{\an2}Al principio, pensaste que solo eran negocios, pero la desconfianza se enraizaba en tu mente.
-Dialogue: 0,0:01:17.23,0:01:19.51,Default,,0,0,0,,{\an2}Una noche, decidiste seguirlo.
-Dialogue: 0,0:01:19.51,0:01:24.43,Default,,0,0,0,,{\an2}Te escondiste en la oscuridad, observando cómo entregaba un paquete a un rival.
-Dialogue: 0,0:01:24.43,0:01:26.29,Default,,0,0,0,,{\an2}El corazón se te detuvo.
-Dialogue: 0,0:01:26.29,0:01:30.14,Default,,0,0,0,,{\an2}Sabías que esa traición podría costarles la vida a ambos.
-Dialogue: 0,0:01:30.14,0:01:31.86,Default,,0,0,0,,{\an2}Decidiste confrontarlo.
-Dialogue: 0,0:01:31.86,0:01:38.64,Default,,0,0,0,,{\an2}En un viejo almacén, te miró a los ojos y te aseguró que todo era parte de un plan para expandir su negocio.
-Dialogue: 0,0:01:38.64,0:01:40.22,Default,,0,0,0,,{\an2}Pero no te convenció.
-Dialogue: 0,0:01:40.22,0:01:42.49,Default,,0,0,0,,{\an2}La rabia y el dolor te invadieron.
-Dialogue: 0,0:01:42.49,0:01:49.55,Default,,0,0,0,,{\an2}Tenías dos opciones: dejarlo ir y arriesgarte a perder todo lo que habías construido, o actuar.
-Dialogue: 0,0:01:49.55,0:01:51.22,Default,,0,0,0,,{\an2}Optaste por lo segundo.
-Dialogue: 0,0:01:51.22,0:01:55.68,Default,,0,0,0,,{\an2}Una noche, reuniste a tus hombres de confianza y planeaste un golpe.
-Dialogue: 0,0:01:55.68,0:02:00.56,Default,,0,0,0,,{\an2}Sabías que habría consecuencias, pero la lealtad no se perdona fácilmente.
-Dialogue: 0,0:02:00.56,0:02:04.69,Default,,0,0,0,,{\an2}La noche del enfrentamiento, la adrenalina corría por tus venas.
-Dialogue: 0,0:02:04.69,0:02:09.43,Default,,0,0,0,,{\an2}Te dirigiste a la casa de Javier, donde él organizaba su nueva alianza.
-Dialogue: 0,0:02:09.43,0:02:12.12,Default,,0,0,0,,{\an2}Entraste con tus hombres, pistolas listas.
-Dialogue: 0,0:02:12.12,0:02:14.63,Default,,0,0,0,,{\an2}La sorpresa en su rostro fue inigualable.
-Dialogue: 0,0:02:14.63,0:02:18.76,Default,,0,0,0,,{\an2}“No hay vuelta atrás, Javier”, le dijiste mientras lo apuntabas.
-Dialogue: 0,0:02:18.76,0:02:20.34,Default,,0,0,0,,{\an2}“Eres un traidor”.
-Dialogue: 0,0:02:20.34,0:02:24.06,Default,,0,0,0,,{\an2}En ese momento, sus hombres de seguridad comenzaron a disparar.
-Dialogue: 0,0:02:24.06,0:02:29.40,Default,,0,0,0,,{\an2}La balacera estalló, y en medio del caos, Javier te miró con desesperación y furia.
-Dialogue: 0,0:02:29.40,0:02:34.27,Default,,0,0,0,,{\an2}Te diste cuenta de que la traición era más profunda de lo que habías imaginado.
-Dialogue: 0,0:02:34.27,0:02:40.59,Default,,0,0,0,,{\an2}No solo era un amigo; era un hombre al que habías llamado hermano, y ahora lo llevabas a la muerte.
-Dialogue: 0,0:02:40.59,0:02:44.07,Default,,0,0,0,,{\an2}Lograste salir del almacén, pero no sin consecuencias.
-Dialogue: 0,0:02:44.07,0:02:49.51,Default,,0,0,0,,{\an2}La policía llegó rápidamente, y tu nombre comenzó a sonar en todas partes.
-Dialogue: 0,0:02:49.51,0:02:57.03,Default,,0,0,0,,{\an2}Mientras te escondías, comprendiste que no solo habías perdido a Javier, sino que la traición había destrozado tu imperio.
-Dialogue: 0,0:02:57.03,0:03:02.23,Default,,0,0,0,,{\an2}La confianza se había esfumado, y los aliados comenzaron a cuestionar tu liderazgo.
-Dialogue: 0,0:03:02.23,0:03:04.41,Default,,0,0,0,,{\an2}La paranoia se instaló en tu mente.
-Dialogue: 0,0:03:04.41,0:03:08.22,Default,,0,0,0,,{\an2}Pasaron semanas, y la situación se volvió insostenible.
-Dialogue: 0,0:03:08.22,0:03:13.84,Default,,0,0,0,,{\an2}Te encontraste en una encrucijada: seguir luchando por recuperar tu territorio o desaparecer.
-Dialogue: 0,0:03:13.84,0:03:20.53,Default,,0,0,0,,{\an2}La noche en que decidiste hacer tu último movimiento, te reuniste con los pocos que todavía confiaban en ti.
-Dialogue: 0,0:03:20.53,0:03:23.87,Default,,0,0,0,,{\an2}“O luchamos juntos o nos hundimos”, les dijiste.
-Dialogue: 0,0:03:23.87,0:03:29.26,Default,,0,0,0,,{\an2}Decidiste ir tras aquellos que se habían aliado con Javier, eliminando la competencia.
-Dialogue: 0,0:03:29.26,0:03:32.65,Default,,0,0,0,,{\an2}Pero en el camino, perdiste más de lo que ganaste.
-Dialogue: 0,0:03:32.65,0:03:35.62,Default,,0,0,0,,{\an2}La soledad comenzó a ser tu compañera constante.
-Dialogue: 0,0:03:35.62,0:03:40.03,Default,,0,0,0,,{\an2}Cada vez que mirabas atrás, veías las decisiones que habías tomado.
-Dialogue: 0,0:03:40.03,0:03:50.25,Default,,0,0,0,,{\an2}Al final, comprendiste que la traición no solo te había robado a un amigo, sino que había transformado tu vida en una lucha constante por la supervivencia.
-Dialogue: 0,0:03:50.25,0:03:58.00,Default,,0,0,0,,{\an2}La ambición y el poder te habían dejado solo, y la lección más dura fue que, en este mundo, nadie es realmente leal.
+Dialogue: 0,0:00:00.00,0:00:03.80,Default,,0,0,0,,{\an2}Tienes 25 años y el futuro parece brillante. Conoces a
+Dialogue: 0,0:00:03.80,0:00:07.65,Default,,0,0,0,,{\an2}una chica en una fiesta; su risa ilumina la habitación.
+Dialogue: 0,0:00:07.65,0:00:12.97,Default,,0,0,0,,{\an2}La química es instantánea, pero pronto surgen pequeñas mentiras. Ella
+Dialogue: 0,0:00:12.97,0:00:16.23,Default,,0,0,0,,{\an2}evita hablar de su pasado y, al encontrar una carta,
+Dialogue: 0,0:00:16.23,0:00:20.20,Default,,0,0,0,,{\an2}descubres secretos oscuros que te dejan helado. Te enfrentas a
+Dialogue: 0,0:00:20.20,0:00:25.48,Default,,0,0,0,,{\an2}un dilema: ¿la amas lo suficiente para perdonarla? La confianza
+Dialogue: 0,0:00:25.48,0:00:30.00,Default,,0,0,0,,{\an2}se tambalea. Tras una intensa confrontación, ella te pide una
+Dialogue: 0,0:00:30.00,0:00:34.86,Default,,0,0,0,,{\an2}segunda oportunidad. Reflexionas y decides que, aunque el amor es
+Dialogue: 0,0:00:34.86,0:00:38.67,Default,,0,0,0,,{\an2}complicado, tu futuro es prioridad. Miras hacia adelante.

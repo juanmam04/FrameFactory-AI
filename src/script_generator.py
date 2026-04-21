@@ -82,8 +82,10 @@ def generar_guion(
             "Eres guionista senior de historias virales tipo Reddit / storytime para YouTube."
         )
         anti_generic = (
-            "\n\nANTI-GENERIC-AI: prohibido «en un mundo lleno de», «lo que pasó a continuación», «nadie esperaba», "
-            "«esto cambiará todo», pedir suscripción, mencionar algoritmo o \"este video\"."
+            "\n\nANTI-GENERIC-AI / ANTI-RELLENO: prohibido «en un mundo lleno de», «lo que pasó a continuación», "
+            "«nadie esperaba», «esto cambiará todo», «poco sabía que», pedir suscripción, mencionar algoritmo o \"este video\", "
+            "«esta es la historia de», «todo comenzó cuando», «había una vez», «en este video te contaré», "
+            "«como humano de carne y hueso», moralejas explícitas, cierres edulcorados, tono ensayo o literario."
         )
         system = reddit_sys + (("\n\n" + system_extra) if system_extra else "") + anti_generic
         if creative_context and str(creative_context).strip():
@@ -91,6 +93,9 @@ def generar_guion(
                 "\n\nCONTEXTO DEL CREADOR (obligatorio — tono, estilo, pacing, público, qué evitar):\n"
                 + str(creative_context).strip()
             )
+        _bible = (rules.get("channel_dark_confession_bible") or "").strip()
+        if _bible:
+            system += "\n\n=== BIBLIA DEL CANAL (OBLIGATORIA) ===\n" + _bible
     else:
         system_base = t.get(
             "sistema",
@@ -117,6 +122,14 @@ Evita solo el gore gráfico o descripciones extremadamente detalladas de daño f
                 "y priorizá coherencia con el nicho y topics_to_avoid):\n"
                 + str(creative_context).strip()
             )
+        _bible_ex = (rules.get("channel_dark_confession_bible") or "").strip()
+        if _bible_ex:
+            system += (
+                "\n\n=== BIBLIA DEL CANAL (RITMO Y ANTI-RELLENO; prioridad con instrucciones genéricas) ===\n"
+                + _bible_ex
+                + "\n\nAPLICACIÓN EN PLANTILLA EXPLICATIVO: respetá trama y POV del tema; "
+                "no conviertas todo en terror si el tema no lo pide, pero evitá relleno tipo ChatGPT, intros lentas y moralejas."
+            )
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -131,7 +144,14 @@ Evita solo el gore gráfico o descripciones extremadamente detalladas de daño f
         
         # ─── PASO 1: Generar borrador completo ───────────────────────────────────
         print(f"📝 Paso 1: Generando borrador completo (objetivo: ~{target_words} palabras)...")
-        
+
+        _editor_dark = ""
+        if plantilla == "reddit_stories":
+            _editor_dark = (
+                " Conservá ficción oscura adictiva, primera persona u oral directo, cero relleno tipo ChatGPT; "
+                "el cierre puede ser inquietante o emocionalmente abierto (no exijas moraleja ni desenlace edulcorado)."
+            )
+
         # Frase clave desde config (mejora mucho el resultado)
         frase_clave = (rules.get("frase_clave") or "No escribas una escena. Escribe la vida completa del personaje.").strip()
         duracion_min = max(1, int(round(target_words / 140.0)))
@@ -289,7 +309,11 @@ HISTORIA ACTUAL:
                     r_exp = client.chat.completions.create(
                         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                         messages=[
-                            {"role": "system", "content": "Eres un editor de guiones. Expandes historias hasta alcanzar el número de palabras pedido, manteniendo coherencia y final."},
+                            {
+                                "role": "system",
+                                "content": "Eres un editor de guiones. Expandes historias hasta alcanzar el número de palabras pedido, manteniendo coherencia y final."
+                                + _editor_dark,
+                            },
                             {"role": "user", "content": prompt_expandir_primero},
                         ],
                         max_tokens=max_tokens_exp,
@@ -319,7 +343,11 @@ HISTORIA:
             r2 = client.chat.completions.create(
                 model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                 messages=[
-                    {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. Si acortas, quitas escenas o detalles pero SIEMPRE conservas el desenlace: la historia debe terminar con un final completo, nunca cortada a la mitad de una frase."},
+                    {
+                        "role": "system",
+                        "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. Si acortas, quitas escenas o detalles pero SIEMPRE conservas el desenlace: la historia debe terminar con un final completo, nunca cortada a la mitad de una frase."
+                        + _editor_dark,
+                    },
                     {"role": "user", "content": prompt_ajuste},
                 ],
                 max_tokens=max_tokens_ajuste,
@@ -346,7 +374,11 @@ GUION ACTUAL:
                     r_extra = client.chat.completions.create(
                         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                         messages=[
-                            {"role": "system", "content": "Expandes guiones hasta alcanzar el número de palabras pedido. Mantienes la misma historia y el mismo final."},
+                            {
+                                "role": "system",
+                                "content": "Expandes guiones hasta alcanzar el número de palabras pedido. Mantienes la misma historia y el mismo final."
+                                + _editor_dark,
+                            },
                             {"role": "user", "content": prompt_extra},
                         ],
                         max_tokens=int(target_words * 1.4 * 1.4),
@@ -373,7 +405,11 @@ HISTORIA ORIGINAL:
                 r3 = client.chat.completions.create(
                     model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                     messages=[
-                        {"role": "system", "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. SIEMPRE entregas una historia con final completo; nunca cortes a la mitad de una frase."},
+                        {
+                            "role": "system",
+                            "content": "Eres un editor de guiones experto. Ajustas historias al número de palabras indicado. SIEMPRE entregas una historia con final completo; nunca cortes a la mitad de una frase."
+                            + _editor_dark,
+                        },
                         {"role": "user", "content": prompt_ajuste_estricto},
                     ],
                     max_tokens=max(1200, int(target_words * 1.6 * 1.4)),  # margen suficiente para no truncar el final
@@ -404,7 +440,11 @@ GUION ACTUAL:
                     r4 = client.chat.completions.create(
                         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                         messages=[
-                            {"role": "system", "content": "Eres un editor de guiones. Expandes el texto hasta alcanzar el número de palabras pedido. Siempre mantienes la misma historia y el mismo final."},
+                            {
+                                "role": "system",
+                                "content": "Eres un editor de guiones. Expandes el texto hasta alcanzar el número de palabras pedido. Siempre mantienes la misma historia y el mismo final."
+                                + _editor_dark,
+                            },
                             {"role": "user", "content": prompt_expandir},
                         ],
                         max_tokens=int(target_words * 1.5 * 1.4),
@@ -462,18 +502,19 @@ GUION ACTUAL:
 
 
 def _guion_fallback_words(tema: str, target_words: int) -> str:
-    """Guion de ejemplo cuando no hay API configurada."""
+    """Guion mínimo cuando no hay API (no usar en producción; evita plantillas de youtuber)."""
     min_ok = max(20, int(target_words * 0.75))
+    t = (tema or "algo que no encaja").strip()[:200]
     lineas = [
-        f"En este video hablaremos sobre: {tema}.",
-        "La idea central es muy importante para entender el tema.",
-        "Veamos los puntos clave uno por uno.",
+        f"No debí ignorarlo. {t}",
+        "El primer detalle fue pequeño. Lo dejé pasar.",
+        "Cada vez que pienso en lo que encontré después, me cuesta respirar.",
     ]
     fillers = [
-        f"Aquí desarrollamos otro aspecto de {tema}.",
-        "Esto conecta con lo anterior y profundiza el mensaje principal.",
-        "Seguimos con más detalle para que quede claro el concepto.",
-        "Cada parte suma para tener una visión completa del asunto.",
+        "Otro detalle no encajaba con lo que me habían dicho.",
+        "La tensión subía y yo seguía adentro, sin poder parar.",
+        "No había forma de volver atrás sin saber la verdad.",
+        "Lo que siguió fue peor de lo que imaginaba.",
     ]
     i = 0
     texto = "\n\n".join(lineas)

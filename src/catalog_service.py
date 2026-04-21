@@ -188,7 +188,6 @@ def ensure_default_catalog_assets() -> None:
         d.ellipse((480, 100, 800, 420), fill=(245, 245, 250), outline=(18, 18, 24), width=5)
         d.rectangle((520, 420, 760, 640), fill=(245, 245, 250), outline=(18, 18, 24), width=4)
         d.line([(640, 420), (560, 520), (640, 480), (720, 520), (640, 420)], fill=(18, 18, 24), width=5)
-        d.text((420, 660), "Personaje catálogo (placeholder)", fill=(200, 200, 210))
         biz.parent.mkdir(parents=True, exist_ok=True)
         img.save(biz, format="PNG")
 
@@ -199,7 +198,6 @@ def ensure_default_catalog_assets() -> None:
         for y in range(0, 720, 40):
             d.line([(0, y), (1280, y)], fill=(26, 26, 38), width=1)
         d.rectangle((80, 80, 1200, 640), outline=(55, 55, 72), width=3)
-        d.text((100, 100), "Estudio (placeholder)", fill=(120, 120, 140))
         dark.parent.mkdir(parents=True, exist_ok=True)
         img.save(dark, format="PNG")
 
