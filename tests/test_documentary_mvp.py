@@ -1,4 +1,4 @@
-"""Tests for Documentary 100-days MVP (offline-friendly)."""
+"""Tests for Documentary 100-days MVP + channel workflow (offline-friendly)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,12 +7,16 @@ import pytest
 from PIL import Image
 
 from src.documentary.assemble_service import build_preview
+from src.documentary.channel import business_documentary_profile, is_documentary_profile, script_context_from_session
 from src.documentary.flow_pack import export_flow_pack, load_shot_list, update_shot_status
-from src.documentary.import_images import import_images, replace_shot_image
+from src.documentary.ideas import generate_story_ideas
+from src.documentary.import_images import import_images, replace_shot_image, sync_shot_statuses_from_images
 from src.documentary.project import (
     create_project,
+    derive_progress,
     load_project,
     project_dir,
+    session_stats,
 )
 from src.documentary.script_service import approve_script, generate_documentary_script, save_edited_script
 from src.voice_generator import generar_voz
@@ -35,8 +39,50 @@ def test_create_persist_reload(tmp_projects):
     assert p2["checkpoints"]["script_ready"] is False
 
 
+def test_channel_profile_and_ideas_offline():
+    prof = business_documentary_profile()
+    assert is_documentary_profile(prof)
+    assert prof["channel"]["goal_count"] == 100
+    ideas = generate_story_ideas(prof, prior_videos=[], count=5, use_llm=False)
+    assert len(ideas) == 5
+    assert ideas[0]["title_concept"]
+    # Avoid repeating WeWork if already produced
+    prior = [{"topic": "WeWork", "title": "WeWork", "idea": {"primary_entity": "WeWork"}}]
+    ideas2 = generate_story_ideas(prof, prior_videos=prior, count=5, use_llm=False)
+    assert all("wework" not in (i.get("primary_entity") or "").lower() for i in ideas2)
+    ctx = script_context_from_session(prof, idea=ideas[0])
+    assert "PERFIL DEL CREADOR" in ctx or "CREATOR" in ctx.upper() or "business" in ctx.lower()
+
+
+def test_session_linked_project_and_progress(tmp_projects):
+    prof = business_documentary_profile()
+    p = create_project(
+        "Theranos story",
+        project_id="001-theranos",
+        session_id="sess-100",
+        creative_profile=prof,
+        idea={"title_concept": "THERANOS", "primary_entity": "Theranos"},
+        episode_number=1,
+    )
+    assert p["session_id"] == "sess-100"
+    assert p["episode_number"] == 1
+    assert p["creative_profile_snapshot"]["workflow"] == "documentary"
+    prog = derive_progress(p)
+    assert prog["current"] in ("research", "story")
+    stats = session_stats("sess-100", 100)
+    assert stats["in_progress"] == 1
+    assert stats["completed"] == 0
+
+
 def test_script_approve_flow_import_replace(tmp_projects, tmp_path):
-    p = create_project("WeWork story", project_id="doc-a", target_words=400, research_notes="SoftBank invested.")
+    p = create_project(
+        "WeWork story",
+        project_id="doc-a",
+        target_words=400,
+        research_notes="SoftBank invested.",
+        creative_profile=business_documentary_profile(),
+        session_id="sess-a",
+    )
     generate_documentary_script(p, use_llm=False)
     p = load_project("doc-a")
     assert p["checkpoints"]["script_ready"] is True
@@ -71,11 +117,16 @@ def test_script_approve_flow_import_replace(tmp_projects, tmp_path):
     report = import_images(p, src)
     assert "002" in report["missing"]
     assert report["ready"] == len(shots) - 1
+    # Auto-status: imported shots marked generated
+    synced = load_shot_list("doc-a")
+    assert synced["shots"][0]["status"] == "generated"
 
     one = tmp_path / "002.png"
     Image.new("RGB", (1280, 720), color=(10, 200, 10)).save(one)
     replace_shot_image(p, 2, one)
     assert (project_dir("doc-a") / "images" / "002.png").exists()
+    sync_shot_statuses_from_images("doc-a")
+    assert load_shot_list("doc-a")["shots"][1]["status"] == "generated"
 
     p_b = create_project("Other", project_id="doc-b", target_words=300)
     generate_documentary_script(p_b, use_llm=False)

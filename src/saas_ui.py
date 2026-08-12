@@ -726,19 +726,69 @@ def _nav() -> None:
             _session_hydrate_from_disk()
 
         st.divider()
-        for label, key in [
-            ("Inicio", "Dashboard"),
-            ("Documentary", "Documentary"),
-            ("Nuevo video", "Create"),
-            ("Biblioteca", "Library"),
-            ("Render", "Rendering"),
-            ("Revisar", "Review"),
-            ("Perfil", "Profile"),
-        ]:
-            btn_type = "primary" if st.session_state.nav == key else "secondary"
-            if st.button(label, key=f"nav_{key}", use_container_width=True, type=btn_type):
-                st.session_state.nav = key
-                st.rerun()
+        # Documentary channel sessions get a focused nav; Studio stays under Legacy.
+        from src.documentary.channel import is_documentary_profile
+        from src.saas_creative_profile import merge_profile_disk as _merge_nav_prof
+
+        _nav_prof = _merge_nav_prof(st.session_state.get("creative_profile"))
+        _doc_mode = is_documentary_profile(_nav_prof)
+        if _doc_mode:
+            st.caption("Documentary channel")
+            nav_items = [
+                ("Home", "doc_home"),
+                ("Today's Video", "doc_current"),
+                ("Library", "doc_library"),
+                ("Channel Profile", "Profile"),
+            ]
+            for label, key in nav_items:
+                active = False
+                if key == "doc_home" and st.session_state.nav == "Documentary" and st.session_state.get("doc_view", "home") == "home":
+                    active = True
+                elif key == "doc_current" and st.session_state.nav == "Documentary" and st.session_state.get("doc_view") in ("project", "ideas"):
+                    active = True
+                elif key == "doc_library" and st.session_state.nav == "Documentary" and st.session_state.get("doc_view") == "library":
+                    active = True
+                elif key == "Profile" and st.session_state.nav == "Profile":
+                    active = True
+                btn_type = "primary" if active else "secondary"
+                if st.button(label, key=f"nav_{key}", use_container_width=True, type=btn_type):
+                    if key == "doc_home":
+                        st.session_state.nav = "Documentary"
+                        st.session_state.doc_view = "home"
+                    elif key == "doc_current":
+                        st.session_state.nav = "Documentary"
+                        st.session_state.doc_view = "project" if st.session_state.get("doc_project_id") else "ideas"
+                    elif key == "doc_library":
+                        st.session_state.nav = "Documentary"
+                        st.session_state.doc_view = "library"
+                    else:
+                        st.session_state.nav = key
+                    st.rerun()
+            with st.expander("Legacy / Other workflows", expanded=False):
+                for label, key in [
+                    ("Studio Inicio", "Dashboard"),
+                    ("Nuevo video (Studio)", "Create"),
+                    ("Biblioteca Studio", "Library"),
+                    ("Render Studio", "Rendering"),
+                    ("Revisar", "Review"),
+                ]:
+                    if st.button(label, key=f"nav_legacy_{key}", use_container_width=True):
+                        st.session_state.nav = key
+                        st.rerun()
+        else:
+            for label, key in [
+                ("Inicio", "Dashboard"),
+                ("Documentary", "Documentary"),
+                ("Nuevo video", "Create"),
+                ("Biblioteca", "Library"),
+                ("Render", "Rendering"),
+                ("Revisar", "Review"),
+                ("Perfil", "Profile"),
+            ]:
+                btn_type = "primary" if st.session_state.nav == key else "secondary"
+                if st.button(label, key=f"nav_{key}", use_container_width=True, type=btn_type):
+                    st.session_state.nav = key
+                    st.rerun()
 
 
 def _card_metric(label: str, value: str) -> None:
@@ -2423,6 +2473,20 @@ def render_app() -> None:
     _theme()
     _init_state()
     _session_hydrate_from_disk()
+    # Prefer Documentary home when the active session is a documentary channel.
+    try:
+        from src.documentary.channel import is_documentary_profile
+        from src.documentary_ui import ensure_100_days_session_ready
+
+        ensure_100_days_session_ready()
+        _session_hydrate_from_disk()
+        if is_documentary_profile(st.session_state.get("creative_profile")):
+            if st.session_state.get("nav") == "Dashboard" and not st.session_state.get("_doc_nav_boot"):
+                st.session_state.nav = "Documentary"
+                st.session_state.doc_view = st.session_state.get("doc_view") or "home"
+                st.session_state._doc_nav_boot = True
+    except Exception:
+        pass
     _nav()
 
     nav = st.session_state.nav

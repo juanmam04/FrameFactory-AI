@@ -1,6 +1,7 @@
 """Bulk import + replace stills for Flow (FF100-P0-003/004)."""
 from __future__ import annotations
 
+import json
 import re
 import shutil
 from pathlib import Path
@@ -57,7 +58,6 @@ def import_images(
         if expected_nums and num not in expected_nums:
             continue
         dest = dest_root / f"{num:03d}.png"
-        # normalize extension to .png name (keep bytes)
         shutil.copy2(path, dest)
         imported += 1
         issue = _dim_issue(dest, min_width)
@@ -79,36 +79,77 @@ def import_images(
         "source_dir": str(src),
     }
     project["import_report"] = report
-    # images_imported true if at least one; full readiness is ready==expected
     set_checkpoint(project, "images_imported", ready > 0)
     if ready == expected_n and expected_n > 0:
         set_checkpoint(project, "images_imported", True)
+        project["ui_step"] = "voice"
+    else:
+        project["ui_step"] = "images"
     save_project(project)
+    sync_shot_statuses_from_images(str(project["id"]))
     append_log(str(project["id"]), f"import ready={ready}/{expected_n} missing={len(missing)}")
     return report
+
+
+def sync_shot_statuses_from_images(project_id: str) -> dict[str, Any]:
+    """Filesystem is source of truth: existing images/NNN.png → shot status generated."""
+    path = project_dir(project_id) / "flow-pack" / "shot-list.json"
+    if not path.exists():
+        return {}
+    data = load_shot_list(project_id)
+    img_root = project_dir(project_id) / "images"
+    changed = 0
+    for s in data.get("shots") or []:
+        n = int(s.get("number") or 0)
+        if n <= 0:
+            continue
+        p = img_root / f"{n:03d}.png"
+        exists = p.exists() and p.stat().st_size > 0
+        cur = str(s.get("status") or "pending")
+        if exists:
+            if cur in ("pending", "needs_regen"):
+                s["status"] = "generated"
+                changed += 1
+        else:
+            if cur == "generated":
+                s["status"] = "pending"
+                changed += 1
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    ap = project_dir(project_id) / "flow-pack" / "visual_analysis.json"
+    if ap.exists():
+        analysis = json.loads(ap.read_text(encoding="utf-8"))
+        by_num = {int(s.get("number") or 0): s for s in (data.get("shots") or [])}
+        for s in analysis.get("shots") or []:
+            n = int(s.get("number") or 0)
+            if n in by_num:
+                s["status"] = by_num[n].get("status")
+        ap.write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
+    append_log(project_id, f"sync shot status from images changed={changed}")
+    return data
 
 
 def replace_shot_image(project: dict[str, Any], shot_number: int, image_path: str | Path) -> Path:
     src = Path(image_path).expanduser().resolve()
     if not src.is_file():
-        raise FileNotFoundError(src)
+        raise FileNotFoundError("Image file not found.")
     dest = project_dir(str(project["id"])) / "images" / f"{int(shot_number):03d}.png"
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dest)
-    # refresh missing list lightly
     try:
         report = dict(project.get("import_report") or {})
         miss = [m for m in (report.get("missing") or []) if m != f"{int(shot_number):03d}"]
         report["missing"] = miss
-        report["ready"] = int(report.get("expected") or 0) - len(miss) if report.get("expected") else report.get("ready")
+        report["ready"] = (
+            int(report.get("expected") or 0) - len(miss) if report.get("expected") else report.get("ready")
+        )
         project["import_report"] = report
         set_checkpoint(project, "images_imported", True)
-        # replace does not invalidate voice
         set_checkpoint(project, "render_ready", False)
         set_checkpoint(project, "assembly_ready", False)
         save_project(project)
     except Exception:
         pass
+    sync_shot_statuses_from_images(str(project["id"]))
     append_log(str(project["id"]), f"replaced shot {int(shot_number):03d}")
     return dest
 
@@ -122,7 +163,7 @@ def list_project_images(project_id: str) -> list[Path]:
 
 def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
     """Return images in shot order; missing slots reported."""
-    shots = (load_shot_list(project_id).get("shots") or [])
+    shots = load_shot_list(project_id).get("shots") or []
     paths: list[Path] = []
     missing: list[str] = []
     img_root = project_dir(project_id) / "images"

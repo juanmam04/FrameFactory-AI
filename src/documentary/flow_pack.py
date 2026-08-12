@@ -11,7 +11,7 @@ from src.documentary.visual_director import analyze_visuals, load_analysis
 
 def export_flow_pack(project: dict[str, Any], *, use_llm: bool = True, rebuild_visuals: bool = True) -> dict[str, Any]:
     if not project.get("script_approved"):
-        raise ValueError("Script must be APPROVED before Flow Pack")
+        raise ValueError("Approve the script first — then we can build Flow references and shots.")
     if rebuild_visuals or not (project_dir(str(project["id"])) / "flow-pack" / "visual_analysis.json").exists():
         analyze_visuals(project, use_llm=use_llm)
         from src.documentary.project import load_project
@@ -57,6 +57,7 @@ def export_flow_pack(project: dict[str, Any], *, use_llm: bool = True, rebuild_v
 
     set_checkpoint(project, "flow_pack_ready", True)
     project["flow_pack"] = {"shot_count": len(shots), "batch_size": batch_size}
+    project["ui_step"] = "flow"
     save_project(project)
     append_log(str(project["id"]), f"flow pack exported shots={len(shots)}")
     return project

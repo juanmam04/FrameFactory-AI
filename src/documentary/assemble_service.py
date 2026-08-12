@@ -47,17 +47,20 @@ def assemble_and_render(
     transiciones_suaves: bool = True,
 ) -> Path:
     if not verificar_ffmpeg():
-        raise RuntimeError("FFmpeg required")
+        raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
     pid = str(project["id"])
     preview = build_preview(project)
     if preview["missing_images"] and not allow_missing:
-        raise RuntimeError(f"Missing images: {', '.join(preview['missing_images'][:20])}")
+        miss = preview["missing_images"]
+        raise RuntimeError(
+            f"{len(miss)} images are still missing: " + ", ".join(miss[:40]) + ("…" if len(miss) > 40 else "")
+        )
     if not preview["voice_ok"]:
-        raise RuntimeError("Voice not ready")
+        raise RuntimeError("Voice is not ready yet. Generate voice before rendering.")
 
     images, _missing = ordered_images_for_render(pid)
     if not images:
-        raise RuntimeError("No images to assemble")
+        raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
     audio = project_dir(pid) / "audio" / "narration.mp3"
     music = None

@@ -21,6 +21,18 @@ CHECKPOINT_KEYS = (
     "render_ready",
 )
 
+# Human-facing progress steps (UI). Internal checkpoints still drive gates.
+PROGRESS_STEPS = (
+    "story",
+    "research",
+    "script",
+    "flow",
+    "images",
+    "voice",
+    "render",
+    "done",
+)
+
 DEFAULT_PROJECT: dict[str, Any] = {
     "id": "",
     "slug": "",
@@ -32,6 +44,7 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "target_duration_min": [8, 12],
     "research_notes": "",
     "sources": [],
+    "research_skipped": False,
     "script": "",
     "fact_check_status": "pending",  # pending | approved | needs_fixes
     "script_approved": False,
@@ -42,6 +55,11 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "batch_size": 10,
     "flow_shot_index": 0,
     "flow_batch_index": 0,
+    "session_id": "",
+    "episode_number": 0,
+    "idea": {},
+    "creative_profile_snapshot": {},
+    "ui_step": "research",
     "checkpoints": {k: False for k in CHECKPOINT_KEYS},
     "import_report": {},
     "preview": {},
@@ -83,6 +101,7 @@ def ensure_layout(root: Path) -> None:
         "render",
         "metadata",
         "logs",
+        "flow-import",
     ):
         (root / name).mkdir(parents=True, exist_ok=True)
 
@@ -103,6 +122,10 @@ def load_project(project_id: str) -> dict[str, Any]:
     cps = dict(DEFAULT_PROJECT["checkpoints"])
     cps.update(data.get("checkpoints") or {})
     merged["checkpoints"] = cps
+    if not isinstance(merged.get("idea"), dict):
+        merged["idea"] = {}
+    if not isinstance(merged.get("creative_profile_snapshot"), dict):
+        merged["creative_profile_snapshot"] = {}
     return merged
 
 
@@ -144,13 +167,30 @@ def list_projects() -> list[dict[str, Any]]:
     return items
 
 
-def next_numeric_prefix() -> str:
+def list_projects_for_session(session_id: str | None) -> list[dict[str, Any]]:
+    sid = str(session_id or "").strip()
+    if not sid:
+        return list_projects()
+    return [p for p in list_projects() if str(p.get("session_id") or "") == sid]
+
+
+def next_numeric_prefix(session_id: str | None = None) -> str:
     n = 1
-    for p in list_projects():
+    pool = list_projects_for_session(session_id) if session_id else list_projects()
+    for p in pool:
         m = re.match(r"^(\d+)-", str(p.get("id") or ""))
         if m:
             n = max(n, int(m.group(1)) + 1)
+        ep = p.get("episode_number")
+        try:
+            n = max(n, int(ep) + 1)
+        except (TypeError, ValueError):
+            pass
     return f"{n:03d}"
+
+
+def next_episode_number(session_id: str | None) -> int:
+    return int(next_numeric_prefix(session_id))
 
 
 def create_project(
@@ -161,13 +201,21 @@ def create_project(
     target_words: int = 1500,
     research_notes: str = "",
     sources: list[str] | None = None,
+    session_id: str | None = None,
+    creative_profile: dict[str, Any] | None = None,
+    idea: dict[str, Any] | None = None,
+    language: str = "en",
+    target_duration_min: list[int] | None = None,
+    episode_number: int | None = None,
 ) -> dict[str, Any]:
     topic = (topic or "").strip()
     if not topic:
         raise ValueError("topic required")
     title = (title or topic).strip()
     slug = slugify(title)
-    pid = (project_id or f"{next_numeric_prefix()}-{slug}").strip()
+    sid = str(session_id or "").strip()
+    ep = int(episode_number) if episode_number else next_episode_number(sid or None)
+    pid = (project_id or f"{ep:03d}-{slug}").strip()
     root = project_dir(pid)
     if root.exists() and (root / "project.json").exists():
         raise FileExistsError(f"Project already exists: {pid}")
@@ -179,15 +227,21 @@ def create_project(
             "slug": slug,
             "title": title,
             "topic": topic,
+            "language": (language or "en").strip() or "en",
             "target_words": int(max(800, min(2500, target_words))),
+            "target_duration_min": list(target_duration_min or [8, 12]),
             "research_notes": research_notes or "",
             "sources": list(sources or []),
+            "session_id": sid,
+            "episode_number": ep,
+            "idea": dict(idea or {}),
+            "creative_profile_snapshot": deepcopy(creative_profile) if isinstance(creative_profile, dict) else {},
+            "ui_step": "research",
             "created_at": _utc_now(),
             "updated_at": _utc_now(),
         }
     )
     save_project(data)
-    # starter research file
     (root / "script" / "research_notes.md").write_text(
         f"# Research — {title}\n\n## Topic\n{topic}\n\n## Notes\n{research_notes or '_Add notes before approving the script._'}\n\n## Sources\n"
         + ("\n".join(f"- {s}" for s in (sources or [])) or "- _Add sources._\n"),
@@ -202,6 +256,10 @@ def create_project(
         "- [ ] Ending takeaway is fair (not sensationalized falsehood)\n",
         encoding="utf-8",
     )
+    if idea:
+        (root / "metadata" / "idea.json").write_text(
+            json.dumps(idea, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
     return data
 
 
@@ -211,3 +269,80 @@ def append_log(project_id: str, message: str) -> None:
     line = f"{_utc_now()} {message}\n"
     with (root / "logs" / "pipeline.log").open("a", encoding="utf-8") as f:
         f.write(line)
+
+
+def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
+    """Map checkpoints → human stepper without exposing internal names."""
+    cps = project.get("checkpoints") or {}
+    has_story = bool(str(project.get("topic") or "").strip())
+    has_research = bool(
+        str(project.get("research_notes") or "").strip()
+        or (project.get("sources") or [])
+        or project.get("research_skipped")
+    )
+    has_script = bool(str(project.get("script") or "").strip())
+    approved = bool(project.get("script_approved"))
+    flow = bool(cps.get("flow_pack_ready"))
+    report = project.get("import_report") or {}
+    expected = int(report.get("expected") or 0)
+    ready = int(report.get("ready") or 0)
+    images_full = bool(cps.get("images_imported")) and (expected == 0 or ready >= expected)
+    images_partial = bool(cps.get("images_imported"))
+    voice = bool(cps.get("voice_ready"))
+    rendered = bool(cps.get("render_ready")) and (project_dir(str(project["id"])) / "render" / "final.mp4").exists()
+
+    flags = {
+        "story": has_story,
+        "research": has_research,
+        "script": has_script and approved,
+        "flow": flow,
+        "images": images_full or (images_partial and voice),  # allow continue with partial if voice started
+        "voice": voice,
+        "render": rendered,
+        "done": rendered,
+    }
+    # current = first incomplete
+    current = "done"
+    for step in PROGRESS_STEPS:
+        if step == "done":
+            continue
+        if not flags.get(step):
+            # special: script step current while draft exists but not approved
+            if step == "script" and has_script and not approved:
+                current = "script"
+                break
+            if step == "images" and flow and not images_full:
+                current = "images"
+                break
+            current = step
+            break
+    else:
+        current = "done" if rendered else "render"
+
+    if rendered:
+        current = "done"
+        flags["done"] = True
+
+    return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": current}
+
+
+def session_stats(session_id: str | None, goal: int = 100) -> dict[str, int]:
+    items = list_projects_for_session(session_id)
+    completed = 0
+    in_progress = 0
+    for p in items:
+        cps = p.get("checkpoints") or {}
+        if cps.get("render_ready"):
+            completed += 1
+        else:
+            in_progress += 1
+    remaining = max(0, int(goal) - completed)
+    day = completed + 1 if completed < goal else goal
+    return {
+        "total_projects": len(items),
+        "completed": completed,
+        "in_progress": in_progress,
+        "remaining": remaining,
+        "goal": int(goal),
+        "day": min(day, int(goal)),
+    }

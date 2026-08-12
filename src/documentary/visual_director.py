@@ -17,9 +17,14 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
     """Build shot list + light story bible. Persists under flow-pack/ (pre-export)."""
     script = str(project.get("script") or "").strip()
     if not script:
-        raise ValueError("Approve/generate a script first")
+        raise ValueError("Generate and approve a script before creating Flow prompts.")
     if not project.get("script_approved"):
-        raise ValueError("Script must be APPROVED before visual analysis / Flow Pack")
+        raise ValueError("Approve the script first — then we can build Flow references and shots.")
+
+    from src.documentary.channel import visual_style_from_profile
+
+    snap = project.get("creative_profile_snapshot") if isinstance(project.get("creative_profile_snapshot"), dict) else {}
+    style_hint = visual_style_from_profile(snap or None)
 
     # ~22–28 words/scene → ~50–80 stills for 1300–1800 words
     words = max(1, len(script.split()))
@@ -48,7 +53,7 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
     for i, (beat, spec) in enumerate(zip(beats, specs), start=1):
         raw_prompt = prompt_desde_frame_spec(spec)
         prompt = _compose_flow_prompt(
-            global_hint="Documentary cinematic realism, 16:9.",
+            global_hint=style_hint[:220] or "Documentary cinematic realism, 16:9.",
             action=spec.action or beat.action,
             environment=spec.location or beat.location,
             camera=spec.camera_mode or beat.camera_type,
@@ -82,6 +87,7 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
         script,
         shots,
         use_llm=use_llm,
+        style_override=style_hint,
     )
     # Re-link refs using bible names lightly
     for shot in shots:

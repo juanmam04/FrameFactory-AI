@@ -6,9 +6,6 @@ import os
 import re
 from typing import Any
 
-from src.config_loader import get_estilo_base
-
-
 GLOBAL_STYLE_DEFAULT = (
     "Documentary cinematic realism, 16:9, naturalistic lighting, restrained color grade, "
     "photoreal still suitable for a serious YouTube business documentary. "
@@ -22,9 +19,12 @@ def build_story_bible(
     shots: list[dict[str, Any]],
     *,
     use_llm: bool = True,
+    style_override: str | None = None,
 ) -> dict[str, Any]:
+    # Prefer channel visual style from Creative Profile; avoid stickman/base style bleed.
+    style = (style_override or "").strip() or GLOBAL_STYLE_DEFAULT
     bible = {
-        "global_style": f"{GLOBAL_STYLE_DEFAULT} Style lock hint: {get_estilo_base()[:180]}",
+        "global_style": style,
         "characters": [],
         "locations": [],
         "important_objects": [],

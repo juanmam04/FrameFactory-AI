@@ -19,6 +19,8 @@ def default_creative_profile() -> dict[str, Any]:
     return {
         "style": "",
         "content_type": "reddit_dark_storytime",
+        # workflow: "studio" | "documentary" — Documentary channel sessions set "documentary"
+        "workflow": "studio",
         "avoid": [],
         "niche": "",
         "audience": {
@@ -39,6 +41,11 @@ def default_creative_profile() -> dict[str, Any]:
             "name": "",
             "tagline": "",
             "content_pillars": "",
+            "goal_count": 0,
+            "language": "",
+            "target_words": 0,
+            "target_duration_min": [],
+            "visual_provider": "",
         },
         "script": {
             "structure_preference": "",

@@ -12,9 +12,9 @@ from src.voice_generator import OUTPUT_AUDIO, generar_voz
 def generate_project_voice(project: dict[str, Any], *, velocidad: float | None = None) -> Path:
     script = str(project.get("script") or "").strip()
     if not script:
-        raise ValueError("No script")
+        raise ValueError("No script yet. Generate a script before voice.")
     if not project.get("script_approved"):
-        raise ValueError("Script must be approved before voice")
+        raise ValueError("Approve the script before generating voice.")
 
     speed = float(velocidad if velocidad is not None else project.get("voice_speed") or 1.0)
     # Generate into global OUTPUT_AUDIO then copy into project workspace (stem unique)
