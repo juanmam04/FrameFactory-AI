@@ -1,0 +1,12 @@
+CHAR_001
+Name: Adam Neumann
+
+Description:
+Co-founder and former CEO of WeWork, known for his charismatic yet controversial leadership style.
+
+Generate reference image:
+Often seen in tailored suits, exuding confidence, with a dynamic presence during presentations and meetings.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

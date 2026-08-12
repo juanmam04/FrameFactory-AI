@@ -1,0 +1,32 @@
+VISUAL 021
+
+TYPE: CHART
+EXPECTED FILE: 021.png
+STORY BEAT: 7
+DURATION TARGET: 7s
+KEN BURNS: slow_push
+
+NARRATION:
+Analysts and investors scrutinized the company's financials.
+
+DESCRIPTION:
+Analysts and investors gather around a large table, reviewing documents and charts.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+REFERENCES:
+LOC_002
+
+ACQUISITION:
+Import a real chart asset. Do NOT ask Flow to fake authentic filings/headlines/logos. Hint: Analysts and investors gather around a large table, reviewing documents and charts.. Acción física visible: movimiento corporal concreto, interacción con objeto
+
+PROMPT:
+DIRECTOR NOTE: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accurate details
+STORY MOMENT (illustrate this beat, do not typeset the words): Analysts and investors scrutinized the company's financials.
+SCENE / ACTION: Analysts and investors gather around a large table, reviewing documents and charts.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+ENVIRONMENT: Conference room.
+CAMERA: POV first person
+LIGHTING: Daytime.
+CONTINUITY: location change; follow from shot 020
+AVOID: CEO staring at camera, businessman at desk, handshake, laptop close-up, generic skyscraper, abstract money graphics, cartoon, meme text, watermark.
+REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
+DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional h

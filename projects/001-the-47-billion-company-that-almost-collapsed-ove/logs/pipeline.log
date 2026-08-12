@@ -1,0 +1,53 @@
+2026-08-12T16:49:22Z script generated words=1128
+2026-08-12T16:58:14Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 1500 | Research chars: 0 | Sources: 0 | Legacy storytime context: NONE
+2026-08-12T16:58:16Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 1500 | Research chars: 0 | Sources: 0 | Legacy storytime context: NONE
+2026-08-12T16:59:07Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 1500 | Research chars: 0 | Sources: 0 | Legacy storytime context: NONE
+2026-08-12T17:00:36Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 1500 | Research chars: 0 | Sources: 0 | Legacy storytime context: NONE
+2026-08-12T17:39:46Z story architecture skipped: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************kS8A. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}
+2026-08-12T17:39:46Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | Architecture: False | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 1500 | Research chars: 0 | Sources: 0 | Legacy storytime context: NONE
+2026-08-12T17:39:57Z story architecture skipped: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************kS8A. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}
+2026-08-12T17:39:57Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | Architecture: False | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 1500 | Research chars: 0 | Sources: 0 | Legacy storytime context: NONE
+2026-08-12T18:39:18Z research AI generated chars=1313 sources=4
+2026-08-12T18:41:09Z story architecture built
+2026-08-12T18:41:09Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | Architecture: True | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 1500 | Research chars: 1313 | Sources: 4 | Legacy storytime context: NONE
+2026-08-12T18:42:06Z script generated words=1153 template=business_documentary_en
+2026-08-12T19:15:41Z story_plan generated beats=3
+2026-08-12T19:16:24Z research AI generated chars=1616 sources=4
+2026-08-12T19:16:37Z story_plan generated beats=3
+2026-08-12T19:17:44Z research AI generated chars=1916 sources=4
+2026-08-12T19:18:03Z story_plan generated beats=3
+2026-08-12T19:18:51Z story_plan generated beats=14
+2026-08-12T20:00:57Z research AI generated chars=1992 sources=4
+2026-08-12T20:02:01Z research AI generated chars=2023 sources=4
+2026-08-12T20:02:10Z story_plan APPROVED
+2026-08-12T20:03:08Z story_plan generated beats=14
+2026-08-12T20:04:36Z story_plan edited
+2026-08-12T20:04:36Z story_plan APPROVED
+2026-08-12T20:04:38Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | StoryPlan: True approved=True beats=14 | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 2000 | Research chars: 2023 | Sources: 4 | Legacy storytime context: NONE
+2026-08-12T20:05:28Z script quality FAIL → one revision
+2026-08-12T20:05:39Z script REJECTED: Script is only ~629 words (target ~2000). Too short for a reliable documentary draft.
+2026-08-12T20:07:45Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | StoryPlan: True approved=True beats=14 | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 2000 | Research chars: 2023 | Sources: 4 | Legacy storytime context: NONE
+2026-08-12T20:08:42Z script quality FAIL → one revision
+2026-08-12T20:08:54Z script generated words=838 template=business_documentary_en
+2026-08-12T20:11:43Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | StoryPlan: True approved=True beats=14 | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 2000 | Research chars: 2023 | Sources: 4 | Legacy storytime context: NONE
+2026-08-12T20:12:31Z script quality FAIL → one revision
+2026-08-12T20:12:39Z script REJECTED: Script is only ~568 words (target ~2000). Too short for a reliable documentary draft.
+2026-08-12T20:12:57Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | StoryPlan: True approved=True beats=14 | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 2000 | Research chars: 2023 | Sources: 4 | Legacy storytime context: NONE
+2026-08-12T20:13:44Z script quality FAIL → one revision
+2026-08-12T20:14:04Z script generated words=819 template=business_documentary_en
+2026-08-12T20:14:51Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | StoryPlan: True approved=True beats=14 | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 2000 | Research chars: 2023 | Sources: 4 | Legacy storytime context: NONE
+2026-08-12T20:15:45Z script quality FAIL → one revision
+2026-08-12T20:15:55Z revision discarded (shrunk 1253→778); keep draft + strip essay tail
+2026-08-12T20:15:55Z script generated words=973 template=business_documentary_en
+2026-08-12T20:31:14Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | StoryPlan: True approved=True beats=14 | Topic: "WeWork's rise from coworking startup to one of the world's most valuable private" | Target words: 2000 | Research chars: 2023 | Sources: 4 | Legacy storytime context: NONE
+2026-08-12T20:32:11Z script quality FAIL → one revision
+2026-08-12T20:32:23Z revision discarded (shrunk 1170→894); keep draft + strip essay tail
+2026-08-12T20:32:23Z script generated words=927 template=business_documentary_en
+2026-08-12T20:32:54Z script edited words=927
+2026-08-12T20:32:54Z script APPROVED
+2026-08-12T20:35:33Z visual analysis shots=33
+2026-08-12T20:35:33Z flow pack exported shots=33
+2026-08-12T20:46:37Z voice ready duration=437.006667
+2026-08-12T21:25:48Z visual analysis shots=32
+2026-08-12T21:25:48Z visual_plan visuals=32 flow=27 batches=3
+2026-08-12T21:25:48Z flow pack exported visuals=32 flow=27 batches=3

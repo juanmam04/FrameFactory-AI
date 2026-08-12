@@ -1,0 +1,32 @@
+VISUAL 023
+
+TYPE: DOCUMENT
+EXPECTED FILE: 023.png
+STORY BEAT: 8
+DURATION TARGET: 8s
+KEN BURNS: slow_push
+
+NARRATION:
+In April 2019, WeWork filed its S-1 for an initial public offering, signaling its intent to go public and raise even more capital.
+
+DESCRIPTION:
+WeWork executives reviewing the S-1 document. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+REFERENCES:
+LOC_001
+
+ACQUISITION:
+Import a real document asset. Do NOT ask Flow to fake authentic filings/headlines/logos. Hint: WeWork executives reviewing the S-1 document. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progres
+
+PROMPT:
+DIRECTOR NOTE: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accurate details
+STORY MOMENT (illustrate this beat, do not typeset the words): In April 2019, WeWork filed its S-1 for an initial public offering, signaling its intent to go public and raise even more capital.
+SCENE / ACTION: WeWork executives reviewing the S-1 document. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+ENVIRONMENT: WeWork office
+CAMERA: side angle
+LIGHTING: afternoon
+CONTINUITY: location change; follow from shot 022
+AVOID: CEO staring at camera, businessman at desk, handshake, laptop close-up, generic skyscraper, abstract money graphics, cartoon, meme text, watermark.
+REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
+DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA

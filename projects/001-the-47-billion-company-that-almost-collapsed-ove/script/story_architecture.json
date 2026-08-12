@@ -1,0 +1,71 @@
+{
+  "story_engine": "The dramatic fall of WeWork from a $47 billion valuation to a failed IPO reveals the fragility of startup success and the consequences of unchecked ambition.",
+  "cold_open": "In September 2019, WeWork shocked the world by disclosing $1.9 billion in losses for the first half of the year, sending its valuation tumbling and triggering a crisis that would change everything.",
+  "emotional_spine": "The audience feels a mix of excitement and dread as they witness the rapid rise and catastrophic fall of a once-promising startup.",
+  "characters": [
+    {
+      "name": "Adam Neumann",
+      "desire": "To transform WeWork into a global leader in coworking spaces.",
+      "pressure": "Facing mounting scrutiny and a looming IPO deadline."
+    },
+    {
+      "name": "Miguel McKelvey",
+      "desire": "To support Neumann's vision and maintain the company’s innovative edge.",
+      "pressure": "Navigating the fallout from the IPO filing alongside Neumann."
+    }
+  ],
+  "beat_sheet": [
+    {
+      "function": "hook",
+      "moment": "WeWork reveals $1.9 billion in losses during its IPO filing.",
+      "curiosity_payoff": "How did a company once valued at $47 billion find itself in such a precarious position?"
+    },
+    {
+      "function": "setup",
+      "moment": "In January 2019, WeWork's valuation peaks at $47 billion.",
+      "curiosity_payoff": "What led to this meteoric rise?"
+    },
+    {
+      "function": "desire",
+      "moment": "Neumann and McKelvey push for aggressive expansion to maintain investor confidence.",
+      "curiosity_payoff": "What risks are they taking to achieve this growth?"
+    },
+    {
+      "function": "progress",
+      "moment": "WeWork secures $4.4 billion in funding in 2017, showcasing strong investor support.",
+      "curiosity_payoff": "What expectations are being set for the company's future?"
+    },
+    {
+      "function": "obstacle",
+      "moment": "The IPO filing reveals staggering losses, shocking investors.",
+      "curiosity_payoff": "How will investors react to this revelation?"
+    },
+    {
+      "function": "escalation",
+      "moment": "Neumann faces increasing pressure from investors and the media.",
+      "curiosity_payoff": "Can he maintain control as the situation deteriorates?"
+    },
+    {
+      "function": "turn",
+      "moment": "Neumann steps down as CEO in October 2019 amid scrutiny.",
+      "curiosity_payoff": "What will this leadership change mean for WeWork's future?"
+    },
+    {
+      "function": "consequence",
+      "moment": "WeWork's valuation plummets, and its future becomes uncertain.",
+      "curiosity_payoff": "What are the long-term implications for the company and its stakeholders?"
+    }
+  ],
+  "withholds_and_reveals": [
+    "Plant the details of the $1.9 billion losses early and reveal the full impact of the IPO fallout later."
+  ],
+  "must_include_specifics": [
+    "Names: Adam Neumann, Miguel McKelvey",
+    "Numbers: $47 billion valuation, $1.9 billion losses, $4.4 billion funding",
+    "Key events: IPO filing, Neumann stepping down"
+  ],
+  "do_not_invent": [
+    "UNKNOWN or thin areas"
+  ],
+  "ending_image": "The haunting image of WeWork's empty offices, a stark reminder of the ambitions that crumbled under pressure."
+}

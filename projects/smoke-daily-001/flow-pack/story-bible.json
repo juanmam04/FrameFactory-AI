@@ -1,0 +1,58 @@
+{
+  "global_style": "Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accurate details",
+  "characters": [
+    {
+      "id": "CHAR_001",
+      "name": "English",
+      "description": "Recurring figure related to: WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything.",
+      "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of English",
+      "appears_in_shots": []
+    }
+  ],
+  "locations": [
+    {
+      "id": "LOC_001",
+      "name": "Corporate office",
+      "description": "Generic corporate interior for business scenes",
+      "visual_description": "Open-plan office, glass walls, cool daylight, documentary realism",
+      "appears_in_shots": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "id": "LOC_002",
+      "name": "Press / public stage",
+      "description": "Public-facing corporate moment",
+      "visual_description": "Conference stage or media scrum, microphones, shallow depth of field",
+      "appears_in_shots": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    }
+  ],
+  "important_objects": [
+    {
+      "id": "OBJ_001",
+      "name": "Financial document",
+      "description": "Balance sheet / pitch deck / report",
+      "visual_description": "Printed financial report or laptop screen with charts, no readable logos",
+      "appears_in_shots": [
+        2
+      ]
+    }
+  ],
+  "timeline_periods": []
+}

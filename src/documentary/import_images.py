@@ -92,39 +92,15 @@ def import_images(
 
 
 def sync_shot_statuses_from_images(project_id: str) -> dict[str, Any]:
-    """Filesystem is source of truth: existing images/NNN.png → shot status generated."""
+    """Filesystem is source of truth: images/NNN.png → READY else MISSING."""
+    from src.documentary.visual_plan import sync_ready_from_disk
+
+    sync_ready_from_disk(project_id)
     path = project_dir(project_id) / "flow-pack" / "shot-list.json"
     if not path.exists():
         return {}
     data = load_shot_list(project_id)
-    img_root = project_dir(project_id) / "images"
-    changed = 0
-    for s in data.get("shots") or []:
-        n = int(s.get("number") or 0)
-        if n <= 0:
-            continue
-        p = img_root / f"{n:03d}.png"
-        exists = p.exists() and p.stat().st_size > 0
-        cur = str(s.get("status") or "pending")
-        if exists:
-            if cur in ("pending", "needs_regen"):
-                s["status"] = "generated"
-                changed += 1
-        else:
-            if cur == "generated":
-                s["status"] = "pending"
-                changed += 1
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    ap = project_dir(project_id) / "flow-pack" / "visual_analysis.json"
-    if ap.exists():
-        analysis = json.loads(ap.read_text(encoding="utf-8"))
-        by_num = {int(s.get("number") or 0): s for s in (data.get("shots") or [])}
-        for s in analysis.get("shots") or []:
-            n = int(s.get("number") or 0)
-            if n in by_num:
-                s["status"] = by_num[n].get("status")
-        ap.write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
-    append_log(project_id, f"sync shot status from images changed={changed}")
+    append_log(project_id, f"sync READY from images ready={data.get('ready_count')}")
     return data
 
 

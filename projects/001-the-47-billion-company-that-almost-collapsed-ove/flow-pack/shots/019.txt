@@ -1,0 +1,25 @@
+VISUAL 019
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 019.png
+STORY BEAT: 5
+DURATION TARGET: 5s
+KEN BURNS: pan_left
+
+NARRATION:
+The company had become one of the most valuable private enterprises in the world.
+
+DESCRIPTION:
+Celebration of success
+
+REFERENCES:
+LOC_001
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+019. Modern office space. Celebration of success object detail candid documentary shot, photorealistic, period-accurate details. Use LOC_001.png reference.
+

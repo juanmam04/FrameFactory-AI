@@ -10,11 +10,27 @@ from src.voice_generator import OUTPUT_AUDIO, generar_voz
 
 
 def generate_project_voice(project: dict[str, Any], *, velocidad: float | None = None) -> Path:
+    from src.documentary.credentials import check_elevenlabs, check_openai
+
     script = str(project.get("script") or "").strip()
     if not script:
         raise ValueError("No script yet. Generate a script before voice.")
     if not project.get("script_approved"):
         raise ValueError("Approve the script before generating voice.")
+
+    oa = check_openai(live=True)
+    el = check_elevenlabs(live=True)
+    if oa.status != "ok" and el.status != "ok":
+        details = []
+        if oa.status != "ok":
+            details.append(f"OpenAI: {oa.detail}")
+        if el.status not in ("ok", "missing"):
+            details.append(f"ElevenLabs: {el.detail}")
+        elif el.status == "missing":
+            details.append("ElevenLabs: not configured")
+        raise RuntimeError(
+            "Voice blocked — no working TTS provider.\n" + "\n".join(details)
+        )
 
     speed = float(velocidad if velocidad is not None else project.get("voice_speed") or 1.0)
     # Generate into global OUTPUT_AUDIO then copy into project workspace (stem unique)

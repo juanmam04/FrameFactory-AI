@@ -1,0 +1,12 @@
+LOC_001
+Name: WeWork Headquarters
+
+Description:
+The main office located in New York City, designed to reflect the company's innovative and collaborative spirit.
+
+Generate reference image:
+A modern, open-concept workspace filled with vibrant colors, communal areas, and a mix of private offices and shared desks.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

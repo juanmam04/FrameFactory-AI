@@ -1,0 +1,1 @@
+{'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}

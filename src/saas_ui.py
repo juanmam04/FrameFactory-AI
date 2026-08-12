@@ -42,6 +42,9 @@ from src.script_generator import generar_guion
 from src.saas_subtitles import list_subtitle_style_keys, subtitle_style_preview_html
 
 load_dotenv(BASE / ".env")
+for _env_local in (BASE / ".env.local", BASE / "env.local"):
+    if _env_local.is_file():
+        load_dotenv(_env_local, override=True)
 
 OUTPUT_DIR = BASE / "output"
 PROJECTS_DB = OUTPUT_DIR / "saas_projects.json"
@@ -548,50 +551,9 @@ def _resolve_asset(uri: str) -> Path:
 
 
 def _theme() -> None:
-    st.markdown(
-        """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
-        html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-        .stApp {
-          background: radial-gradient(1200px 600px at 10% -10%, #1a2240 0%, transparent 55%),
-                      radial-gradient(900px 500px at 90% 0%, #2a1535 0%, transparent 50%),
-                      linear-gradient(165deg, #0a0c12 0%, #0f1118 40%, #0c0e14 100%);
-          color: #eceef4;
-        }
-        .main .block-container { max-width: 1200px; padding: 2rem 1.5rem 3rem; }
-        div[data-testid="stSidebar"] {
-          background: rgba(12,14,22,0.92);
-          border-right: 1px solid rgba(255,255,255,0.06);
-        }
-        .saas-brand { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; color: #f4f5f8; }
-        .saas-tag { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: #7b849c; }
-        .saas-hero { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.03em; margin: 0 0 0.35rem; color: #fafbff; }
-        .saas-sub { color: #8b93a8; font-size: 0.95rem; margin-bottom: 1.75rem; }
-        .saas-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 18px;
-          padding: 1.25rem 1.35rem;
-          margin-bottom: 1rem;
-        }
-        .saas-card h4 { margin: 0 0 0.5rem; font-size: 0.95rem; color: #c5cad8; font-weight: 600; }
-        .saas-metric { font-size: 1.65rem; font-weight: 700; color: #fff; }
-        .saas-label { font-size: 0.78rem; color: #7b849c; text-transform: uppercase; letter-spacing: 0.08em; }
-        div[data-testid="stVerticalBlockBorderWrapper"] > div {
-          background: rgba(255,255,255,0.03) !important;
-          border-color: rgba(255,255,255,0.08) !important;
-          border-radius: 16px !important;
-        }
-        .stButton > button[kind="primary"] {
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-          border: none;
-          font-weight: 600;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    from src.ui_theme import inject_theme
+
+    inject_theme()
 
 
 def _init_state() -> None:
@@ -641,7 +603,7 @@ def _init_state() -> None:
 def _nav() -> None:
     with st.sidebar:
         st.markdown('<p class="saas-tag">FrameFactory</p>', unsafe_allow_html=True)
-        st.markdown('<p class="saas-brand">Studio</p>', unsafe_allow_html=True)
+        st.markdown('<p class="saas-brand">Documentary</p>', unsafe_allow_html=True)
         st.caption(" ")
 
         # Aplicar cambio de sesión ANTES de instanciar el selectbox (regla Streamlit).

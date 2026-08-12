@@ -1,0 +1,115 @@
+{
+  "global_style": "{'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}",
+  "characters": [
+    {
+      "id": "CHAR_001",
+      "name": "Adam Neumann",
+      "description": "Co-founder and former CEO of WeWork, known for his charismatic yet controversial leadership style.",
+      "visual_description": "Often seen in tailored suits, exuding confidence, with a dynamic presence during presentations and meetings.",
+      "appears_in_shots": [
+        5
+      ],
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "CHAR_001.png",
+      "periods": []
+    },
+    {
+      "id": "CHAR_002",
+      "name": "Miguel McKelvey",
+      "description": "Co-founder of WeWork, instrumental in shaping the company's vision and culture.",
+      "visual_description": "Casual yet professional attire, often engaging with employees and clients in WeWork spaces, embodying the company's community-driven ethos.",
+      "appears_in_shots": [
+        5
+      ],
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "CHAR_002.png",
+      "periods": []
+    }
+  ],
+  "locations": [
+    {
+      "id": "LOC_001",
+      "name": "WeWork Headquarters",
+      "description": "The main office located in New York City, designed to reflect the company's innovative and collaborative spirit.",
+      "visual_description": "A modern, open-concept workspace filled with vibrant colors, communal areas, and a mix of private offices and shared desks.",
+      "appears_in_shots": [
+        8,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        23,
+        24,
+        31
+      ],
+      "reference_required": true,
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "LOC_001.png",
+      "periods": []
+    },
+    {
+      "id": "LOC_002",
+      "name": "WeWork Locations Worldwide",
+      "description": "Various coworking spaces across major cities, showcasing WeWork's global expansion.",
+      "visual_description": "Stylish interiors with unique designs, featuring communal workspaces, lounges, and event areas that foster collaboration.",
+      "appears_in_shots": [
+        15,
+        21,
+        22,
+        26,
+        27
+      ],
+      "reference_required": true,
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "LOC_002.png",
+      "periods": []
+    }
+  ],
+  "important_objects": [
+    {
+      "id": "OBJ_001",
+      "name": "S-1 Filing Document",
+      "description": "The official document filed by WeWork for its planned IPO, which sparked scrutiny and debate.",
+      "visual_description": "A formal, thick document with WeWork branding, often shown in meetings and discussions among investors and analysts.",
+      "appears_in_shots": [
+        29
+      ],
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "OBJ_001.png",
+      "periods": []
+    },
+    {
+      "id": "OBJ_002",
+      "name": "SoftBank Investment Agreement",
+      "description": "The agreement that solidified SoftBank's significant financial backing of WeWork, pivotal in its growth.",
+      "visual_description": "A formal contract, often depicted in meetings, symbolizing the financial lifeline and strategic partnership.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "OBJ_002.png",
+      "periods": []
+    }
+  ],
+  "timeline_periods": [
+    {
+      "id": "TIME_001",
+      "name": "2010-2014: The Rise",
+      "description": "The period of WeWork's founding and initial growth, marked by significant funding and expansion.",
+      "visual_description": "Footage of early WeWork locations, enthusiastic team meetings, and investor presentations."
+    },
+    {
+      "id": "TIME_002",
+      "name": "2017-2019: The Boom and Bust",
+      "description": "The rapid growth phase leading to the IPO filing and subsequent crisis, highlighting the company's valuation fluctuations.",
+      "visual_description": "Dramatic visuals of bustling WeWork spaces, investor roadshows, and news headlines reflecting the company's rise and fall."
+    }
+  ],
+  "visual_style": "{'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}",
+  "period_rules": [
+    "2010: period-accurate clothing, phones, computers, interiors — avoid anachronisms",
+    "2014: period-accurate clothing, phones, computers, interiors — avoid anachronisms",
+    "2017: period-accurate clothing, phones, computers, interiors — avoid anachronisms",
+    "2018: period-accurate clothing, phones, computers, interiors — avoid anachronisms",
+    "2019: period-accurate clothing, phones, computers, interiors — avoid anachronisms"
+  ]
+}

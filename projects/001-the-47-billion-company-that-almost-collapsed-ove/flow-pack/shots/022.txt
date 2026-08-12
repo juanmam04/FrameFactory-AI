@@ -1,0 +1,32 @@
+VISUAL 022
+
+TYPE: CHART
+EXPECTED FILE: 022.png
+STORY BEAT: 8
+DURATION TARGET: 7s
+KEN BURNS: slow_push
+
+NARRATION:
+This business model raised red flags about potential liquidity issues, especially in the event of an economic downturn.
+
+DESCRIPTION:
+A group of investors examines financial charts and documents, showing concern.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+REFERENCES:
+LOC_002
+
+ACQUISITION:
+Import a real chart asset. Do NOT ask Flow to fake authentic filings/headlines/logos. Hint: A group of investors examines financial charts and documents, showing concern.. Acción física visible: movimiento corporal concreto, interacción con objeto/pers
+
+PROMPT:
+DIRECTOR NOTE: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accurate details
+STORY MOMENT (illustrate this beat, do not typeset the words): This business model raised red flags about potential liquidity issues, especially in the event of an economic downturn.
+SCENE / ACTION: A group of investors examines financial charts and documents, showing concern.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+ENVIRONMENT: A modern conference room with a large table.
+CAMERA: over the shoulder
+LIGHTING: Afternoon
+CONTINUITY: location change; follow from shot 021
+AVOID: CEO staring at camera, businessman at desk, handshake, laptop close-up, generic skyscraper, abstract money graphics, cartoon, meme text, watermark.
+REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
+DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA

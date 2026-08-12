@@ -7,7 +7,15 @@ from dotenv import load_dotenv
 
 from .config_loader import get_plantillas_guion, get_narrative_rules, BASE
 
-load_dotenv(BASE / ".env")
+try:
+    from src.documentary.openai_key import reload_env
+
+    reload_env()
+except Exception:
+    load_dotenv(BASE / ".env")
+    for _extra in (BASE / ".env.local", BASE / "env.local"):
+        if _extra.is_file():
+            load_dotenv(_extra, override=True)
 
 
 def count_words(text: str) -> int:
@@ -143,12 +151,11 @@ Evita solo el gore gráfico o descripciones extremadamente detalladas de daño f
             )
 
     api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        if plantilla == "business_documentary_en":
-            raise RuntimeError(
-                "Documentary script generation requires OPENAI_API_KEY in your .env file. "
-                "FrameFactory will not fall back to the old Spanish storytime placeholder."
-            )
+    if plantilla == "business_documentary_en":
+        from src.documentary.openai_key import require_openai_api_key
+
+        api_key = require_openai_api_key("Documentary script generation")
+    elif not api_key:
         guion_fallback = _guion_fallback_words(tema, target_words)
         word_count = count_words(guion_fallback)
         estimated_minutes = word_count / 140.0
@@ -276,6 +283,8 @@ Tema: {tema}"""
         tokens_por_palabra = 1.4  # español
         max_tokens_borrador = int(target_words * tokens_por_palabra * 1.4)  # margen 40%
         max_tokens_borrador = max(1000, min(max_tokens_borrador, 16384))  # tope típico de salida por request
+
+        draft_temperature = 0.82 if plantilla == "business_documentary_en" else 0.7
         
         r1 = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
@@ -284,7 +293,7 @@ Tema: {tema}"""
                 {"role": "user", "content": prompt_borrador},
             ],
             max_tokens=max_tokens_borrador,
-            temperature=0.7,  # Más creatividad en el borrador
+            temperature=draft_temperature,
         )
         borrador = (r1.choices[0].message.content or "").strip()
         if force_este_eres_tu_opening:
@@ -612,7 +621,10 @@ GUION ACTUAL:
         
         print(f"✅ Guion final: {word_count_final} palabras, ≈ {estimated_minutes:.1f} minutos (base, sin velocidad)")
         print(f"   Longitud del texto: {len(guion_final)} caracteres")
-        
+
+        # Documentary craft polish removed: quality revision lives in script_service
+        # (max 1 revision) to keep LLM budget at Story Plan + Script (+ optional revise).
+
         return guion_final, word_count_final, estimated_minutes
         
     except Exception as e:

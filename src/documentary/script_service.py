@@ -6,9 +6,15 @@ import logging
 from typing import Any
 
 from src.documentary.channel import documentary_script_context, language_from_profile
-from src.documentary.editorial import DOCUMENTARY_INVARIANTS
+from src.documentary.editorial import DOCUMENTARY_INVARIANTS, STORY_CRAFT_BIBLE
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
-from src.documentary.script_validation import strip_metadata_leaks, validate_documentary_script
+from src.documentary.script_quality import heuristic_script_quality, revise_script_once, strip_essay_tail
+from src.documentary.script_validation import editorial_warnings, strip_metadata_leaks, validate_documentary_script
+from src.documentary.story_plan import (
+    get_story_plan,
+    story_plan_is_approved,
+    story_plan_prompt_block,
+)
 from src.script_generator import count_words, generar_guion
 
 logger = logging.getLogger(__name__)
@@ -27,7 +33,7 @@ def research_is_thin(project: dict[str, Any]) -> bool:
 
 
 def build_documentary_tema(project: dict[str, Any]) -> str:
-    """User payload for the model — subject + research only (no Working title leak)."""
+    """User payload — subject + research + approved story plan (no Working title leak)."""
     topic = str(project.get("topic") or "").strip()
     notes = str(project.get("research_notes") or "").strip()
     sources = project.get("sources") or []
@@ -37,20 +43,38 @@ def build_documentary_tema(project: dict[str, Any]) -> str:
     subject_line = topic
     if entity and entity.lower() not in topic.lower():
         subject_line = f"{topic}\nPrimary subject: {entity}"
-    return (
-        f"SUBJECT:\n{subject_line}\n\n"
-        f"RESEARCH NOTES (use only these facts; if unknown, omit — NEVER invent):\n"
-        f"{notes or '(empty — keep claims minimal and clearly general; prefer a shorter script)'}\n\n"
-        f"SOURCES:\n{src_txt}"
+    plan = get_story_plan(project)
+    plan_block = story_plan_prompt_block(plan)
+    parts = [
+        f"SUBJECT:\n{subject_line}",
+        f"RESEARCH NOTES (factual spine — use only these facts; if unknown, omit — NEVER invent):\n"
+        f"{notes or '(empty — keep claims minimal and clearly general; prefer a shorter script)'}",
+        f"SOURCES:\n{src_txt}",
+    ]
+    if plan_block:
+        parts.append(plan_block)
+    parts.append(
+        "STORYTELLING BRIEF:\n"
+        "Write ENTERTAINING true-story narration from SELECTED STORY BEATS — not an essay.\n"
+        "Each paragraph should move an event, decision, or consequence forward.\n"
+        "Use real names (people, companies, investors) when research supports them.\n"
+        "Causality: A enables B. Cold open on the hook.\n"
+        "Close on ending_state only. HARD BAN on last paragraphs that moralize, summarize themes,\n"
+        "or lecture about startups/entrepreneurship/ambition/sustainability.\n"
+        "If you catch yourself writing 'underscores', 'broader', 'landscape', 'in conclusion' — delete and end earlier.\n"
+        "Spoken English. Short paragraphs. Do not invent facts."
     )
+    return "\n\n".join(parts)
 
 
 def log_pre_generation_debug(project: dict[str, Any], *, target: int, research_chars: int) -> None:
     snap = project.get("creative_profile_snapshot") if isinstance(project.get("creative_profile_snapshot"), dict) else {}
     lang = language_from_profile(snap) if snap else str(project.get("language") or "en")
+    plan = get_story_plan(project)
     msg = (
         f"Workflow: documentary | Template: {TEMPLATE_ID} | Language: {lang} | "
-        f"POV: third_person | Factuality: nonfiction | "
+        f"POV: third_person | Factuality: nonfiction | StoryPlan: {bool(plan.get('central_story'))} "
+        f"approved={bool(plan.get('approved'))} beats={len(plan.get('beats') or [])} | "
         f"Topic: {(project.get('topic') or '')[:80]!r} | Target words: {target} | "
         f"Research chars: {research_chars} | Sources: {len(project.get('sources') or [])} | "
         f"Legacy storytime context: NONE"
@@ -61,22 +85,35 @@ def log_pre_generation_debug(project: dict[str, Any], *, target: int, research_c
 
 
 def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True) -> dict[str, Any]:
-    """Generate or refresh script into project workspace. Does not auto-approve."""
+    """Generate script from approved Story Plan. Does not auto-approve."""
     topic = str(project.get("topic") or "").strip()
     if not topic:
-        raise ValueError("Choose a story before generating a script.")
+        raise ValueError("Choose a topic before generating a script.")
+
+    if use_llm and not story_plan_is_approved(project):
+        raise ValueError(
+            "Approve the Story Plan first (Story step). "
+            "Do not generate a full script until central story + beats are approved."
+        )
 
     idea = project.get("idea") if isinstance(project.get("idea"), dict) else {}
     notes = str(project.get("research_notes") or "").strip()
     thin = research_is_thin(project)
     tema = build_documentary_tema(project)
-    target = int(project.get("target_words") or 1500)
+    target = int(project.get("target_words") or 2000)
     snap = project.get("creative_profile_snapshot") if isinstance(project.get("creative_profile_snapshot"), dict) else {}
     lang = language_from_profile(snap) if snap else str(project.get("language") or "en")
-    creative_context = DOCUMENTARY_INVARIANTS + "\n\n" + documentary_script_context(snap or None, idea=idea or None)
+    creative_context = (
+        DOCUMENTARY_INVARIANTS
+        + "\n\n"
+        + STORY_CRAFT_BIBLE
+        + "\n\n"
+        + documentary_script_context(snap or None, idea=idea or None)
+    )
 
     log_pre_generation_debug(project, target=target, research_chars=len(notes))
 
+    quality_meta: dict[str, Any] = {}
     if use_llm:
         script, wc, _mins = generar_guion(
             tema,
@@ -85,33 +122,69 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
             creative_context=creative_context,
             force_este_eres_tu_opening=False,
         )
+        # Heuristic quality; one directed revision if clearly failing.
+        review = heuristic_script_quality(script, target_words=target)
+        quality_meta = {"heuristic": review, "revised": False}
+        needs_rev = (not review.get("pass")) or any(
+            "Ending leans" in p or "filler" in p.lower() or "Repetitive" in p for p in (review.get("problems") or [])
+        )
+        pre_rev = script
+        pre_wc = count_words(script)
+        if needs_rev:
+            append_log(str(project["id"]), "script quality FAIL → one revision")
+            plan_block = story_plan_prompt_block(get_story_plan(project))
+            revised = revise_script_once(
+                script,
+                story_plan_block=plan_block,
+                research_notes=notes,
+                review=review,
+                target_words=target,
+            )
+            rev_wc = count_words(revised)
+            # Never keep a revision that collapses the draft (model often "fixes" by shortening into an essay stub).
+            if rev_wc >= int(pre_wc * 0.85):
+                script = revised
+                quality_meta["revised"] = True
+                quality_meta["after"] = heuristic_script_quality(script, target_words=target)
+            else:
+                append_log(str(project["id"]), f"revision discarded (shrunk {pre_wc}→{rev_wc}); keep draft + strip essay tail")
+                script = pre_rev
+                quality_meta["revised"] = False
+                quality_meta["revision_discarded_shrink"] = True
+        script = strip_essay_tail(script)
+        wc = count_words(script)
     else:
         script = _mock_script(topic, target, research_notes=notes)
         wc = count_words(script)
+        quality_meta = {"heuristic": heuristic_script_quality(script, target_words=target), "revised": False}
 
     script = strip_metadata_leaks(script)
     ok, reasons = validate_documentary_script(
         script,
         language=lang,
         target_words=target,
-        allow_short_if_thin_research=thin or (not use_llm),
+        # Prefer a solid shorter true story over padding; soft range is 1800–2200.
+        allow_short_if_thin_research=True,
+        enforce_editorial_heuristics=False,
     )
     if not ok:
         append_log(str(project["id"]), f"script REJECTED: {'; '.join(reasons)}")
         raise ValueError(
             "Generated script failed Documentary quality checks:\n- "
             + "\n- ".join(reasons)
-            + "\n\nFix research/API keys and click Regenerate. The invalid draft was NOT saved as approved."
+            + "\n\nFix research/Story Plan and regenerate."
         )
 
+    soft = editorial_warnings(script, target_words=target)
     project["script"] = script
     project["script_approved"] = False
     project["fact_check_status"] = "pending"
     project["ui_step"] = "script"
+    project["script_quality"] = quality_meta
+    # Soft editorial / research gaps are NOT UI blockers.
+    project["script_editorial_notes"] = soft
     project["script_warnings"] = (
-        ["Little research provided — script kept factual and may be shorter than the word target."]
-        if thin
-        else []
+        ["Little research provided — script may be shorter than target."] if thin else []
     )
     set_checkpoint(project, "script_ready", True)
     set_checkpoint(project, "flow_pack_ready", False)
@@ -123,12 +196,15 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
             {
                 "word_count": wc,
                 "target_words": target,
+                "target_range": [1800, 2200],
                 "template": TEMPLATE_ID,
                 "language": lang,
                 "workflow": "documentary",
                 "pov": "third_person",
                 "factuality": "nonfiction",
                 "research_thin": thin,
+                "story_plan": True,
+                "quality": quality_meta,
                 "legacy_storytime_context": False,
             },
             indent=2,
@@ -141,22 +217,27 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
 
 
 def save_edited_script(project: dict[str, Any], script: str) -> dict[str, Any]:
-    script = strip_metadata_leaks((script or "").strip())
+    script = strip_essay_tail(strip_metadata_leaks((script or "").strip()))
     if not script:
         raise ValueError("Script is empty.")
     snap = project.get("creative_profile_snapshot") if isinstance(project.get("creative_profile_snapshot"), dict) else {}
     lang = language_from_profile(snap) if snap else str(project.get("language") or "en")
+    target = int(project.get("target_words") or 2000)
     ok, reasons = validate_documentary_script(
         script,
         language=lang,
-        target_words=int(project.get("target_words") or 1500),
+        target_words=target,
         allow_short_if_thin_research=True,
+        enforce_editorial_heuristics=False,
     )
     if not ok:
         raise ValueError("Edited script failed Documentary checks:\n- " + "\n- ".join(reasons))
+    soft = editorial_warnings(script, target_words=target)
     project["script"] = script
     project["script_approved"] = False
     project["fact_check_status"] = "pending"
+    project["script_editorial_notes"] = soft
+    project["script_warnings"] = []  # no peach banners for soft filler
     set_checkpoint(project, "script_ready", True)
     set_checkpoint(project, "flow_pack_ready", False)
     root = project_dir(str(project["id"]))
@@ -183,14 +264,14 @@ def _mock_script(topic: str, target_words: int, *, research_notes: str = "") -> 
     base = (
         f"[DOGFOOD MOCK — NOT FOR PUBLICATION] {topic}. "
         "This is a placeholder third-person English documentary narration used only to verify the pipeline. "
-        "In production, replace with a fact-checked English script grounded in research. "
+        "In production, replace with a fact-checked English script grounded in research and an approved Story Plan. "
     )
     if research_notes.strip():
         base += "Research notes were provided and must constrain any real generation. "
     words = base.split()
     filler = (
-        "The company grew quickly, raised capital, expanded offices, then faced a public reckoning "
-        "as numbers failed to match the story sold to investors and the press. "
+        "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. "
+        "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. "
     ).split()
     while len(words) < max(80, int(target_words * 0.3)):
         words.extend(filler)

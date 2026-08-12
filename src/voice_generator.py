@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 from .config_loader import BASE
 
 load_dotenv(BASE / ".env")
+for _env_local in (BASE / ".env.local", BASE / "env.local"):
+    if _env_local.is_file():
+        load_dotenv(_env_local, override=True)
 
 OUTPUT_AUDIO = BASE / "output" / "audio"
 
@@ -31,6 +34,17 @@ def generar_voz(
     """
     OUTPUT_AUDIO.mkdir(parents=True, exist_ok=True)
     path = OUTPUT_AUDIO / f"{nombre_archivo}.{formato}"
+
+    # Always re-read .env + .env.local (local wins) before calling providers.
+    try:
+        from src.documentary.openai_key import reload_env
+
+        reload_env()
+    except Exception:
+        load_dotenv(BASE / ".env", override=True)
+        for _extra in (BASE / ".env.local", BASE / "env.local"):
+            if _extra.is_file():
+                load_dotenv(_extra, override=True)
 
     # Generar audio base
     audio_base = None

@@ -1,0 +1,25 @@
+VISUAL 031
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 031.png
+STORY BEAT: 3
+DURATION TARGET: 7s
+KEN BURNS: slow_pull
+
+NARRATION:
+By September 2019, reality struck hard.
+
+DESCRIPTION:
+An office worker looks at a calendar marked with September 2019, showing a sense of dread.
+
+REFERENCES:
+LOC_001
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+031. 2019. WeWork office. An office worker looks at a calendar marked with September 2019, showing a sense of dread. building exterior candid documentary shot, photorealistic, period-accurate details. Use LOC_001.png reference.
+

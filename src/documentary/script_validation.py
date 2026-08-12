@@ -42,10 +42,16 @@ def validate_documentary_script(
     script: str,
     *,
     language: str = "en",
-    target_words: int = 1500,
+    target_words: int = 2000,
     allow_short_if_thin_research: bool = False,
+    enforce_editorial_heuristics: bool = False,
 ) -> tuple[bool, list[str]]:
-    """Return (ok, human-readable reasons). Invalid scripts must not be saved as ready."""
+    """Return (ok, human-readable reasons).
+
+    Hard fails: empty, Spanish/legacy, metadata leaks, first-person narrator, too short.
+    Soft filler/repetition only hard-fails when enforce_editorial_heuristics=True
+    (AI generation). Manual Save keeps drafts and surfaces warnings in the UI.
+    """
     text = (script or "").strip()
     reasons: list[str] = []
     if not text or len(text) < 40:
@@ -61,7 +67,6 @@ def validate_documentary_script(
 
     lang = (language or "en").strip().lower()
     if lang.startswith("en"):
-        # Crude Spanish ratio: common function words
         es_hits = len(re.findall(r"\b(el|la|los|las|que|de|en|y|no|me|se|por|una|un|del|es|fue|era)\b", low))
         en_hits = len(re.findall(r"\b(the|and|of|to|in|was|were|a|that|for|with|as|on|by|from)\b", low))
         words = max(1, len(text.split()))
@@ -73,7 +78,6 @@ def validate_documentary_script(
             reasons.append(f"Script contains internal metadata (“{leak.strip()}”) — narration must be TTS-only.")
             break
 
-    # Strip quoted spans before POV scan to reduce false positives on real quotes.
     unquoted = _QUOTED.sub(" ", text)
     fp_hits = _FIRST_PERSON_NARR.findall(unquoted)
     i_count = len(re.findall(r"(?i)(?<![A-Za-z])I(?![A-Za-z])", unquoted))
@@ -89,7 +93,37 @@ def validate_documentary_script(
             f"Script is only ~{wc} words (target ~{target_words}). Too short for a reliable documentary draft."
         )
 
+    if enforce_editorial_heuristics:
+        reasons.extend(_soft_editorial_failures(text, target_words=target_words))
+
     return (len(reasons) == 0), reasons
+
+
+def editorial_warnings(script: str, *, target_words: int = 2000) -> list[str]:
+    """Non-blocking editorial issues for UI banners."""
+    return _soft_editorial_failures(script, target_words=target_words)
+
+
+def _soft_editorial_failures(text: str, *, target_words: int) -> list[str]:
+    out: list[str] = []
+    try:
+        from src.documentary.script_quality import heuristic_script_quality
+
+        hq = heuristic_script_quality(text, target_words=target_words)
+        if len(hq.get("banned_hits") or []) + len(hq.get("generic_hits") or []) >= 5:
+            out.append(
+                "Script is overloaded with generic corporate filler — rewrite from Story Plan events."
+            )
+        if (hq.get("scores") or {}).get("repetition", 1) < 0.4:
+            out.append("Script repeats the same conclusions across paragraphs.")
+        for p in hq.get("problems") or []:
+            if p not in out and "filler" not in p.lower():
+                # Surface other heuristic problems as warnings too
+                if "Ending leans" in p or "Low fact density" in p:
+                    out.append(p)
+    except Exception:
+        pass
+    return out
 
 
 def strip_metadata_leaks(script: str) -> str:

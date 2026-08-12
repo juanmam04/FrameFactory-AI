@@ -25,7 +25,7 @@ def is_documentary_profile(profile: dict[str, Any] | None) -> bool:
     return str(video.get("content_type") or "").strip() == "business_documentary"
 
 
-def target_words_from_profile(profile: dict[str, Any] | None, fallback: int = 1500) -> int:
+def target_words_from_profile(profile: dict[str, Any] | None, fallback: int = 2000) -> int:
     p = merge_profile_disk(profile)
     ch = p.get("channel") if isinstance(p.get("channel"), dict) else {}
     tw = ch.get("target_words")
@@ -47,7 +47,7 @@ def duration_range_from_profile(profile: dict[str, Any] | None) -> list[int]:
             return [int(raw[0]), int(raw[1])]
         except (TypeError, ValueError):
             pass
-    return [8, 12]
+    return [11, 15]
 
 
 def language_from_profile(profile: dict[str, Any] | None) -> str:
@@ -121,8 +121,8 @@ def documentary_script_context(
         "topics_to_focus": p.get("topics_to_focus") or [],
         "topics_to_avoid": p.get("topics_to_avoid") or "",
         "avoid": p.get("avoid") or [],
-        "target_words": ch.get("target_words") or 1500,
-        "target_duration_min": ch.get("target_duration_min") or [8, 12],
+        "target_words": ch.get("target_words") or 2000,
+        "target_duration_min": ch.get("target_duration_min") or [11, 15],
         "narration_format": "third_person_documentary",
         "forbidden_legacy": [
             "reddit_dark_storytime",
@@ -246,25 +246,26 @@ def business_documentary_profile() -> dict[str, Any]:
                 ),
                 "goal_count": 100,
                 "language": "en",
-                "target_words": 1500,
-                "target_duration_min": [8, 12],
+                "target_words": 2000,
+                "target_duration_min": [11, 15],
                 "visual_provider": "google_flow_manual",
             },
             "script": {
                 "structure_preference": (
-                    "Find the story engine first; then hook/setup/desire/progress/obstacles/"
-                    "escalation/turning points/consequences/resolution as needed — not a fixed template"
+                    "Story Plan first: central story + beats + causality; "
+                    "events over generalizations; no forced rise-and-fall lecture"
                 ),
                 "forbidden_phrases": (
                     "Welcome back; In today's video; Make sure to subscribe; Like and comment; "
-                    "Here are five lessons; Let's dive into the business model"
+                    "Here are five lessons; Let's dive into the business model; "
+                    "cautionary tale; meteoric rise; lessons learned; balancing ambition with pragmatism"
                 ),
                 "cta_style": "none in narration",
                 "opening_style": "Cold open on stakes/contradiction; then rewind if needed",
             },
             "video": {
                 "primary_format": "youtube_long_16_9",
-                "target_length_category": "long_8_12",
+                "target_length_category": "long_11_15",
                 "aspect_notes": "16:9",
                 "content_type": "business_documentary",
                 "narration_format": "third_person_documentary",

@@ -1,0 +1,10 @@
+OBJ_001
+Name: Financial document
+
+Description:
+Balance sheet / pitch deck / report
+
+Generate reference image:
+Printed financial report or laptop screen with charts, no readable logos
+
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.

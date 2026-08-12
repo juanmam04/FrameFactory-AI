@@ -1,0 +1,10 @@
+CHAR_001
+Name: English
+
+Description:
+Recurring figure related to: WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything.
+
+Generate reference image:
+Realistic adult, period-appropriate wardrobe, documentary still of English
+
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.

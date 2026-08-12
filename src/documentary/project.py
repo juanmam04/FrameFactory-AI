@@ -22,9 +22,11 @@ CHECKPOINT_KEYS = (
 )
 
 # Human-facing progress steps (UI). Internal checkpoints still drive gates.
+# Topic = idea/topic selection; Story = Story Plan (engine + beats).
 PROGRESS_STEPS = (
-    "story",
+    "topic",
     "research",
+    "story",
     "script",
     "flow",
     "images",
@@ -40,14 +42,16 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "title": "",
     "topic": "",
     "language": "en",
-    "target_words": 1500,
-    "target_duration_min": [8, 12],
+    "target_words": 2000,
+    "target_duration_min": [11, 15],
     "research_notes": "",
     "sources": [],
     "research_skipped": False,
     "script": "",
     "fact_check_status": "pending",  # pending | approved | needs_fixes
     "script_approved": False,
+    "story_plan": {},
+    "story_plan_approved": False,
     "voice_speed": 1.0,
     "music_path": "",
     "music_volume": 0.12,
@@ -198,7 +202,7 @@ def create_project(
     *,
     title: str | None = None,
     project_id: str | None = None,
-    target_words: int = 1500,
+    target_words: int = 2000,
     research_notes: str = "",
     sources: list[str] | None = None,
     session_id: str | None = None,
@@ -229,7 +233,7 @@ def create_project(
             "topic": topic,
             "language": (language or "en").strip() or "en",
             "target_words": int(max(800, min(2500, target_words))),
-            "target_duration_min": list(target_duration_min or [8, 12]),
+            "target_duration_min": list(target_duration_min or [11, 15]),
             "research_notes": research_notes or "",
             "sources": list(sources or []),
             "session_id": sid,
@@ -274,11 +278,21 @@ def append_log(project_id: str, message: str) -> None:
 def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
     """Map checkpoints → human stepper without exposing internal names."""
     cps = project.get("checkpoints") or {}
-    has_story = bool(str(project.get("topic") or "").strip())
+    # migrate legacy ui_step "story" (old topic step) → topic
+    ui = str(project.get("ui_step") or "").strip()
+    if ui == "story" and not (project.get("story_plan") or {}).get("central_story"):
+        # ambiguous legacy: if no plan, treat as topic
+        pass
+
+    has_topic = bool(str(project.get("topic") or "").strip())
     has_research = bool(
         str(project.get("research_notes") or "").strip()
         or (project.get("sources") or [])
         or project.get("research_skipped")
+    )
+    has_story_plan = bool(
+        project.get("story_plan_approved")
+        or ((project.get("story_plan") or {}).get("approved"))
     )
     has_script = bool(str(project.get("script") or "").strip())
     approved = bool(project.get("script_approved"))
@@ -292,22 +306,24 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
     rendered = bool(cps.get("render_ready")) and (project_dir(str(project["id"])) / "render" / "final.mp4").exists()
 
     flags = {
-        "story": has_story,
+        "topic": has_topic,
         "research": has_research,
+        "story": has_story_plan,
         "script": has_script and approved,
         "flow": flow,
-        "images": images_full or (images_partial and voice),  # allow continue with partial if voice started
+        "images": images_full or (images_partial and voice),
         "voice": voice,
         "render": rendered,
         "done": rendered,
     }
-    # current = first incomplete
     current = "done"
     for step in PROGRESS_STEPS:
         if step == "done":
             continue
         if not flags.get(step):
-            # special: script step current while draft exists but not approved
+            if step == "story" and (project.get("story_plan") or {}).get("central_story") and not has_story_plan:
+                current = "story"
+                break
             if step == "script" and has_script and not approved:
                 current = "script"
                 break

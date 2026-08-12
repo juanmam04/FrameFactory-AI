@@ -1,0 +1,295 @@
+{
+  "project_id": "smoke-daily-001",
+  "topic": "WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything.",
+  "shot_count": 11,
+  "batch_size": 10,
+  "batches": [
+    {
+      "id": "BATCH_01",
+      "start": 1,
+      "end": 10,
+      "label": "shots 001–010"
+    },
+    {
+      "id": "BATCH_02",
+      "start": 11,
+      "end": 11,
+      "label": "shots 011–011"
+    }
+  ],
+  "shots": [
+    {
+      "number": 1,
+      "id": "SHOT_001",
+      "expected_file": "001.png",
+      "narration": "[DOGFOOD MOCK — NOT FOR PUBLICATION] WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything..",
+      "shot_type": "medium_shot",
+      "camera": "POV first person",
+      "action": "[DOGFOOD MOCK — NOT FOR PUBLICATION] WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "opening shot",
+      "references": [],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: [DOGFOOD MOCK — NOT FOR PUBLICATION] WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything. Acción física visible: movimiento corporal con\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: opening shot\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional hands/forearms only) show the environment and other characters/objects the story needs no empty white background no generic poster pose — show a real s",
+      "status": "generated",
+      "scene_id": 1,
+      "beat_id": 1
+    },
+    {
+      "number": 2,
+      "id": "SHOT_002",
+      "expected_file": "002.png",
+      "narration": "This is a placeholder documentary narration used only to verify the pipeline.",
+      "shot_type": "medium_shot",
+      "camera": "over the shoulder",
+      "action": "This is a placeholder documentary narration used only to verify the pipeline. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 001",
+      "references": [
+        "OBJ_001"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: This is a placeholder documentary narration used only to verify the pipeline. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.\nENVIRONMENT: lugar principal de la historia\nCAMERA: over the shoulder\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 001\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: over the shoulder composition: dynamic diagonal action frame movement: Movimiento físic",
+      "status": "generated",
+      "scene_id": 2,
+      "beat_id": 2
+    },
+    {
+      "number": 3,
+      "id": "SHOT_003",
+      "expected_file": "003.png",
+      "narration": "In production, replace with a fact-checked English script.",
+      "shot_type": "medium_shot",
+      "camera": "side angle",
+      "action": "In production, replace with a fact-checked English script",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 002",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: In production, replace with a fact-checked English script\nENVIRONMENT: lugar principal de la historia\nCAMERA: side angle\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 002\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: side angle composition: hands/object detail + context movement: Movimiento físico visib",
+      "status": "generated",
+      "scene_id": 3,
+      "beat_id": 3
+    },
+    {
+      "number": 4,
+      "id": "SHOT_004",
+      "expected_file": "004.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "close-up",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 003",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: close-up\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 003\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: close-up composition: mid-action with depth movement: Movimiento físico visible en prog",
+      "status": "generated",
+      "scene_id": 4,
+      "beat_id": 4
+    },
+    {
+      "number": 5,
+      "id": "SHOT_005",
+      "expected_file": "005.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "wide shot",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 004",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: wide shot\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 004\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: wide shot composition: foreground action + readable context movement: Movimiento físico",
+      "status": "generated",
+      "scene_id": 5,
+      "beat_id": 5
+    },
+    {
+      "number": 6,
+      "id": "SHOT_006",
+      "expected_file": "006.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "POV first person",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 005",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 005\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional hands/forearms only) show the environment and other characters/objects the story needs no empty white background no generic poster pose — show a real s",
+      "status": "generated",
+      "scene_id": 6,
+      "beat_id": 6
+    },
+    {
+      "number": 7,
+      "id": "SHOT_007",
+      "expected_file": "007.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "over the shoulder",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 006",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: over the shoulder\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 006\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: over the shoulder composition: hands/object detail + context movement: Movimiento físic",
+      "status": "generated",
+      "scene_id": 7,
+      "beat_id": 7
+    },
+    {
+      "number": 8,
+      "id": "SHOT_008",
+      "expected_file": "008.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "side angle",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 007",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: side angle\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 007\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: side angle composition: mid-action with depth movement: Movimiento físico visible en pr",
+      "status": "generated",
+      "scene_id": 8,
+      "beat_id": 8
+    },
+    {
+      "number": 9,
+      "id": "SHOT_009",
+      "expected_file": "009.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "close-up",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 008",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: close-up\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 008\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: close-up composition: foreground action + readable context movement: Movimiento físico ",
+      "status": "generated",
+      "scene_id": 9,
+      "beat_id": 9
+    },
+    {
+      "number": 10,
+      "id": "SHOT_010",
+      "expected_file": "010.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "wide shot",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 009",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: wide shot\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 009\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: wide shot composition: dynamic diagonal action frame movement: Movimiento físico visibl",
+      "status": "generated",
+      "scene_id": 10,
+      "beat_id": 10
+    },
+    {
+      "number": 11,
+      "id": "SHOT_011",
+      "expected_file": "011.png",
+      "narration": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+      "shot_type": "medium_shot",
+      "camera": "POV first person",
+      "action": "The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.",
+      "location": "lugar principal de la historia",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 010",
+      "references": [
+        "LOC_001",
+        "LOC_002"
+      ],
+      "prompt": "GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura\nCURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 010\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional hands/forearms only) show the environment and other characters/objects the story needs no empty white background no generic poster pose — show a real s",
+      "status": "generated",
+      "scene_id": 11,
+      "beat_id": 11
+    }
+  ],
+  "story_bible": {
+    "global_style": "Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accurate details",
+    "characters": [
+      {
+        "id": "CHAR_001",
+        "name": "English",
+        "description": "Recurring figure related to: WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything.",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of English",
+        "appears_in_shots": []
+      }
+    ],
+    "locations": [
+      {
+        "id": "LOC_001",
+        "name": "Corporate office",
+        "description": "Generic corporate interior for business scenes",
+        "visual_description": "Open-plan office, glass walls, cool daylight, documentary realism",
+        "appears_in_shots": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      },
+      {
+        "id": "LOC_002",
+        "name": "Press / public stage",
+        "description": "Public-facing corporate moment",
+        "visual_description": "Conference stage or media scrum, microphones, shallow depth of field",
+        "appears_in_shots": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      }
+    ],
+    "important_objects": [
+      {
+        "id": "OBJ_001",
+        "name": "Financial document",
+        "description": "Balance sheet / pitch deck / report",
+        "visual_description": "Printed financial report or laptop screen with charts, no readable logos",
+        "appears_in_shots": [
+          2
+        ]
+      }
+    ],
+    "timeline_periods": []
+  }
+}

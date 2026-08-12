@@ -2,7 +2,9 @@
   "name": "framefactory-ai",
   "private": true,
   "scripts": {
-    "dev": "./run.sh",
-    "start": "./run.sh"
+    "dev": "uvicorn studio.app:app --reload --host 127.0.0.1 --port 8787",
+    "studio": "uvicorn studio.app:app --reload --host 127.0.0.1 --port 8787",
+    "legacy": "streamlit run app.py",
+    "start": "uvicorn studio.app:app --host 127.0.0.1 --port 8787"
   }
 }

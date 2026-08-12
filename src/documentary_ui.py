@@ -34,6 +34,8 @@ from src.documentary.voice_service import generate_project_voice
 from src.saas_creative_profile import merge_profile_disk
 from src.saas_sessions import ensure_store, get_session, load_store, persist_session, set_active_session
 from src.script_generator import count_words
+from src.ui_theme import loading_hint, page_header
+import html as _html
 
 
 STEP_LABELS = {
@@ -72,17 +74,19 @@ def _copy_button(label: str, text: str, key: str) -> None:
 
 
 def _human_error(exc: BaseException) -> str:
+    from src.documentary.credentials import format_auth_error
+
+    auth = format_auth_error(exc, feature="Request")
+    if auth:
+        return auth
     msg = str(exc)
     low = msg.lower()
-    if "openai_api_key" in low or ("documentary script generation requires" in low):
-        return (
-            "Script generation needs an OpenAI API key. Add OPENAI_API_KEY to your `.env` file and restart. "
-            "FrameFactory will no longer silently insert the old Spanish storytime text."
-        )
+    if "needs a real openai" in low or "openai_api_key" in low or "example placeholder" in low:
+        return msg
     if "failed documentary" in low or "quality checks" in low:
         return msg
-    if "elevenlabs" in low or ("openai" in low and "key" in low):
-        return "Voice generation failed. Check your ElevenLabs or OpenAI API key in `.env` and try again."
+    if "elevenlabs" in low or ("openai" in low and "key" in low and "401" in msg):
+        return format_auth_error(exc, feature="Voice") or msg
     if "ffmpeg" in low:
         return "Rendering needs FFmpeg installed and available in your PATH."
     if "missing images" in low or "images are still missing" in low:
@@ -92,21 +96,76 @@ def _human_error(exc: BaseException) -> str:
     return msg
 
 
+def _render_credentials_banner(*, live: bool = False) -> None:
+    """Quiet credential strip — no tutorial wall."""
+    from src.documentary.credentials import credential_report
+
+    cache_key = "doc_cred_report_live" if live else "doc_cred_report_fast"
+    if cache_key not in st.session_state or st.session_state.get("doc_cred_force_refresh"):
+        st.session_state[cache_key] = credential_report(live=live)
+        st.session_state.doc_cred_force_refresh = False
+    report = st.session_state[cache_key]
+    oa = report["openai"]
+    el = report["elevenlabs"]
+
+    def _cls(status: str) -> str:
+        if status == "ok":
+            return "ok"
+        if status in ("rejected", "placeholder", "missing", "error"):
+            return "bad"
+        return "warn"
+
+    def _label(check) -> str:
+        short = {
+            "ok": "ok",
+            "missing": "missing",
+            "placeholder": "placeholder",
+            "rejected": "rejected",
+            "unchecked": "set",
+            "error": "error",
+        }.get(check.status, check.status)
+        return f"{check.name} · {short}"
+
+    note = ""
+    if oa.status != "ok":
+        note = oa.detail
+    elif el.status == "rejected":
+        note = el.detail
+
+    st.markdown(
+        f"""
+        <div class="ff-cred">
+          <div class="ff-cred-pills">
+            <span class="ff-pill {_cls(oa.status)}">{_label(oa)}</span>
+            <span class="ff-pill {_cls(el.status)}">{_label(el)}</span>
+          </div>
+        </div>
+        {f'<p class="ff-cred-note">{note}</p>' if note else ''}
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Recheck keys", key=f"doc_recheck_keys_{live}"):
+        st.session_state.doc_cred_force_refresh = True
+        st.session_state.pop("doc_cred_report_live", None)
+        st.session_state.pop("doc_cred_report_fast", None)
+        st.session_state["doc_cred_report_live"] = credential_report(live=True)
+        st.rerun()
+
+
 def _render_stepper(project: dict) -> None:
     prog = derive_progress(project)
     current = prog["current"]
     flags = prog["flags"]
-    parts = []
+    chips = []
     for i, step in enumerate(prog["steps"], start=1):
         label = STEP_LABELS.get(step, step)
-        if flags.get(step) and step != current:
-            mark = "✓"
-        elif step == current:
-            mark = "●"
-        else:
-            mark = "○"
-        parts.append(f"{mark} {i} {label}")
-    st.caption("  ·  ".join(parts))
+        cls = "ff-step"
+        if step == current:
+            cls += " is-now"
+        elif flags.get(step):
+            cls += " is-done"
+        chips.append(f'<span class="{cls}">{i:02d} {label}</span>')
+    st.markdown(f'<div class="ff-stepper">{"".join(chips)}</div>', unsafe_allow_html=True)
 
 
 def page_documentary() -> None:
@@ -232,11 +291,10 @@ def _activate_100_days_session() -> None:
 def _page_home(sess: dict, profile: dict, name: str) -> None:
     goal = goal_count_from_profile(profile, 100)
     stats = session_stats(str(sess.get("id") or ""), goal)
-    st.markdown(f'<p class="saas-hero">{name.upper()}</p>', unsafe_allow_html=True)
-    st.markdown(
-        f'<p class="saas-sub">DAY {stats["day"]} / {stats["goal"]} · Fascinating true stories about companies · '
-        f"Story first · English · 8–12 min · Google Flow</p>",
-        unsafe_allow_html=True,
+    page_header(
+        name,
+        f"Day {stats['day']} of {stats['goal']} — true company stories, 8–12 min, Flow visuals.",
+        kicker="Channel",
     )
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -245,40 +303,46 @@ def _page_home(sess: dict, profile: dict, name: str) -> None:
         st.metric("In progress", stats["in_progress"])
     with c3:
         st.metric("Remaining", stats["remaining"])
-    st.caption("Completed = rendered final video in FrameFactory (not YouTube publish status).")
+    st.caption("Completed = final render in FrameFactory (not YouTube publish).")
 
-    if st.button("CREATE TODAY'S VIDEO", type="primary", use_container_width=True):
+    if st.button("Create today's video", type="primary", use_container_width=True):
         st.session_state.doc_view = "ideas"
         st.session_state.doc_ideas = None
         st.rerun()
 
     items = list_projects_for_session(str(sess.get("id") or ""))
-    st.subheader("Recent videos")
+    st.markdown('<p class="ff-kicker" style="margin-top:1.75rem">Recent</p>', unsafe_allow_html=True)
     if not items:
-        st.write("No episodes yet. Start with **Create today's video**.")
+        st.write("No episodes yet.")
         return
     for p in sorted(items, key=lambda x: int(x.get("episode_number") or 0), reverse=True)[:12]:
         ep = int(p.get("episode_number") or 0)
         status = "Complete" if (p.get("checkpoints") or {}).get("render_ready") else "In progress"
-        cols = st.columns([4, 1, 1])
-        cols[0].write(f"**VIDEO {ep:03d}** — {p.get('title') or p.get('topic')}")
-        cols[1].caption(status)
-        if cols[2].button("Open", key=f"open_{p['id']}"):
-            st.session_state.doc_project_id = p["id"]
-            st.session_state.doc_view = "project"
-            st.rerun()
+        title = p.get("title") or p.get("topic") or "Untitled"
+        cols = st.columns([5, 1])
+        with cols[0]:
+            st.markdown(
+                f'<div class="ff-episode"><p class="ff-episode-title">Video {ep:03d} — {title}</p>'
+                f'<p class="ff-episode-meta">{status}</p></div>',
+                unsafe_allow_html=True,
+            )
+        with cols[1]:
+            if st.button("Open", key=f"open_{p['id']}", use_container_width=True):
+                st.session_state.doc_project_id = p["id"]
+                st.session_state.doc_view = "project"
+                st.rerun()
 
 
 def _page_ideas(sess: dict, profile: dict, name: str) -> None:
-    st.markdown(f'<p class="saas-hero">Choose today\'s story</p>', unsafe_allow_html=True)
-    st.caption(name)
-    if st.button("← Back to home"):
+    page_header("Choose today's story", name, kicker="Ideas")
+    if st.button("← Home"):
         st.session_state.doc_view = "home"
         st.rerun()
 
     prior = list_projects_for_session(str(sess.get("id") or ""))
     if st.session_state.get("doc_ideas") is None:
-        with st.spinner("Generating ideas…"):
+        loading_hint("Finding story engines…")
+        with st.spinner(""):
             st.session_state.doc_ideas = generate_story_ideas(
                 profile,
                 prior_videos=prior,
@@ -286,28 +350,31 @@ def _page_ideas(sess: dict, profile: dict, name: str) -> None:
                 count=5,
                 use_llm=True,
             )
+        st.rerun()
 
     ideas = st.session_state.get("doc_ideas") or []
     for i, idea in enumerate(ideas):
-        with st.container():
-            st.markdown(f"### {idea.get('title_concept')}")
-            st.write(idea.get("story") or "")
-            st.write(f"**Hook:** {idea.get('hook') or '—'}")
-            st.write(f"**Why it works:** {idea.get('why_it_works') or '—'}")
-            st.write(
-                f"**Pillar:** {idea.get('content_pillar') or '—'} · "
-                f"**Visual:** {idea.get('visual_potential') or '—'} · "
-                f"**Research:** {idea.get('research_risk') or '—'}"
-            )
-            if st.button("Choose", key=f"choose_idea_{i}", type="primary"):
-                _create_from_idea(sess, profile, idea)
-                return
-        st.divider()
+        st.markdown(
+            f"""
+            <div class="ff-idea">
+              <h3>{_html.escape(str(idea.get('title_concept') or 'Untitled'))}</h3>
+              <p>{_html.escape(str(idea.get('story') or ''))}</p>
+              <p><strong style="color:#ebe2d6">Hook</strong> — {_html.escape(str(idea.get('hook') or '—'))}</p>
+              <p>{_html.escape(str(idea.get('why_it_works') or ''))}</p>
+              <p class="ff-episode-meta">{_html.escape(str(idea.get('content_pillar') or '—'))} · {_html.escape(str(idea.get('visual_potential') or '—'))} · research {_html.escape(str(idea.get('research_risk') or '—'))}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Choose this story", key=f"choose_idea_{i}", type="primary"):
+            _create_from_idea(sess, profile, idea)
+            return
 
     c1, c2 = st.columns(2)
     with c1:
         if st.button("Generate 5 more", use_container_width=True):
-            with st.spinner("Generating…"):
+            loading_hint("Generating more ideas…")
+            with st.spinner(""):
                 st.session_state.doc_ideas = generate_story_ideas(
                     profile,
                     prior_videos=prior,
@@ -361,8 +428,7 @@ def _create_from_idea(sess: dict, profile: dict, idea: dict) -> None:
 
 
 def _page_library(sess: dict, profile: dict, name: str) -> None:
-    st.markdown(f'<p class="saas-hero">Library</p>', unsafe_allow_html=True)
-    st.caption(name)
+    page_header("Library", name, kicker="Episodes")
     if st.button("← Home"):
         st.session_state.doc_view = "home"
         st.rerun()
@@ -370,31 +436,32 @@ def _page_library(sess: dict, profile: dict, name: str) -> None:
     for p in sorted(items, key=lambda x: int(x.get("episode_number") or 0)):
         ep = int(p.get("episode_number") or 0)
         done = (p.get("checkpoints") or {}).get("render_ready")
-        st.write(f"**VIDEO {ep:03d}** — {p.get('title')} — {'Complete' if done else 'In progress'}")
-        if st.button("Open", key=f"lib_{p['id']}"):
-            st.session_state.doc_project_id = p["id"]
-            st.session_state.doc_view = "project"
-            st.rerun()
+        title = p.get("title") or p.get("topic") or "Untitled"
+        cols = st.columns([5, 1])
+        with cols[0]:
+            st.markdown(
+                f'<div class="ff-episode"><p class="ff-episode-title">Video {ep:03d} — {title}</p>'
+                f'<p class="ff-episode-meta">{"Complete" if done else "In progress"}</p></div>',
+                unsafe_allow_html=True,
+            )
+        with cols[1]:
+            if st.button("Open", key=f"lib_{p['id']}", use_container_width=True):
+                st.session_state.doc_project_id = p["id"]
+                st.session_state.doc_view = "project"
+                st.rerun()
 
 
 def _page_project(project: dict, sess: dict, profile: dict, name: str) -> None:
     ep = int(project.get("episode_number") or 0)
-    st.markdown(
-        f'<p class="saas-hero">VIDEO {ep:03d} — {(project.get("title") or "")[:60]}</p>',
-        unsafe_allow_html=True,
-    )
-    st.caption(name)
+    title = (project.get("title") or "")[:72]
+    page_header(f"Video {ep:03d}", title or name, kicker=name)
     if st.button("← Channel home"):
         st.session_state.doc_view = "home"
         st.rerun()
 
-    _render_stepper(project)
     prog = derive_progress(project)
     step = prog["current"]
 
-    # Allow jumping to completed/current steps via tabs-like buttons
-    labels = [STEP_LABELS[s] for s in prog["steps"]]
-    # Map clickable steps: show radio of available
     choice = st.radio(
         "Step",
         options=list(prog["steps"]),
@@ -430,21 +497,39 @@ def _page_project(project: dict, sess: dict, profile: dict, name: str) -> None:
 
 
 def _step_research(project: dict) -> None:
-    st.subheader("Research")
-    st.write(f"**Story:** {project.get('title') or project.get('topic')}")
-    st.caption(
-        "Add the facts and sources FrameFactory should rely on. The script must not invent missing information."
-    )
-    notes = st.text_area("Research notes", value=project.get("research_notes") or "", height=180)
+    page_header("Research", project.get("title") or project.get("topic") or "", kicker="Episode")
+    _render_credentials_banner(live=False)
+    st.caption("AI brief → edit facts → continue. Script will architect and write from this.")
+    if project.get("research_ai_generated"):
+        st.caption("Model knowledge — verify dates/numbers before publish.")
+
+    if st.button("Generate research", type="primary", key="doc_gen_research"):
+        try:
+            from src.documentary.credentials import check_openai
+
+            oa = check_openai(live=True)
+            st.session_state.doc_cred_force_refresh = True
+            if oa.status != "ok":
+                raise RuntimeError(oa.detail)
+            loading_hint("Investigating…")
+            with st.spinner(""):
+                from src.documentary.research_service import generate_research_brief
+
+                generate_research_brief(project, use_llm=True)
+            st.rerun()
+        except Exception as e:
+            st.error(_human_error(e))
+
+    notes = st.text_area("Research notes", value=project.get("research_notes") or "", height=260)
     sources = st.text_area(
         "Sources",
         value="\n".join(project.get("sources") or []),
         height=100,
-        placeholder="One source per line",
+        placeholder="One source per line (publications, filings, books — verify)",
     )
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("Continue to Script", type="primary"):
+        if st.button("Continue to Script", type="primary", key="doc_research_continue"):
             project["research_notes"] = notes
             project["sources"] = [s.strip() for s in sources.splitlines() if s.strip()]
             project["research_skipped"] = False
@@ -473,30 +558,32 @@ def _step_research(project: dict) -> None:
             save_project(project)
             st.session_state.doc_skip_research_warn = False
             st.rerun()
+    if st.button("← Back to Ideas"):
+        project["ui_step"] = "ideas"
+        save_project(project)
+        st.rerun()
 
 
 def _step_script(project: dict) -> None:
-    st.subheader("Script")
+    page_header("Script", "Architecture → draft → polish. Nonfiction only.", kicker="Episode")
+    _render_credentials_banner(live=False)
     from src.documentary.script_service import research_is_thin
 
     if research_is_thin(project):
-        st.warning(
-            "This documentary has little or no research. FrameFactory may not have enough factual material "
-            "to produce a reliable script. The model has no live web browse — it will only use what you pasted. "
-            "You can still generate, but nonfiction rules stay strict (no invented filler)."
-        )
+        st.caption("Thin research — script will stay short and factual.")
 
     words = count_words(project.get("script") or "") if project.get("script") else int(project.get("target_words") or 1500)
     est_min = words / 140.0
-    st.caption(f"Estimated duration: **{int(est_min):02d}:{int((est_min % 1) * 60):02d}** · Target ~{project.get('target_words')} words")
+    st.caption(f"~{int(est_min):02d}:{int((est_min % 1) * 60):02d} · target {project.get('target_words')} words")
 
     for w in project.get("script_warnings") or []:
-        st.info(w)
+        st.caption(w)
 
     c1, c2, c3 = st.columns(3)
     with c1:
         if st.button("Generate script", type="primary"):
-            with st.spinner("Writing script…"):
+            loading_hint("Writing…")
+            with st.spinner(""):
                 try:
                     generate_documentary_script(project, use_llm=True)
                     st.rerun()
@@ -728,21 +815,21 @@ def _step_images(project: dict) -> None:
 
 
 def _step_voice(project: dict) -> None:
-    st.subheader("Voice")
+    page_header("Voice", "One continuous narration track.", kicker="Episode")
+    _render_credentials_banner(live=False)
     voice = project.get("voice") or {}
     if voice.get("duration_sec"):
         d = float(voice["duration_sec"])
-        st.success(f"✓ Voice ready — {int(d)//60:02d}:{int(d)%60:02d}")
+        st.caption(f"Ready — {int(d)//60:02d}:{int(d)%60:02d}")
     else:
-        st.caption("Voice: configured from `.env` (ElevenLabs or OpenAI TTS)")
         est = count_words(project.get("script") or "") / 140.0
-        st.caption(f"Estimated duration ~ {int(est):02d}:{int((est%1)*60):02d}")
+        st.caption(f"ElevenLabs if valid, else OpenAI TTS · ~{int(est):02d}:{int((est%1)*60):02d}")
 
     if st.button("Generate voice", type="primary"):
-        with st.spinner("Generating narration…"):
+        loading_hint("Recording narration…")
+        with st.spinner(""):
             try:
                 generate_project_voice(load_project(project["id"]))
-                st.success("Voice ready")
                 st.rerun()
             except Exception as e:
                 st.error(_human_error(e))

@@ -1,0 +1,25 @@
+VISUAL 004
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 004.png
+STORY BEAT: 4
+DURATION TARGET: 5s
+KEN BURNS: pan_left
+
+NARRATION:
+How did a company that once seemed unstoppable face such a monumental crisis?
+
+DESCRIPTION:
+Un grupo de empleados de WeWork observa preocupado una pantalla de noticias que muestra la caída de la empresa.
+
+REFERENCES:
+(none)
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+004. Oficina de WeWork. Un grupo de empleados de WeWork observa preocupado una pantalla de noticias que muestra la caída de la empresa. close up candid documentary shot, photorealistic, period-accurate details.
+

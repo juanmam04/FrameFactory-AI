@@ -1,0 +1,12 @@
+OBJ_001
+Name: S-1 Filing Document
+
+Description:
+The official document filed by WeWork for its planned IPO, which sparked scrutiny and debate.
+
+Generate reference image:
+A formal, thick document with WeWork branding, often shown in meetings and discussions among investors and analysts.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.
