@@ -4,7 +4,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
-from src.saas_creative_profile import merge_profile_disk, profile_to_script_context
+from src.saas_creative_profile import merge_profile_disk
 
 CHANNEL_TITLE = "100 Days — Business Documentaries"
 
@@ -81,14 +81,58 @@ def script_context_from_session(
     memory_summary: str = "",
     idea: dict[str, Any] | None = None,
 ) -> str:
-    """Text block for generar_guion creative_context."""
-    parts = [profile_to_script_context(merge_profile_disk(profile))]
+    """Documentary-safe creative context — never dump Reddit/storytime semantics."""
+    return documentary_script_context(profile, memory_summary=memory_summary, idea=idea)
+
+
+def documentary_script_context(
+    profile: dict[str, Any] | None,
+    *,
+    memory_summary: str = "",
+    idea: dict[str, Any] | None = None,
+) -> str:
+    """
+    Precedence for Documentary editorial context (invariants live in plantilla + script_service):
+    SESSION CREATIVE PROFILE (safe fields) → VIDEO IDEA → (research is in user tema separately)
+    Explicitly ignores legacy reddit_dark_storytime / POV / confession fields.
+    """
+    p = merge_profile_disk(profile)
+    ch = p.get("channel") if isinstance(p.get("channel"), dict) else {}
+    aud = p.get("audience") if isinstance(p.get("audience"), dict) else {}
+    safe = {
+        "workflow": "documentary",
+        "content_type": "business_documentary",
+        "language": ch.get("language") or "en",
+        "channel_name": ch.get("name") or "",
+        "niche": p.get("niche") or "",
+        "tone": p.get("tone") or "",
+        "hook_style": p.get("hook_style") or "",
+        "pacing": p.get("pacing") or "",
+        "audience": aud.get("who") or "",
+        "title_style": p.get("title_style") or "",
+        "topics_to_focus": p.get("topics_to_focus") or [],
+        "topics_to_avoid": p.get("topics_to_avoid") or "",
+        "avoid": p.get("avoid") or [],
+        "target_words": ch.get("target_words") or 1500,
+        "target_duration_min": ch.get("target_duration_min") or [8, 12],
+        "narration_format": "third_person_documentary",
+        "forbidden_legacy": [
+            "reddit_dark_storytime",
+            "first_person_confession",
+            "POV_este_eres_tu",
+            "Spanish storytime",
+        ],
+    }
+    parts = [
+        "DOCUMENTARY CHANNEL CONTEXT (tone/audience only — do NOT override nonfiction/third-person invariants):\n"
+        + __import__("json").dumps(safe, ensure_ascii=False, indent=2)
+    ]
     mem = (memory_summary or "").strip()
     if mem:
-        parts.append("SESSION MEMORY:\n" + mem[:6000])
+        parts.append("SESSION MEMORY:\n" + mem[:4000])
     if idea and isinstance(idea, dict):
         parts.append(
-            "TODAY'S STORY BRIEF (follow this episode):\n"
+            "EPISODE BRIEF (do not print these labels in the narration):\n"
             + __import__("json").dumps(
                 {
                     "title_concept": idea.get("title_concept"),
@@ -96,6 +140,7 @@ def script_context_from_session(
                     "hook": idea.get("hook"),
                     "content_pillar": idea.get("content_pillar"),
                     "why_it_works": idea.get("why_it_works"),
+                    "primary_entity": idea.get("primary_entity"),
                 },
                 ensure_ascii=False,
                 indent=2,

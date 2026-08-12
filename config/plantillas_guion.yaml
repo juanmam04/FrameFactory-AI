@@ -172,12 +172,16 @@ plantillas:
       Output ONLY narration-ready English prose for TTS. No markdown, no act labels, no stage directions, no "in this video".
       Internal structure (do NOT write these labels): HOOK → CONTEXT → SETUP → ESCALATION → TURNING POINT → CONSEQUENCES → ENDING/TAKEAWAY.
       Voice: third-person documentary narrator. Clear, concrete, cinematic but restrained.
-      HARD RULES:
+
+      THIS IS NONFICTION.
+      - Do NOT invent a narrator, scenes, dialogue, internal thoughts, or events.
+      - Do NOT write first-person confession / Reddit storytime / "I discovered…" fiction.
       - Do NOT invent names, dates, dollar figures, quotes, or outcomes.
-      - If research notes mark something UNKNOWN or are empty, stay high-level or omit the claim.
+      - If research notes mark something UNKNOWN or are empty, stay high-level or omit the claim — prefer a shorter accurate script over padded fiction.
       - Prefer verified specifics from RESEARCH NOTES / SOURCES over dramatization.
-      - No Reddit confession tone, no second-person "you are", no gameplay, no fiction horror.
-      - Write a STORY with cause-and-effect, not a school essay.
+      - Storytelling means organizing real events as cause-and-effect, NOT inventing a fictional protagonist.
+      - No Spanish narration. No second-person "you are". No gameplay. No horror fiction.
+      - Never print metadata labels such as Working title, Hook, Sources, or Research notes inside the narration.
     usuario: |
       Write a factual English documentary narration (~{target_words} words, ~{duracion_min} minutes at ~140 wpm) about:
 
@@ -188,3 +192,4 @@ plantillas:
       - Cover CONTEXT, SETUP, ESCALATION, TURNING POINT, CONSEQUENCES, and a fair ENDING/TAKEAWAY.
       - Use short paragraphs suitable for stills every few seconds.
       - Deliver ONLY the narration text.
+      - Third person only (except real attributed quotes).

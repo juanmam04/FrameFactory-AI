@@ -74,11 +74,18 @@ def _copy_button(label: str, text: str, key: str) -> None:
 def _human_error(exc: BaseException) -> str:
     msg = str(exc)
     low = msg.lower()
-    if "elevenlabs" in low or "openai" in low and "key" in low:
+    if "openai_api_key" in low or ("documentary script generation requires" in low):
+        return (
+            "Script generation needs an OpenAI API key. Add OPENAI_API_KEY to your `.env` file and restart. "
+            "FrameFactory will no longer silently insert the old Spanish storytime text."
+        )
+    if "failed documentary" in low or "quality checks" in low:
+        return msg
+    if "elevenlabs" in low or ("openai" in low and "key" in low):
         return "Voice generation failed. Check your ElevenLabs or OpenAI API key in `.env` and try again."
     if "ffmpeg" in low:
         return "Rendering needs FFmpeg installed and available in your PATH."
-    if "missing images" in low:
+    if "missing images" in low or "images are still missing" in low:
         return msg.replace("Missing images:", "Some images are still missing:")
     if "script must be approved" in low or "approve the script" in low:
         return "Approve the script first, then continue to Flow."
@@ -464,9 +471,21 @@ def _step_research(project: dict) -> None:
 
 def _step_script(project: dict) -> None:
     st.subheader("Script")
+    from src.documentary.script_service import research_is_thin
+
+    if research_is_thin(project):
+        st.warning(
+            "This documentary has little or no research. FrameFactory may not have enough factual material "
+            "to produce a reliable script. The model has no live web browse — it will only use what you pasted. "
+            "You can still generate, but nonfiction rules stay strict (no invented filler)."
+        )
+
     words = count_words(project.get("script") or "") if project.get("script") else int(project.get("target_words") or 1500)
     est_min = words / 140.0
     st.caption(f"Estimated duration: **{int(est_min):02d}:{int((est_min % 1) * 60):02d}** · Target ~{project.get('target_words')} words")
+
+    for w in project.get("script_warnings") or []:
+        st.info(w)
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -507,8 +526,11 @@ def _step_script(project: dict) -> None:
 
     with st.expander("Advanced"):
         if st.button("Generate mock script (offline)"):
-            generate_documentary_script(project, use_llm=False)
-            st.rerun()
+            try:
+                generate_documentary_script(project, use_llm=False)
+                st.rerun()
+            except Exception as e:
+                st.error(_human_error(e))
         tw = st.number_input("Target words override", 800, 2500, int(project.get("target_words") or 1500), 50)
         if st.button("Save word target"):
             project["target_words"] = int(tw)
