@@ -145,10 +145,22 @@ function renderHome() {
         <p class="kicker">Channel</p>
         <h1 class="h1">${esc(b.channel.name)}</h1>
         <p class="lead">${esc(b.channel.tagline)} One true story a day. Research → script → Flow → voice → render.</p>
+        <p class="lead" style="font-size:0.9rem;opacity:.85">
+          Datos: <code>${esc((b.workspace && b.workspace.projects_dir) || "projects/")}</code>
+          ${b.workspace && b.workspace.supabase
+            ? " · Supabase listo (Subir / Bajar entre PCs)"
+            : b.workspace && b.workspace.synced
+              ? " · sync carpeta activo"
+              : " · solo esta PC"}
+        </p>
         <div class="actions">
           <button class="btn btn-primary" id="cta-new">Create today's video</button>
           <button class="btn btn-ghost" id="cta-lib">Browse library</button>
+          ${b.workspace && b.workspace.supabase ? `
+          <button class="btn btn-ghost" id="cta-push">Subir a la nube</button>
+          <button class="btn btn-ghost" id="cta-pull">Bajar de la nube</button>` : ""}
         </div>
+        <p id="sync-msg" class="lead" style="font-size:0.85rem;min-height:1.2em;opacity:.9"></p>
       </div>
       <div class="day-card">
         <div class="label">Challenge progress · ${pct}%</div>
@@ -176,6 +188,35 @@ function renderHome() {
     location.hash = "library";
     go("library");
   };
+  const syncMsg = $("#sync-msg");
+  const bindSync = (id, path, label) => {
+    const btn = $(id);
+    if (!btn) return;
+    btn.onclick = async () => {
+      btn.disabled = true;
+      if (syncMsg) syncMsg.textContent = `${label}…`;
+      try {
+        const r = await api(path, { method: "POST" });
+        const n = (r.projects || []).length;
+        if (syncMsg) {
+          syncMsg.textContent =
+            path.includes("push")
+              ? `Subido: ${n} episodio(s) + sesión.`
+              : `Bajado: ${(r.remote_ids || []).length} episodio(s) + sesión. Recargá Home.`;
+        }
+        if (path.includes("pull")) {
+          await refreshBootstrap();
+          go("home");
+        }
+      } catch (e) {
+        if (syncMsg) syncMsg.textContent = String(e.message || e);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+  };
+  bindSync("#cta-push", "/api/sync/push", "Subiendo a Supabase");
+  bindSync("#cta-pull", "/api/sync/pull", "Bajando de Supabase");
   const host = $("#recent");
   if (!b.projects.length) {
     host.innerHTML = `<div class="panel"><p class="lead">No episodes yet. Start today's video.</p></div>`;

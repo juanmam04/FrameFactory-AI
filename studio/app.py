@@ -1,6 +1,7 @@
 """FrameFactory Documentary Studio — FastAPI (not Streamlit)."""
 from __future__ import annotations
 
+import os
 import traceback
 from pathlib import Path
 from typing import Any
@@ -35,6 +36,7 @@ from src.documentary.visual_plan import (
 from src.documentary.ideas import generate_story_ideas
 from src.documentary.openai_key import reload_env
 from src.documentary.project import (
+    PROJECTS_ROOT,
     create_project,
     derive_progress,
     list_projects_for_session,
@@ -56,6 +58,7 @@ from src.documentary.voice_service import generate_project_voice
 from src.documentary.assemble_service import assemble_and_render
 from src.saas_creative_profile import merge_profile_disk
 from src.saas_sessions import (
+    OUTPUT_DIR,
     add_session,
     ensure_store,
     get_session,
@@ -107,6 +110,19 @@ def create_app() -> FastAPI:
                 "tagline": (profile.get("channel") or {}).get("tagline")
                 or "Fascinating true stories about companies.",
             },
+            "workspace": {
+                "projects_dir": str(PROJECTS_ROOT),
+                "data_dir": str(OUTPUT_DIR),
+                "synced": bool(
+                    (
+                        os.getenv("DATABASE_URL")
+                        or os.getenv("FRAMEFACTORY_WORKSPACE")
+                        or os.getenv("FRAMEFACTORY_PROJECTS_DIR")
+                        or ""
+                    ).strip()
+                ),
+                "supabase": bool((os.getenv("DATABASE_URL") or "").strip()),
+            },
             "stats": stats,
             "projects": projects,
             "credentials": {
@@ -130,6 +146,34 @@ def create_app() -> FastAPI:
             "ready_research": creds["ready_research"],
             "ready_voice": creds["ready_voice"],
         }
+
+    @app.get("/api/sync/status")
+    def sync_status():
+        from src.documentary import cloud_sync
+
+        return cloud_sync.status()
+
+    @app.post("/api/sync/push")
+    def sync_push():
+        from src.documentary import cloud_sync
+
+        if not cloud_sync.configured():
+            raise HTTPException(400, "Falta DATABASE_URL en .env.local (Supabase)")
+        try:
+            return cloud_sync.push_all()
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/sync/pull")
+    def sync_pull():
+        from src.documentary import cloud_sync
+
+        if not cloud_sync.configured():
+            raise HTTPException(400, "Falta DATABASE_URL en .env.local (Supabase)")
+        try:
+            return cloud_sync.pull_all()
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
 
     # ── ideas ───────────────────────────────────────────────────────
     @app.post("/api/ideas")

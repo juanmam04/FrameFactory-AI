@@ -7,10 +7,34 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import os
+
+from dotenv import load_dotenv
+
 from .config_loader import BASE
 from .saas_creative_profile import merge_profile_disk
 
-OUTPUT_DIR = BASE / "output"
+load_dotenv(BASE / ".env")
+for _env_local in (BASE / ".env.local", BASE / "env.local"):
+    if _env_local.is_file():
+        load_dotenv(_env_local, override=True)
+
+
+def _resolve_dir(env_name: str, default: Path) -> Path:
+    raw = (os.getenv(env_name) or "").strip().strip('"').strip("'")
+    if not raw:
+        return default
+    p = Path(raw).expanduser()
+    if not p.is_absolute():
+        p = (BASE / p).resolve()
+    return p
+
+
+_WORKSPACE = _resolve_dir("FRAMEFACTORY_WORKSPACE", BASE)
+if (os.getenv("FRAMEFACTORY_DATA_DIR") or "").strip():
+    OUTPUT_DIR = _resolve_dir("FRAMEFACTORY_DATA_DIR", _WORKSPACE / "output")
+else:
+    OUTPUT_DIR = _WORKSPACE / "output"
 SESSIONS_PATH = OUTPUT_DIR / "saas_sessions.json"
 LEGACY_CHAT = OUTPUT_DIR / "saas_agent_chat.json"
 LEGACY_PROFILE = OUTPUT_DIR / "saas_creative_profile.json"

@@ -8,9 +8,36 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import os
+
+from dotenv import load_dotenv
+
 from src.config_loader import BASE
 
-PROJECTS_ROOT = BASE / "projects"
+# Ensure .env / .env.local are loaded before reading workspace paths.
+load_dotenv(BASE / ".env")
+for _env_local in (BASE / ".env.local", BASE / "env.local"):
+    if _env_local.is_file():
+        load_dotenv(_env_local, override=True)
+
+
+def _resolve_dir(env_name: str, default: Path) -> Path:
+    raw = (os.getenv(env_name) or "").strip().strip('"').strip("'")
+    if not raw:
+        return default
+    p = Path(raw).expanduser()
+    if not p.is_absolute():
+        p = (BASE / p).resolve()
+    return p
+
+
+# Multi-PC: set FRAMEFACTORY_WORKSPACE to a cloud-synced folder (OneDrive/Drive/Dropbox).
+# Example: FRAMEFACTORY_WORKSPACE=C:\Users\You\OneDrive\FrameFactory-Data
+_WORKSPACE = _resolve_dir("FRAMEFACTORY_WORKSPACE", BASE)
+if (os.getenv("FRAMEFACTORY_PROJECTS_DIR") or "").strip():
+    PROJECTS_ROOT = _resolve_dir("FRAMEFACTORY_PROJECTS_DIR", _WORKSPACE / "projects")
+else:
+    PROJECTS_ROOT = _WORKSPACE / "projects"
 
 CHECKPOINT_KEYS = (
     "script_ready",
