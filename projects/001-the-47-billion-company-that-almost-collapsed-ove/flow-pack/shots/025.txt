@@ -3,14 +3,14 @@ VISUAL 025
 TYPE: FLOW_REENACTMENT
 EXPECTED FILE: 025.png
 STORY BEAT: 11
-DURATION TARGET: 10s
-KEN BURNS: slow_push
+DURATION TARGET: 7s
+KEN BURNS: slow_pull
 
 NARRATION:
 Critics raised concerns about the risks associated with such a strategy.
 
 DESCRIPTION:
-Un grupo de críticos discute acaloradamente en una sala de conferencias.
+Un grupo de críticos discute intensamente, señalando gráficos y estadísticas en una presentación.
 
 REFERENCES:
 (none)
@@ -18,8 +18,8 @@ REFERENCES:
 PROMPT:
 Create ONE separate 16:9 cinematic documentary still image.
 Photorealistic documentary photography. No collage.
-STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
 DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
 
-025. Sala de conferencias.. Un grupo de críticos discute acaloradamente en una sala de conferencias. establishing wide candid documentary shot, photorealistic, period-accurate details.
+025. Sala de conferencias. Un grupo de críticos discute intensamente, señalando gráficos y estadísticas en una presentación. medium action candid documentary shot, photorealistic, period-accurate details.
 

@@ -1,11 +1,11 @@
 {
-  "global_style": "{'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}",
+  "global_style": "{'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}",
   "characters": [
     {
       "id": "CHAR_001",
       "name": "Adam Neumann",
       "description": "Co-founder and former CEO of WeWork, known for his charismatic yet controversial leadership style.",
-      "visual_description": "Often seen in tailored suits, exuding confidence, with a dynamic presence during presentations and meetings.",
+      "visual_description": "A tall man with long hair, often seen in casual yet stylish attire, exuding confidence and energy, frequently gesturing animatedly during presentations.",
       "appears_in_shots": [
         5
       ],
@@ -16,8 +16,8 @@
     {
       "id": "CHAR_002",
       "name": "Miguel McKelvey",
-      "description": "Co-founder of WeWork, instrumental in shaping the company's vision and culture.",
-      "visual_description": "Casual yet professional attire, often engaging with employees and clients in WeWork spaces, embodying the company's community-driven ethos.",
+      "description": "Co-founder of WeWork, focused on the company's design and community aspects.",
+      "visual_description": "A well-groomed man with a thoughtful demeanor, often dressed in smart casual clothing, seen engaging with employees and clients in WeWork spaces.",
       "appears_in_shots": [
         5
       ],
@@ -30,18 +30,19 @@
     {
       "id": "LOC_001",
       "name": "WeWork Headquarters",
-      "description": "The main office located in New York City, designed to reflect the company's innovative and collaborative spirit.",
-      "visual_description": "A modern, open-concept workspace filled with vibrant colors, communal areas, and a mix of private offices and shared desks.",
+      "description": "The original headquarters of WeWork located in New York City, a vibrant space filled with modern design elements and collaborative work areas.",
+      "visual_description": "An open-concept office with colorful furniture, communal tables, and artistic decor, bustling with diverse professionals working together.",
       "appears_in_shots": [
+        1,
         8,
-        13,
+        12,
         14,
+        15,
         16,
         17,
         18,
         19,
         23,
-        24,
         31
       ],
       "reference_required": true,
@@ -52,14 +53,15 @@
     {
       "id": "LOC_002",
       "name": "WeWork Locations Worldwide",
-      "description": "Various coworking spaces across major cities, showcasing WeWork's global expansion.",
-      "visual_description": "Stylish interiors with unique designs, featuring communal workspaces, lounges, and event areas that foster collaboration.",
+      "description": "Various WeWork coworking spaces around the globe, each designed to foster community and collaboration.",
+      "visual_description": "Stylish and contemporary office spaces featuring glass walls, lounge areas, and meeting rooms, often filled with people networking and working.",
       "appears_in_shots": [
+        3,
         15,
         21,
-        22,
-        26,
-        27
+        24,
+        27,
+        28
       ],
       "reference_required": true,
       "appearance_strategy": "FLOW_REENACTMENT",
@@ -71,8 +73,8 @@
     {
       "id": "OBJ_001",
       "name": "S-1 Filing Document",
-      "description": "The official document filed by WeWork for its planned IPO, which sparked scrutiny and debate.",
-      "visual_description": "A formal, thick document with WeWork branding, often shown in meetings and discussions among investors and analysts.",
+      "description": "The official document filed by WeWork in April 2019 to initiate its IPO process.",
+      "visual_description": "A thick stack of papers with a bold 'S-1' label on the cover, symbolizing the company's ambitious plans to go public.",
       "appears_in_shots": [
         29
       ],
@@ -82,9 +84,9 @@
     },
     {
       "id": "OBJ_002",
-      "name": "SoftBank Investment Agreement",
-      "description": "The agreement that solidified SoftBank's significant financial backing of WeWork, pivotal in its growth.",
-      "visual_description": "A formal contract, often depicted in meetings, symbolizing the financial lifeline and strategic partnership.",
+      "name": "SoftBank Investment",
+      "description": "The significant financial backing from SoftBank that propelled WeWork's growth.",
+      "visual_description": "A large check or digital representation of funds being transferred, symbolizing the massive investment that fueled WeWork's expansion.",
       "appearance_strategy": "FLOW_REENACTMENT",
       "master_reference_filename": "OBJ_002.png",
       "periods": []
@@ -93,18 +95,24 @@
   "timeline_periods": [
     {
       "id": "TIME_001",
-      "name": "2010-2014: The Rise",
-      "description": "The period of WeWork's founding and initial growth, marked by significant funding and expansion.",
-      "visual_description": "Footage of early WeWork locations, enthusiastic team meetings, and investor presentations."
+      "name": "2010-2014: The Founding and Early Growth",
+      "description": "The period when WeWork was founded and began to establish itself in the coworking market.",
+      "visual_description": "Images of early WeWork spaces, enthusiastic team meetings, and initial investor pitches."
     },
     {
       "id": "TIME_002",
-      "name": "2017-2019: The Boom and Bust",
-      "description": "The rapid growth phase leading to the IPO filing and subsequent crisis, highlighting the company's valuation fluctuations.",
-      "visual_description": "Dramatic visuals of bustling WeWork spaces, investor roadshows, and news headlines reflecting the company's rise and fall."
+      "name": "2017-2019: Rapid Expansion and IPO Plans",
+      "description": "The phase of aggressive growth, significant investments, and the lead-up to the IPO filing.",
+      "visual_description": "Footage of bustling WeWork locations, investor meetings, and the excitement surrounding the IPO roadshow."
+    },
+    {
+      "id": "TIME_003",
+      "name": "2019: The Downfall",
+      "description": "The tumultuous year when WeWork's IPO was postponed and valuation plummeted.",
+      "visual_description": "Dramatic visuals of news headlines, investor reactions, and the aftermath of Neumann's departure."
     }
   ],
-  "visual_style": "{'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}",
+  "visual_style": "{'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}",
   "period_rules": [
     "2010: period-accurate clothing, phones, computers, interiors — avoid anachronisms",
     "2014: period-accurate clothing, phones, computers, interiors — avoid anachronisms",

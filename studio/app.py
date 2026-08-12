@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -24,7 +24,7 @@ from src.documentary.channel import (
 )
 from src.documentary.credentials import credential_report
 from src.documentary.flow_pack import export_flow_pack, load_shot_list
-from src.documentary.import_images import import_images
+from src.documentary.import_images import import_images, import_uploaded_images
 from src.documentary.visual_plan import (
     format_single_prompt,
     load_visual_plan,
@@ -355,6 +355,37 @@ def create_app() -> FastAPI:
             report = import_images(p, source)
             sync_ready_from_disk(project_id)
             return {"report": report, "project": _project_full(load_project(project_id)), "sync": sync_ready_from_disk(project_id)}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/{project_id}/images/upload")
+    async def images_upload(
+        project_id: str,
+        files: list[UploadFile] = File(...),
+        force_number: int | None = Form(default=None),
+    ):
+        """Upload one or many stills from the browser. Name them 001.png (or force_number for one file)."""
+        try:
+            p = load_project(project_id)
+            payload: list[tuple[str, bytes]] = []
+            for f in files:
+                raw = await f.read()
+                if not raw:
+                    continue
+                payload.append((f.filename or "upload.png", raw))
+            if not payload:
+                raise ValueError("No files received.")
+            report = import_uploaded_images(
+                p,
+                payload,
+                force_number=force_number,
+            )
+            sync = sync_ready_from_disk(project_id)
+            return {
+                "report": report,
+                "sync": sync,
+                "project": _project_full(load_project(project_id)),
+            }
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 

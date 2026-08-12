@@ -104,6 +104,118 @@ def sync_shot_statuses_from_images(project_id: str) -> dict[str, Any]:
     return data
 
 
+def import_uploaded_images(
+    project: dict[str, Any],
+    files: list[tuple[str, bytes]],
+    *,
+    force_number: int | None = None,
+    min_width: int = 640,
+) -> dict[str, Any]:
+    """Import images uploaded from the Studio UI.
+
+    Filename must be like 001.png / 14.jpg unless force_number is set (single file).
+    """
+    shot_list = load_shot_list(str(project["id"]))
+    expected_n = int(shot_list.get("shot_count") or len(shot_list.get("shots") or []))
+    expected_nums = {int(s["number"]) for s in (shot_list.get("shots") or [])}
+
+    dest_root = project_dir(str(project["id"])) / "images"
+    dest_root.mkdir(parents=True, exist_ok=True)
+    # Also keep a copy in flow-import for traceability
+    drop = project_dir(str(project["id"])) / "flow-import"
+    drop.mkdir(parents=True, exist_ok=True)
+
+    imported_nums: list[int] = []
+    invalid: list[str] = []
+    unknown: list[str] = []
+    dim_issues: list[str] = []
+    duplicates: list[str] = []
+    seen: set[int] = set()
+
+    for filename, data in files:
+        name = Path(filename).name
+        num: int | None = None
+        if force_number is not None and len(files) == 1:
+            num = int(force_number)
+        else:
+            m = _NUM_RE.match(name)
+            if not m:
+                # Also accept Flow-ish names like image_001.png / 001_something.png
+                m2 = re.search(r"(?:^|[_-])(\d{1,4})(?:[_-]|\.)", name, re.I)
+                if m2 and Path(name).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}:
+                    num = int(m2.group(1))
+                else:
+                    invalid.append(name)
+                    continue
+            else:
+                num = int(m.group(1))
+
+        assert num is not None
+        if num in seen:
+            duplicates.append(name)
+            continue
+        if expected_nums and num not in expected_nums:
+            unknown.append(name)
+            continue
+        seen.add(num)
+
+        drop_path = drop / f"{num:03d}{Path(name).suffix.lower() or '.png'}"
+        drop_path.write_bytes(data)
+        dest = dest_root / f"{num:03d}.png"
+        # Normalize to png via Pillow when possible; else raw copy
+        try:
+            from PIL import Image
+            import io
+
+            with Image.open(io.BytesIO(data)) as im:
+                rgb = im.convert("RGB") if im.mode not in ("RGB", "RGBA") else im
+                rgb.save(dest, format="PNG")
+        except Exception:
+            dest.write_bytes(data)
+
+        imported_nums.append(num)
+        issue = _dim_issue(dest, min_width)
+        if issue:
+            dim_issues.append(f"{num:03d}: {issue}")
+
+    # Ready = existing files on disk after upload
+    img_root = dest_root
+    ready_set = {
+        n
+        for n in expected_nums
+        if (img_root / f"{n:03d}.png").exists() and (img_root / f"{n:03d}.png").stat().st_size > 0
+    }
+    missing = sorted(expected_nums - ready_set) if expected_nums else []
+    ready = len(ready_set)
+
+    report = {
+        "expected": expected_n,
+        "ready": ready,
+        "imported_files": len(imported_nums),
+        "imported_numbers": [f"{n:03d}" for n in sorted(imported_nums)],
+        "missing": [f"{n:03d}" for n in missing],
+        "duplicates": duplicates,
+        "unknown_numbers": unknown,
+        "invalid_files": invalid,
+        "dimension_issues": dim_issues,
+        "source_dir": "studio_upload",
+    }
+    project["import_report"] = report
+    set_checkpoint(project, "images_imported", ready > 0)
+    if ready == expected_n and expected_n > 0:
+        set_checkpoint(project, "images_imported", True)
+        project["ui_step"] = "voice"
+    else:
+        project["ui_step"] = "images"
+    save_project(project)
+    sync_shot_statuses_from_images(str(project["id"]))
+    append_log(
+        str(project["id"]),
+        f"upload import n={len(imported_nums)} ready={ready}/{expected_n} missing={len(missing)}",
+    )
+    return report
+
+
 def replace_shot_image(project: dict[str, Any], shot_number: int, image_path: str | Path) -> Path:
     src = Path(image_path).expanduser().resolve()
     if not src.is_file():

@@ -3,23 +3,23 @@ VISUAL 013
 TYPE: FLOW_REENACTMENT
 EXPECTED FILE: 013.png
 STORY BEAT: 13
-DURATION TARGET: 7s
-KEN BURNS: slow_pull
+DURATION TARGET: 5s
+KEN BURNS: pan_left
 
 NARRATION:
 As WeWork expanded its footprint, it cultivated a brand identity that resonated with a generation of workers seeking community and connection in their professional lives.
 
 DESCRIPTION:
-WeWork buildings are filled with diverse groups of people collaborating and networking.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+WeWork buildings popping up in urban areas, filled with people working and networking.
 
 REFERENCES:
-LOC_001
+(none)
 
 PROMPT:
 Create ONE separate 16:9 cinematic documentary still image.
 Photorealistic documentary photography. No collage.
-STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
 DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
 
-013. Inside a bustling WeWork office.. WeWork buildings are filled with diverse groups of people collaborating and networking.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso. medium action candid documentary shot, photorealistic, period-accurate details. Use LOC_001.png reference.
+013. Cityscape with WeWork buildings. WeWork buildings popping up in urban areas, filled with people working and networking. close up candid documentary shot, photorealistic, period-accurate details.
 

@@ -3,14 +3,14 @@ VISUAL 010
 TYPE: FLOW_REENACTMENT
 EXPECTED FILE: 010.png
 STORY BEAT: 5
-DURATION TARGET: 7s
-KEN BURNS: pan_right
+DURATION TARGET: 10s
+KEN BURNS: static
 
 NARRATION:
-By 2014, WeWork had raised $365 million in Series D funding, pushing the company’s valuation to $10 billion.
+By 2014, WeWork had raised $365 million in Series D funding.
 
 DESCRIPTION:
-Un grupo de inversores aplaude mientras un ejecutivo de WeWork presenta un gráfico de crecimiento en la pantalla.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+Un grupo de inversores aplaudiendo tras una presentación exitosa.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
 
 REFERENCES:
 (none)
@@ -18,8 +18,8 @@ REFERENCES:
 PROMPT:
 Create ONE separate 16:9 cinematic documentary still image.
 Photorealistic documentary photography. No collage.
-STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
 DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
 
-010. 2014. Oficina moderna de WeWork.. Un grupo de inversores aplaude mientras un ejecutivo de WeWork presenta un gráfico de crecimiento en la pantalla.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso. intimate moment candid documentary shot, photorealistic, period-accurate details.
+010. 2014. Sala de conferencias moderna.. Un grupo de inversores aplaudiendo tras una presentación exitosa.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso. large scale candid documentary shot, photorealistic, period-accurate details.
 

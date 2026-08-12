@@ -3,14 +3,14 @@ VISUAL 008
 TYPE: FLOW_REENACTMENT
 EXPECTED FILE: 008.png
 STORY BEAT: 8
-DURATION TARGET: 7s
-KEN BURNS: slow_pull
+DURATION TARGET: 5s
+KEN BURNS: pan_left
 
 NARRATION:
 The rise of freelance work and the desire for flexible office solutions created fertile ground for WeWork's innovative approach.
 
 DESCRIPTION:
-Freelancers collaborating in a vibrant coworking space.
+Freelancers working in a vibrant coworking space.
 
 REFERENCES:
 LOC_001
@@ -18,8 +18,8 @@ LOC_001
 PROMPT:
 Create ONE separate 16:9 cinematic documentary still image.
 Photorealistic documentary photography. No collage.
-STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
 DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
 
-008. A trendy coworking space.. Freelancers collaborating in a vibrant coworking space. building exterior candid documentary shot, photorealistic, period-accurate details. Use LOC_001.png reference.
+008. A bustling WeWork office.. Freelancers working in a vibrant coworking space. object detail candid documentary shot, photorealistic, period-accurate details. Use LOC_001.png reference.
 

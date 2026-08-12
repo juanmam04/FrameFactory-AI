@@ -11,9 +11,14 @@ const stage = () => document.getElementById("stage");
 const $ = (sel, el = document) => el.querySelector(sel);
 
 async function api(path, opts = {}) {
+  const headers = { ...(opts.headers || {}) };
+  // Don't force JSON content-type for FormData uploads
+  if (!(opts.body instanceof FormData) && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
   const res = await fetch(path, {
-    headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
     ...opts,
+    headers,
   });
   let data = null;
   try {
@@ -352,16 +357,27 @@ function renderProject() {
   if (!p) return go("home");
   const step = p.ui_step || "research";
   const steps = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "done"];
+  const stepLabel = {
+    topic: "1 Tema",
+    research: "2 Info",
+    story: "3 Historia",
+    script: "4 Guion",
+    flow: "5 Pedir imgs",
+    images: "6 Subir imgs",
+    voice: "7 Voz",
+    render: "8 Video",
+    done: "Listo",
+  };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
-    <p class="kicker">Episode ${String(p.episode_number).padStart(3, "0")}</p>
+    <p class="kicker">Episodio ${String(p.episode_number).padStart(3, "0")}</p>
     <h1 class="h1">${esc(p.title || p.topic)}</h1>
     <p class="lead">${esc(p.topic || "")}</p>
     <div class="stepper">
       ${steps
         .map((s) => {
           const cls = s === step ? "now" : flags[s] ? "done" : "";
-          return `<button class="step ${cls}" data-step="${s}">${s}</button>`;
+          return `<button class="step ${cls}" data-step="${s}">${stepLabel[s] || s}</button>`;
         })
         .join("")}
     </div>
@@ -667,7 +683,7 @@ function paintScript(ws, p) {
 }
 
 async function paintFlow(ws, p) {
-  ws.innerHTML = `<div class="panel"><p class="lead">Loading Visual Plan…</p></div>`;
+  ws.innerHTML = `<div class="panel"><p class="lead">Cargando plan de imágenes…</p></div>`;
   let plan = null;
   let shots = null;
   try {
@@ -680,9 +696,10 @@ async function paintFlow(ws, p) {
   } catch (e) {
     ws.innerHTML = `
       <div class="panel workspace">
-        <p class="lead">No Visual Plan yet. Approve the script, then generate.</p>
+        <h2>Todavía no hay plan de imágenes</h2>
+        <p class="lead">Primero aprobá el guion. Después tocá el botón de abajo.</p>
         <div class="actions">
-          <button class="btn btn-accent" id="rebuild">Generate Visual Plan</button>
+          <button class="btn btn-accent" id="rebuild">Crear plan de imágenes</button>
         </div>
         <div class="notice">${esc(e.message || "")}</div>
       </div>`;
@@ -695,35 +712,56 @@ async function paintFlow(ws, p) {
   const batches = (plan && plan.flow_batches) || (shots && shots.flow_batches) || [];
   const visuals = (plan && plan.visuals) || (shots && shots.shots) || [];
   const nonFlow = visuals.filter((v) => v.visual_type && v.visual_type !== "FLOW_REENACTMENT");
+  const total = stats.total || visuals.length || 0;
+  const needAi = stats.flow || 0;
+  const needReal = stats.real_or_other || 0;
 
   ws.innerHTML = `
     <div class="panel workspace">
-      <p class="kicker">Visual Plan · illustrate the EVENT, not the sentence</p>
-      <div class="meta" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin:1rem 0">
-        <div><span>TOTAL</span><strong>${stats.total || visuals.length || 0}</strong></div>
-        <div><span>FLOW</span><strong>${stats.flow || 0}</strong></div>
-        <div><span>REAL / DOC / OTHER</span><strong>${stats.real_or_other || 0}</strong></div>
-        <div><span>BATCHES</span><strong>${stats.flow_batches || batches.length || 0}</strong></div>
-      </div>
-      <div class="actions">
-        <button class="btn btn-accent" id="rebuild">Regenerate Visual Plan</button>
-        <button class="btn btn-primary" id="to-images">Continue to Images</button>
+      <div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
+        <h2 style="margin:0 0 0.5rem">Qué tenés que hacer acá (paso a paso)</h2>
+        <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
+          <li><strong>Pedí las imágenes en Google Flow</strong> (abajo hay grupos listos para copiar).</li>
+          <li><strong>Descargalas</strong> a tu compu.</li>
+          <li><strong>Renombrialas</strong> tipo <code>001.png</code>, <code>002.png</code>…</li>
+          <li><strong>Subilas acá</strong> — tocá el botón negro grande.</li>
+        </ol>
+        <div class="actions" style="margin-top:1rem">
+          <button class="btn btn-primary" id="to-images" style="font-size:1.05rem;padding:0.85rem 1.4rem">
+            Ya las tengo → Subir imágenes
+          </button>
+        </div>
+        <p class="lead" style="margin-top:0.75rem;margin-bottom:0">
+          Estás en el paso <strong>5 Pedir imgs</strong>. La subida está en el paso <strong>6 Subir imgs</strong>
+          (o usá el botón de arriba).
+        </p>
       </div>
 
-      <h2 style="margin-top:1.5rem">Master references</h2>
-      <p class="lead">${masters.length} / ${masters.length} listed — generate these in Flow first, then attach when batching.</p>
+      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>:
+        ${needAi} las pedís a Google Flow · ${needReal} son documentos/fotos reales (no las inventa la IA).
+      </p>
+      <div class="actions">
+        <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
+      </div>
+
+      <h2 style="margin-top:1.6rem">A) Caras / lugares que se repiten</h2>
+      <p class="lead">Generá estas <strong>primero</strong> en Google Flow (1 imagen cada una) y después usalas como referencia cuando pidas los grupos.</p>
       <div class="list" id="masters"></div>
 
-      <h2 style="margin-top:1.5rem">Flow batches</h2>
-      <p class="lead">Copy → paste in Google Flow with references attached → download as separate images → rename to visual numbers → import.</p>
+      <h2 style="margin-top:1.6rem">B) Grupos para pedir en Google Flow</h2>
+      <p class="lead">Cada grupo = ~10 imágenes. Copiá el texto → pegalo en Google Flow → generá → descargá.</p>
       <div class="list" id="batches"></div>
 
-      <h2 style="margin-top:1.5rem">Non-Flow assets</h2>
+      <h2 style="margin-top:1.6rem">C) Cosas reales (no pedirle esto a la IA)</h2>
+      <p class="lead">Documentos, gráficos, etc. Los conseguís vos y los subís en el paso 6.</p>
       <div class="list" id="nonflow"></div>
+
+      <div class="actions" style="margin-top:1.5rem">
+        <button class="btn btn-primary" id="to-images-2">Ir a subir imágenes</button>
+      </div>
     </div>`;
 
-  $("#rebuild").onclick = () => rebuildFlow();
-  $("#to-images").onclick = async () => {
+  const goImages = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
       body: JSON.stringify({ step: "images" }),
@@ -731,27 +769,30 @@ async function paintFlow(ws, p) {
     state.project = data.project;
     renderProject();
   };
+  $("#rebuild").onclick = () => rebuildFlow();
+  $("#to-images").onclick = goImages;
+  $("#to-images-2").onclick = goImages;
 
   $("#masters").innerHTML = masters.length
     ? masters
         .map(
           (m) => `
       <article class="shot">
-        <strong>${esc(m.name)}</strong> · ${esc(m.kind)} · used in ${m.used_in_flow || 0} Flow visuals
-        <div class="ff-episode-meta">${esc(m.master_filename)} · ${esc(m.appearance_strategy || "")}</div>
-        <pre style="max-height:120px;overflow:auto">${esc(m.master_prompt || "")}</pre>
-        <button class="btn btn-soft" data-copy-master="${esc(m.id)}">Copy master prompt</button>
+        <strong>${esc(m.name)}</strong>
+        <div class="ff-episode-meta">Se usa en ${m.used_in_flow || 0} escenas · guardala como ${esc(m.master_filename)}</div>
+        <pre style="max-height:100px;overflow:auto">${esc(m.master_prompt || "")}</pre>
+        <button class="btn btn-soft" data-copy-master="${esc(m.id)}">1) Copiar texto para Google Flow</button>
       </article>`
         )
         .join("")
-    : `<div class="notice">No master references required (or regenerate after Story Plan has recurring characters).</div>`;
+    : `<div class="notice">No hace falta una imagen “maestra” especial en este episodio.</div>`;
 
   $("#masters").querySelectorAll("[data-copy-master]").forEach((btn) => {
     btn.onclick = () => {
       const m = masters.find((x) => x.id === btn.dataset.copyMaster);
       if (m?.master_prompt) {
         navigator.clipboard.writeText(m.master_prompt);
-        toast("Master prompt copied");
+        toast("Copiado. Pegalo en Google Flow.");
       }
     };
   });
@@ -759,23 +800,27 @@ async function paintFlow(ws, p) {
   $("#batches").innerHTML = batches.length
     ? batches
         .map((b, bi) => {
-          const refs = (b.references_needed || []).map((r) => r.name || r.id).join(", ") || "(none)";
+          const refs = (b.references_needed || []).map((r) => r.name || r.id).join(", ") || "ninguna especial";
+          const totalB = b.count || (b.visual_numbers || []).length;
+          const done = b.imported || 0;
           const nums = (b.visual_numbers || []).map((n) => String(n).padStart(3, "0")).join(", ");
           return `
       <article class="shot" id="batch-${bi}">
-        <strong>${esc(b.id)}</strong> — ${esc(b.label || "")}
-        <div class="ff-episode-meta">Visuals: ${esc(nums)} · Refs: ${esc(refs)} · ${esc(b.status || "ready_to_generate")}
-          ${b.imported != null ? ` · ${b.imported}/${b.count || (b.visual_numbers || []).length} imported` : ""}</div>
+        <strong>Grupo ${bi + 1}</strong> — ${totalB} imágenes
+        <div class="ff-episode-meta">Números: ${esc(nums)}</div>
+        <div class="ff-episode-meta">Referencias a adjuntar en Flow: ${esc(refs)}</div>
+        <div class="ff-episode-meta">Subidas: <strong>${done} / ${totalB}</strong></div>
         <div class="actions">
-          <button class="btn btn-primary" data-copy-batch="${bi}">Copy batch prompt</button>
-          <button class="btn btn-ghost" data-expand-batch="${bi}">Expand / edit</button>
+          <button class="btn btn-primary" data-copy-batch="${bi}">2) Copiar pedido a Google Flow</button>
+          <button class="btn btn-ghost" data-expand-batch="${bi}">Ver detalle</button>
+          <button class="btn btn-accent" data-go-upload="${bi}">3) Ya las bajé → subir</button>
         </div>
         <pre class="hidden" id="batch-prompt-${bi}" style="max-height:220px;overflow:auto;margin-top:0.6rem">${esc(b.prompt || "")}</pre>
         <div class="hidden" id="batch-expand-${bi}" style="margin-top:0.6rem"></div>
       </article>`;
         })
         .join("")
-    : `<div class="notice">No Flow batches — regenerate Visual Plan.</div>`;
+    : `<div class="notice">No hay grupos. Tocá “Rehacer plan de imágenes”.</div>`;
 
   $("#batches").querySelectorAll("[data-copy-batch]").forEach((btn) => {
     btn.onclick = () => {
@@ -784,9 +829,12 @@ async function paintFlow(ws, p) {
       if (pre) pre.classList.remove("hidden");
       if (b?.prompt) {
         navigator.clipboard.writeText(b.prompt);
-        toast("Batch prompt copied — paste into Flow");
+        toast("Pedido copiado. Pegalo en Google Flow y generá las imágenes.");
       }
     };
+  });
+  $("#batches").querySelectorAll("[data-go-upload]").forEach((btn) => {
+    btn.onclick = goImages;
   });
 
   $("#batches").querySelectorAll("[data-expand-batch]").forEach((btn) => {
@@ -803,10 +851,10 @@ async function paintFlow(ws, p) {
         .map((n) => {
           const v = byNum[Number(n)] || {};
           return `<div class="field" style="margin:0.5rem 0">
-            <label>${String(n).padStart(3, "0")} · ${esc(v.visual_type || "FLOW")} · beat ${esc(v.story_beat_id || "—")}</label>
+            <label>Imagen ${String(n).padStart(3, "0")}</label>
             <textarea rows="2" data-edit-visual="${n}">${esc(v.description || v.action || "")}</textarea>
-            <button class="btn btn-soft" data-save-visual="${n}">Save scene</button>
-            <button class="btn btn-ghost" data-single="${n}">Copy single</button>
+            <button class="btn btn-soft" data-save-visual="${n}">Guardar</button>
+            <button class="btn btn-ghost" data-single="${n}">Copiar solo esta</button>
           </div>`;
         })
         .join("");
@@ -819,7 +867,7 @@ async function paintFlow(ws, p) {
               method: "PUT",
               body: JSON.stringify({ description: ta.value }),
             });
-            toast(`Visual ${String(num).padStart(3, "0")} updated — batch prompt refreshed`);
+            toast("Guardado");
             state.shots = null;
             state.visualPlan = null;
             renderProject();
@@ -833,7 +881,7 @@ async function paintFlow(ws, p) {
           try {
             const data = await api(`/api/projects/${encodeURIComponent(p.id)}/visuals/${sb.dataset.single}/prompt`);
             await navigator.clipboard.writeText(data.prompt || "");
-            toast("Single prompt copied");
+            toast("Copiado");
           } catch (e) {
             toast(e.message);
           }
@@ -848,24 +896,33 @@ async function paintFlow(ws, p) {
         .map(
           (v) => `
       <article class="shot">
-        <strong>${String(v.number).padStart(3, "0")}</strong> — ${esc(v.visual_type)}
-        <div class="ff-episode-meta">${esc(v.acquisition_note || v.description || "")}</div>
-        <div>Status: ${esc(v.status || "MISSING")} · expected ${esc(v.expected_file)}</div>
+        <strong>Imagen ${String(v.number).padStart(3, "0")}</strong> — documento / gráfico real
+        <div class="ff-episode-meta">${esc(v.description || v.acquisition_note || "")}</div>
+        <div>${v.status === "READY" ? "✓ Ya la subiste" : "○ Todavía falta — subila en el paso 6"}</div>
+        <button class="btn btn-soft" data-upload-one="${v.number}">Subir esta imagen</button>
       </article>`
         )
         .join("")
-    : `<div class="notice">All visuals are Flow reenactments for this plan.</div>`;
+    : `<div class="notice">En este episodio casi todo se pide a Google Flow.</div>`;
+
+  $("#nonflow").querySelectorAll("[data-upload-one]").forEach((btn) => {
+    btn.onclick = async () => {
+      await goImages();
+      // force_num will be filled if possible after paint — toast hint
+      toast(`En Subir imgs, poné el número ${String(btn.dataset.uploadOne).padStart(3, "0")} y subí el archivo`);
+    };
+  });
 }
 
 async function rebuildFlow() {
   try {
-    const data = await withBusy("Building Visual Plan + Flow batches…", () =>
+    const data = await withBusy("Armando el plan de imágenes…", () =>
       api(`/api/projects/${encodeURIComponent(state.project.id)}/flow`, { method: "POST" })
     );
     state.project = data.project;
     state.shots = data.shots;
     state.visualPlan = data.visual_plan;
-    toast("Visual Plan ready");
+    toast("Plan listo");
     renderProject();
   } catch (e) {
     toast(e.message);
@@ -881,35 +938,95 @@ async function paintImages(ws, p) {
   } catch {
     /* pack may be missing */
   }
-  const miss = (sync.missing || []).slice(0, 30).join(", ");
+  const missList = sync.missing || [];
+  const miss = missList.slice(0, 24).join(", ");
+  const ready = sync.ready || 0;
+  const expected = sync.expected || 0;
+
   ws.innerHTML = `
     <div class="panel workspace">
-      <p class="kicker">Bulk import</p>
-      <p class="lead"><strong>${sync.ready || 0} / ${sync.expected || 0}</strong> visual assets ready (file on disk = READY).</p>
-      ${miss ? `<div class="notice">Missing: ${esc(miss)}${(sync.missing || []).length > 30 ? "…" : ""}</div>` : ""}
-      <p class="lead">Drop numbered files into the project <code>flow-import</code> folder as <code>001.png</code>… then import.</p>
+      <div class="panel soft" style="border:2px solid var(--ink,#111);margin-bottom:1.2rem">
+        <h2 style="margin-top:0">Acá se suben las imágenes</h2>
+        <p class="lead">Progreso: <strong>${ready} de ${expected}</strong> listas</p>
+        ${miss ? `<p class="lead">Todavía faltan: <code>${esc(miss)}</code>${missList.length > 24 ? "…" : ""}</p>` : `<p class="lead">✓ No falta ninguna.</p>`}
+      </div>
+
+      <div class="panel soft" style="margin:1rem 0;background:rgba(0,128,128,0.08)">
+        <h2 style="margin-top:0">Subir varias de una</h2>
+        <ol style="padding-left:1.2rem;line-height:1.5">
+          <li>En Google Flow, descargá las imágenes.</li>
+          <li>Renombrialas: <code>001.png</code>, <code>003.png</code>, etc. (el número del plan).</li>
+          <li>Elegilas acá abajo y tocá <strong>Subir</strong>.</li>
+        </ol>
+        <input type="file" id="file-upload" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple style="margin:0.8rem 0;display:block" />
+        <div class="actions">
+          <button class="btn btn-primary" id="btn-upload" style="font-size:1.05rem;padding:0.85rem 1.4rem">Subir las que elegí</button>
+        </div>
+      </div>
+
+      <div class="panel soft" style="margin:1rem 0">
+        <h2 style="margin-top:0">Subir / reemplazar UNA sola</h2>
+        <p class="lead">Si una salió mal o falta solo la 023:</p>
+        <div class="field">
+          <label>Número de la imagen (ejemplo: 23)</label>
+          <input id="force-num" type="number" min="1" placeholder="23" style="max-width:8rem" />
+        </div>
+        <input type="file" id="file-one" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" style="margin:0.6rem 0;display:block" />
+        <div class="actions">
+          <button class="btn btn-accent" id="btn-replace">Subir esta</button>
+        </div>
+      </div>
+
       <div class="actions">
-        <button class="btn btn-accent" id="do-import">Import from flow-import/</button>
-        <button class="btn btn-ghost" id="refresh-sync">Refresh status</button>
-        <button class="btn btn-primary" id="to-voice">Continue to voice</button>
+        <button class="btn btn-ghost" id="refresh-sync">Actualizar contador</button>
+        <button class="btn btn-ghost" id="back-flow">Volver a pedir imágenes</button>
+        <button class="btn btn-primary" id="to-voice" ${ready < 1 ? "disabled" : ""}>Seguir a la voz</button>
       </div>
     </div>`;
-  $("#do-import").onclick = async () => {
+
+  const uploadFiles = async (fileList, forceNumber = null) => {
+    const files = [...(fileList || [])];
+    if (!files.length) return toast("Elegí al menos una imagen");
+    const fd = new FormData();
+    files.forEach((f) => fd.append("files", f, f.name));
+    if (forceNumber != null && forceNumber !== "") {
+      fd.append("force_number", String(Number(forceNumber)));
+    }
     try {
-      const data = await withBusy("Importing stills…", () =>
-        api(`/api/projects/${encodeURIComponent(p.id)}/images/import`, {
+      const data = await withBusy(`Subiendo ${files.length}…`, () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/images/upload`, {
           method: "POST",
-          body: JSON.stringify({ source_dir: "" }),
+          body: fd,
         })
       );
       state.project = data.project;
-      toast(`Imported — ${data.sync?.ready || 0}/${data.sync?.expected || 0} ready`);
+      const r = data.report || {};
+      if (r.invalid_files?.length) {
+        toast(`Algunas no se entendieron (poneles tipo 001.png): ${r.invalid_files.slice(0, 3).join(", ")}`);
+      } else {
+        toast(`Listo: ${data.sync?.ready || 0} de ${data.sync?.expected || 0} imágenes`);
+      }
       renderProject();
     } catch (e) {
       toast(e.message);
     }
   };
+
+  $("#btn-upload").onclick = () => uploadFiles($("#file-upload").files);
+  $("#btn-replace").onclick = () => {
+    const n = $("#force-num").value;
+    if (!n) return toast("Escribí el número (ej. 23)");
+    uploadFiles($("#file-one").files, n);
+  };
   $("#refresh-sync").onclick = () => renderProject();
+  $("#back-flow").onclick = async () => {
+    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+      method: "PATCH",
+      body: JSON.stringify({ step: "flow" }),
+    });
+    state.project = data.project;
+    renderProject();
+  };
   $("#to-voice").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",

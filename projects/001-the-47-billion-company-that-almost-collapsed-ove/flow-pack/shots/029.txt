@@ -2,15 +2,15 @@ VISUAL 029
 
 TYPE: FLOW_REENACTMENT
 EXPECTED FILE: 029.png
-STORY BEAT: 1
+STORY BEAT: 4
 DURATION TARGET: 7s
-KEN BURNS: static
+KEN BURNS: slow_push
 
 NARRATION:
-Reports emerged detailing Neumann's lavish lifestyle.
+Reports emerged detailing Neumann's lavish lifestyle and potential conflicts of interest stemming from his ownership of properties leased to WeWork.
 
 DESCRIPTION:
-Neumann disfrutando de una fiesta lujosa con amigos.
+Neumann is seen enjoying a luxurious party with extravagant decorations and guests.
 
 REFERENCES:
 OBJ_001
@@ -18,8 +18,8 @@ OBJ_001
 PROMPT:
 Create ONE separate 16:9 cinematic documentary still image.
 Photorealistic documentary photography. No collage.
-STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
 DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
 
-029. una mansión elegante. Neumann disfrutando de una fiesta lujosa con amigos. over the shoulder candid documentary shot, photorealistic, period-accurate details.
+029. A lavish mansion or upscale venue.. Neumann is seen enjoying a luxurious party with extravagant decorations and guests. crowd candid documentary shot, photorealistic, period-accurate details.
 

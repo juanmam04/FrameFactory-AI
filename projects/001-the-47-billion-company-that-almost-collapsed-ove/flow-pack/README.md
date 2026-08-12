@@ -4,9 +4,9 @@ Topic: WeWork's rise from coworking startup to one of the world's most valuable 
 
 ## Totals
 
-- Total visuals: 32
-- Flow reenactments: 27
-- Archival / document / other: 5
+- Total visuals: 31
+- Flow reenactments: 28
+- Archival / document / other: 3
 - Master references: 2
 - Flow batches: 3 (size 10)
 

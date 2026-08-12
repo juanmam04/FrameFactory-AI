@@ -2,10 +2,10 @@ CHAR_002
 Name: Miguel McKelvey
 
 Description:
-Co-founder of WeWork, instrumental in shaping the company's vision and culture.
+Co-founder of WeWork, focused on the company's design and community aspects.
 
 Generate reference image:
-Casual yet professional attire, often engaging with employees and clients in WeWork spaces, embodying the company's community-driven ethos.
+A well-groomed man with a thoughtful demeanor, often dressed in smart casual clothing, seen engaging with employees and clients in WeWork spaces.
 
 Strategy: FLOW_REENACTMENT
 Instructions: Generate ONE clear master reference. Reuse this look in later shots.

@@ -3,14 +3,14 @@ VISUAL 009
 TYPE: FLOW_REENACTMENT
 EXPECTED FILE: 009.png
 STORY BEAT: 9
-DURATION TARGET: 5s
-KEN BURNS: pan_left
+DURATION TARGET: 7s
+KEN BURNS: pan_right
 
 NARRATION:
 This shift in work culture appealed not only to individual entrepreneurs but also to established companies seeking to reduce overhead costs and foster collaboration among their teams.
 
 DESCRIPTION:
-Un grupo diverso de trabajadores en un espacio de coworking interactúa y colabora en proyectos.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+Empresarios y empleados colaborando en un espacio de coworking moderno.
 
 REFERENCES:
 (none)
@@ -18,8 +18,8 @@ REFERENCES:
 PROMPT:
 Create ONE separate 16:9 cinematic documentary still image.
 Photorealistic documentary photography. No collage.
-STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a focus on real locations, interviews, and archival footage'}
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
 DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
 
-009. Espacio de coworking de WeWork.. Un grupo diverso de trabajadores en un espacio de coworking interactúa y colabora en proyectos.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso. object detail candid documentary shot, photorealistic, period-accurate details.
+009. Oficina de coworking de WeWork.. Empresarios y empleados colaborando en un espacio de coworking moderno. intimate moment candid documentary shot, photorealistic, period-accurate details.
 
