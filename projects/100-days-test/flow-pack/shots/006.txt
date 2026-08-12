@@ -1,0 +1,31 @@
+SHOT 006
+
+EXPECTED FILE: 006.png
+
+NARRATION:
+The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.
+
+REFERENCES:
+LOC_001, LOC_002
+
+CONTINUITY:
+same location as previous; follow from shot 005
+
+SHOT TYPE:
+medium_shot
+
+CAMERA:
+POV first person
+
+ACTION:
+The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+PROMPT:
+GLOBAL STYLE: Documentary cinematic realism, 16:9.
+CURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac
+ENVIRONMENT: lugar principal de la historia
+CAMERA: POV first person
+LIGHTING: indefinido
+CONTINUITY: same location as previous; follow from shot 005
+REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
+DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional hands/forearms only) show the environment and other characters/objects the story needs no empty white background no generic poster pose — show a real s

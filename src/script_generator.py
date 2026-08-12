@@ -96,6 +96,17 @@ def generar_guion(
         _bible = (rules.get("channel_dark_confession_bible") or "").strip()
         if _bible:
             system += "\n\n=== BIBLIA DEL CANAL (OBLIGATORIA) ===\n" + _bible
+    elif plantilla == "business_documentary_en":
+        # Documentary 100-days: do NOT inherit Reddit/POV/fiction style_instructions.
+        system_base = (t.get("sistema") or "").strip() or (
+            "You write factual English business documentaries. Do not invent facts."
+        )
+        system = system_base
+        if creative_context and str(creative_context).strip():
+            system += (
+                "\n\nCREATOR CONTEXT (tone/audience — do not override factuality rules):\n"
+                + str(creative_context).strip()
+            )
     else:
         system_base = t.get(
             "sistema",
@@ -181,6 +192,31 @@ Si escribís menos de {int(target_words * 0.7)} palabras no cumple. Acercate sie
                     .replace("{target_words}", str(target_words))
                 )
             prompt_borrador = f"{prompt_borrador}\n\n{longitud_guidance}".strip()
+        elif plantilla == "business_documentary_en":
+            user_tpl = (t.get("usuario") or "").strip()
+            if not user_tpl:
+                user_tpl = (
+                    "Write a factual English documentary narration (~{target_words} words, "
+                    "~{duracion_min} min) about:\n\n{tema}\n\nDo not invent facts."
+                )
+            try:
+                prompt_borrador = user_tpl.format(
+                    tema=tema,
+                    duracion_min=duracion_min,
+                    target_words=target_words,
+                )
+            except KeyError:
+                prompt_borrador = (
+                    user_tpl.replace("{tema}", str(tema))
+                    .replace("{duracion_min}", str(duracion_min))
+                    .replace("{target_words}", str(target_words))
+                )
+            prompt_borrador = (
+                f"{prompt_borrador}\n\n"
+                f"LENGTH: aim for ~{target_words} words. "
+                "Do not pad with invented episodes. Prefer fewer accurate sentences over fiction.\n"
+                f"{longitud_guidance}"
+            ).strip()
         else:
             if force_este_eres_tu_opening:
                 apertura_instrucciones = """APERTURA OBLIGATORIA (NO NEGOCIABLE):

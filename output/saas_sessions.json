@@ -1,12 +1,823 @@
 {
   "version": 1,
-  "active_id": "20260416_180807_d268a985",
+  "active_id": "20260812_011039_9370a272",
   "sessions": [
+    {
+      "id": "20260812_013742_92777eae",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:37:42",
+      "updated_at": "2026-08-12T01:37:43",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_013733_701580de",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:37:33",
+      "updated_at": "2026-08-12T01:37:33",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_013733_8c09ce2f",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:37:33",
+      "updated_at": "2026-08-12T01:37:33",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_013732_79caac81",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:37:32",
+      "updated_at": "2026-08-12T01:37:32",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_013732_9d1dc767",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:37:32",
+      "updated_at": "2026-08-12T01:37:32",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_013731_5fd5e830",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:37:31",
+      "updated_at": "2026-08-12T01:37:32",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_013729_2beeb719",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:37:29",
+      "updated_at": "2026-08-12T01:37:31",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "",
+        "avoid": [],
+        "niche": "Narración de historias ficticias sobre crimen organizado y corrupción",
+        "audience": {
+          "who": "Espectadores interesados en narrativas de crimen y corrupción",
+          "pain_points": "Deseo de historias cautivadoras y emocionantes",
+          "reading_level": "general"
+        },
+        "tone": "Directo",
+        "hook_style": "Pregunta + promesa",
+        "pacing": "Rápido",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "Cine Crudo",
+          "tagline": "Historias que desafían la moral",
+          "content_pillars": "Narrativas de crimen, análisis de decisiones, desarrollo de personajes complejos"
+        },
+        "script": {
+          "structure_preference": "Narrativa cinematográfica",
+          "forbidden_phrases": "políticamente correcto",
+          "cta_style": "Invitación a reflexionar sobre decisiones",
+          "opening_style": "Narrador presenta la historia de manera inmersiva"
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "Entre 10 y 20 minutos, pura acción sin relleno",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "Estilo cinematográfico",
+          "color_mood": "Oscuro y dramático",
+          "shot_preferences": "Cercanos y dinámicos",
+          "b_roll_style": "Imágenes generadas por IA que complementen la narrativa",
+          "reference_moodboards": "Cine de crimen y drama"
+        },
+        "editing": {
+          "cut_rhythm": "rápido",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz para aumentar la inmersión",
+          "pacing_visual": "dinámico y envolvente",
+          "notes_for_ai_director": "Incluir giros inesperados y transiciones que reflejen el ascenso o caída del personaje"
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Narcotráfico, carteles, sicarios, balaceras, narconovela, corrupción estilo narcos como núcleo de la historia; priorizar ficción tipo Reddit: relaciones, laburo, familia, vecinos, apps, misterio cotidiano."
+        },
+        "notes_freeform": "Las historias deben ser impactantes, con giros inesperados y desarrollo de personajes complejos. Se busca mantener al espectador inmerso en la narrativa, similar a una película."
+      }
+    },
+    {
+      "id": "20260812_011434_9919e5c3",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:14:34",
+      "updated_at": "2026-08-12T01:37:26",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "",
+        "avoid": [],
+        "niche": "Narración de historias ficticias sobre crimen organizado y corrupción",
+        "audience": {
+          "who": "Espectadores interesados en narrativas de crimen y corrupción",
+          "pain_points": "Deseo de historias cautivadoras y emocionantes",
+          "reading_level": "general"
+        },
+        "tone": "Directo",
+        "hook_style": "Pregunta + promesa",
+        "pacing": "Rápido",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "Cine Crudo",
+          "tagline": "Historias que desafían la moral",
+          "content_pillars": "Narrativas de crimen, análisis de decisiones, desarrollo de personajes complejos"
+        },
+        "script": {
+          "structure_preference": "Narrativa cinematográfica",
+          "forbidden_phrases": "políticamente correcto",
+          "cta_style": "Invitación a reflexionar sobre decisiones",
+          "opening_style": "Narrador presenta la historia de manera inmersiva"
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "Entre 10 y 20 minutos, pura acción sin relleno",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "Estilo cinematográfico",
+          "color_mood": "Oscuro y dramático",
+          "shot_preferences": "Cercanos y dinámicos",
+          "b_roll_style": "Imágenes generadas por IA que complementen la narrativa",
+          "reference_moodboards": "Cine de crimen y drama"
+        },
+        "editing": {
+          "cut_rhythm": "rápido",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz para aumentar la inmersión",
+          "pacing_visual": "dinámico y envolvente",
+          "notes_for_ai_director": "Incluir giros inesperados y transiciones que reflejen el ascenso o caída del personaje"
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Narcotráfico, carteles, sicarios, balaceras, narconovela, corrupción estilo narcos como núcleo de la historia; priorizar ficción tipo Reddit: relaciones, laburo, familia, vecinos, apps, misterio cotidiano."
+        },
+        "notes_freeform": "Las historias deben ser impactantes, con giros inesperados y desarrollo de personajes complejos. Se busca mantener al espectador inmerso en la narrativa, similar a una película."
+      }
+    },
+    {
+      "id": "20260812_011043_d73e2a73",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:10:43",
+      "updated_at": "2026-08-12T01:10:43",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_011042_07c4f861",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:10:42",
+      "updated_at": "2026-08-12T01:10:42",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
+    {
+      "id": "20260812_011039_9370a272",
+      "title": "Nueva sesión",
+      "created_at": "2026-08-12T01:10:39",
+      "updated_at": "2026-08-12T01:41:09",
+      "memory_summary": "",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hola. ¿Qué tipo de videos querés publicar en esta sesión?"
+        },
+        {
+          "role": "user",
+          "content": "hola"
+        },
+        {
+          "role": "assistant",
+          "content": "Seguimos: ¿qué tono querés y qué duración sueles publicar?"
+        }
+      ],
+      "creative_profile": {
+        "style": "",
+        "content_type": "reddit_dark_storytime",
+        "avoid": [],
+        "niche": "",
+        "audience": {
+          "who": "",
+          "pain_points": "",
+          "reading_level": "general"
+        },
+        "tone": "",
+        "hook_style": "",
+        "pacing": "Medio",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español neutro, tuteo",
+        "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
+        "channel": {
+          "name": "",
+          "tagline": "",
+          "content_pillars": ""
+        },
+        "script": {
+          "structure_preference": "",
+          "forbidden_phrases": "",
+          "cta_style": "",
+          "opening_style": ""
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "medium",
+          "aspect_notes": "",
+          "content_type": "",
+          "narration_format": ""
+        },
+        "visual": {
+          "look": "",
+          "color_mood": "",
+          "shot_preferences": "",
+          "b_roll_style": "",
+          "reference_moodboards": ""
+        },
+        "editing": {
+          "cut_rhythm": "medio",
+          "transitions_default": "corte limpio",
+          "lower_thirds": "no",
+          "subtitles_intent": "ninguno_en_mvp",
+          "music_role": "bajo_voz",
+          "pacing_visual": "",
+          "notes_for_ai_director": ""
+        },
+        "idea_generation": {
+          "brief": "",
+          "angles_to_favor": "",
+          "angles_to_avoid": "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+        },
+        "notes_freeform": ""
+      }
+    },
     {
       "id": "20260416_180807_d268a985",
       "title": "Check",
       "created_at": "2026-04-16T18:08:07",
-      "updated_at": "2026-04-19T01:48:14",
+      "updated_at": "2026-08-12T01:37:29",
       "memory_summary": "",
       "messages": [
         {

@@ -1,0 +1,8 @@
+{
+  "name": "framefactory-ai",
+  "private": true,
+  "scripts": {
+    "dev": "./run.sh",
+    "start": "./run.sh"
+  }
+}

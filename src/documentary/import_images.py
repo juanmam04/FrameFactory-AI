@@ -1,0 +1,151 @@
+"""Bulk import + replace stills for Flow (FF100-P0-003/004)."""
+from __future__ import annotations
+
+import re
+import shutil
+from pathlib import Path
+from typing import Any
+
+from src.documentary.flow_pack import load_shot_list
+from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
+
+_NUM_RE = re.compile(r"^(\d{1,4})\.(png|jpg|jpeg|webp)$", re.I)
+
+
+def import_images(
+    project: dict[str, Any],
+    source_dir: str | Path,
+    *,
+    min_width: int = 640,
+) -> dict[str, Any]:
+    """Copy numbered stills into project/images/NNN.png and validate vs shot list."""
+    src = Path(source_dir).expanduser().resolve()
+    if not src.is_dir():
+        raise FileNotFoundError(f"Import folder not found: {src}")
+
+    shot_list = load_shot_list(str(project["id"]))
+    expected_n = int(shot_list.get("shot_count") or len(shot_list.get("shots") or []))
+    expected_nums = {int(s["number"]) for s in (shot_list.get("shots") or [])}
+
+    found: dict[int, Path] = {}
+    duplicates: list[str] = []
+    invalid: list[str] = []
+    unknown: list[str] = []
+
+    for p in sorted(src.iterdir()):
+        if not p.is_file():
+            continue
+        m = _NUM_RE.match(p.name)
+        if not m:
+            if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}:
+                invalid.append(p.name)
+            continue
+        num = int(m.group(1))
+        if num in found:
+            duplicates.append(p.name)
+            continue
+        if expected_nums and num not in expected_nums:
+            unknown.append(p.name)
+        found[num] = p
+
+    dest_root = project_dir(str(project["id"])) / "images"
+    dest_root.mkdir(parents=True, exist_ok=True)
+
+    dim_issues: list[str] = []
+    imported = 0
+    for num, path in sorted(found.items()):
+        if expected_nums and num not in expected_nums:
+            continue
+        dest = dest_root / f"{num:03d}.png"
+        # normalize extension to .png name (keep bytes)
+        shutil.copy2(path, dest)
+        imported += 1
+        issue = _dim_issue(dest, min_width)
+        if issue:
+            dim_issues.append(f"{num:03d}: {issue}")
+
+    missing = sorted(expected_nums - set(found.keys())) if expected_nums else []
+    ready = len(expected_nums - set(missing)) if expected_nums else imported
+
+    report = {
+        "expected": expected_n,
+        "ready": ready,
+        "imported_files": imported,
+        "missing": [f"{n:03d}" for n in missing],
+        "duplicates": duplicates,
+        "unknown_numbers": unknown,
+        "invalid_files": invalid,
+        "dimension_issues": dim_issues,
+        "source_dir": str(src),
+    }
+    project["import_report"] = report
+    # images_imported true if at least one; full readiness is ready==expected
+    set_checkpoint(project, "images_imported", ready > 0)
+    if ready == expected_n and expected_n > 0:
+        set_checkpoint(project, "images_imported", True)
+    save_project(project)
+    append_log(str(project["id"]), f"import ready={ready}/{expected_n} missing={len(missing)}")
+    return report
+
+
+def replace_shot_image(project: dict[str, Any], shot_number: int, image_path: str | Path) -> Path:
+    src = Path(image_path).expanduser().resolve()
+    if not src.is_file():
+        raise FileNotFoundError(src)
+    dest = project_dir(str(project["id"])) / "images" / f"{int(shot_number):03d}.png"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+    # refresh missing list lightly
+    try:
+        report = dict(project.get("import_report") or {})
+        miss = [m for m in (report.get("missing") or []) if m != f"{int(shot_number):03d}"]
+        report["missing"] = miss
+        report["ready"] = int(report.get("expected") or 0) - len(miss) if report.get("expected") else report.get("ready")
+        project["import_report"] = report
+        set_checkpoint(project, "images_imported", True)
+        # replace does not invalidate voice
+        set_checkpoint(project, "render_ready", False)
+        set_checkpoint(project, "assembly_ready", False)
+        save_project(project)
+    except Exception:
+        pass
+    append_log(str(project["id"]), f"replaced shot {int(shot_number):03d}")
+    return dest
+
+
+def list_project_images(project_id: str) -> list[Path]:
+    root = project_dir(project_id) / "images"
+    if not root.exists():
+        return []
+    return sorted(root.glob("*.png"))
+
+
+def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
+    """Return images in shot order; missing slots reported."""
+    shots = (load_shot_list(project_id).get("shots") or [])
+    paths: list[Path] = []
+    missing: list[str] = []
+    img_root = project_dir(project_id) / "images"
+    for s in shots:
+        n = int(s["number"])
+        p = img_root / f"{n:03d}.png"
+        if p.exists() and p.stat().st_size > 0:
+            paths.append(p)
+        else:
+            missing.append(f"{n:03d}")
+    return paths, missing
+
+
+def _dim_issue(path: Path, min_width: int) -> str | None:
+    try:
+        from PIL import Image
+
+        with Image.open(path) as im:
+            w, h = im.size
+        if w < min_width:
+            return f"width {w} < {min_width}"
+        if w < h:
+            return f"portrait {w}x{h} (expected landscape 16:9)"
+    except Exception:
+        return None
+    return None

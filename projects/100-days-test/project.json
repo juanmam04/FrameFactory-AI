@@ -1,0 +1,75 @@
+{
+  "id": "100-days-test",
+  "slug": "the-rise-and-fall-of-wework",
+  "mode": "documentary",
+  "title": "The Rise and Fall of WeWork",
+  "topic": "The Rise and Fall of WeWork",
+  "language": "en",
+  "target_words": 800,
+  "target_duration_min": [
+    8,
+    12
+  ],
+  "research_notes": "WeWork was co-founded by Adam Neumann. SoftBank was a major investor. The 2019 IPO attempt collapsed amid governance and valuation concerns. UNKNOWN: exact private valuation peaks — do not invent.",
+  "sources": [
+    "Public reporting on WeWork IPO attempt (2019)"
+  ],
+  "script": "[DOGFOOD MOCK — NOT FOR PUBLICATION] The Rise and Fall of WeWork. This is a placeholder documentary narration used only to verify the pipeline. In production, replace with a fact-checked English script. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+  "fact_check_status": "approved",
+  "script_approved": true,
+  "voice_speed": 1.0,
+  "music_path": "",
+  "music_volume": 0.12,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "checkpoints": {
+    "script_ready": true,
+    "flow_pack_ready": true,
+    "images_imported": true,
+    "voice_ready": true,
+    "assembly_ready": true,
+    "render_ready": true
+  },
+  "import_report": {
+    "expected": 11,
+    "ready": 11,
+    "imported_files": 11,
+    "missing": [],
+    "duplicates": [],
+    "unknown_numbers": [],
+    "invalid_files": [],
+    "dimension_issues": [],
+    "source_dir": "/Users/juanmamartinez/FrameFactory-AI/projects/100-days-test/flow-import"
+  },
+  "preview": {
+    "image_count": 11,
+    "missing_images": [],
+    "voice_ok": true,
+    "voice_duration_sec": 4.4,
+    "seconds_per_image": 0.4,
+    "warnings": [],
+    "ready_to_assemble": true
+  },
+  "errors": [],
+  "created_at": "2026-08-12T03:55:56Z",
+  "updated_at": "2026-08-12T03:55:59Z",
+  "visual_analysis": {
+    "shot_count": 11,
+    "path": "flow-pack/visual_analysis.json"
+  },
+  "flow_pack": {
+    "shot_count": 11,
+    "batch_size": 10
+  },
+  "voice": {
+    "path": "audio/narration.mp3",
+    "duration_sec": 4.4,
+    "speed": 1.0
+  },
+  "render": {
+    "path": "render/final.mp4",
+    "seconds_per_image": 2.5
+  }
+}

@@ -1,0 +1,10 @@
+CHAR_001
+Name: Fall
+
+Description:
+Recurring figure related to: The Rise and Fall of WeWork
+
+Generate reference image:
+Realistic adult, period-appropriate wardrobe, documentary still of Fall
+
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.

@@ -588,9 +588,13 @@ def run_saas_mvp(
     video_aspect: "16:9" (YouTube) o "9:16" (TikTok) cuando hay gameplay.
     overlay_text: dict opcional {text, x, y, size, color} para drawtext en el primer clip (FFmpeg).
     skip_support_images: si True (y no hay gameplay), no llama a Replicate por bloque: solo personaje + fondo del catálogo.
+        También se fuerza si SAAS_SKIP_SUPPORT_IMAGES=1 en el entorno.
     """
     print("🚀 [MVP] Iniciando run_saas_mvp...")
     _saas_write_progress(progress_path, "Inicio", 0.0)
+    if os.getenv("SAAS_SKIP_SUPPORT_IMAGES", "").strip().lower() in ("1", "true", "yes", "on"):
+        skip_support_images = True
+        print("🖼️ [MVP] SAAS_SKIP_SUPPORT_IMAGES activo — sin imágenes de apoyo (Replicate)")
 
     tw = int(target_words) if target_words is not None else 420
     tw = max(80, min(10000, tw))

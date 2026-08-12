@@ -11,12 +11,15 @@ Style: Default,Arial,38,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:03.80,Default,,0,0,0,,{\an2}Tienes 25 años y el futuro parece brillante. Conoces a
-Dialogue: 0,0:00:03.80,0:00:07.65,Default,,0,0,0,,{\an2}una chica en una fiesta; su risa ilumina la habitación.
-Dialogue: 0,0:00:07.65,0:00:12.97,Default,,0,0,0,,{\an2}La química es instantánea, pero pronto surgen pequeñas mentiras. Ella
-Dialogue: 0,0:00:12.97,0:00:16.23,Default,,0,0,0,,{\an2}evita hablar de su pasado y, al encontrar una carta,
-Dialogue: 0,0:00:16.23,0:00:20.20,Default,,0,0,0,,{\an2}descubres secretos oscuros que te dejan helado. Te enfrentas a
-Dialogue: 0,0:00:20.20,0:00:25.48,Default,,0,0,0,,{\an2}un dilema: ¿la amas lo suficiente para perdonarla? La confianza
-Dialogue: 0,0:00:25.48,0:00:30.00,Default,,0,0,0,,{\an2}se tambalea. Tras una intensa confrontación, ella te pide una
-Dialogue: 0,0:00:30.00,0:00:34.86,Default,,0,0,0,,{\an2}segunda oportunidad. Reflexionas y decides que, aunque el amor es
-Dialogue: 0,0:00:34.86,0:00:38.67,Default,,0,0,0,,{\an2}complicado, tu futuro es prioridad. Miras hacia adelante.
+Dialogue: 0,0:00:00.00,0:00:04.09,Default,,0,0,0,,{\an2}Este eres tú. Descubres un diario escondido en la casa
+Dialogue: 0,0:00:04.09,0:00:07.34,Default,,0,0,0,,{\an2}de tu mejor amigo. La letra es suya, pero el
+Dialogue: 0,0:00:07.34,0:00:11.52,Default,,0,0,0,,{\an2}contenido te deja helado: un complot en tu contra. Intentas
+Dialogue: 0,0:00:11.52,0:00:15.46,Default,,0,0,0,,{\an2}calmarte, pensando que es un juego, pero los detalles son
+Dialogue: 0,0:00:15.46,0:00:20.02,Default,,0,0,0,,{\an2}vívidos. Los días pasan y ruidos extraños empiezan en tu
+Dialogue: 0,0:00:20.02,0:00:28.89,Default,,0,0,0,,{\an2}hogar: golpes, susurros. La paranoia crece. Revisa el diario de
+Dialogue: 0,0:00:28.89,0:00:35.25,Default,,0,0,0,,{\an2}nuevo. Menciona a alguien más, un contacto desconocido. Decides confrontarlo,
+Dialogue: 0,0:00:35.25,0:00:40.63,Default,,0,0,0,,{\an2}pero lo encuentras hablando con un extraño. Te alejas, sintiendo
+Dialogue: 0,0:00:40.63,0:00:44.81,Default,,0,0,0,,{\an2}que algo está mal. Esa noche, los ruidos son más
+Dialogue: 0,0:00:44.81,0:00:49.69,Default,,0,0,0,,{\an2}intensos. Llamas a la policía, pero no te creen. Regresas
+Dialogue: 0,0:00:49.69,0:00:53.50,Default,,0,0,0,,{\an2}a casa y encuentras el diario abierto, con la última
+Dialogue: 0,0:00:53.50,0:00:56.56,Default,,0,0,0,,{\an2}página rasgada. Alguien está vigilando.

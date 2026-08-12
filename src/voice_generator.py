@@ -75,14 +75,19 @@ def generar_voz(
         audio_base = _openai_tts(texto, path, formato, voice=openai_tts_voice)
 
     if not audio_base:
-        # Sin API: crear archivo vacío o avisar
-        path.write_bytes(b"")
-        return path
-    
+        # FF100-P0-007: nunca marcar como éxito un MP3 vacío.
+        raise RuntimeError(
+            "No se pudo generar voz: falta ELEVENLABS_API_KEY y/o OPENAI_API_KEY "
+            "(o el proveedor elegido falló). Configurá las keys en .env."
+        )
+
+    if not path.exists() or path.stat().st_size <= 0:
+        raise RuntimeError(f"TTS devolvió audio vacío o inexistente: {path}")
+
     # Aplicar velocidad si es diferente de 1.0
     if velocidad != 1.0:
         return _aplicar_velocidad_audio(audio_base, velocidad, path)
-    
+
     return audio_base
 
 

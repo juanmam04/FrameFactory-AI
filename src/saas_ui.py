@@ -620,7 +620,8 @@ def _init_state() -> None:
     st.session_state.create_sfx_vol = 0.08
     st.session_state.create_gameplay_path = ""
     st.session_state.create_gameplay_aspect = "16:9"
-    st.session_state.create_skip_support_images = False
+    # Por defecto sin imágenes IA (más rápido / sin créditos). Activá en paso 2 o desactivá el env.
+    st.session_state.create_skip_support_images = True
     st.session_state.active_session_id = None
     st.session_state.session_memory_summary = ""
     st.session_state.agent_messages = []
@@ -642,54 +643,92 @@ def _nav() -> None:
         st.markdown('<p class="saas-tag">FrameFactory</p>', unsafe_allow_html=True)
         st.markdown('<p class="saas-brand">Studio</p>', unsafe_allow_html=True)
         st.caption(" ")
+
+        # Aplicar cambio de sesión ANTES de instanciar el selectbox (regla Streamlit).
+        pending = st.session_state.pop("_saas_pending_session_id", None)
+        if pending:
+            st.session_state.active_session_id = str(pending)
+            st.session_state.saas_session_select = str(pending)
+            st.session_state._saas_hydrated_sid = None
+            st.session_state._saas_rename_for = None
+
         store = ensure_store()
         ids = [str(s["id"]) for s in store.get("sessions") or [] if isinstance(s, dict) and s.get("id")]
         if not ids:
             store = ensure_store()
             ids = [str(s["id"]) for s in store.get("sessions") or [] if isinstance(s, dict) and s.get("id")]
-        titles = {str(s["id"]): str(s.get("title") or "Sesión")[:48] for s in store.get("sessions") or [] if isinstance(s, dict) and s.get("id")}
+        titles = {
+            str(s["id"]): str(s.get("title") or "Sesión")[:48]
+            for s in store.get("sessions") or []
+            if isinstance(s, dict) and s.get("id")
+        }
         cur = str(st.session_state.get("active_session_id") or store.get("active_id") or (ids[0] if ids else ""))
         if cur not in ids and ids:
             cur = ids[0]
+            st.session_state.active_session_id = cur
+
+        if ids and st.session_state.get("saas_session_select") not in ids:
+            st.session_state.saas_session_select = cur
 
         def _fmt_sid(sid: str) -> str:
             s = get_session(load_store(), sid) or {}
             return f"{titles.get(sid, sid)} · {len(s.get('messages') or [])} mensajes"
 
-        chosen = st.selectbox(
-            "Sesión de trabajo",
-            ids,
-            index=ids.index(cur) if cur in ids else 0,
-            format_func=_fmt_sid,
-            key="saas_session_select",
-        )
-        if chosen and chosen != st.session_state.get("active_session_id"):
-            _session_persist()
-            store = load_store()
-            set_active_session(store, chosen)
-            _session_hydrate_from_disk()
-            st.rerun()
+        if not ids:
+            st.caption("Sin sesiones todavía.")
+        else:
+            chosen = st.selectbox(
+                "Sesión de trabajo",
+                ids,
+                format_func=_fmt_sid,
+                key="saas_session_select",
+            )
+            if chosen and chosen != str(st.session_state.get("active_session_id") or ""):
+                _session_persist()
+                set_active_session(load_store(), chosen)
+                st.session_state._saas_pending_session_id = chosen
+                st.rerun()
 
         rn_col1, rn_col2 = st.columns([2, 1])
         with rn_col1:
-            new_title = st.text_input("Nombre sesión", value=titles.get(cur, ""), key="saas_sess_rename_txt", label_visibility="collapsed", placeholder="Renombrar…")
+            if st.session_state.get("_saas_rename_for") != cur:
+                st.session_state._saas_rename_for = cur
+                st.session_state.saas_sess_rename_txt = titles.get(cur, "")
+            st.text_input(
+                "Nombre sesión",
+                key="saas_sess_rename_txt",
+                label_visibility="collapsed",
+                placeholder="Renombrar…",
+            )
         with rn_col2:
             if st.button("OK", key="saas_sess_rename_btn"):
-                if new_title.strip():
-                    rename_session(load_store(), cur, new_title.strip())
+                new_title = str(st.session_state.get("saas_sess_rename_txt") or "").strip()
+                if new_title:
+                    rename_session(load_store(), cur, new_title)
                     st.rerun()
 
         if st.button("Nueva sesión", use_container_width=True, key="saas_sess_new"):
-            _session_persist()
-            store = load_store()
-            _, nid = add_session(store, "Nueva sesión", None)
-            st.session_state.active_session_id = nid
+            try:
+                _session_persist()
+                store = load_store()
+                seed = merge_profile_disk(st.session_state.get("creative_profile"))
+                _, nid = add_session(store, "Nueva sesión", seed)
+                # No tocar saas_session_select acá: el widget ya existe en este run.
+                st.session_state._saas_pending_session_id = nid
+                st.rerun()
+            except Exception as e:
+                st.error(f"No se pudo crear la sesión: {e}")
+
+        # Hidratar chat si cambió la sesión activa
+        if st.session_state.get("active_session_id") and st.session_state.get("_saas_hydrated_sid") != st.session_state.get(
+            "active_session_id"
+        ):
             _session_hydrate_from_disk()
-            st.rerun()
 
         st.divider()
         for label, key in [
             ("Inicio", "Dashboard"),
+            ("Documentary", "Documentary"),
             ("Nuevo video", "Create"),
             ("Biblioteca", "Library"),
             ("Render", "Rendering"),
@@ -755,6 +794,11 @@ def _build_video_topic() -> str:
         st.session_state.get("create_topic") or "",
         st.session_state.get("create_twist") or "",
     )
+
+
+def _env_skip_support_images() -> bool:
+    """Kill-switch global: SAAS_SKIP_SUPPORT_IMAGES=1 apaga Replicate por escena."""
+    return os.getenv("SAAS_SKIP_SUPPORT_IMAGES", "").strip().lower() in ("1", "true", "yes", "on")
 
 
 def _saas_gameplay_path_filled() -> bool:
@@ -1133,28 +1177,31 @@ def page_create() -> None:
         _ctw = (st.session_state.get("create_twist") or "").strip()
         _gp_ui = _saas_gameplay_path_filled()
         st.markdown("### Imágenes por escena")
-        if _gp_ui:
-            st.session_state.create_skip_support_images = False
+        if _env_skip_support_images():
+            st.session_state.create_skip_support_images = True
+            st.info(
+                "Imágenes IA **apagadas** por `.env` (`SAAS_SKIP_SUPPORT_IMAGES=1`). "
+                "Solo personaje + fondo del catálogo. Sacá esa variable para volver a poder activarlas acá."
+            )
+        elif _gp_ui:
             st.caption(
                 "Con **gameplay** de fondo no aplica: cada escena es trozo de video + voz (sin Replicate ni personaje del catálogo)."
             )
         else:
-            _img_pick = st.radio(
-                "¿Generar imagen de apoyo (IA) por bloque?",
-                ("con_ia", "sin_ia"),
-                index=1 if st.session_state.get("create_skip_support_images") else 0,
-                horizontal=True,
-                format_func=lambda v: (
-                    "Sí — Replicate por escena"
-                    if v == "con_ia"
-                    else "No — solo personaje + fondo del catálogo"
-                ),
+            _gen_imgs = st.checkbox(
+                "Generar imágenes con IA (Replicate) por escena",
+                value=not bool(st.session_state.get("create_skip_support_images", True)),
                 help=(
-                    "Si elegís «No», el render es más rápido y no usa créditos de imagen: "
-                    "cada clip usa el personaje y el fondo que elegís abajo, sin PNG extra por escena."
+                    "Desmarcado = más rápido y sin créditos de imagen: solo personaje + fondo del catálogo. "
+                    "También podés forzar apagado global con SAAS_SKIP_SUPPORT_IMAGES=1 en .env."
                 ),
+                key="saas_create_gen_support_images",
             )
-            st.session_state.create_skip_support_images = _img_pick == "sin_ia"
+            st.session_state.create_skip_support_images = not _gen_imgs
+            if st.session_state.create_skip_support_images:
+                st.caption("Imágenes IA apagadas: cada clip usa personaje + fondo del catálogo.")
+            else:
+                st.caption("Imágenes IA activas: una imagen de apoyo Replicate por bloque.")
         st.markdown("### Video de gameplay como fondo (opcional)")
         with st.expander("Minecraft / parkour / cualquier .mp4 detrás de la historia", expanded=bool(_gp_ui)):
             st.caption(
@@ -1605,7 +1652,8 @@ def page_create() -> None:
                         "use_env_music": st.session_state.get("create_use_env_music", False),
                         "session_id": str(st.session_state.get("active_session_id") or ""),
                         "auto_full_package": bool(st.session_state.get("create_auto_full_package")),
-                        "skip_support_images": bool(st.session_state.get("create_skip_support_images")),
+                        "skip_support_images": bool(st.session_state.get("create_skip_support_images"))
+                        or _env_skip_support_images(),
                     }
                 )
                 st.session_state.render = {
@@ -1644,7 +1692,8 @@ def page_create() -> None:
                     "story_background_video": bool(st.session_state.get("create_auto_full_package")),
                     "gameplay_video_path": (st.session_state.get("create_gameplay_path") or "").strip(),
                     "video_aspect": str(st.session_state.get("create_gameplay_aspect") or "16:9"),
-                    "skip_support_images": bool(st.session_state.get("create_skip_support_images")),
+                    "skip_support_images": bool(st.session_state.get("create_skip_support_images"))
+                    or _env_skip_support_images(),
                 }
                 if RENDER_PROGRESS.exists():
                     try:
@@ -1705,7 +1754,7 @@ def _run_mvp_thread(topic: str, holder: list, err: list, opts: dict | None) -> N
             gameplay_video_path=gpath,
             video_aspect=asp,
             overlay_text=ot if isinstance(ot, dict) else None,
-            skip_support_images=bool(opts.get("skip_support_images")),
+            skip_support_images=bool(opts.get("skip_support_images")) or _env_skip_support_images(),
         )
     except Exception as e:
         err[0] = e
@@ -2379,6 +2428,10 @@ def render_app() -> None:
     nav = st.session_state.nav
     if nav == "Dashboard":
         page_dashboard()
+    elif nav == "Documentary":
+        from src.documentary_ui import page_documentary
+
+        page_documentary()
     elif nav == "Create":
         page_create()
     elif nav == "Library":
