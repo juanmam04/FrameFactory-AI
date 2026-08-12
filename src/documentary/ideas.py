@@ -6,6 +6,7 @@ import os
 from typing import Any
 
 from src.saas_creative_profile import merge_profile_disk, parse_llm_json_object
+from src.documentary.editorial import IDEA_SYSTEM_EXTRA
 
 
 def _history_block(prior_videos: list[dict[str, Any]]) -> str:
@@ -42,8 +43,8 @@ def generate_story_ideas(
     ig = p.get("idea_generation") if isinstance(p.get("idea_generation"), dict) else {}
     ch = p.get("channel") if isinstance(p.get("channel"), dict) else {}
     system = (
-        "You are the editorial brain for a YouTube channel of English cinematic business documentaries. "
-        "Return ONLY JSON: {\"ideas\": [ ... ]}. Each idea object MUST have: "
+        IDEA_SYSTEM_EXTRA
+        + " Return ONLY JSON: {\"ideas\": [ ... ]}. Each idea object MUST have: "
         "title_concept, story, hook, why_it_works, content_pillar, visual_potential "
         "(High|Medium|Low), research_risk (Easy|Medium|Hard), primary_entity "
         "(main company or person name for de-duplication). "

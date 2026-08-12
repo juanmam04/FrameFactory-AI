@@ -166,10 +166,15 @@ def ensure_100_days_session_ready() -> None:
         prof = merge_profile_disk(s.get("creative_profile"))
         ch_name = str((prof.get("channel") or {}).get("name") or "")
         if "100 Days — Business Documentaries" in title or "100 Days — Business Documentaries" in ch_name:
-            # Keep profile upgraded to documentary defaults if needed
-            if not is_documentary_profile(prof):
-                s["creative_profile"] = business_documentary_profile()
-                persist_session(store, str(s["id"]), list(s.get("messages") or []), s["creative_profile"])
+            # Keep channel profile upgraded to latest editorial definition
+            fresh = business_documentary_profile()
+            if (prof.get("channel") or {}).get("tagline") != (fresh.get("channel") or {}).get("tagline") or not is_documentary_profile(
+                prof
+            ):
+                s["creative_profile"] = fresh
+                persist_session(store, str(s["id"]), list(s.get("messages") or []), fresh)
+                if str(st.session_state.get("active_session_id") or "") == str(s.get("id")):
+                    st.session_state.creative_profile = fresh
             return
 
     from src.saas_sessions import add_session, persist_session_summary
@@ -229,7 +234,8 @@ def _page_home(sess: dict, profile: dict, name: str) -> None:
     stats = session_stats(str(sess.get("id") or ""), goal)
     st.markdown(f'<p class="saas-hero">{name.upper()}</p>', unsafe_allow_html=True)
     st.markdown(
-        f'<p class="saas-sub">DAY {stats["day"]} / {stats["goal"]} · English · 8–12 min · Google Flow</p>',
+        f'<p class="saas-sub">DAY {stats["day"]} / {stats["goal"]} · Fascinating true stories about companies · '
+        f"Story first · English · 8–12 min · Google Flow</p>",
         unsafe_allow_html=True,
     )
     c1, c2, c3 = st.columns(3)

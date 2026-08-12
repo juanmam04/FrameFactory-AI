@@ -6,11 +6,9 @@ import os
 import re
 from typing import Any
 
-GLOBAL_STYLE_DEFAULT = (
-    "Documentary cinematic realism, 16:9, naturalistic lighting, restrained color grade, "
-    "photoreal still suitable for a serious YouTube business documentary. "
-    "No cartoon, no meme text, no watermark, no logo soup."
-)
+from src.documentary.editorial import VISUAL_DIRECTION
+
+GLOBAL_STYLE_DEFAULT = VISUAL_DIRECTION
 
 
 def build_story_bible(
@@ -52,9 +50,11 @@ def _llm_extract(topic: str, script: str) -> dict[str, Any]:
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     system = (
-        "Extract a LIGHT story bible for a factual business documentary. "
+        "Extract a LIGHT story bible for a fascinating TRUE company documentary. "
         "Return ONLY JSON with keys: global_style, characters, locations, important_objects, timeline_periods. "
         "Each entity: id (CHAR_001/LOC_001/OBJ_001/TIME_001), name, description, visual_description. "
+        "Describe people/places/objects as they appear in the real story world (action, places, products) — "
+        "not generic stock business imagery. "
         "Do NOT invent people or places not supported by the script. "
         "Omit characters if the story is mostly institutions/products."
     )

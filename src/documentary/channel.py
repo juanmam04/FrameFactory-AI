@@ -5,6 +5,12 @@ from copy import deepcopy
 from typing import Any
 
 from src.saas_creative_profile import merge_profile_disk
+from src.documentary.editorial import (
+    CHANNEL_ONE_LINER,
+    EDITORIAL_PRINCIPLE,
+    IDEA_SYSTEM_EXTRA,
+    VISUAL_DIRECTION,
+)
 
 CHANNEL_TITLE = "100 Days — Business Documentaries"
 
@@ -102,6 +108,8 @@ def documentary_script_context(
     safe = {
         "workflow": "documentary",
         "content_type": "business_documentary",
+        "editorial": CHANNEL_ONE_LINER,
+        "principle": EDITORIAL_PRINCIPLE,
         "language": ch.get("language") or "en",
         "channel_name": ch.get("name") or "",
         "niche": p.get("niche") or "",
@@ -121,10 +129,13 @@ def documentary_script_context(
             "first_person_confession",
             "POV_este_eres_tu",
             "Spanish storytime",
+            "business_education_lecture",
+            "corporate_analysis_explainer",
+            "five_lessons_listicle",
         ],
     }
     parts = [
-        "DOCUMENTARY CHANNEL CONTEXT (tone/audience only — do NOT override nonfiction/third-person invariants):\n"
+        "DOCUMENTARY CHANNEL CONTEXT (tone/audience only — do NOT override editorial invariants):\n"
         + __import__("json").dumps(safe, ensure_ascii=False, indent=2)
     ]
     mem = (memory_summary or "").strip()
@@ -161,10 +172,7 @@ def visual_style_from_profile(profile: dict[str, Any] | None) -> str:
     joined = " ".join(b for b in bits if b)
     if joined:
         return joined
-    return (
-        "Premium cinematic documentary reenactment mixed with real archival material when useful. "
-        "16:9, naturalistic lighting, restrained grade, photoreal stills. No cartoon, no meme text."
-    )
+    return VISUAL_DIRECTION
 
 
 def business_documentary_profile() -> dict[str, Any]:
@@ -172,56 +180,69 @@ def business_documentary_profile() -> dict[str, Any]:
     return merge_profile_disk(
         {
             "workflow": "documentary",
-            "style": "cinematic narrative business documentary",
+            "style": "fascinating true stories about companies — cinematic narrative documentary",
             "content_type": "business_documentary",
             "niche": (
-                "Extraordinary true stories about companies, founders, money, power, ambition, "
-                "fraud, competition, spectacular success and catastrophic failure."
+                "Fascinating true stories about companies, founders, products, and the people around them — "
+                "origins, rivalries, inventions, frauds, obsessions, mistakes, monopolies, failures, comebacks. "
+                "Story first. Business second."
             ),
             "avoid": [
+                "business education / MBA lecture tone",
+                "corporate analysis explainers",
+                "business advice / five lessons",
                 "school-essay tone",
                 "generic business motivation",
                 "listicles",
                 "fake drama",
                 "fabricated facts",
-                "repetitive narration",
-                "unnecessary jargon",
+                "forced rise-and-fall template on every story",
+                "Wikipedia definition openings",
                 "Welcome back / In today's video / subscribe CTAs",
+                "Reddit confession / first-person fiction",
             ],
             "audience": {
-                "who": "General English-speaking YouTube audience. No business expertise required.",
-                "pain_points": "Wants gripping true stories, not MBA lectures.",
+                "who": (
+                    "General English-speaking YouTube audience with no required business interest — "
+                    "they should stay for the story."
+                ),
+                "pain_points": "Bored by lectures; hungry for what happened next.",
                 "reading_level": "general",
             },
-            "tone": "intelligent, cinematic, curious, entertaining, confident, clear",
-            "hook_style": "Start directly with the extraordinary situation — no channel intros.",
+            "tone": "intelligent, cinematic, curious, entertaining, confident, clear, agile",
+            "hook_style": (
+                "Cold-open on the central contradiction or stakes (e.g. $47B valuation vs renting desks), "
+                "then rewind. Never open with a definition or model-of-business lecture."
+            ),
             "pacing": "Medio",
-            "language_register": "English, accessible, concrete",
+            "language_register": "English, natural, accessible, concrete — not academic",
             "topics_to_avoid": (
-                "Fabricated quotes or numbers; pure motivation content; dry textbook summaries; "
-                "same company/story already covered in this session."
+                "Fabricated quotes or numbers; hustle advice; dry textbook summaries; "
+                "same company/story already covered in this session; forced morals."
             ),
             "topics_to_focus": [
-                "Rise & Fall",
-                "Corporate Disasters",
-                "Fraud & Scams",
-                "Founder Stories",
-                "Business Wars",
-                "Billion-Dollar Mistakes",
-                "Hidden Empires / Monopolies",
-                "Strange Business History",
-                "Products That Changed or Destroyed Companies",
-                "Unexpected Success Stories",
+                "Origins / unlikely beginnings",
+                "Rise",
+                "Fall",
+                "Comeback",
+                "Rivalry / corporate war",
+                "Invention / transformation",
+                "Fraud / obsession",
+                "Huge mistake / strange decision",
+                "Survival / monopoly / expansion",
+                "Failed or brilliant product",
+                "Hidden empire",
+                "Founder story",
             ],
             "title_style": "Highly clickable without being misleading; specific stakes or numbers when true.",
             "thumbnail_style": "Cinematic faces / moments / contrast; readable emotion; no spammy arrows.",
             "channel": {
                 "name": CHANNEL_TITLE,
-                "tagline": "Story first, business lesson second.",
+                "tagline": EDITORIAL_PRINCIPLE + " · " + CHANNEL_ONE_LINER,
                 "content_pillars": (
-                    "Rise & Fall; Corporate Disasters; Fraud & Scams; Founder Stories; Business Wars; "
-                    "Billion-Dollar Mistakes; Hidden Empires / Monopolies; Strange Business History; "
-                    "Products That Changed or Destroyed Companies; Unexpected Success Stories"
+                    "Origins; Rise; Fall; Comeback; Rivalry; Invention; Fraud; Obsession; "
+                    "Mistakes; Monopoly; Products; Hidden Empires; Founder Stories — "
+                    "only when there is a great true story"
                 ),
                 "goal_count": 100,
                 "language": "en",
@@ -230,10 +251,16 @@ def business_documentary_profile() -> dict[str, Any]:
                 "visual_provider": "google_flow_manual",
             },
             "script": {
-                "structure_preference": "HOOK → CONTEXT → SETUP → ESCALATION → TURNING POINT → CONSEQUENCES → ENDING/TAKEAWAY",
-                "forbidden_phrases": "Welcome back; In today's video; Make sure to subscribe; Like and comment",
+                "structure_preference": (
+                    "Find the story engine first; then hook/setup/desire/progress/obstacles/"
+                    "escalation/turning points/consequences/resolution as needed — not a fixed template"
+                ),
+                "forbidden_phrases": (
+                    "Welcome back; In today's video; Make sure to subscribe; Like and comment; "
+                    "Here are five lessons; Let's dive into the business model"
+                ),
                 "cta_style": "none in narration",
-                "opening_style": "Cold open on the extraordinary situation",
+                "opening_style": "Cold open on stakes/contradiction; then rewind if needed",
             },
             "video": {
                 "primary_format": "youtube_long_16_9",
@@ -243,38 +270,45 @@ def business_documentary_profile() -> dict[str, Any]:
                 "narration_format": "third_person_documentary",
             },
             "visual": {
-                "look": "Premium cinematic documentary reenactment + archival when useful",
-                "color_mood": "Restrained, serious, naturalistic",
-                "shot_preferences": "Recurring character/location references; stills every few seconds",
-                "b_roll_style": "Offices, press, documents, city skylines, period-accurate details",
-                "reference_moodboards": "Google Flow masters for CHAR/LOC/OBJ before shot batch",
+                "look": VISUAL_DIRECTION,
+                "color_mood": "Restrained, serious, naturalistic, cinematic",
+                "shot_preferences": (
+                    "Protagonists doing something; places; products; events; consequences; "
+                    "establishing / wide / close-up / environmental storytelling"
+                ),
+                "b_roll_style": (
+                    "Offices, factories, stores, cities, meetings, period-accurate details — "
+                    "avoid handshake/laptop/generic skyscraper/abstract money"
+                ),
+                "reference_moodboards": "Google Flow masters for recurring people/places/objects before shot batch",
             },
             "editing": {
-                "cut_rhythm": "steady documentary",
+                "cut_rhythm": "curious, story-driven documentary",
                 "transitions_default": "soft ken burns + short fades",
                 "lower_thirds": "no",
                 "subtitles_intent": "optional_later",
                 "music_role": "bajo_voz",
                 "pacing_visual": "Equal still duration locked to voice length",
-                "notes_for_ai_director": "Prefer continuity refs; avoid reinventing wardrobe/architecture",
+                "notes_for_ai_director": (
+                    "FrameFactory is DIRECTOR; Flow is illustrator. "
+                    "Ask for the scene that advances the story moment — not stock business clichés."
+                ),
             },
             "idea_generation": {
-                "brief": (
-                    "Propose extraordinary true business stories for a daily English YouTube documentary channel. "
-                    "Storytelling before education. Prefer famous stakes, clear villains/heroes, and visualizable moments."
-                ),
+                "brief": IDEA_SYSTEM_EXTRA,
                 "angles_to_favor": (
-                    "Rise & Fall, frauds, founder myths, corporate wars, monopoly stories, "
-                    "products that remade or ruined companies, unexpected successes."
+                    "Any extraordinary true company story with a clear story engine: "
+                    "origin, rivalry, invention, fraud, obsession, mistake, monopoly, "
+                    "failed/brilliant product, founder, survival, comeback."
                 ),
                 "angles_to_avoid": (
-                    "Generic hustle advice; listicles; fake drama; invented facts; "
-                    "repeating a company/story already produced in this channel; school-essay framing."
+                    "Business advice; listicles; MBA explainers; fake drama; invented facts; "
+                    "forcing rise-and-fall when that isn't the story; repeating a company already produced."
                 ),
             },
             "notes_freeform": (
-                "Publish one video per day for 100 days. Images via Google Flow manually. "
-                "FrameFactory handles script, flow prompts, import, voice, render."
+                "Publish one fascinating true company story per day for 100 days. "
+                "Images via Google Flow manually. FrameFactory directs: script, flow prompts, import, voice, render."
             ),
         }
     )

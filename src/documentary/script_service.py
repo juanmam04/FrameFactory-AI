@@ -6,31 +6,12 @@ import logging
 from typing import Any
 
 from src.documentary.channel import documentary_script_context, language_from_profile
+from src.documentary.editorial import DOCUMENTARY_INVARIANTS
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 from src.documentary.script_validation import strip_metadata_leaks, validate_documentary_script
 from src.script_generator import count_words, generar_guion
 
 logger = logging.getLogger(__name__)
-
-# Canonical Documentary editorial invariants (single source — also reinforced in plantilla YAML).
-DOCUMENTARY_INVARIANTS = """
-DOCUMENTARY INVARIANTS (highest priority — override any conflicting creator context):
-
-THIS IS NONFICTION.
-- Do not invent a narrator, scenes, dialogue, internal thoughts, or events.
-- Do not turn research into fictional storytelling.
-- Do not write from the perspective of a fictional witness.
-- Every factual claim must be grounded in supplied RESEARCH NOTES / SOURCES, or stay clearly high-level.
-- If research is thin, write a SHORTER accurate script — never pad to word count with fiction.
-
-FORMAT: Long-form YouTube narrative business documentary.
-LANGUAGE: English (proper nouns may be non-English).
-POV: Third-person documentary narrator only.
-  First person "I" only inside a REAL attributed quote.
-STORYTELLING ≠ FICTION: Organize real events as story (hook → context → setup → escalation → turning point → consequences → ending).
-OUTPUT: Narration-ready prose for TTS ONLY.
-  Do NOT print: Working title, Hook, Section labels, Sources, Research notes, markdown headings, or stage directions.
-""".strip()
 
 TEMPLATE_ID = "business_documentary_en"
 

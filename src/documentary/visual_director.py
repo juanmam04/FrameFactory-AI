@@ -5,6 +5,7 @@ import json
 import os
 from typing import Any
 
+from src.documentary.editorial import FLOW_DIRECTOR_RULES, VISUAL_DIRECTION
 from src.documentary.project import append_log, project_dir, save_project
 from src.documentary.story_bible import build_story_bible
 from src.frame_director import beats_a_frame_specs
@@ -24,7 +25,7 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
     from src.documentary.channel import visual_style_from_profile
 
     snap = project.get("creative_profile_snapshot") if isinstance(project.get("creative_profile_snapshot"), dict) else {}
-    style_hint = visual_style_from_profile(snap or None)
+    style_hint = visual_style_from_profile(snap or None) or VISUAL_DIRECTION
 
     # ~22–28 words/scene → ~50–80 stills for 1300–1800 words
     words = max(1, len(script.split()))
@@ -53,12 +54,13 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
     for i, (beat, spec) in enumerate(zip(beats, specs), start=1):
         raw_prompt = prompt_desde_frame_spec(spec)
         prompt = _compose_flow_prompt(
-            global_hint=style_hint[:220] or "Documentary cinematic realism, 16:9.",
+            global_hint=(style_hint or VISUAL_DIRECTION)[:280],
             action=spec.action or beat.action,
             environment=spec.location or beat.location,
             camera=spec.camera_mode or beat.camera_type,
             lighting=beat.time_of_day or "natural light",
             continuity=_continuity_line(i, specs),
+            narration=(beat.original_text or "").strip(),
             raw=raw_prompt,
         )
         refs = _guess_refs(spec.location or "", beat.original_text or "")
@@ -157,20 +159,24 @@ def _compose_flow_prompt(
     camera: str,
     lighting: str,
     continuity: str,
+    narration: str = "",
     raw: str,
 ) -> str:
-    # Keep prompts clear and not absurdly long
+    # Director instructions for Google Flow (illustrator) — scene that advances the story.
     core = [
+        f"DIRECTOR NOTE: {FLOW_DIRECTOR_RULES}",
         f"GLOBAL STYLE: {global_hint}",
-        f"CURRENT ACTION: {(action or 'documentary moment').strip()[:220]}",
-        f"ENVIRONMENT: {(environment or 'relevant setting').strip()[:160]}",
+        f"STORY MOMENT (illustrate this beat, do not typeset the words): {(narration or '')[:180]}",
+        f"SCENE / ACTION: {(action or 'a concrete moment from the company story').strip()[:220]}",
+        f"ENVIRONMENT: {(environment or 'a specific place from this story world').strip()[:160]}",
         f"CAMERA: {(camera or 'medium shot').strip()[:80]}",
         f"LIGHTING: {(lighting or 'natural').strip()[:60]}",
         f"CONTINUITY: {(continuity or '').strip()[:120]}",
+        "AVOID: CEO staring at camera, businessman at desk, handshake, laptop close-up, "
+        "generic skyscraper, abstract money graphics, cartoon, meme text, watermark.",
         "REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.",
     ]
-    # Trim raw structural hints
-    raw_short = " ".join((raw or "").split())[:500]
+    raw_short = " ".join((raw or "").split())[:350]
     if raw_short:
         core.append(f"DETAIL: {raw_short}")
     return "\n".join(core)
