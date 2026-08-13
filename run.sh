@@ -3,7 +3,7 @@ set -e
 cd "$(dirname "$0")"
 
 if [ -x "venv/bin/uvicorn" ]; then
-  exec venv/bin/uvicorn studio.server:app --reload --host 127.0.0.1 --port 8787
+  exec venv/bin/uvicorn studio.server:studio_app --reload --host 127.0.0.1 --port 8787
 fi
 
 if [ -d "venv" ]; then
@@ -11,4 +11,4 @@ if [ -d "venv" ]; then
   source venv/bin/activate
 fi
 
-exec uvicorn studio.server:app --reload --host 127.0.0.1 --port 8787
+exec uvicorn studio.server:studio_app --reload --host 127.0.0.1 --port 8787

@@ -104,10 +104,6 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
         path = request.url.path
         if path.startswith("/assets") or path in {"/health", "/", "/api/ping"}:
             return await call_next(request)
-        # Vercel: never auto-pull (psycopg/native crash + /tmp + timeouts).
-        # Use the Home Push/Pull buttons instead.
-        if on_vercel():
-            return await call_next(request)
         from src.documentary import cloud_sync
 
         if not cloud_sync.configured():
@@ -115,12 +111,13 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 
         m = _PROJECT_RE.match(path)
         pid = m.group(1) if m else None
-        if on_vercel() and request.method in {"GET", "HEAD"}:
-            if pid:
-                _sync_safe(lambda: cloud_sync.pull_project(pid))
-                _sync_safe(cloud_sync.pull_sessions)
-            elif path in {"/api/bootstrap", "/api/sync/status"}:
+        if request.method in {"GET", "HEAD"}:
+            if path == "/api/bootstrap":
                 _sync_safe(lambda: cloud_sync.pull_all(light=True))
+            elif pid:
+                need_binaries = any(x in path for x in ("/images", "/visuals", "/flow"))
+                _sync_safe(lambda: cloud_sync.pull_project(pid, light=on_vercel() and not need_binaries))
+                _sync_safe(cloud_sync.pull_sessions)
 
         response = await call_next(request)
 
@@ -705,4 +702,6 @@ def _ensure_channel() -> tuple[dict[str, Any], dict[str, Any]]:
     return sess, profile
 
 
-app = create_app()
+# Named studio_app on purpose: a top-level `app` makes Vercel detect FastAPI
+# and swallow /api file functions (ping included).
+studio_app = create_app()

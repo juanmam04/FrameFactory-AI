@@ -1,6 +1,27 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "functions": {
+    "api/ping.py": {
+      "maxDuration": 10
+    },
+    "api/index.py": {
+      "maxDuration": 60,
+      "includeFiles": "{src/**,studio/**,config/**}"
+    },
+    "api/bootstrap.py": {
+      "maxDuration": 60,
+      "includeFiles": "{src/**,studio/**,config/**}"
+    },
+    "api/ideas.py": {
+      "maxDuration": 60,
+      "includeFiles": "{src/**,studio/**,config/**}"
+    }
+  },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" }
+    { "source": "/api/projects/:path*", "destination": "/api?__p=/api/projects/:path*" },
+    { "source": "/api/projects", "destination": "/api?__p=/api/projects" },
+    { "source": "/api/sync/:path*", "destination": "/api?__p=/api/sync/:path*" },
+    { "source": "/api/credentials/:path*", "destination": "/api?__p=/api/credentials/:path*" }
   ]
 }

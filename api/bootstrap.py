@@ -1,4 +1,4 @@
-"""Catch-all Studio API for Vercel (BaseHTTPRequestHandler, not FastAPI preset)."""
+"""GET /api/bootstrap — file-based Vercel function."""
 import sys
 from pathlib import Path
 

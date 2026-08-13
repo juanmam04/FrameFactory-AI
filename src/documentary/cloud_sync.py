@@ -155,6 +155,7 @@ def push_project(project_id: str) -> dict[str, Any]:
 _LIGHT_PREFIXES = (
     "project.json",
     "script/",
+    "metadata/",
     "flow-pack/shot-list.json",
     "flow-pack/visual-plan.json",
     "flow-pack/story-bible.json",
@@ -168,15 +169,33 @@ def pull_project(project_id: str, *, light: bool = False) -> dict[str, Any]:
     written = 0
     with _connect() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT rel_path, sha256, content FROM ff_blobs WHERE project_id = %s",
-                (project_id,),
-            )
+            if light:
+                cur.execute(
+                    """
+                    SELECT rel_path, sha256, content FROM ff_blobs
+                    WHERE project_id = %s
+                      AND (
+                        rel_path = 'project.json'
+                        OR rel_path LIKE 'script/%%'
+                        OR rel_path LIKE 'metadata/%%'
+                        OR rel_path IN (
+                          'flow-pack/shot-list.json',
+                          'flow-pack/visual-plan.json',
+                          'flow-pack/story-bible.json'
+                        )
+                      )
+                    """,
+                    (project_id,),
+                )
+            else:
+                cur.execute(
+                    "SELECT rel_path, sha256, content FROM ff_blobs WHERE project_id = %s",
+                    (project_id,),
+                )
             rows = cur.fetchall()
     for rel, digest, content in rows:
         rel_s = str(rel)
         if light and not any(rel_s == p or rel_s.startswith(p) for p in _LIGHT_PREFIXES):
-            continue
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
