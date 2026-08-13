@@ -59,14 +59,6 @@ button { cursor: pointer; }
   position: sticky;
   top: 0;
   z-index: 20;
-<<<<<<< HEAD
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.85rem 1.5rem;
-=======
->>>>>>> 1dc14b03eaa68411185a73e9338caf33e844a5aa
   backdrop-filter: blur(16px);
   background: rgba(244, 246, 248, 0.82);
   border-bottom: 1px solid var(--line);
@@ -79,7 +71,8 @@ button { cursor: pointer; }
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 1.5rem;
 }
@@ -88,13 +81,9 @@ button { cursor: pointer; }
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
-<<<<<<< HEAD
   min-width: 0;
   justify-self: start;
-=======
-  min-width: 180px;
   line-height: 1.15;
->>>>>>> 1dc14b03eaa68411185a73e9338caf33e844a5aa
 }
 .top-brand strong {
   display: block;
@@ -102,17 +91,13 @@ button { cursor: pointer; }
   font-weight: 800;
   letter-spacing: -0.04em;
 }
-<<<<<<< HEAD
+.top-brand small { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.12rem; }
 .top-nav {
   display: flex;
   gap: 0.35rem;
   justify-content: center;
   justify-self: center;
 }
-=======
-.top-brand small { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.12rem; }
-.top-nav { display: flex; gap: 0.35rem; flex: 1; }
->>>>>>> 1dc14b03eaa68411185a73e9338caf33e844a5aa
 .nav-link {
   border: 0;
   background: transparent;
@@ -167,22 +152,7 @@ button { cursor: pointer; }
   width: 100%;
   min-width: 0;
 }
-<<<<<<< HEAD
-@media (max-width: 860px) {
-  .hero { grid-template-columns: 1fr; }
-  .top {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "brand status"
-      "nav nav";
-  }
-  .top-brand { grid-area: brand; }
-  .top-status { grid-area: status; }
-  .top-nav { grid-area: nav; width: 100%; }
-}
-=======
 .hero > * { min-width: 0; max-width: 100%; }
->>>>>>> 1dc14b03eaa68411185a73e9338caf33e844a5aa
 
 .panel {
   background: var(--surface);
@@ -661,13 +631,18 @@ label.field {
     padding-top: max(1rem, env(safe-area-inset-top));
   }
   .top-inner {
-    flex-wrap: wrap;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand status"
+      "nav nav";
     gap: 0.75rem 1rem;
   }
-  .top-brand { min-width: 0; }
+  .top-brand { grid-area: brand; min-width: 0; }
+  .top-status { grid-area: status; width: auto; }
   .top-nav {
-    order: 3;
+    grid-area: nav;
     width: 100%;
+    justify-content: center;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -675,7 +650,6 @@ label.field {
   }
   .top-nav::-webkit-scrollbar { display: none; }
   .nav-link { white-space: nowrap; padding: 0.5rem 0.8rem; }
-  .top-status { width: 100%; justify-content: flex-start; }
   .stage {
     width: 100%;
     padding: 1rem 0.9rem 7rem;
