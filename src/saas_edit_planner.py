@@ -5,6 +5,7 @@ import json
 import os
 from typing import Any
 
+from .config_loader import get_narrative_rules
 from .saas_creative_profile import merge_profile_disk, profile_to_edit_planner_context
 
 ALLOWED_MOTION = frozenset({"static", "slow_push"})
@@ -79,18 +80,20 @@ def annotate_blocks_with_editing(
         if v:
             row["visual"] = v[:200]
         compact.append(row)
+    _vm = (get_narrative_rules().get("channel_visual_mood_line") or "").strip()
     system = (
-        "Sos director de montaje para YouTube. Español. "
+        "Sos director de montaje para YouTube (historias oscuras / storytime). Español. "
         "Devolvé SOLO JSON válido con forma: {\"blocks\": [ ... ]}. "
         "Cada elemento debe tener: id (igual al entrante), motion (static|slow_push), "
         "transition_in (none|fade), transition_out (none|fade), "
-        "visual_direction (1 frase: plano, luz, encuadre sugerido para ilustrar o B-roll), "
+        "visual_direction (1 frase: plano sombrío, luz dura o penumbra, encuadre que suba tensión), "
         "Si el bloque trae \"visual\" (intención storytime), alineá visual_direction y b_roll_suggestion con eso. "
-        "b_roll_suggestion (idea concreta de insert o overlay), "
-        "on_screen_text (máx. 6 palabras o cadena vacía si no aplica). "
+        "b_roll_suggestion (insert u overlay concreto que refuerce miedo, duda o clímax; nada genérico ni ‘bonito’). "
+        "on_screen_text (máx. 6 palabras, impacto o vacío si sobra). "
         "Respetá el ritmo de corte del perfil: cut_rhythm lento = más static y fades suaves; "
         "rápido = alterná slow_push y static. No inventes IDs. "
         "Si el JSON del usuario trae contexto_sesion, alineá el montaje con esas decisiones y matices."
+        + (f"\nMood visual del canal: {_vm}" if _vm else "")
     )
     payload: dict[str, Any] = {
         "perfil_montaje": profile_to_edit_planner_context(prof),

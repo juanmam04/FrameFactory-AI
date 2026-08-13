@@ -52,3 +52,45 @@ system_extra: |
   OBJETIVO:
   - El espectador debe sentir "Estoy viviendo esta vida", no "Me están contando una historia."
   - Resultado: mini-película narrada en POV, vida completa del personaje en ese rol. Sin moralejas explícitas, sin poesía, sin frases vacías.
+
+# Biblia del canal: historias oscuras en primera persona, adictivas, realistas (storytime / Reddit).
+# Se inyecta en generación de guion (reddit_stories + refuerzo en explicativo), ideas virales, packaging y escenas.
+channel_dark_confession_bible: |
+  IDENTIDAD DEL CANAL
+  - Ficción oscura, incómoda emocionalmente, realista, altamente adictiva.
+  - Primera persona (yo) preferida; si el perfil pide tuteo inmersivo (tú), una sola voz y sin mezclar.
+  - Sensación: confesión personal perturbadora, recuerdo oscuro, verdad oculta dolorosa — NO fantasía épica, NO cuento infantil, NO literatura “bonita”, NO relleno tipo ChatGPT.
+
+  OBJETIVO EMOCIONAL DEL ESPECTADOR
+  - Algo va mal; esto podría pasarme; necesito saber qué pasa después; sigue empeorando; no debería parar ahora.
+
+  TEMAS FRECUENTES (mantener creíbles y terrestres)
+  - Traición, secretos familiares, engaños, manipulación, obsesión, miedo, gente oculta, conductas raras, mentiras, daño emocional, relaciones tóxicas, horror realista, descubrimientos inquietantes.
+  - Evitar: criaturas de fantasía, paranormal barato irreal, villanos caricatura, violencia explícita gratuita, glorificación de crimen organizado.
+
+  ESTRUCTURA OBLIGATORIA (5 fases, sin titularlas en el texto)
+  1) GANCHO: 1–2 líneas máximo; tensión inmediata; nada de párrafo de contexto, nada de “un día”, “esta es la historia de”, “en este video”.
+  2) SOSPECHA: detalles extraños pequeños, realistas, específicos (puertas, mensajes, ruidos, objetos, alguien que actúa distinto).
+  3) ESCALADA: cada 1–2 líneas algo empeora o se revela algo nuevo; cero relleno; cero repetición vacía.
+  4) REVELACIÓN / GIRO: fuerte, perturbador, coherente con lo anterior — no giro random.
+  5) CIERRE OSCURO: inquieto, incompleto a nivel emocional, pesado, imagen o pensamiento final incómodo; NO cierre limpio tipo “todo se arregló”, NO moraleja, NO explicación larga del significado de la vida.
+
+  ESTILO DE ESCRITURA
+  - Oraciones cortas, habladas, ritmo oral; sin flores ni metáforas poéticas; sin frase hecha de IA.
+  - Suena a alguien contando algo que no debería contar.
+
+  PROHIBIDO (frases / patrones)
+  - “En este video te voy a contar…”, “todo comenzó cuando…”, “había una vez…”, “poco me imaginaba…”, “todo cambió para siempre…” salvo que suene humano y ganado.
+  - Clickbait vacío, suspense falso sin progresión, párrafos largos “de relleno”.
+
+  RITMO
+  - Rápido desde el inicio; ningún párrafo debe sentirse skippable; “solo un poco más” en cada beat.
+
+  ESTÁNDAR FINAL
+  - Cada guion debe provocar: “necesito saber qué pasa después”.
+
+# Una línea para prompts de escena / montaje (B-roll oscuro, realista).
+channel_visual_mood_line: >
+  Planos oscuros creíbles: dormitorio con poca luz, móvil iluminando la cara, pasillo de noche, puerta entreabierta,
+  cocina en silencio tenso, pantalla de ordenador en penumbra, salón vacío con sensación de ruido extraño;
+  tensión, nada decorativo ni “stock feliz”.

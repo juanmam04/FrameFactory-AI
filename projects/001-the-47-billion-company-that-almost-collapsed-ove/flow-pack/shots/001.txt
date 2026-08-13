@@ -1,0 +1,25 @@
+VISUAL 001
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 001.png
+STORY BEAT: 8
+DURATION TARGET: 10s
+KEN BURNS: slow_push
+
+NARRATION:
+In September 2019, WeWork’s planned initial public offering (IPO) was abruptly pulled.
+
+DESCRIPTION:
+WeWork office building with a 'For Sale' sign being placed in front.
+
+REFERENCES:
+LOC_001
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+001. 2019. WeWork office building. WeWork office building with a 'For Sale' sign being placed in front. establishing wide candid documentary shot, photorealistic, period-accurate details. Use LOC_001.png reference.
+

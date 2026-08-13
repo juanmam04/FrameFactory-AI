@@ -1,0 +1,54 @@
+{
+  "word_count": 927,
+  "target_words": 2000,
+  "target_range": [
+    1800,
+    2200
+  ],
+  "template": "business_documentary_en",
+  "language": "en",
+  "workflow": "documentary",
+  "pov": "third_person",
+  "factuality": "nonfiction",
+  "research_thin": false,
+  "story_plan": true,
+  "quality": {
+    "heuristic": {
+      "pass": false,
+      "scores": {
+        "filler_language": 0.0,
+        "specificity": 1.0,
+        "repetition": 1.0,
+        "ending": 0.35,
+        "length": 0.585,
+        "overall": 0.587
+      },
+      "problems": [
+        "Too much generic corporate / AI filler language (meteoric rise, haunting image, cautionary tale, unchecked ambition, broader implications, lessons learned).",
+        "Ending leans toward a forced business lesson \u2014 close the story instead."
+      ],
+      "revision_instructions": [
+        "Replace generalizations with concrete events, names, amounts, and decisions from the Story Plan beats.",
+        "Cut repeated morals / identical conclusions.",
+        "End on story consequence or ending state \u2014 not lessons for entrepreneurs.",
+        "Keep spoken English; short paragraphs; causality (A enables B)."
+      ],
+      "word_count": 1170,
+      "banned_hits": [
+        "meteoric rise",
+        "haunting image",
+        "cautionary tale",
+        "unchecked ambition",
+        "broader implications",
+        "lessons learned"
+      ],
+      "generic_hits": [
+        "rapid expansion",
+        "the importance of"
+      ]
+    },
+    "revised": false,
+    "revision_discarded_shrink": true
+  },
+  "legacy_storytime_context": false
+}

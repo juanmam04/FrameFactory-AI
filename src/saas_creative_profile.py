@@ -7,11 +7,20 @@ from typing import Any
 
 from .catalog_service import VOICES
 
+# Ideas sugeridas / viral: núcleo entretenimiento no sea glorificación narco; el tono del canal es oscuro y adictivo.
+DEFAULT_IDEAS_ANGLES_TO_AVOID = (
+    "Glorificar narcotráfico, carteles, sicarios, balaceras o narconovela como núcleo de diversión; "
+    "corrupción-política-mejor-tráfico como premisa central; cuentos infantiles, fantasía épica, tono poético o ‘historia bonita’; "
+    "relleno tipo ChatGPT, intros de youtuber, moralejas edulcoradas."
+)
+
 
 def default_creative_profile() -> dict[str, Any]:
     return {
         "style": "",
-        "content_type": "",
+        "content_type": "reddit_dark_storytime",
+        # workflow: "studio" | "documentary" — Documentary channel sessions set "documentary"
+        "workflow": "studio",
         "avoid": [],
         "niche": "",
         "audience": {
@@ -25,10 +34,18 @@ def default_creative_profile() -> dict[str, Any]:
         "narrator_preference": list(VOICES.keys())[0],
         "language_register": "Español neutro, tuteo",
         "topics_to_avoid": "",
+        "topics_to_focus": [],
+        "title_style": "",
+        "thumbnail_style": "",
         "channel": {
             "name": "",
             "tagline": "",
             "content_pillars": "",
+            "goal_count": 0,
+            "language": "",
+            "target_words": 0,
+            "target_duration_min": [],
+            "visual_provider": "",
         },
         "script": {
             "structure_preference": "",
@@ -63,7 +80,7 @@ def default_creative_profile() -> dict[str, Any]:
         "idea_generation": {
             "brief": "",
             "angles_to_favor": "",
-            "angles_to_avoid": "",
+            "angles_to_avoid": DEFAULT_IDEAS_ANGLES_TO_AVOID,
         },
         "notes_freeform": "",
     }
@@ -134,7 +151,11 @@ def merge_profile_disk(raw: dict[str, Any] | None) -> dict[str, Any]:
     out = deepcopy(default_creative_profile())
     if not raw or not isinstance(raw, dict):
         return out
-    return _deep_merge(out, raw)
+    merged = _deep_merge(out, raw)
+    ig = merged.get("idea_generation")
+    if isinstance(ig, dict) and not str(ig.get("angles_to_avoid") or "").strip():
+        ig["angles_to_avoid"] = DEFAULT_IDEAS_ANGLES_TO_AVOID
+    return merged
 
 
 def merge_profile_updates(existing: dict[str, Any], updates: dict[str, Any]) -> dict[str, Any]:

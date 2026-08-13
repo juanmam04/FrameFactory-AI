@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 from .config_loader import BASE
 
 load_dotenv(BASE / ".env")
+for _env_local in (BASE / ".env.local", BASE / "env.local"):
+    if _env_local.is_file():
+        load_dotenv(_env_local, override=True)
 
 OUTPUT_AUDIO = BASE / "output" / "audio"
 
@@ -31,6 +34,17 @@ def generar_voz(
     """
     OUTPUT_AUDIO.mkdir(parents=True, exist_ok=True)
     path = OUTPUT_AUDIO / f"{nombre_archivo}.{formato}"
+
+    # Always re-read .env + .env.local (local wins) before calling providers.
+    try:
+        from src.documentary.openai_key import reload_env
+
+        reload_env()
+    except Exception:
+        load_dotenv(BASE / ".env", override=True)
+        for _extra in (BASE / ".env.local", BASE / "env.local"):
+            if _extra.is_file():
+                load_dotenv(_extra, override=True)
 
     # Generar audio base
     audio_base = None
@@ -75,14 +89,19 @@ def generar_voz(
         audio_base = _openai_tts(texto, path, formato, voice=openai_tts_voice)
 
     if not audio_base:
-        # Sin API: crear archivo vacío o avisar
-        path.write_bytes(b"")
-        return path
-    
+        # FF100-P0-007: nunca marcar como éxito un MP3 vacío.
+        raise RuntimeError(
+            "No se pudo generar voz: falta ELEVENLABS_API_KEY y/o OPENAI_API_KEY "
+            "(o el proveedor elegido falló). Configurá las keys en .env."
+        )
+
+    if not path.exists() or path.stat().st_size <= 0:
+        raise RuntimeError(f"TTS devolvió audio vacío o inexistente: {path}")
+
     # Aplicar velocidad si es diferente de 1.0
     if velocidad != 1.0:
         return _aplicar_velocidad_audio(audio_base, velocidad, path)
-    
+
     return audio_base
 
 

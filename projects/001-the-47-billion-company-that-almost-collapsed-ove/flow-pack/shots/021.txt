@@ -1,0 +1,25 @@
+VISUAL 021
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 021.png
+STORY BEAT: 7
+DURATION TARGET: 7s
+KEN BURNS: pan_right
+
+NARRATION:
+Analysts and investors scrutinized the company's financials.
+
+DESCRIPTION:
+Analysts examining financial reports with intense focus.
+
+REFERENCES:
+LOC_002
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+021. A modern conference room.. Analysts examining financial reports with intense focus. intimate moment candid documentary shot, photorealistic, period-accurate details. Use LOC_002.png reference.
+

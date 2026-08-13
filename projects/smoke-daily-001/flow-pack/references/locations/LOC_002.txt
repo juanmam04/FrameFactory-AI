@@ -1,0 +1,10 @@
+LOC_002
+Name: Press / public stage
+
+Description:
+Public-facing corporate moment
+
+Generate reference image:
+Conference stage or media scrum, microphones, shallow depth of field
+
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.

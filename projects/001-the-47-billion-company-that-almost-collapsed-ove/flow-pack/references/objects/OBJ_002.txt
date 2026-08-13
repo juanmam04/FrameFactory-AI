@@ -1,0 +1,12 @@
+OBJ_002
+Name: SoftBank Investment
+
+Description:
+The significant financial backing from SoftBank that propelled WeWork's growth.
+
+Generate reference image:
+A large check or digital representation of funds being transferred, symbolizing the massive investment that fueled WeWork's expansion.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

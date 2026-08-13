@@ -1,526 +1,159 @@
 {
-  "script": "un concepto frágil, y que el verdadero precio del poder es la soledad. \n\nEl sonido de disparos resonaba en la lejanía. La noche estaba oscura y húmeda en las calles de Medellín, y la tensión se sentía en el aire. Te encontrabas en una esquina, observando cómo tu mejor amigo, Javier, se reunía con un grupo desconocido. Él había sido tu apoyo incondicional desde que te metiste en el peligroso mundo del crimen organizado. Pero esa lealtad que una vez te dio seguridad ahora se sentía como una sombra ominosa.\n\nDesde niño, siempre te enseñaron que la familia es lo primero, y para ti, Javier era más que un amigo; era tu hermano. Creciste en un barrio donde las decisiones eran difíciles. A los 15 años, te uniste a una pandilla local. Con el tiempo, escalaste posiciones, convirtiéndote en un hombre temido y respetado. Junto a Javier, construiste un imperio de narcotráfico, controlando rutas y ganando enemigos. Pero el poder nunca es suficiente, y la ambición creció.\n\nLa primera señal de alerta llegó cuando Javier comenzó a actuar de manera extraña. Se reunía con personas que no conocías. Al principio, pensaste que solo eran negocios, pero la desconfianza se enraizaba en tu mente. Una noche, decidiste seguirlo. Te escondiste en la oscuridad, observando cómo entregaba un paquete a un rival. El corazón se te detuvo. Sabías que esa traición podría costarles la vida a ambos.\n\nDecidiste confrontarlo. En un viejo almacén, te miró a los ojos y te aseguró que todo era parte de un plan para expandir su negocio. Pero no te convenció. La rabia y el dolor te invadieron. Tenías dos opciones: dejarlo ir y arriesgarte a perder todo lo que habías construido, o actuar. Optaste por lo segundo.\n\nUna noche, reuniste a tus hombres de confianza y planeaste un golpe. Sabías que habría consecuencias, pero la lealtad no se perdona fácilmente. La noche del enfrentamiento, la adrenalina corría por tus venas. Te dirigiste a la casa de Javier, donde él organizaba su nueva alianza. Entraste con tus hombres, pistolas listas. La sorpresa en su rostro fue inigualable. “No hay vuelta atrás, Javier”, le dijiste mientras lo apuntabas. “Eres un traidor”.\n\nEn ese momento, sus hombres de seguridad comenzaron a disparar. La balacera estalló, y en medio del caos, Javier te miró con desesperación y furia. Te diste cuenta de que la traición era más profunda de lo que habías imaginado. No solo era un amigo; era un hombre al que habías llamado hermano, y ahora lo llevabas a la muerte.\n\nLograste salir del almacén, pero no sin consecuencias. La policía llegó rápidamente, y tu nombre comenzó a sonar en todas partes. Mientras te escondías, comprendiste que no solo habías perdido a Javier, sino que la traición había destrozado tu imperio. La confianza se había esfumado, y los aliados comenzaron a cuestionar tu liderazgo. La paranoia se instaló en tu mente.\n\nPasaron semanas, y la situación se volvió insostenible. Te encontraste en una encrucijada: seguir luchando por recuperar tu territorio o desaparecer. La noche en que decidiste hacer tu último movimiento, te reuniste con los pocos que todavía confiaban en ti. “O luchamos juntos o nos hundimos”, les dijiste. Decidiste ir tras aquellos que se habían aliado con Javier, eliminando la competencia.\n\nPero en el camino, perdiste más de lo que ganaste. La soledad comenzó a ser tu compañera constante. Cada vez que mirabas atrás, veías las decisiones que habías tomado. Al final, comprendiste que la traición no solo te había robado a un amigo, sino que había transformado tu vida en una lucha constante por la supervivencia. La ambición y el poder te habían dejado solo, y la lección más dura fue que, en este mundo, nadie es realmente leal.",
+  "script": "Este eres tú. Descubres un diario escondido en la casa de tu mejor amigo. La letra es suya, pero el contenido te deja helado: un complot en tu contra. Intentas calmarte, pensando que es un juego, pero los detalles son vívidos.\n\nLos días pasan y ruidos extraños empiezan en tu hogar: golpes, susurros. La paranoia crece. Revisa el diario de nuevo. Menciona a alguien más, un contacto desconocido.\n\nDecides confrontarlo, pero lo encuentras hablando con un extraño. Te alejas, sintiendo que algo está mal. Esa noche, los ruidos son más intensos. Llamas a la policía, pero no te creen. Regresas a casa y encuentras el diario abierto, con la última página rasgada. Alguien está vigilando.",
   "blocks": [
     {
       "id": "scene_0001",
-      "text": "un concepto frágil, y que el verdadero precio del poder es la soledad.",
+      "text": "Este eres tú. Descubres un diario escondido en la casa",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "plano cerrado del protagonista en la oscuridad",
-      "b_roll_suggestion": "Imágenes de sombras y luces parpadeantes",
-      "on_screen_text": "El precio del poder"
+      "visual_direction": "plano sombrío, dormitorio con poca luz",
+      "b_roll_suggestion": "diario abierto en una mesa oscura",
+      "on_screen_text": "Este eres tú.",
+      "visual": "dormitorio oscuro con un diario abierto sobre la cama"
     },
     {
       "id": "scene_0002",
-      "text": "El sonido de disparos resonaba en la lejanía.",
+      "text": "de tu mejor amigo. La letra es suya, pero el",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "plano general de una ciudad oscura",
-      "b_roll_suggestion": "Sonidos de disparos en la distancia",
-      "on_screen_text": ""
+      "visual_direction": "luz dura, enfoque en el diario",
+      "b_roll_suggestion": "primer plano de la letra en el diario",
+      "on_screen_text": "Descubres un diario escondido.",
+      "visual": "mano sosteniendo el diario, con una letra familiar visible"
     },
     {
       "id": "scene_0003",
-      "text": "La noche estaba oscura y húmeda en las calles de Medellín, y la tensión se sentía en el aire.",
+      "text": "contenido te deja helado: un complot en tu contra. Intentas",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "plano de calles vacías y húmedas",
-      "b_roll_suggestion": "Imágenes de lluvia cayendo sobre el pavimento",
-      "on_screen_text": "Tensión en el aire"
+      "visual_direction": "penumbra, tensión creciente",
+      "b_roll_suggestion": "sombra de alguien detrás de ti",
+      "on_screen_text": "El contenido te deja helado.",
+      "visual": "páginas del diario pasando rápidamente, revelando palabras inquietantes"
     },
     {
       "id": "scene_0004",
-      "text": "Te encontrabas en una esquina, observando cómo tu mejor amigo, Javier, se reunía con un grupo desconocido.",
+      "text": "calmarte, pensando que es un juego, pero los detalles son",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "plano medio del protagonista observando",
-      "b_roll_suggestion": "Enfoque en la expresión del protagonista",
-      "on_screen_text": "Observando a Javier"
+      "visual_direction": "plano sombrío, cocina en silencio",
+      "b_roll_suggestion": "cuchillo en la mesa, reflejo de luz",
+      "on_screen_text": "Intentas calmarte.",
+      "visual": "silueta de una persona sentada en la cama, con expresión de preocupación"
     },
     {
       "id": "scene_0005",
-      "text": "Él había sido tu apoyo incondicional desde que te metiste en el peligroso mundo del crimen organizado.",
+      "text": "vívidos. Los días pasan y ruidos extraños empiezan en tu",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "plano cercano de un rostro preocupado",
-      "b_roll_suggestion": "Flashbacks de momentos compartidos con Javier",
-      "on_screen_text": "Apoyo incondicional"
+      "visual_direction": "penumbra, ruidos en la oscuridad",
+      "b_roll_suggestion": "puerta entreabierta con sombra",
+      "on_screen_text": "Ruidos extraños empiezan.",
+      "visual": "pasillo oscuro con una luz tenue parpadeando al fondo"
     },
     {
       "id": "scene_0006",
-      "text": "Pero esa lealtad que una vez te dio seguridad ahora se sentía como una sombra ominosa.",
+      "text": "hogar: golpes, susurros. La paranoia crece. Revisa el diario de",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "plano de sombras alargadas",
-      "b_roll_suggestion": "Imágenes de un reloj avanzando",
-      "on_screen_text": "Sombra ominosa"
+      "visual_direction": "plano sombrío, pasillo oscuro",
+      "b_roll_suggestion": "silueta en la esquina del pasillo",
+      "on_screen_text": "La paranoia crece.",
+      "visual": "puerta entreabierta, dejando escapar un leve susurro"
     },
     {
       "id": "scene_0007",
-      "text": "Desde niño, siempre te enseñaron que la familia es lo primero, y para ti, Javier era más que un amigo; era tu hermano.",
+      "text": "nuevo. Menciona a alguien más, un contacto desconocido. Decides confrontarlo,",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "plano de un barrio peligroso",
-      "b_roll_suggestion": "Imágenes de niños jugando en la calle",
-      "on_screen_text": "La familia es primero"
+      "visual_direction": "luz dura, enfoque en el diario",
+      "b_roll_suggestion": "mano temblorosa pasando páginas",
+      "on_screen_text": "Menciona a alguien más.",
+      "visual": "cocina en silencio, con una sombra moviéndose en la esquina"
     },
     {
       "id": "scene_0008",
-      "text": "Creciste en un barrio donde las decisiones eran difíciles.",
+      "text": "pero lo encuentras hablando con un extraño. Te alejas, sintiendo",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "plano de un barrio en decadencia",
-      "b_roll_suggestion": "Imágenes de decisiones difíciles",
-      "on_screen_text": "Decisiones difíciles"
+      "visual_direction": "plano sombrío, tensión en el aire",
+      "b_roll_suggestion": "mirada oculta desde la esquina",
+      "on_screen_text": "Te alejas, sintiendo algo mal.",
+      "visual": "silueta lejana de dos personas hablando en un jardín oscuro"
     },
     {
       "id": "scene_0009",
-      "text": "A los 15 años, te uniste a una pandilla local.",
+      "text": "que algo está mal. Esa noche, los ruidos son más",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "plano de jóvenes en una pandilla",
-      "b_roll_suggestion": "Imágenes de unirse a la pandilla",
-      "on_screen_text": "Unión a la pandilla"
+      "visual_direction": "penumbra, habitación vacía",
+      "b_roll_suggestion": "ruido de pasos en la oscuridad",
+      "on_screen_text": "Los ruidos son más intensos.",
+      "visual": "salón vacío con una ventana abierta, el viento moviendo las cortinas"
     },
     {
       "id": "scene_0010",
-      "text": "Con el tiempo, escalaste posiciones, convirtiéndote en un hombre temido y respetado.",
+      "text": "intensos. Llamas a la policía, pero no te creen. Regresas",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "plano de un hombre en la cima",
-      "b_roll_suggestion": "Imágenes de poder y respeto",
-      "on_screen_text": "Temido y respetado"
+      "visual_direction": "plano sombrío, tensión acumulada",
+      "b_roll_suggestion": "teléfono sonando en la oscuridad",
+      "on_screen_text": "Llamas a la policía.",
+      "visual": "pantalla de teléfono iluminando una cara ansiosa en la oscuridad"
     },
     {
       "id": "scene_0011",
-      "text": "Junto a Javier, construiste un imperio de narcotráfico, controlando rutas y ganando enemigos.",
+      "text": "a casa y encuentras el diario abierto, con la última",
       "motion": "static",
       "transition_in": "fade",
       "transition_out": "none",
-      "visual_direction": "plano de un mapa con rutas",
-      "b_roll_suggestion": "Imágenes de tráfico de drogas",
-      "on_screen_text": "Imperio de narcotráfico"
+      "visual_direction": "penumbra, diario abierto",
+      "b_roll_suggestion": "última página rasgada en el aire",
+      "on_screen_text": "Encuentras el diario abierto.",
+      "visual": "diario abierto sobre la mesa, con una página rasgada visible"
     },
     {
       "id": "scene_0012",
-      "text": "Pero el poder nunca es suficiente, y la ambición creció.",
+      "text": "página rasgada. Alguien está vigilando.",
       "motion": "slow_push",
       "transition_in": "none",
       "transition_out": "fade",
-      "visual_direction": "plano de un hombre ambicioso",
-      "b_roll_suggestion": "Imágenes de ambición desmedida",
-      "on_screen_text": "Ambición crecida"
-    },
-    {
-      "id": "scene_0013",
-      "text": "La primera señal de alerta llegó cuando Javier comenzó a actuar de manera extraña.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de una reunión secreta",
-      "b_roll_suggestion": "Imágenes de miradas sospechosas",
-      "on_screen_text": "Alerta"
-    },
-    {
-      "id": "scene_0014",
-      "text": "Se reunía con personas que no conocías.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un grupo oscuro",
-      "b_roll_suggestion": "Imágenes de conversaciones furtivas",
-      "on_screen_text": "Reuniones extrañas"
-    },
-    {
-      "id": "scene_0015",
-      "text": "Al principio, pensaste que solo eran negocios, pero la desconfianza se enraizaba en tu mente.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un rostro confundido",
-      "b_roll_suggestion": "Imágenes de pensamientos oscuros",
-      "on_screen_text": "Desconfianza"
-    },
-    {
-      "id": "scene_0016",
-      "text": "Una noche, decidiste seguirlo.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de una noche oscura",
-      "b_roll_suggestion": "Imágenes de pasos sigilosos",
-      "on_screen_text": "Decisión de seguirlo"
-    },
-    {
-      "id": "scene_0017",
-      "text": "Te escondiste en la oscuridad, observando cómo entregaba un paquete a un rival.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un escondite",
-      "b_roll_suggestion": "Imágenes de un paquete siendo entregado",
-      "on_screen_text": "Observando la entrega"
-    },
-    {
-      "id": "scene_0018",
-      "text": "El corazón se te detuvo.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un corazón latiendo",
-      "b_roll_suggestion": "Imágenes de tensión acumulada",
-      "on_screen_text": "Corazón detenido"
-    },
-    {
-      "id": "scene_0019",
-      "text": "Sabías que esa traición podría costarles la vida a ambos.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un rostro asustado",
-      "b_roll_suggestion": "Imágenes de peligro inminente",
-      "on_screen_text": "Traición mortal"
-    },
-    {
-      "id": "scene_0020",
-      "text": "Decidiste confrontarlo.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un almacén oscuro",
-      "b_roll_suggestion": "Imágenes de confrontación",
-      "on_screen_text": "Confrontación inminente"
-    },
-    {
-      "id": "scene_0021",
-      "text": "En un viejo almacén, te miró a los ojos y te aseguró que todo era parte de un plan para expandir su negocio.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de dos hombres mirándose",
-      "b_roll_suggestion": "Imágenes de tensión entre amigos",
-      "on_screen_text": "¿Parte del plan?"
-    },
-    {
-      "id": "scene_0022",
-      "text": "Pero no te convenció.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un rostro decidido",
-      "b_roll_suggestion": "Imágenes de dudas internas",
-      "on_screen_text": "No convencido"
-    },
-    {
-      "id": "scene_0023",
-      "text": "La rabia y el dolor te invadieron.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un hombre enojado",
-      "b_roll_suggestion": "Imágenes de rabia contenida",
-      "on_screen_text": "Rabia y dolor"
-    },
-    {
-      "id": "scene_0024",
-      "text": "Tenías dos opciones: dejarlo ir y arriesgarte a perder todo lo que habías construido, o actuar.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de una balanza",
-      "b_roll_suggestion": "Imágenes de decisiones críticas",
-      "on_screen_text": "Dos opciones"
-    },
-    {
-      "id": "scene_0025",
-      "text": "Optaste por lo segundo.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un grupo reunido",
-      "b_roll_suggestion": "Imágenes de planes en acción",
-      "on_screen_text": "Optaste por actuar"
-    },
-    {
-      "id": "scene_0026",
-      "text": "Una noche, reuniste a tus hombres de confianza y planeaste un golpe.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un mapa con marcas",
-      "b_roll_suggestion": "Imágenes de un golpe planeado",
-      "on_screen_text": "Planeando un golpe"
-    },
-    {
-      "id": "scene_0027",
-      "text": "Sabías que habría consecuencias, pero la lealtad no se perdona fácilmente.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un hombre decidido",
-      "b_roll_suggestion": "Imágenes de lealtad cuestionada",
-      "on_screen_text": "Lealtad no perdonada"
-    },
-    {
-      "id": "scene_0028",
-      "text": "La noche del enfrentamiento, la adrenalina corría por tus venas.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de una noche oscura",
-      "b_roll_suggestion": "Imágenes de adrenalina",
-      "on_screen_text": "Adrenalina corriendo"
-    },
-    {
-      "id": "scene_0029",
-      "text": "Te dirigiste a la casa de Javier, donde él organizaba su nueva alianza.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de una casa iluminada",
-      "b_roll_suggestion": "Imágenes de un asalto",
-      "on_screen_text": "Casa de Javier"
-    },
-    {
-      "id": "scene_0030",
-      "text": "Entraste con tus hombres, pistolas listas.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de hombres armados",
-      "b_roll_suggestion": "Imágenes de preparación para el asalto",
-      "on_screen_text": "Pistolas listas"
-    },
-    {
-      "id": "scene_0031",
-      "text": "La sorpresa en su rostro fue inigualable.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de sorpresa en un rostro",
-      "b_roll_suggestion": "Imágenes de la reacción de Javier",
-      "on_screen_text": "Sorpresa"
-    },
-    {
-      "id": "scene_0032",
-      "text": "“No hay vuelta atrás, Javier”, le dijiste mientras lo apuntabas.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un arma apuntando",
-      "b_roll_suggestion": "Imágenes de tensión en el aire",
-      "on_screen_text": "No hay vuelta atrás"
-    },
-    {
-      "id": "scene_0033",
-      "text": "“Eres un traidor”.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un hombre furioso",
-      "b_roll_suggestion": "Imágenes de traición",
-      "on_screen_text": "Eres un traidor"
-    },
-    {
-      "id": "scene_0034",
-      "text": "En ese momento, sus hombres de seguridad comenzaron a disparar.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un tiroteo",
-      "b_roll_suggestion": "Imágenes de balas volando",
-      "on_screen_text": "Balacera estalla"
-    },
-    {
-      "id": "scene_0035",
-      "text": "La balacera estalló, y en medio del caos, Javier te miró con desesperación y furia.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de caos",
-      "b_roll_suggestion": "Imágenes de desesperación",
-      "on_screen_text": "Caos total"
-    },
-    {
-      "id": "scene_0036",
-      "text": "Te diste cuenta de que la traición era más profunda de lo que habías imaginado.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un hombre en shock",
-      "b_roll_suggestion": "Imágenes de traición profunda",
-      "on_screen_text": "Traición profunda"
-    },
-    {
-      "id": "scene_0037",
-      "text": "No solo era un amigo; era un hombre al que habías llamado hermano, y ahora lo llevabas a la muerte.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un hombre angustiado",
-      "b_roll_suggestion": "Imágenes de recuerdos compartidos",
-      "on_screen_text": "Un hermano perdido"
-    },
-    {
-      "id": "scene_0038",
-      "text": "Lograste salir del almacén, pero no sin consecuencias.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un escape",
-      "b_roll_suggestion": "Imágenes de huida",
-      "on_screen_text": "Escapando"
-    },
-    {
-      "id": "scene_0039",
-      "text": "La policía llegó rápidamente, y tu nombre comenzó a sonar en todas partes.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de luces de policía",
-      "b_roll_suggestion": "Imágenes de sirenas",
-      "on_screen_text": "Policía en camino"
-    },
-    {
-      "id": "scene_0040",
-      "text": "Mientras te escondías, comprendiste que no solo habías perdido a Javier, sino que la traición había destrozado tu imperio.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un hombre reflexionando",
-      "b_roll_suggestion": "Imágenes de pérdida",
-      "on_screen_text": "Comprendiendo la pérdida"
-    },
-    {
-      "id": "scene_0041",
-      "text": "La confianza se había esfumado, y los aliados comenzaron a cuestionar tu liderazgo.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un grupo dividido",
-      "b_roll_suggestion": "Imágenes de desconfianza",
-      "on_screen_text": "Confianza esfumada"
-    },
-    {
-      "id": "scene_0042",
-      "text": "La paranoia se instaló en tu mente.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un hombre paranoico",
-      "b_roll_suggestion": "Imágenes de miradas furtivas",
-      "on_screen_text": "Paranoia instalada"
-    },
-    {
-      "id": "scene_0043",
-      "text": "Pasaron semanas, y la situación se volvió insostenible.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un reloj avanzando",
-      "b_roll_suggestion": "Imágenes de tiempo corriendo",
-      "on_screen_text": "Semanas de tensión"
-    },
-    {
-      "id": "scene_0044",
-      "text": "Te encontraste en una encrucijada: seguir luchando por recuperar tu territorio o desaparecer.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un cruce de caminos",
-      "b_roll_suggestion": "Imágenes de decisiones críticas",
-      "on_screen_text": "Encrucijada"
-    },
-    {
-      "id": "scene_0045",
-      "text": "La noche en que decidiste hacer tu último movimiento, te reuniste con los pocos que todavía confiaban en ti.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un grupo unido",
-      "b_roll_suggestion": "Imágenes de lealtad",
-      "on_screen_text": "Lucha juntos"
-    },
-    {
-      "id": "scene_0046",
-      "text": "“O luchamos juntos o nos hundimos”, les dijiste.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un hombre decidido",
-      "b_roll_suggestion": "Imágenes de determinación",
-      "on_screen_text": "Luchamos o nos hundimos"
-    },
-    {
-      "id": "scene_0047",
-      "text": "Decidiste ir tras aquellos que se habían aliado con Javier, eliminando la competencia.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un mapa con enemigos marcados",
-      "b_roll_suggestion": "Imágenes de venganza",
-      "on_screen_text": "Eliminando competencia"
-    },
-    {
-      "id": "scene_0048",
-      "text": "Pero en el camino, perdiste más de lo que ganaste.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un hombre triste",
-      "b_roll_suggestion": "Imágenes de pérdidas",
-      "on_screen_text": "Más pérdidas que ganancias"
-    },
-    {
-      "id": "scene_0049",
-      "text": "La soledad comenzó a ser tu compañera constante.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un hombre solo",
-      "b_roll_suggestion": "Imágenes de soledad",
-      "on_screen_text": "Compañera constante"
-    },
-    {
-      "id": "scene_0050",
-      "text": "Cada vez que mirabas atrás, veías las decisiones que habías tomado.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de recuerdos",
-      "b_roll_suggestion": "Imágenes de decisiones pasadas",
-      "on_screen_text": "Decisiones que marcan"
-    },
-    {
-      "id": "scene_0051",
-      "text": "Al final, comprendiste que la traición no solo te había robado a un amigo, sino que había transformado tu vida en una lucha constante por la supervivencia.",
-      "motion": "static",
-      "transition_in": "fade",
-      "transition_out": "none",
-      "visual_direction": "plano de un hombre reflexionando",
-      "b_roll_suggestion": "Imágenes de lucha por la supervivencia",
-      "on_screen_text": "Lucha constante"
-    },
-    {
-      "id": "scene_0052",
-      "text": "La ambición y el poder te habían dejado solo, y la lección más dura fue que, en este mundo, nadie es realmente leal.",
-      "motion": "slow_push",
-      "transition_in": "none",
-      "transition_out": "fade",
-      "visual_direction": "plano de un hombre solo en la oscuridad",
-      "b_roll_suggestion": "Imágenes de soledad y ambición",
-      "on_screen_text": "Nadie es leal"
+      "visual_direction": "plano sombrío, sensación de vigilancia",
+      "b_roll_suggestion": "sombra moviéndose detrás de ti",
+      "on_screen_text": "Alguien está vigilando.",
+      "visual": "sombra proyectada en la pared, sugiriendo la presencia de alguien más"
     }
   ],
-  "word_count": 623
+  "word_count": 115,
+  "viral_meta": {
+    "ideas": [
+      "Descubrí que mi vecino tenía una doble vida y no sabía si temerle o sentir lástima por él.",
+      "Siempre pensé que mi hermano era el favorito de mis padres, pero me topé con un secreto que podía destruirlo todo.",
+      "Mi mejor amigo decía que no tenía nada que ocultar, pero encontré un diario que revelaba un oscuro plan en mi contra."
+    ],
+    "selected_idea": "Mi mejor amigo decía que no tenía nada que ocultar, pero encontré un diario que revelaba un oscuro plan en mi contra.",
+    "idea": "Mi mejor amigo decía que no tenía nada que ocultar, pero encontré un diario que revelaba un oscuro plan en mi contra.",
+    "alternatives": [
+      "Descubrí que mi vecino tenía una doble vida y no sabía si temerle o sentir lástima por él.",
+      "Siempre pensé que mi hermano era el favorito de mis padres, pero me topé con un secreto que podía destruirlo todo."
+    ],
+    "script_seed": "IDEA SELECCIONADA (núcleo del video — el guion debe girar ENTORNO a esto, sin sustituirla por otra premisa):\nMi mejor amigo decía que no tenía nada que ocultar, pero encontré un diario que revelaba un oscuro plan en mi contra.\n\nPERFIL: nicho «Narración de historias ficticias sobre crimen organizado y corrupción», tono Directo, hook Pregunta + promesa, ritmo Rápido, público Espectadores interesados en narrativas de crimen y corrupción.\nPriorizar en la trama: traición, secreto, miedo, manipulación, vigilancia, algo raro en alguien cercano.\nEvitar: clichés genéricos, relleno IA, intros de youtuber.\nIdeas: ficción oscura creíble, adictiva, incómoda — confesión personal, secreto familiar, traición, manipulación, engaño, obsesión, mentiras, daño emocional, horror realista, descubrimientos inquietantes. Primera persona (yo); gancho inmediato; ritmo rápido; cero relleno tipo ChatGPT; cierre inquietante permitido. PROHIBIDO como núcleo de entretenimiento: glorificar narcotráfico, carteles, sicarios, balaceras, narconovela, corrupción-política-mejor-tráfico, extorsión mafiosa. Evitá fantasía épica, paranormal barato irreal, monstruos, fantasmas cliché, cuentos infantiles, tono literario.\n\nCONTEXTO DE SESIÓN (inspiración; no copiar literal si contradice la idea seleccionada):\nectador metido en la historia durante todo el vide, con un narrador animado y con imagenes que acompañen, la idea es que sean historias sobre crimen organizado, mafia, corrupcion, etc. Un ejemplo de titulo seria ¿que pasaria si tomaras tal decision para llegar a tal punto? o algo ais, el protagonista es el espectador, hayq ue meterlo de lleno en la historia.\n\nIA: ¡Suena emocionante! ¿Qué tipo de decisiones o dilemas te gustaría explorar en las historias?\n\nTú: tiene que ser …\n---\npodes hacer otro estilo de titulos? por las dudas, en la pestaña nuevo video, se me sugieren titulos con ia, por lo que eso es lo que estamos editando ahora\n---\npensa que son para youtube, no son tan youtubers, el tono tiene que ser tambien para youtube\n\nCOMPROMISOS / ORIENTACIÓN DE LA IA (últimas respuestas):\nSeguimos: ¿qué tono querés y qué duración sueles publicar?\n---\nMis disculpas por la confusión. Vamos a enfocarnos en crear títulos atractivos. Aquí van algunas sugerencias:\n\n1. \"¿Qué harías si te convirtieras en el próximo capo de la mafia?\"\n2. \"La traición que llevó a un político a la ruina: una historia real\"\n3. \"De chef a criminal: el oscuro secreto detrás de la cocina\"\n4. \"El precio del poder: ¿vale la pena la corrupción?\"\n5. \"Cuando la lealtad se rompe: la caída de un imperio criminal\"\n\n¿Qué te parecen estos? ¿Te gustaría que trabajemos en algún aspecto específico de los títulos?\n---\nEntendido. Vamos con títulos que reflejen historias cinematográficas y emocionantes. Aquí algunas ideas más alineadas con eso:\n\n1. \"Ascenso y caída: La historia de un narcotraficante\"\n2. \"El traidor: Un cuento de lealtades rotas y consecuencias fatales\"\n3. \"El último golpe: La vida de un político corrupto\"\n4. \"Entre sombras: La historia de un chef en el cartel\"\n5. \"El precio de la ambición: La verdad detrás del poder\"\n\n¿Te resuena más este enfoque? ¿Quieres ajustar algo en los títulos?\n---\nGracias por tu paciencia y por el contexto. Ahora, vamos a crear títulos que reflejen historias cinematográficas donde el espectador sea el protagonista. Aquí van algunas sugerencias:\n\n1. \"Tu vida en la mafia: ¿Cómo llegaste a ser el rey del narcotráfico?\"\n2. \"De héroe a villano: La historia de tu destino en el crimen organizado\"\n3. \"¿Qué harías si la lealtad se transforma en traición?\"\n4. \"El ascenso del poder: Tu viaje por la corrupción política\"\n5. \"Entre el amor y la traición: Tu vida en el cartel de drogas\"\n\n¿Cómo ves estos títulos? ¿Hay algún elemento en particular que te gustaría ajustar o explorar más?\n---\nClaro, cambiemos el enfoque para que suenen más intrigantes y atrapantes. Aquí van algunas nuevas propuestas:\n\n1. \"La vida que elegiste: Un viaje oscuro a través del crimen\"\n2. \"El dilema de la traición: ¿Qué harías en su lugar?\"\n3. \"En el corazón de la corrupción: Tu historia de ambición y poder\"\n4. \"Despertar en el infierno: Cómo te convertiste en un capo\"\n5. \"El fin de la lealtad: Tu caída en el mundo del narcotráfico\"\n\n¿Te gusta más este estilo? ¿Qué ajustes o nuevos enfoques te gustaría probar?\n---\nEntendido, centrémonos en títulos más directos y atractivos para YouTube. Aquí van algunas sugerencias:\n\n1. \"Cómo caí en la mafia: Mi historia de crimen y poder\"\n2. \"La traición que lo cambió todo: Un viaje al crimen organizado\"\n3. \"De chef a criminal: La oscura verdad detrás de mi vida\"\n4. \"El oscuro camino hacia la corrupción: ¿Vale la pena?\"\n5. \"Ascenso y caída: La historia de un narcotraficante\"\n\n¿Cómo te parecen estos? ¿Te gustaría ajustar el enfoque o el estilo de alguno?\n\nINSTRUCCIONES PARA EL GUION COMPLETO (vos lo escribís en el siguiente paso):\n- Primera persona (yo). Oraciones cortas, oral, adictivo.\n- Estructura: GANCHO (ya insinuado en la idea) → SOSPECHA → ESCALADA (cada 1–2 líneas empeora o revela) → GIRO → CIERRE INQUIETANTE.\n- Nada de paranormal irreal ni monstruos; nada de moraleja final ni tono cuento infantil.\n- Desarrollá la idea seleccionada con detalles concretos (objetos, horarios, gestos, mensajes).",
+    "source": "openai_dark_viral_engine",
+    "best_index": 2,
+    "ideas_pool": [
+      "Descubrí que mi vecino tenía una doble vida y no sabía si temerle o sentir lástima por él.",
+      "Siempre pensé que mi hermano era el favorito de mis padres, pero me topé con un secreto que podía destruirlo todo.",
+      "Mi mejor amigo decía que no tenía nada que ocultar, pero encontré un diario que revelaba un oscuro plan en mi contra."
+    ]
+  }
 }

@@ -1,0 +1,31 @@
+SHOT 003
+
+EXPECTED FILE: 003.png
+
+NARRATION:
+In production, replace with a fact-checked English script.
+
+REFERENCES:
+CHAR_001
+
+CONTINUITY:
+same location as previous; follow from shot 002
+
+SHOT TYPE:
+medium_shot
+
+CAMERA:
+side angle
+
+ACTION:
+In production, replace with a fact-checked English script
+
+PROMPT:
+GLOBAL STYLE: Premium cinematic documentary reenactment + archival when useful Restrained, serious, naturalistic Recurring character/location references; stills every few seconds Offices, press, documents, city skylines, period-accura
+CURRENT ACTION: In production, replace with a fact-checked English script
+ENVIRONMENT: lugar principal de la historia
+CAMERA: side angle
+LIGHTING: indefinido
+CONTINUITY: same location as previous; follow from shot 002
+REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
+DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: side angle composition: hands/object detail + context movement: Movimiento físico visib

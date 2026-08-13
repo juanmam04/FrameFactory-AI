@@ -14,6 +14,10 @@ tiktok_karaoke:
   description: "Estilo TikTok: texto grande amarillo con borde negro, centrado."
   force_style: "Fontname=Impact,Fontsize=52,PrimaryColour=&H0000FFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=4,Shadow=0,Alignment=2,MarginV=40"
 
+reddit_gameplay_center:
+  description: "Gameplay Reddit: texto muy grande blanco centrado en pantalla, borde grueso."
+  force_style: "Fontname=Impact,Fontsize=58,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=6,Shadow=0,Alignment=5,MarginV=24"
+
 clean_center:
   description: "Blanco sin borde, centrado en el medio (para shorts muy limpios)."
   force_style: "Fontname=Arial,Fontsize=44,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=0,Shadow=0,Alignment=5,MarginV=0"

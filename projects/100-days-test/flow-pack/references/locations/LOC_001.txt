@@ -1,0 +1,10 @@
+LOC_001
+Name: Corporate office
+
+Description:
+Generic corporate interior for business scenes
+
+Generate reference image:
+Open-plan office, glass walls, cool daylight, documentary realism
+
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.

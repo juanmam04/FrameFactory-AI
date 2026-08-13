@@ -1,0 +1,31 @@
+SHOT 001
+
+EXPECTED FILE: 001.png
+
+NARRATION:
+[DOGFOOD MOCK — NOT FOR PUBLICATION] The Rise and Fall of WeWork.
+
+REFERENCES:
+CHAR_001
+
+CONTINUITY:
+opening shot
+
+SHOT TYPE:
+medium_shot
+
+CAMERA:
+POV first person
+
+ACTION:
+[DOGFOOD MOCK — NOT FOR PUBLICATION] The Rise and Fall of WeWork
+
+PROMPT:
+GLOBAL STYLE: Documentary cinematic realism, 16:9.
+CURRENT ACTION: [DOGFOOD MOCK — NOT FOR PUBLICATION] The Rise and Fall of WeWork
+ENVIRONMENT: lugar principal de la historia
+CAMERA: POV first person
+LIGHTING: indefinido
+CONTINUITY: opening shot
+REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
+DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional hands/forearms only) show the environment and other characters/objects the story needs no empty white background no generic poster pose — show a real s

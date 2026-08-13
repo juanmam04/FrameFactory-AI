@@ -1,0 +1,25 @@
+VISUAL 027
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 027.png
+STORY BEAT: 3
+DURATION TARGET: 5s
+KEN BURNS: pan_right
+
+NARRATION:
+As the summer of 2019 rolled around, WeWork kicked off its IPO roadshow, presenting its vision to potential investors.
+
+DESCRIPTION:
+WeWork executives presenting to a group of investors.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+REFERENCES:
+LOC_002
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+027. 2019. a large conference room. WeWork executives presenting to a group of investors.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso. environmental detail candid documentary shot, photorealistic, period-accurate details. Use LOC_002.png reference.
+

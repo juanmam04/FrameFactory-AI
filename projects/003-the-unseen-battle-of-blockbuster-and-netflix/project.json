@@ -1,0 +1,156 @@
+{
+  "id": "003-the-unseen-battle-of-blockbuster-and-netflix",
+  "slug": "the-unseen-battle-of-blockbuster-and-netflix",
+  "mode": "documentary",
+  "title": "The Unseen Battle of Blockbuster and Netflix",
+  "topic": "In the late 1990s, Blockbuster ruled the video rental market, but small startup Netflix was brewing a storm with its subscription model. When Netflix offered to sell itself to Blockbuster for a mere $50 million, Blockbuster saw no value in it and dismissed the opportunity. The irony of this decision would define the future of home entertainment.",
+  "language": "en",
+  "target_words": 2000,
+  "target_duration_min": [
+    11,
+    15
+  ],
+  "research_notes": "AI RESEARCH BRIEF (model knowledge — verify before publishing)\nThis is NOT live web search. Marked UNKNOWN items must stay unknown in the script.\n\n## Story engine\nThe clash between Blockbuster's dominance in video rentals and Netflix's innovative subscription model sets the stage for a dramatic corporate rivalry that reshaped the entertainment landscape.\n\n## Cold-open candidates\n- In 2000, Netflix co-founder Reed Hastings offered to sell the company to Blockbuster for $50 million, only to be dismissed by Blockbuster's executives.\n- By 2004, Netflix had over 1.5 million subscribers, while Blockbuster was struggling to adapt to the changing market.\n- In 1999, Netflix launched its subscription service, which would eventually lead to its explosive growth and Blockbuster's decline.\n\n## Timeline\n\n- **1985**: Blockbuster is founded in Dallas, Texas. It becomes the largest video rental chain in the world.\n- **1997**: Netflix is founded by Reed Hastings and Marc Randolph, starting as a DVD rental service with a pay-per-rental model.\n- **1999**: Netflix launches its subscription rental service, eliminating late fees and setting the stage for future growth.\n- **2000**: Reed Hastings offers to sell Netflix to Blockbuster for $50 million, but Blockbuster dismisses the offer.\n- **2002**: Netflix goes public with an IPO, raising $82.5 million.\n- **2004**: Netflix surpasses 1.5 million subscribers, highlighting a shift in consumer preferences.\n- **2005**: Blockbuster launches its own online rental service but struggles to compete with Netflix.\n- **2007**: Netflix introduces streaming services, further disrupting the traditional rental model.\n- **2010**: Blockbuster files for bankruptcy, marking the end of an era in video rental.\n- **2013**: Netflix wins its first Emmy Award for 'House of Cards,' transitioning into content creation.\n- **2015**: Netflix reaches 70 million subscribers globally, solidifying its leadership in the entertainment industry.\n- **2020**: Netflix surpasses 200 million subscribers, reflecting its dominance in the streaming market.",
+  "sources": [
+    "The New York Times",
+    "Business Insider",
+    "The Wall Street Journal",
+    "'That Will Never Work' by Reed Hastings",
+    "'Netflix: The Company That Changed Entertainment' by Gina Keating"
+  ],
+  "research_skipped": false,
+  "script": "",
+  "fact_check_status": "pending",
+  "script_approved": false,
+  "story_plan": {},
+  "story_plan_approved": false,
+  "voice_speed": 1.0,
+  "music_path": "",
+  "music_volume": 0.12,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "session_id": "20260812_134822_6c78dd6b",
+  "episode_number": 3,
+  "idea": {
+    "title_concept": "The Unseen Battle of Blockbuster and Netflix",
+    "story": "In the late 1990s, Blockbuster ruled the video rental market, but small startup Netflix was brewing a storm with its subscription model. When Netflix offered to sell itself to Blockbuster for a mere $50 million, Blockbuster saw no value in it and dismissed the opportunity. The irony of this decision would define the future of home entertainment.",
+    "hook": "What happened when the giant Blockbuster underestimated a tiny startup that would later change the way we consume movies forever?",
+    "why_it_works": "The story has a classic rivalry element, showcasing how a big player can fail to adapt to innovation and ultimately lose it all.",
+    "content_pillar": "Rivalry / corporate war",
+    "visual_potential": "High",
+    "research_risk": "Medium",
+    "primary_entity": "Blockbuster"
+  },
+  "creative_profile_snapshot": {
+    "style": "fascinating true stories about companies — cinematic narrative documentary",
+    "content_type": "business_documentary",
+    "workflow": "documentary",
+    "avoid": [
+      "business education / MBA lecture tone",
+      "corporate analysis explainers",
+      "business advice / five lessons",
+      "school-essay tone",
+      "generic business motivation",
+      "listicles",
+      "fake drama",
+      "fabricated facts",
+      "forced rise-and-fall template on every story",
+      "Wikipedia definition openings",
+      "Welcome back / In today's video / subscribe CTAs",
+      "Reddit confession / first-person fiction"
+    ],
+    "niche": "Fascinating true stories about companies, founders, products, and the people around them — origins, rivalries, inventions, frauds, obsessions, mistakes, monopolies, failures, comebacks. Story first. Business second.",
+    "audience": {
+      "who": "General English-speaking YouTube audience with no required business interest — they should stay for the story.",
+      "pain_points": "Bored by lectures; hungry for what happened next.",
+      "reading_level": "general"
+    },
+    "tone": "intelligent, cinematic, curious, entertaining, confident, clear, agile",
+    "hook_style": "Cold-open on the central contradiction or stakes (e.g. $47B valuation vs renting desks), then rewind. Never open with a definition or model-of-business lecture.",
+    "pacing": "Medio",
+    "narrator_preference": "male_sharp",
+    "language_register": "English, natural, accessible, concrete — not academic",
+    "topics_to_avoid": "Fabricated quotes or numbers; hustle advice; dry textbook summaries; same company/story already covered in this session; forced morals.",
+    "topics_to_focus": [
+      "Origins / unlikely beginnings",
+      "Rise",
+      "Fall",
+      "Comeback",
+      "Rivalry / corporate war",
+      "Invention / transformation",
+      "Fraud / obsession",
+      "Huge mistake / strange decision",
+      "Survival / monopoly / expansion",
+      "Failed or brilliant product",
+      "Hidden empire",
+      "Founder story"
+    ],
+    "title_style": "Highly clickable without being misleading; specific stakes or numbers when true.",
+    "thumbnail_style": "Cinematic faces / moments / contrast; readable emotion; no spammy arrows.",
+    "channel": {
+      "name": "100 Days — Business Documentaries",
+      "tagline": "Story first. Business second. · Fascinating true stories about companies.",
+      "content_pillars": "Origins; Rise; Fall; Comeback; Rivalry; Invention; Fraud; Obsession; Mistakes; Monopoly; Products; Hidden Empires; Founder Stories — only when there is a great true story",
+      "goal_count": 100,
+      "language": "en",
+      "target_words": 2000,
+      "target_duration_min": [
+        11,
+        15
+      ],
+      "visual_provider": "google_flow_manual"
+    },
+    "script": {
+      "structure_preference": "Find the story engine first; then hook/setup/desire/progress/obstacles/escalation/turning points/consequences/resolution as needed — not a fixed template",
+      "forbidden_phrases": "Welcome back; In today's video; Make sure to subscribe; Like and comment; Here are five lessons; Let's dive into the business model",
+      "cta_style": "none in narration",
+      "opening_style": "Cold open on stakes/contradiction; then rewind if needed"
+    },
+    "video": {
+      "primary_format": "youtube_long_16_9",
+      "target_length_category": "long_11_15",
+      "aspect_notes": "16:9",
+      "content_type": "business_documentary",
+      "narration_format": "third_person_documentary"
+    },
+    "visual": {
+      "look": "Cinematic true-story documentary stills, 16:9. Show the world of the story: protagonists doing something, real/recreated places, offices, factories, stores, products, cities, meetings, events, consequences, time-period change, meaningful details. Mix establishing / wide / close-up / environmental storytelling. Avoid generic stock: CEO staring at camera, businessman at desk, handshake, laptop, generic skyscraper, abstract money graphics. No cartoon, meme text, watermark, logo soup.",
+      "color_mood": "Restrained, serious, naturalistic, cinematic",
+      "shot_preferences": "Protagonists doing something; places; products; events; consequences; establishing / wide / close-up / environmental storytelling",
+      "b_roll_style": "Offices, factories, stores, cities, meetings, period-accurate details — avoid handshake/laptop/generic skyscraper/abstract money",
+      "reference_moodboards": "Google Flow masters for recurring people/places/objects before shot batch"
+    },
+    "editing": {
+      "cut_rhythm": "curious, story-driven documentary",
+      "transitions_default": "soft ken burns + short fades",
+      "lower_thirds": "no",
+      "subtitles_intent": "optional_later",
+      "music_role": "bajo_voz",
+      "pacing_visual": "Equal still duration locked to voice length",
+      "notes_for_ai_director": "FrameFactory is DIRECTOR; Flow is illustrator. Ask for the scene that advances the story moment — not stock business clichés."
+    },
+    "idea_generation": {
+      "brief": "Propose fascinating TRUE stories about companies for a daily English YouTube channel.\nStory first, business second. Ask: is there a great story here?\nAny extraordinary company story can work: origin, rivalry, invention, fraud, obsession,\nmistake, monopoly, failed/brilliant product, founder story, survival, comeback — do NOT force rise-and-fall.\nNever invent facts. Never pitch business-advice or listicle videos.",
+      "angles_to_favor": "Any extraordinary true company story with a clear story engine: origin, rivalry, invention, fraud, obsession, mistake, monopoly, failed/brilliant product, founder, survival, comeback.",
+      "angles_to_avoid": "Business advice; listicles; MBA explainers; fake drama; invented facts; forcing rise-and-fall when that isn't the story; repeating a company already produced."
+    },
+    "notes_freeform": "Publish one fascinating true company story per day for 100 days. Images via Google Flow manually. FrameFactory directs: script, flow prompts, import, voice, render."
+  },
+  "ui_step": "story",
+  "checkpoints": {
+    "script_ready": false,
+    "flow_pack_ready": false,
+    "images_imported": false,
+    "voice_ready": false,
+    "assembly_ready": false,
+    "render_ready": false
+  },
+  "import_report": {},
+  "preview": {},
+  "errors": [],
+  "created_at": "2026-08-12T19:47:44Z",
+  "updated_at": "2026-08-12T19:59:00Z",
+  "research_ai_generated": true
+}

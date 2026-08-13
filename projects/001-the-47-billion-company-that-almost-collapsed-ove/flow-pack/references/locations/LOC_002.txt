@@ -1,0 +1,12 @@
+LOC_002
+Name: WeWork Locations Worldwide
+
+Description:
+Various WeWork coworking spaces around the globe, each designed to foster community and collaboration.
+
+Generate reference image:
+Stylish and contemporary office spaces featuring glass walls, lounge areas, and meeting rooms, often filled with people networking and working.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

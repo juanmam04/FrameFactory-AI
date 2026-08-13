@@ -1,0 +1,25 @@
+VISUAL 005
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 005.png
+STORY BEAT: 4
+DURATION TARGET: 7s
+KEN BURNS: static
+
+NARRATION:
+To understand this trajectory, one must rewind to March 2010, when Adam Neumann and Miguel McKelvey launched WeWork in New York City.
+
+DESCRIPTION:
+Adam Neumann y Miguel McKelvey están frente a un edificio, sonriendo y sosteniendo un cartel de WeWork.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+REFERENCES:
+CHAR_001, CHAR_002
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+005. 2010. Nueva York. Adam Neumann y Miguel McKelvey están frente a un edificio, sonriendo y sosteniendo un cartel de WeWork.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso. over the shoulder candid documentary shot, photorealistic, period-accurate details.
+

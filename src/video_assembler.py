@@ -97,16 +97,26 @@ def montar_video(
     subtitles_path: Path | None = None,
     subtitle_style: str | None = None,
     transiciones_suaves: bool = False,
+    *,
+    output_path: Path | None = None,
+    music_volume: float = 0.2,
 ) -> Path:
     """
     Une imágenes en secuencia (duración por imagen configurable),
     agrega narración como pista principal y música de fondo opcional.
     Si transiciones_suaves=True, aplica zoom suave (Ken Burns) y fundidos cortos entre imágenes.
     Si no hay imágenes, genera un video negro con la duración del audio.
+    output_path: si se indica, escribe ahí (workspace documental); si no, output/videos/<nombre>.mp4.
+    music_volume: volumen relativo de la música (narración siempre volume=1).
     """
     seg = segundos_por_imagen or get_duracion_por_imagen()
-    OUTPUT_VIDEO.mkdir(parents=True, exist_ok=True)
-    out = OUTPUT_VIDEO / f"{nombre_salida}.mp4"
+    if output_path is not None:
+        out = Path(output_path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        OUTPUT_VIDEO.mkdir(parents=True, exist_ok=True)
+        out = OUTPUT_VIDEO / f"{nombre_salida}.mp4"
+    music_vol = max(0.0, min(1.0, float(music_volume)))
 
     # Verificar FFmpeg antes de continuar
     if not verificar_ffmpeg():
@@ -203,7 +213,8 @@ def montar_video(
                 "ffmpeg", "-y",
                 "-i", str(audio_narracion),
                 "-i", str(musica_fondo),
-                "-filter_complex", "[0:a]volume=1[a1];[1:a]volume=0.2[a2];[a1][a2]amix=inputs=2:duration=first",
+                "-filter_complex",
+                f"[0:a]volume=1[a1];[1:a]volume={music_vol:.3f}[a2];[a1][a2]amix=inputs=2:duration=first",
                 "-shortest", str(mix),
             ]
             subprocess.run(cmd_mix, check=True, capture_output=True)

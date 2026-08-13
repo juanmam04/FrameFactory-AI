@@ -1,0 +1,174 @@
+{
+  "id": "smoke-daily-001",
+  "slug": "the-47-billion-company-that-almost-collapsed-ove",
+  "mode": "documentary",
+  "title": "THE $47 BILLION COMPANY THAT ALMOST COLLAPSED OVERNIGHT",
+  "topic": "WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything.",
+  "language": "en",
+  "target_words": 800,
+  "target_duration_min": [
+    8,
+    12
+  ],
+  "research_notes": "MOCK: SoftBank invested. IPO attempt collapsed in 2019. UNKNOWN: exact peak valuation.",
+  "sources": [
+    "Public reporting (mock)"
+  ],
+  "research_skipped": false,
+  "script": "[DOGFOOD MOCK — NOT FOR PUBLICATION] WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything.. This is a placeholder documentary narration used only to verify the pipeline. In production, replace with a fact-checked English script. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+  "fact_check_status": "approved",
+  "script_approved": true,
+  "voice_speed": 1.0,
+  "music_path": "",
+  "music_volume": 0.12,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "session_id": "smoke-100-days-session",
+  "episode_number": 1,
+  "idea": {
+    "title_concept": "THE $47 BILLION COMPANY THAT ALMOST COLLAPSED OVERNIGHT",
+    "story": "WeWork's rise from coworking startup to one of the world's most valuable private companies — and the IPO filing that changed everything.",
+    "hook": "In January 2019, WeWork looked unstoppable. By fall, the IPO was dead.",
+    "why_it_works": "Famous company + absurd valuation + dramatic collapse.",
+    "content_pillar": "Rise & Fall",
+    "visual_potential": "High",
+    "research_risk": "Easy",
+    "primary_entity": "WeWork"
+  },
+  "creative_profile_snapshot": {
+    "style": "cinematic narrative business documentary",
+    "content_type": "business_documentary",
+    "workflow": "documentary",
+    "avoid": [
+      "school-essay tone",
+      "generic business motivation",
+      "listicles",
+      "fake drama",
+      "fabricated facts",
+      "repetitive narration",
+      "unnecessary jargon",
+      "Welcome back / In today's video / subscribe CTAs"
+    ],
+    "niche": "Extraordinary true stories about companies, founders, money, power, ambition, fraud, competition, spectacular success and catastrophic failure.",
+    "audience": {
+      "who": "General English-speaking YouTube audience. No business expertise required.",
+      "pain_points": "Wants gripping true stories, not MBA lectures.",
+      "reading_level": "general"
+    },
+    "tone": "intelligent, cinematic, curious, entertaining, confident, clear",
+    "hook_style": "Start directly with the extraordinary situation — no channel intros.",
+    "pacing": "Medio",
+    "narrator_preference": "male_sharp",
+    "language_register": "English, accessible, concrete",
+    "topics_to_avoid": "Fabricated quotes or numbers; pure motivation content; dry textbook summaries; same company/story already covered in this session.",
+    "topics_to_focus": [
+      "Rise & Fall",
+      "Corporate Disasters",
+      "Fraud & Scams",
+      "Founder Stories",
+      "Business Wars",
+      "Billion-Dollar Mistakes",
+      "Hidden Empires / Monopolies",
+      "Strange Business History",
+      "Products That Changed or Destroyed Companies",
+      "Unexpected Success Stories"
+    ],
+    "title_style": "Highly clickable without being misleading; specific stakes or numbers when true.",
+    "thumbnail_style": "Cinematic faces / moments / contrast; readable emotion; no spammy arrows.",
+    "channel": {
+      "name": "100 Days — Business Documentaries",
+      "tagline": "Story first, business lesson second.",
+      "content_pillars": "Rise & Fall; Corporate Disasters; Fraud & Scams; Founder Stories; Business Wars; Billion-Dollar Mistakes; Hidden Empires / Monopolies; Strange Business History; Products That Changed or Destroyed Companies; Unexpected Success Stories",
+      "goal_count": 100,
+      "language": "en",
+      "target_words": 1500,
+      "target_duration_min": [
+        8,
+        12
+      ],
+      "visual_provider": "google_flow_manual"
+    },
+    "script": {
+      "structure_preference": "HOOK → CONTEXT → SETUP → ESCALATION → TURNING POINT → CONSEQUENCES → ENDING/TAKEAWAY",
+      "forbidden_phrases": "Welcome back; In today's video; Make sure to subscribe; Like and comment",
+      "cta_style": "none in narration",
+      "opening_style": "Cold open on the extraordinary situation"
+    },
+    "video": {
+      "primary_format": "youtube_long_16_9",
+      "target_length_category": "long_8_12",
+      "aspect_notes": "16:9",
+      "content_type": "business_documentary",
+      "narration_format": "third_person_documentary"
+    },
+    "visual": {
+      "look": "Premium cinematic documentary reenactment + archival when useful",
+      "color_mood": "Restrained, serious, naturalistic",
+      "shot_preferences": "Recurring character/location references; stills every few seconds",
+      "b_roll_style": "Offices, press, documents, city skylines, period-accurate details",
+      "reference_moodboards": "Google Flow masters for CHAR/LOC/OBJ before shot batch"
+    },
+    "editing": {
+      "cut_rhythm": "steady documentary",
+      "transitions_default": "soft ken burns + short fades",
+      "lower_thirds": "no",
+      "subtitles_intent": "optional_later",
+      "music_role": "bajo_voz",
+      "pacing_visual": "Equal still duration locked to voice length",
+      "notes_for_ai_director": "Prefer continuity refs; avoid reinventing wardrobe/architecture"
+    },
+    "idea_generation": {
+      "brief": "Propose extraordinary true business stories for a daily English YouTube documentary channel. Storytelling before education. Prefer famous stakes, clear villains/heroes, and visualizable moments.",
+      "angles_to_favor": "Rise & Fall, frauds, founder myths, corporate wars, monopoly stories, products that remade or ruined companies, unexpected successes.",
+      "angles_to_avoid": "Generic hustle advice; listicles; fake drama; invented facts; repeating a company/story already produced in this channel; school-essay framing."
+    },
+    "notes_freeform": "Publish one video per day for 100 days. Images via Google Flow manually. FrameFactory handles script, flow prompts, import, voice, render."
+  },
+  "ui_step": "voice",
+  "checkpoints": {
+    "script_ready": true,
+    "flow_pack_ready": true,
+    "images_imported": true,
+    "voice_ready": true,
+    "assembly_ready": false,
+    "render_ready": false
+  },
+  "import_report": {
+    "expected": 11,
+    "ready": 11,
+    "imported_files": 11,
+    "missing": [],
+    "duplicates": [],
+    "unknown_numbers": [],
+    "invalid_files": [],
+    "dimension_issues": [],
+    "source_dir": "C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\projects\\smoke-daily-001\\flow-import"
+  },
+  "preview": {
+    "image_count": 11,
+    "missing_images": [],
+    "voice_ok": true,
+    "voice_duration_sec": 12.0,
+    "seconds_per_image": 1.0909090909090908,
+    "warnings": [],
+    "ready_to_assemble": true
+  },
+  "errors": [],
+  "created_at": "2026-08-12T16:44:55Z",
+  "updated_at": "2026-08-12T16:44:56Z",
+  "visual_analysis": {
+    "shot_count": 11,
+    "path": "flow-pack\\visual_analysis.json"
+  },
+  "flow_pack": {
+    "shot_count": 11,
+    "batch_size": 10
+  },
+  "voice": {
+    "path": "audio/narration.mp3",
+    "duration_sec": 12.0,
+    "speed": 1.0
+  }
+}

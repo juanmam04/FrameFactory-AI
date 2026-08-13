@@ -1,0 +1,350 @@
+{
+  "version": 1,
+  "central_story": "In September 2019, WeWork's planned IPO was abruptly pulled, leading to a valuation drop from $47 billion to just $8 billion in a matter of weeks.",
+  "central_question": "How did WeWork go from a $47 billion valuation to a mere $8 billion in a matter of weeks?",
+  "core_contradiction": "The promise of a revolutionary coworking model clashed with unsustainable business practices and leadership issues.",
+  "stakes": "The fate of a company that was once seen as a leader in the coworking space hung in the balance, with billions of dollars and thousands of jobs at stake.",
+  "hook": "In September 2019, WeWork's planned IPO was abruptly pulled, leading to a valuation drop from $47 billion to just $8 billion in a matter of weeks.",
+  "ending_state": "WeWork goes public via a SPAC merger in 2021, valuing the company at approximately $9 billion.",
+  "characters": [
+    {
+      "name": "Adam Neumann",
+      "role_in_story": "Co-founder and CEO",
+      "goal_or_incentive": "To lead WeWork to unprecedented heights and secure its place in the market.",
+      "important_actions": "Oversaw rapid expansion and raised significant capital, but faced backlash for governance issues.",
+      "relationship_to_company": "Central figure in WeWork's rise and fall.",
+      "relevant_period": "2010 - 2019"
+    },
+    {
+      "name": "Miguel McKelvey",
+      "role_in_story": "Co-founder",
+      "goal_or_incentive": "To create innovative coworking spaces and support the company's growth.",
+      "important_actions": "Worked alongside Neumann to expand WeWork's global presence.",
+      "relationship_to_company": "Key partner in WeWork's founding and growth.",
+      "relevant_period": "2010 - 2019"
+    },
+    {
+      "name": "SoftBank",
+      "role_in_story": "Major investor",
+      "goal_or_incentive": "To capitalize on the booming coworking market and support WeWork's growth.",
+      "important_actions": "Invested billions into WeWork, significantly increasing its valuation.",
+      "relationship_to_company": "Crucial financial backer during WeWork's rise.",
+      "relevant_period": "2017 - 2019"
+    }
+  ],
+  "timeline": [
+    {
+      "when": "March 2010",
+      "what": "WeWork is founded by Adam Neumann and Miguel McKelvey."
+    },
+    {
+      "when": "2014",
+      "what": "WeWork raises $365 million in Series D funding, reaching a valuation of $10 billion."
+    },
+    {
+      "when": "2017",
+      "what": "WeWork raises $4.4 billion from SoftBank, increasing its valuation to $20 billion."
+    },
+    {
+      "when": "2018",
+      "what": "WeWork's valuation reaches $47 billion after a $1 billion investment from SoftBank."
+    },
+    {
+      "when": "April 2019",
+      "what": "WeWork files its S-1 for an initial public offering (IPO)."
+    },
+    {
+      "when": "September 2019",
+      "what": "WeWork's IPO is officially postponed amid declining investor interest; valuation plummets."
+    },
+    {
+      "when": "September 2019",
+      "what": "Adam Neumann steps down as CEO amid mounting pressure from investors."
+    },
+    {
+      "when": "October 2019",
+      "what": "SoftBank agrees to a $3 billion bailout of WeWork, acquiring a majority stake."
+    },
+    {
+      "when": "2021",
+      "what": "WeWork goes public via a SPAC merger, valuing the company at approximately $9 billion."
+    }
+  ],
+  "key_events": [
+    "WeWork's founding in 2010",
+    "Series D funding in 2014",
+    "SoftBank's investment in 2017",
+    "Valuation surge to $47 billion in 2018",
+    "S-1 filing in April 2019",
+    "IPO postponement in September 2019",
+    "Neumann's resignation",
+    "SoftBank's bailout in October 2019",
+    "SPAC merger in 2021"
+  ],
+  "turning_points": [
+    "The $1 billion investment from SoftBank in 2018",
+    "The filing of the S-1 in April 2019",
+    "The abrupt postponement of the IPO in September 2019"
+  ],
+  "reveals": [
+    "The governance issues that plagued WeWork leading to Neumann's ousting.",
+    "The drastic drop in valuation from $47 billion to $8 billion."
+  ],
+  "consequences": [
+    "WeWork's restructuring and layoffs due to financial strain.",
+    "The shift in leadership and corporate governance."
+  ],
+  "unknown_or_weakly_supported": [
+    "Details on the internal decision-making processes leading to the IPO filing.",
+    "The long-term impact of the SPAC merger on WeWork's operations."
+  ],
+  "research_gaps": {
+    "known_supported": [
+      "WeWork's valuation history and funding rounds.",
+      "Key leadership changes and their timing."
+    ],
+    "uncertain": [
+      "The exact reasons behind the failed IPO and investor sentiment."
+    ],
+    "missing_but_important": [
+      "SoftBank's internal strategy regarding its investment in WeWork.",
+      "More details on the fallout from Neumann's departure."
+    ]
+  },
+  "beats": [
+    {
+      "id": 1,
+      "event": "WeWork's founding in 2010",
+      "why_it_matters": "The inception of a company that would redefine coworking spaces.",
+      "new_information": "Co-founders Adam Neumann and Miguel McKelvey aimed to create a community-focused workspace.",
+      "stakes_change": "Initial enthusiasm and investment set the stage for rapid growth.",
+      "characters": [
+        "Adam Neumann",
+        "Miguel McKelvey"
+      ],
+      "time_period": "2010",
+      "priority": "essential",
+      "source_support": [
+        "The Wall Street Journal",
+        "Bloomberg"
+      ],
+      "visual_potential": "ARCHIVAL",
+      "transition_question": "What led to WeWork's explosive growth?",
+      "visual_kind": "ARCHIVAL"
+    },
+    {
+      "id": 2,
+      "event": "WeWork's valuation reaches $47 billion in 2018",
+      "why_it_matters": "This valuation placed WeWork among the most valuable private companies globally.",
+      "new_information": "The investment from SoftBank was a significant factor in this valuation.",
+      "stakes_change": "The company became a symbol of the startup boom.",
+      "characters": [
+        "SoftBank",
+        "Adam Neumann"
+      ],
+      "time_period": "2018",
+      "priority": "essential",
+      "source_support": [
+        "The New York Times",
+        "WeWork's S-1 filing with the SEC"
+      ],
+      "visual_potential": "CHART",
+      "transition_question": "How did this success turn into a crisis?",
+      "visual_kind": "CHART"
+    },
+    {
+      "id": 3,
+      "event": "WeWork's IPO is officially postponed in September 2019",
+      "why_it_matters": "This event marked a critical turning point in WeWork's trajectory.",
+      "new_information": "Investor scrutiny revealed deep concerns about governance and profitability.",
+      "stakes_change": "The company's valuation plummeted, leading to a crisis.",
+      "characters": [
+        "Adam Neumann",
+        "SoftBank"
+      ],
+      "time_period": "September 2019",
+      "priority": "essential",
+      "source_support": [
+        "Bloomberg",
+        "The Wall Street Journal"
+      ],
+      "visual_potential": "HEADLINE",
+      "transition_question": "What were the consequences of this decision?",
+      "visual_kind": "HEADLINE"
+    },
+    {
+      "id": 4,
+      "event": "WeWork is founded by Adam Neumann and Miguel McKelvey.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "WeWork is founded by Adam Neumann and Miguel McKelvey.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "March 2010",
+      "priority": "strong",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 5,
+      "event": "WeWork raises $365 million in Series D funding, reaching a valuation of $10 billion.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "WeWork raises $365 million in Series D funding, reaching a valuation of $10 billion.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "2014",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 6,
+      "event": "WeWork raises $4.4 billion from SoftBank, increasing its valuation to $20 billion.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "WeWork raises $4.4 billion from SoftBank, increasing its valuation to $20 billion.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "2017",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 7,
+      "event": "WeWork's valuation reaches $47 billion after a $1 billion investment from SoftBank.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "WeWork's valuation reaches $47 billion after a $1 billion investment from SoftBank.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "2018",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 8,
+      "event": "WeWork files its S-1 for an initial public offering (IPO).",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "WeWork files its S-1 for an initial public offering (IPO).",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "April 2019",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 9,
+      "event": "WeWork's IPO is officially postponed amid declining investor interest; valuation plummets.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "WeWork's IPO is officially postponed amid declining investor interest; valuation plummets.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "September 2019",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 10,
+      "event": "Adam Neumann steps down as CEO amid mounting pressure from investors.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "Adam Neumann steps down as CEO amid mounting pressure from investors.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "September 2019",
+      "priority": "strong",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 11,
+      "event": "SoftBank agrees to a $3 billion bailout of WeWork, acquiring a majority stake.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "SoftBank agrees to a $3 billion bailout of WeWork, acquiring a majority stake.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "October 2019",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 12,
+      "event": "WeWork goes public via a SPAC merger, valuing the company at approximately $9 billion.",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "WeWork goes public via a SPAC merger, valuing the company at approximately $9 billion.",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "2021",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 13,
+      "event": "Series D funding in 2014",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "Series D funding in 2014",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "",
+      "priority": "strong",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 14,
+      "event": "SoftBank's investment in 2017",
+      "why_it_matters": "Supported timeline event for causal storytelling",
+      "new_information": "SoftBank's investment in 2017",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    }
+  ],
+  "selected_beat_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "approved": true,
+  "warnings": [
+    "Missing but important (do not invent): SoftBank's internal strategy regarding its investment in WeWork.; More details on the fallout from Neumann's departure."
+  ]
+}

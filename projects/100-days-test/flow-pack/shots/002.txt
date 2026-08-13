@@ -1,0 +1,31 @@
+SHOT 002
+
+EXPECTED FILE: 002.png
+
+NARRATION:
+This is a placeholder documentary narration used only to verify the pipeline.
+
+REFERENCES:
+OBJ_001
+
+CONTINUITY:
+same location as previous; follow from shot 001
+
+SHOT TYPE:
+medium_shot
+
+CAMERA:
+over the shoulder
+
+ACTION:
+This is a placeholder documentary narration used only to verify the pipeline. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+PROMPT:
+GLOBAL STYLE: Documentary cinematic realism, 16:9.
+CURRENT ACTION: This is a placeholder documentary narration used only to verify the pipeline. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+ENVIRONMENT: lugar principal de la historia
+CAMERA: over the shoulder
+LIGHTING: indefinido
+CONTINUITY: same location as previous; follow from shot 001
+REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
+DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: over the shoulder composition: dynamic diagonal action frame movement: Movimiento físic

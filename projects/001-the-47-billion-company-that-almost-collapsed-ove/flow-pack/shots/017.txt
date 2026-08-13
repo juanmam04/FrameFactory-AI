@@ -1,0 +1,25 @@
+VISUAL 017
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 017.png
+STORY BEAT: 3
+DURATION TARGET: 7s
+KEN BURNS: static
+
+NARRATION:
+WeWork's vibrant, amenity-rich environments continued to attract a diverse clientele.
+
+DESCRIPTION:
+People engaging in work and social activities in a lively coworking space.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+
+REFERENCES:
+LOC_001
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+017. WeWork office.. People engaging in work and social activities in a lively coworking space.. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso. over the shoulder candid documentary shot, photorealistic, period-accurate details. Use LOC_001.png reference.
+

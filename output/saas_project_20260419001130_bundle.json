@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "project_id": "20260419001130",
+  "topic": "Narrar cómo una simple carta lleva a una persona común a entrar en el oscuro mundo del crimen, mostrando las decisiones deslizantes hacia la corrupción. El tono debe ser dramático e inmersivo, haciendo que el público se pregunte qué habrían hecho ellos en esa situación. El video debería durar alrededor de 15-20 minutos y concluir instando a los espectadores a reflexionar sobre sus propias elecciones.",
+  "video_path": "/Users/juanmamartinez/FrameFactory-AI/output/final.mp4",
+  "script": "Tienes 25 años y el futuro parece brillante. Conoces a una chica en una fiesta; su risa ilumina la habitación. La química es instantánea, pero pronto surgen pequeñas mentiras. Ella evita hablar de su pasado y, al encontrar una carta, descubres secretos oscuros que te dejan helado. Te enfrentas a un dilema: ¿la amas lo suficiente para perdonarla? La confianza se tambalea. Tras una intensa confrontación, ella te pide una segunda oportunidad. Reflexionas y decides que, aunque el amor es complicado, tu futuro es prioridad. Miras hacia adelante.",
+  "blocks": [
+    {
+      "id": "scene_0001",
+      "text": "Tienes 25 años y el futuro parece brillante. Conoces a",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano cercano del protagonista mirando al horizonte",
+      "b_roll_suggestion": "imágenes de una ciudad iluminada de noche",
+      "on_screen_text": "Tienes 25 años",
+      "visual": "Ambiente oscuro de una ciudad al atardecer."
+    },
+    {
+      "id": "scene_0002",
+      "text": "una chica en una fiesta; su risa ilumina la habitación.",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano de la fiesta con luces parpadeantes",
+      "b_roll_suggestion": "overlay de risas y música de fondo",
+      "on_screen_text": "Una chica en una fiesta",
+      "visual": "Luces parpadeantes de una fiesta en la distancia."
+    },
+    {
+      "id": "scene_0003",
+      "text": "La química es instantánea, pero pronto surgen pequeñas mentiras. Ella",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano medio de la pareja conversando",
+      "b_roll_suggestion": "imágenes de miradas cómplices",
+      "on_screen_text": "La química es instantánea",
+      "visual": "Manos entrelazadas de manera nerviosa."
+    },
+    {
+      "id": "scene_0004",
+      "text": "evita hablar de su pasado y, al encontrar una carta,",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano cercano de la carta en la mano del protagonista",
+      "b_roll_suggestion": "overlay de la carta con sombras",
+      "on_screen_text": "Secretos oscuros",
+      "visual": "Un sobre desgastado apoyado en una mesa."
+    },
+    {
+      "id": "scene_0005",
+      "text": "descubres secretos oscuros que te dejan helado. Te enfrentas a",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de reacción del protagonista",
+      "b_roll_suggestion": "imágenes de recuerdos oscuros",
+      "on_screen_text": "Te enfrentas a un dilema",
+      "visual": "Sombras proyectadas en una pared por una luz tenue."
+    },
+    {
+      "id": "scene_0006",
+      "text": "un dilema: ¿la amas lo suficiente para perdonarla? La confianza",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano medio de la confrontación",
+      "b_roll_suggestion": "overlay de tensión en la atmósfera",
+      "on_screen_text": "¿La amas lo suficiente?",
+      "visual": "Un reloj marcando el tiempo en un ambiente tenso."
+    },
+    {
+      "id": "scene_0007",
+      "text": "se tambalea. Tras una intensa confrontación, ella te pide una",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano de la chica pidiendo perdón",
+      "b_roll_suggestion": "imágenes de lágrimas y emociones",
+      "on_screen_text": "Te pide una segunda oportunidad",
+      "visual": "Un vaso medio lleno en una mesa desordenada."
+    },
+    {
+      "id": "scene_0008",
+      "text": "segunda oportunidad. Reflexionas y decides que, aunque el amor es",
+      "motion": "slow_push",
+      "transition_in": "none",
+      "transition_out": "fade",
+      "visual_direction": "plano del protagonista reflexionando",
+      "b_roll_suggestion": "overlay de pensamientos conflictivos",
+      "on_screen_text": "Reflexionas sobre el amor",
+      "visual": "Un camino solitario iluminado por faros."
+    },
+    {
+      "id": "scene_0009",
+      "text": "complicado, tu futuro es prioridad. Miras hacia adelante.",
+      "motion": "static",
+      "transition_in": "fade",
+      "transition_out": "none",
+      "visual_direction": "plano del protagonista mirando hacia el futuro",
+      "b_roll_suggestion": "imágenes de un nuevo amanecer",
+      "on_screen_text": "Miras hacia adelante",
+      "visual": "Nubes oscuras desplazándose rápidamente por el cielo."
+    }
+  ],
+  "word_count": 88,
+  "character_id": "cartoon_biz_1",
+  "background_id": "dark_studio",
+  "voice_id": "male_sharp",
+  "duration_target_min": 1,
+  "target_words": 80,
+  "voice_speed": 1.1,
+  "subtitles_enabled": true,
+  "subtitle_style": "default",
+  "preset": "clean_youtube",
+  "session_id": "20260416_180807_d268a985",
+  "created_at": "2026-04-19 00:11",
+  "use_bgm": true,
+  "use_sfx": false,
+  "safe_music_path": null,
+  "safe_sfx_path": null,
+  "use_env_music": false,
+  "full_package": {
+    "idea": "¿Qué harías si el amor se convierte en tu peor enemigo?",
+    "alt_ideas": [
+      "Cuando la persona que amas se convierte en tu traición más oscura",
+      "Un secreto de amor que arruinó mi vida: ¿cómo llegué hasta aquí?",
+      "La decisión que me llevó a traicionar a quien más quería"
+    ],
+    "viral_meta": {
+      "idea": "¿Qué harías si el amor se convierte en tu peor enemigo?",
+      "alternatives": [
+        "Cuando la persona que amas se convierte en tu traición más oscura",
+        "Un secreto de amor que arruinó mi vida: ¿cómo llegué hasta aquí?",
+        "La decisión que me llevó a traicionar a quien más quería"
+      ],
+      "script_seed": "Imagina que eres un joven prometedor, lleno de sueños y ambiciones. Conoces a la mujer de tus sueños, pero a medida que la relación avanza, comienzas a darte cuenta de que ella tiene un oscuro secreto que podría destruirlo todo. El conflicto central es la lucha entre tu amor por ella y lo que está dispuesto a hacer para proteger tu futuro. A medida que descubres más sobre su pasado, te enfrentas a giros inesperados: una traición, un dilema moral sobre el perdón y la lealtad, y un punto de quiebre que pone a prueba tu carácter. El tono es intenso y emocional, explorando temas como la confianza, la traición y el sacrificio. El final deseado es que, a pesar de la traición, encuentres la fuerza para levantarte y tomar decisiones que te lleven a un nuevo camino, dejando atrás el pasado. Evita caer en clichés de violencia o situaciones demasiado obvias, enfocándote en el drama emocional y las consecuencias de las decisiones tomadas.",
+      "source": "openai"
+    },
+    "script": "Tienes 25 años y el futuro parece brillante. Conoces a una chica en una fiesta; su risa ilumina la habitación. La química es instantánea, pero pronto surgen pequeñas mentiras. Ella evita hablar de su pasado y, al encontrar una carta, descubres secretos oscuros que te dejan helado. Te enfrentas a un dilema: ¿la amas lo suficiente para perdonarla? La confianza se tambalea. Tras una intensa confrontación, ella te pide una segunda oportunidad. Reflexionas y decides que, aunque el amor es complicado, tu futuro es prioridad. Miras hacia adelante.",
+    "scenes": [
+      {
+        "text": "Tienes 25 años y el futuro parece brillante. Conoces a",
+        "visual": "plano cercano del protagonista mirando al horizonte · imágenes de una ciudad iluminada de noche",
+        "duration": 4.3,
+        "id": "scene_0001"
+      },
+      {
+        "text": "una chica en una fiesta; su risa ilumina la habitación.",
+        "visual": "plano de la fiesta con luces parpadeantes · overlay de risas y música de fondo",
+        "duration": 4.3,
+        "id": "scene_0002"
+      },
+      {
+        "text": "La química es instantánea, pero pronto surgen pequeñas mentiras. Ella",
+        "visual": "plano medio de la pareja conversando · imágenes de miradas cómplices",
+        "duration": 4.3,
+        "id": "scene_0003"
+      },
+      {
+        "text": "evita hablar de su pasado y, al encontrar una carta,",
+        "visual": "plano cercano de la carta en la mano del protagonista · overlay de la carta con sombras",
+        "duration": 4.3,
+        "id": "scene_0004"
+      },
+      {
+        "text": "descubres secretos oscuros que te dejan helado. Te enfrentas a",
+        "visual": "plano de reacción del protagonista · imágenes de recuerdos oscuros",
+        "duration": 4.3,
+        "id": "scene_0005"
+      },
+      {
+        "text": "un dilema: ¿la amas lo suficiente para perdonarla? La confianza",
+        "visual": "plano medio de la confrontación · overlay de tensión en la atmósfera",
+        "duration": 4.3,
+        "id": "scene_0006"
+      },
+      {
+        "text": "se tambalea. Tras una intensa confrontación, ella te pide una",
+        "visual": "plano de la chica pidiendo perdón · imágenes de lágrimas y emociones",
+        "duration": 4.3,
+        "id": "scene_0007"
+      },
+      {
+        "text": "segunda oportunidad. Reflexionas y decides que, aunque el amor es",
+        "visual": "plano del protagonista reflexionando · overlay de pensamientos conflictivos",
+        "duration": 4.3,
+        "id": "scene_0008"
+      },
+      {
+        "text": "complicado, tu futuro es prioridad. Miras hacia adelante.",
+        "visual": "plano del protagonista mirando hacia el futuro · imágenes de un nuevo amanecer",
+        "duration": 3.4,
+        "id": "scene_0009"
+      }
+    ],
+    "title": "Cuando el Amor se Vuelve Peligroso",
+    "alt_titles": [
+      "¿El Amor Puede Ser Tu Enemigo?",
+      "Descubre el Lado Oscuro del Amor"
+    ],
+    "description": "¿Qué harías si el amor que sientes se convierte en tu peor enemigo? En esta intensa historia, te llevaremos a través de giros inesperados y decisiones difíciles que pondrán a prueba tu confianza y tu futuro. Reflexiona sobre la complejidad del amor mientras te sumerges en un relato que no olvidarás. ¿Te atreves a descubrirlo? #AmorPeligroso #HistoriasDeCrimen #Reflexión #NarrativaCinematográfica #CineCrudo",
+    "thumbnail": {
+      "text": "Amor y Peligro",
+      "image_prompt": "A dramatic contrast of a heart and a broken mirror",
+      "layout": "big_text_left"
+    },
+    "video_path": "/Users/juanmamartinez/FrameFactory-AI/output/final.mp4"
+  }
+}

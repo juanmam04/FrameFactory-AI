@@ -1,0 +1,12 @@
+OBJ_001
+Name: S-1 Filing Document
+
+Description:
+The official document filed by WeWork in April 2019 to initiate its IPO process.
+
+Generate reference image:
+A thick stack of papers with a bold 'S-1' label on the cover, symbolizing the company's ambitious plans to go public.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

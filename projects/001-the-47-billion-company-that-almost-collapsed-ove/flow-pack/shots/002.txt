@@ -1,0 +1,25 @@
+VISUAL 002
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 002.png
+STORY BEAT: 2
+DURATION TARGET: 7s
+KEN BURNS: slow_pull
+
+NARRATION:
+This fallout was swift and severe, altering the startup landscape overnight.
+
+DESCRIPTION:
+A group of entrepreneurs looks shocked as they read news about WeWork's downfall on their laptops.
+
+REFERENCES:
+(none)
+
+PROMPT:
+Create ONE separate 16:9 cinematic documentary still image.
+Photorealistic documentary photography. No collage.
+STYLE: {'tone': 'Cautionary and reflective', 'visual_style': 'Documentary-style with a mix of archival footage, interviews, and on-location shots of WeWork spaces.'}
+DIRECTOR: You are the DIRECTOR for Google Flow (illustrator). Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, press moments, consequences. Prefer visually distinct scenes. If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. Not a literal dump of the sentence, not generic business stock.
+
+002. A modern coworking space filled with desks and people working.. A group of entrepreneurs looks shocked as they read news about WeWork's downfall on their laptops. medium action candid documentary shot, photorealistic, period-accurate details.
+

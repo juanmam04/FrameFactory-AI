@@ -60,6 +60,9 @@ def get_background_music_path() -> Path | None:
     import os
     from dotenv import load_dotenv
     load_dotenv(BASE / ".env")
+    for _env_local in (BASE / ".env.local", BASE / "env.local"):
+        if _env_local.is_file():
+            load_dotenv(_env_local, override=True)
     p = os.getenv("BACKGROUND_MUSIC_PATH")
     if not p:
         return None

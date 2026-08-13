@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import secrets
 import threading
 import time
@@ -14,8 +15,9 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.catalog_service import BACKGROUNDS, CHARACTERS, VOICES, get_background, get_character, get_voice
-from src.config_loader import BASE, get_background_music_path, get_subtitle_styles
+from src.config_loader import BASE, get_background_music_path, get_narrative_rules, get_subtitle_styles
 from src.pipeline import run_saas_mvp
+from src.saas_viral_idea_engine import REDDIT_STORYTIME_IDEA_RULES
 from src.saas_audio_catalog import ensure_audio_dirs, list_safe_music, list_safe_sfx
 from src.saas_creative_profile import (
     merge_profile_disk,
@@ -40,6 +42,9 @@ from src.script_generator import generar_guion
 from src.saas_subtitles import list_subtitle_style_keys, subtitle_style_preview_html
 
 load_dotenv(BASE / ".env")
+for _env_local in (BASE / ".env.local", BASE / "env.local"):
+    if _env_local.is_file():
+        load_dotenv(_env_local, override=True)
 
 OUTPUT_DIR = BASE / "output"
 PROJECTS_DB = OUTPUT_DIR / "saas_projects.json"
@@ -51,6 +56,76 @@ PRESETS = ["clean_youtube", "dynamic_punchy", "minimal_subtle"]
 
 # Ritmo de referencia solo para estimaciones en la UI (no afecta al modelo).
 _SAAS_WORDS_PER_MIN = 140.0
+
+
+def _parse_duration_hint_max_minutes(text: str) -> int | None:
+    """
+    Busca en el texto una duración pedida en minutos y devuelve el tope útil (p. ej. rango 15–20 → 20).
+    None si no hay pista clara. Tope duro 180 min para evitar valores absurdos.
+    """
+    if not text or not str(text).strip():
+        return None
+    t = str(text).lower()
+    pairs: list[tuple[int, int]] = []
+
+    def _push(a: int, b: int) -> None:
+        a0, b0 = min(a, b), max(a, b)
+        if 1 <= a0 <= 180 and 1 <= b0 <= 180:
+            pairs.append((a0, b0))
+
+    for pat in (
+        r"entre\s+(\d+)\s*(?:y|e|a|hasta)\s*(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)",
+        r"between\s+(\d+)\s+and\s+(\d+)\s*(?:minutes?|mins?|min\.?)",
+        r"(\d+)\s*[-–—]\s*(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)",
+        r"(\d+)\s+a\s+(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)",
+    ):
+        for m in re.finditer(pat, t, flags=re.IGNORECASE):
+            _push(int(m.group(1)), int(m.group(2)))
+
+    if pairs:
+        return min(180, max(b for _, b in pairs))
+
+    for pat in (
+        r"(?:unos?|unas?|aprox\.?|~|≈)?\s*(\d+)\s*(?:minutos?|mins?|minutes?|min\.?)\b",
+        r"duraci[oó]n\s*(?:de|:)?\s*(\d+)\s*(?:minutos?|mins?|minutes?)",
+    ):
+        m = re.search(pat, t, flags=re.IGNORECASE)
+        if m:
+            v = int(m.group(1))
+            if 1 <= v <= 180:
+                return v
+    return None
+
+
+def _brief_for_duration_hint(topic: str, twist: str) -> str:
+    """Mismo cuerpo de texto que usa `_build_video_topic()` para detectar duración en el brief."""
+    base = (topic or "").strip()
+    tw = (twist or "").strip()
+    if tw:
+        return f"{base}\n\nVariación o detalle extra: {tw}".strip()
+    return base
+
+
+def _target_words_floor_from_topic_duration(
+    topic: str,
+    twist: str,
+    current_words: int,
+    *,
+    ignore_topic_duration_hint: bool = False,
+) -> int:
+    """
+    Si el brief pide N minutos de video, sube el objetivo de palabras (no baja el que el usuario subió en el slider).
+    Con ignore_topic_duration_hint=True solo se respeta el tope 80–10000 (comportamiento por defecto en Studio: **vos** elegís minutos/palabras).
+    """
+    if ignore_topic_duration_hint:
+        return max(80, min(10000, int(current_words)))
+    combined = _brief_for_duration_hint(topic, twist)
+    mins = _parse_duration_hint_max_minutes(combined)
+    if mins is None:
+        return max(80, min(10000, int(current_words)))
+    need = int(round(float(mins) * _SAAS_WORDS_PER_MIN))
+    need = max(80, min(10000, need))
+    return max(max(80, min(10000, int(current_words))), need)
 
 
 def _saas_estimated_speech_minutes(words: int, voice_speed: float = 1.0) -> tuple[float, float]:
@@ -118,6 +193,7 @@ def _write_project_bundle(
     word_count: int | None,
     job: dict | None,
     project_row: dict | None,
+    full_package: dict | None = None,
 ) -> Path | None:
     """Guarda guion, bloques y metadatos para la biblioteca."""
     row = project_row or {}
@@ -147,6 +223,8 @@ def _write_project_bundle(
         "safe_sfx_path": row.get("safe_sfx_path"),
         "use_env_music": row.get("use_env_music"),
     }
+    if full_package and isinstance(full_package, dict) and full_package:
+        data["full_package"] = full_package
     path = _project_bundle_path(project_id)
     try:
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -473,50 +551,9 @@ def _resolve_asset(uri: str) -> Path:
 
 
 def _theme() -> None:
-    st.markdown(
-        """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
-        html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-        .stApp {
-          background: radial-gradient(1200px 600px at 10% -10%, #1a2240 0%, transparent 55%),
-                      radial-gradient(900px 500px at 90% 0%, #2a1535 0%, transparent 50%),
-                      linear-gradient(165deg, #0a0c12 0%, #0f1118 40%, #0c0e14 100%);
-          color: #eceef4;
-        }
-        .main .block-container { max-width: 1200px; padding: 2rem 1.5rem 3rem; }
-        div[data-testid="stSidebar"] {
-          background: rgba(12,14,22,0.92);
-          border-right: 1px solid rgba(255,255,255,0.06);
-        }
-        .saas-brand { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; color: #f4f5f8; }
-        .saas-tag { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: #7b849c; }
-        .saas-hero { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.03em; margin: 0 0 0.35rem; color: #fafbff; }
-        .saas-sub { color: #8b93a8; font-size: 0.95rem; margin-bottom: 1.75rem; }
-        .saas-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 18px;
-          padding: 1.25rem 1.35rem;
-          margin-bottom: 1rem;
-        }
-        .saas-card h4 { margin: 0 0 0.5rem; font-size: 0.95rem; color: #c5cad8; font-weight: 600; }
-        .saas-metric { font-size: 1.65rem; font-weight: 700; color: #fff; }
-        .saas-label { font-size: 0.78rem; color: #7b849c; text-transform: uppercase; letter-spacing: 0.08em; }
-        div[data-testid="stVerticalBlockBorderWrapper"] > div {
-          background: rgba(255,255,255,0.03) !important;
-          border-color: rgba(255,255,255,0.08) !important;
-          border-radius: 16px !important;
-        }
-        .stButton > button[kind="primary"] {
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-          border: none;
-          font-weight: 600;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    from src.ui_theme import inject_theme
+
+    inject_theme()
 
 
 def _init_state() -> None:
@@ -528,7 +565,7 @@ def _init_state() -> None:
     st.session_state.create_topic = ""
     st.session_state.create_twist = ""
     st.session_state.create_idea_pack = None
-    st.session_state.create_target_words = 560
+    st.session_state.create_duration = 4
     st.session_state.create_voice_speed = 1.0
     st.session_state.create_subtitles_enabled = True
     st.session_state.create_subtitle_style = "default"
@@ -543,6 +580,10 @@ def _init_state() -> None:
     st.session_state.create_use_env_music = False
     st.session_state.create_music_vol = 0.18
     st.session_state.create_sfx_vol = 0.08
+    st.session_state.create_gameplay_path = ""
+    st.session_state.create_gameplay_aspect = "16:9"
+    # Por defecto sin imágenes IA (más rápido / sin créditos). Activá en paso 2 o desactivá el env.
+    st.session_state.create_skip_support_images = True
     st.session_state.active_session_id = None
     st.session_state.session_memory_summary = ""
     st.session_state.agent_messages = []
@@ -553,71 +594,163 @@ def _init_state() -> None:
     st.session_state.block_approved = {}
     st.session_state.render = None
     st.session_state.library_selected_pid = None
+    st.session_state.create_auto_full_package = False
+    st.session_state.create_align_script_to_theme_duration = False
+    st.session_state._saas_prev_align_theme_duration = False
+    st.session_state.last_full_package = {}
 
 
 def _nav() -> None:
     with st.sidebar:
         st.markdown('<p class="saas-tag">FrameFactory</p>', unsafe_allow_html=True)
-        st.markdown('<p class="saas-brand">Studio</p>', unsafe_allow_html=True)
+        st.markdown('<p class="saas-brand">Documentary</p>', unsafe_allow_html=True)
         st.caption(" ")
+
+        # Aplicar cambio de sesión ANTES de instanciar el selectbox (regla Streamlit).
+        pending = st.session_state.pop("_saas_pending_session_id", None)
+        if pending:
+            st.session_state.active_session_id = str(pending)
+            st.session_state.saas_session_select = str(pending)
+            st.session_state._saas_hydrated_sid = None
+            st.session_state._saas_rename_for = None
+
         store = ensure_store()
         ids = [str(s["id"]) for s in store.get("sessions") or [] if isinstance(s, dict) and s.get("id")]
         if not ids:
             store = ensure_store()
             ids = [str(s["id"]) for s in store.get("sessions") or [] if isinstance(s, dict) and s.get("id")]
-        titles = {str(s["id"]): str(s.get("title") or "Sesión")[:48] for s in store.get("sessions") or [] if isinstance(s, dict) and s.get("id")}
+        titles = {
+            str(s["id"]): str(s.get("title") or "Sesión")[:48]
+            for s in store.get("sessions") or []
+            if isinstance(s, dict) and s.get("id")
+        }
         cur = str(st.session_state.get("active_session_id") or store.get("active_id") or (ids[0] if ids else ""))
         if cur not in ids and ids:
             cur = ids[0]
+            st.session_state.active_session_id = cur
+
+        if ids and st.session_state.get("saas_session_select") not in ids:
+            st.session_state.saas_session_select = cur
 
         def _fmt_sid(sid: str) -> str:
             s = get_session(load_store(), sid) or {}
             return f"{titles.get(sid, sid)} · {len(s.get('messages') or [])} mensajes"
 
-        chosen = st.selectbox(
-            "Sesión de trabajo",
-            ids,
-            index=ids.index(cur) if cur in ids else 0,
-            format_func=_fmt_sid,
-            key="saas_session_select",
-        )
-        if chosen and chosen != st.session_state.get("active_session_id"):
-            _session_persist()
-            store = load_store()
-            set_active_session(store, chosen)
-            _session_hydrate_from_disk()
-            st.rerun()
+        if not ids:
+            st.caption("Sin sesiones todavía.")
+        else:
+            chosen = st.selectbox(
+                "Sesión de trabajo",
+                ids,
+                format_func=_fmt_sid,
+                key="saas_session_select",
+            )
+            if chosen and chosen != str(st.session_state.get("active_session_id") or ""):
+                _session_persist()
+                set_active_session(load_store(), chosen)
+                st.session_state._saas_pending_session_id = chosen
+                st.rerun()
 
         rn_col1, rn_col2 = st.columns([2, 1])
         with rn_col1:
-            new_title = st.text_input("Nombre sesión", value=titles.get(cur, ""), key="saas_sess_rename_txt", label_visibility="collapsed", placeholder="Renombrar…")
+            if st.session_state.get("_saas_rename_for") != cur:
+                st.session_state._saas_rename_for = cur
+                st.session_state.saas_sess_rename_txt = titles.get(cur, "")
+            st.text_input(
+                "Nombre sesión",
+                key="saas_sess_rename_txt",
+                label_visibility="collapsed",
+                placeholder="Renombrar…",
+            )
         with rn_col2:
             if st.button("OK", key="saas_sess_rename_btn"):
-                if new_title.strip():
-                    rename_session(load_store(), cur, new_title.strip())
+                new_title = str(st.session_state.get("saas_sess_rename_txt") or "").strip()
+                if new_title:
+                    rename_session(load_store(), cur, new_title)
                     st.rerun()
 
         if st.button("Nueva sesión", use_container_width=True, key="saas_sess_new"):
-            _session_persist()
-            store = load_store()
-            _, nid = add_session(store, "Nueva sesión", None)
-            st.session_state.active_session_id = nid
+            try:
+                _session_persist()
+                store = load_store()
+                seed = merge_profile_disk(st.session_state.get("creative_profile"))
+                _, nid = add_session(store, "Nueva sesión", seed)
+                # No tocar saas_session_select acá: el widget ya existe en este run.
+                st.session_state._saas_pending_session_id = nid
+                st.rerun()
+            except Exception as e:
+                st.error(f"No se pudo crear la sesión: {e}")
+
+        # Hidratar chat si cambió la sesión activa
+        if st.session_state.get("active_session_id") and st.session_state.get("_saas_hydrated_sid") != st.session_state.get(
+            "active_session_id"
+        ):
             _session_hydrate_from_disk()
-            st.rerun()
 
         st.divider()
-        for label, key in [
-            ("Inicio", "Dashboard"),
-            ("Nuevo video", "Create"),
-            ("Biblioteca", "Library"),
-            ("Render", "Rendering"),
-            ("Revisar", "Review"),
-            ("Perfil", "Profile"),
-        ]:
-            btn_type = "primary" if st.session_state.nav == key else "secondary"
-            if st.button(label, key=f"nav_{key}", use_container_width=True, type=btn_type):
-                st.session_state.nav = key
-                st.rerun()
+        # Documentary channel sessions get a focused nav; Studio stays under Legacy.
+        from src.documentary.channel import is_documentary_profile
+        from src.saas_creative_profile import merge_profile_disk as _merge_nav_prof
+
+        _nav_prof = _merge_nav_prof(st.session_state.get("creative_profile"))
+        _doc_mode = is_documentary_profile(_nav_prof)
+        if _doc_mode:
+            st.caption("Documentary channel")
+            nav_items = [
+                ("Home", "doc_home"),
+                ("Today's Video", "doc_current"),
+                ("Library", "doc_library"),
+                ("Channel Profile", "Profile"),
+            ]
+            for label, key in nav_items:
+                active = False
+                if key == "doc_home" and st.session_state.nav == "Documentary" and st.session_state.get("doc_view", "home") == "home":
+                    active = True
+                elif key == "doc_current" and st.session_state.nav == "Documentary" and st.session_state.get("doc_view") in ("project", "ideas"):
+                    active = True
+                elif key == "doc_library" and st.session_state.nav == "Documentary" and st.session_state.get("doc_view") == "library":
+                    active = True
+                elif key == "Profile" and st.session_state.nav == "Profile":
+                    active = True
+                btn_type = "primary" if active else "secondary"
+                if st.button(label, key=f"nav_{key}", use_container_width=True, type=btn_type):
+                    if key == "doc_home":
+                        st.session_state.nav = "Documentary"
+                        st.session_state.doc_view = "home"
+                    elif key == "doc_current":
+                        st.session_state.nav = "Documentary"
+                        st.session_state.doc_view = "project" if st.session_state.get("doc_project_id") else "ideas"
+                    elif key == "doc_library":
+                        st.session_state.nav = "Documentary"
+                        st.session_state.doc_view = "library"
+                    else:
+                        st.session_state.nav = key
+                    st.rerun()
+            with st.expander("Legacy / Other workflows", expanded=False):
+                for label, key in [
+                    ("Studio Inicio", "Dashboard"),
+                    ("Nuevo video (Studio)", "Create"),
+                    ("Biblioteca Studio", "Library"),
+                    ("Render Studio", "Rendering"),
+                    ("Revisar", "Review"),
+                ]:
+                    if st.button(label, key=f"nav_legacy_{key}", use_container_width=True):
+                        st.session_state.nav = key
+                        st.rerun()
+        else:
+            for label, key in [
+                ("Inicio", "Dashboard"),
+                ("Documentary", "Documentary"),
+                ("Nuevo video", "Create"),
+                ("Biblioteca", "Library"),
+                ("Render", "Rendering"),
+                ("Revisar", "Review"),
+                ("Perfil", "Profile"),
+            ]:
+                btn_type = "primary" if st.session_state.nav == key else "secondary"
+                if st.button(label, key=f"nav_{key}", use_container_width=True, type=btn_type):
+                    st.session_state.nav = key
+                    st.rerun()
 
 
 def _card_metric(label: str, value: str) -> None:
@@ -669,18 +802,34 @@ def page_dashboard() -> None:
 
 
 def _build_video_topic() -> str:
-    base = (st.session_state.get("create_topic") or "").strip()
-    twist = (st.session_state.get("create_twist") or "").strip()
-    if twist:
-        return f"{base}\n\nVariación o detalle extra: {twist}".strip()
-    return base
+    return _brief_for_duration_hint(
+        st.session_state.get("create_topic") or "",
+        st.session_state.get("create_twist") or "",
+    )
 
 
-def _heuristic_video_ideas(pm: dict, mem: str, seed: int | None = None) -> list[dict[str, str]]:
-    niche = (pm.get("niche") or "").strip() or "tu nicho"
-    tone = (pm.get("tone") or "").strip() or "conversacional"
-    who = str((pm.get("audience") or {}).get("who") or "").strip() or "tu audiencia"
-    hook = (pm.get("hook_style") or "").strip() or "un gancho claro al inicio"
+def _env_skip_support_images() -> bool:
+    """Kill-switch global: SAAS_SKIP_SUPPORT_IMAGES=1 apaga Replicate por escena."""
+    return os.getenv("SAAS_SKIP_SUPPORT_IMAGES", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _saas_gameplay_path_filled() -> bool:
+    """True si el usuario configuró ruta de gameplay (modo fondo video, sin personaje ni Replicate)."""
+    return bool((st.session_state.get("create_gameplay_path") or "").strip())
+
+
+def _heuristic_video_ideas(
+    pm: dict,
+    mem: str,
+    seed: int | None = None,
+    *,
+    topic_hint: str = "",
+    twist_hint: str = "",
+) -> list[dict[str, str]]:
+    niche = (pm.get("niche") or "").strip() or "relaciones y confianza rota"
+    tone = (pm.get("tone") or "").strip() or "tenso, incómodo, realista"
+    who = str((pm.get("audience") or {}).get("who") or "").strip() or "adultos jóvenes"
+    hook = (pm.get("hook_style") or "").strip() or "brecha de curiosidad inmediata"
     pillars = (pm.get("channel") or {}).get("content_pillars") or ""
     ig = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
     ig_brief = str(ig.get("brief") or "").strip()
@@ -691,25 +840,57 @@ def _heuristic_video_ideas(pm: dict, mem: str, seed: int | None = None) -> list[
         ig_tail += f" Priorizar: {ig_favor[:220]}{'…' if len(ig_favor) > 220 else ''}"
     if ig_avoid:
         ig_tail += f" Evitar en las propuestas: {ig_avoid[:220]}{'…' if len(ig_avoid) > 220 else ''}"
-    lines = [
-        f"Video para {who}: explicar con ejemplos concretos por qué importa «{niche}», tono {tone}, con {hook}. Duración mental ~4 min.{ig_tail}",
-        f"Historia en segunda persona dentro del universo de «{niche}»: un día que lo cambia todo, arco con tensión y cierre, tono {tone}.{ig_tail}",
-        f"Listado accionable: 5 errores típicos en «{niche}» y cómo evitarlos; lenguaje directo, tono {tone}.{ig_tail}",
-        f"Mito vs realidad sobre «{niche}»; confrontar creencias comunes con datos o escenas, tono {tone}, {hook}.{ig_tail}",
-        f"Mini caso: un personaje (el espectador) enfrenta un obstáculo clásico de «{niche}» y muestra la lección sin moralina forzada.{ig_tail}",
+    hint_block = ""
+    if (topic_hint or "").strip():
+        hint_block = (
+            f" PISTA DE TEMA (obligatorio encuadrar la premisa aquí; desarrollá variaciones sobre esto, no otro género): "
+            f"{topic_hint.strip()[:400]}"
+        )
+        if (twist_hint or "").strip():
+            hint_block += f" · Variación o giro pedido: {twist_hint.strip()[:220]}"
+    no_narco = (
+        " Ficción oscura estilo Reddit / confesión viral: primera persona (yo), creíble, inquietante. "
+        "Sin monstruos ni fantasmas cliché. Sin glorificar narco/carteles."
+    )
+    reddit_templates = [
+        f"Yo llevaba meses notando que mi hermano escondía algo en su cuarto; nadie en casa quería hablar del tema. Tono {tone}.{hook}.{ig_tail}{hint_block}",
+        f"Mi pareja juraba que vivía sola, pero de madrugada oía a otra persona moverse cuando fingía dormir. {hook}.{ig_tail}{hint_block}",
+        f"Alguien usaba mi ordenador mientras dormía: el historial no coincidía con nada de lo que yo había hecho. {tone}.{ig_tail}{hint_block}",
+        f"Revisé su teléfono una sola vez y vi un hilo con mi nombre en un grupo al que yo nunca me uní. {hook}.{ig_tail}{hint_block}",
+        f"Mi padre desapareció tres días y cuando volvió seguía siendo él… pero no del todo. {tone}.{ig_tail}{hint_block}",
+        f"Confié en él, pero cada noche escondía el móvil bajo la almohada y apagaba el sonido. {hook}.{ig_tail}{hint_block}",
+        f"Pensé que estaba solo en casa, pero los pasos en el piso de arriba seguían un ritmo que no era el mío. {tone}.{ig_tail}{hint_block}",
+        f"Encontré mensajes borrados que empezaban con mi nombre y terminaban con una dirección que no reconozco. {hook}.{ig_tail}{hint_block}",
+        f"El vecino me pidió guardar un paquete; el remitente figuraba yo y no recordaba haberlo enviado. {tone}.{ig_tail}{hint_block}",
+        f"En el grupo de WhatsApp del edificio todos recibieron la misma foto borrosa a las 3:12 y nadie supo explicar de dónde salió. {hook}.{ig_tail}{hint_block}",
     ]
+    lines: list[str] = []
     if ig_brief:
-        seed = f"{ig_brief[:380]}{'…' if len(ig_brief) > 380 else ''} — Público: {who}. Nicho: «{niche}». Tono: {tone}.{ig_tail}"
-        lines.insert(0, seed)
-        lines.insert(1, f"Otra variante alineada a tu brief de ideas: {ig_brief[:200]}{'…' if len(ig_brief) > 200 else ''} (formato historia corta, POV, ~4 min).{ig_tail}")
-    if pillars.strip():
-        lines.append(f"Video alineado a pilares del canal ({pillars[:180]}…): propuesta concreta en «{niche}», tono {tone}.")
-    if mem.strip():
         lines.append(
-            f"Video coherente con la línea de la sesión: {mem[:300].strip()}{'…' if len(mem) > 300 else ''} "
-            f"— encuadrá el tema «{niche}» con tono {tone}."
+            f"{ig_brief[:380]}{'…' if len(ig_brief) > 380 else ''} — Público: {who}. "
+            f"Encuadrá como historia inventada tipo Reddit (~4 min), tono {tone}. Nicho solo como atmósfera: «{niche}». {ig_tail}{no_narco}"
+        )
+        lines.append(
+            f"Variante al brief: {ig_brief[:220]}{'…' if len(ig_brief) > 220 else ''} — otro conflicto distinto, mismo registro. {ig_tail}{no_narco}"
         )
     rng = random.Random(seed if seed is not None else (time.time_ns() % (2**32)))
+    pool = list(reddit_templates)
+    rng.shuffle(pool)
+    for t in pool[:6]:
+        lines.append(t + no_narco)
+    lines.append(
+        f"Opción 'nicho suave': drama o curiosidad ligada a «{niche}» como telón de fondo (trabajo, relaciones, errores), "
+        f"nunca como crimen organizado. Público: {who}. {hook}.{ig_tail}{no_narco}"
+    )
+    if pillars.strip():
+        lines.append(
+            f"Idea alineada a pilares del canal ({pillars[:160]}…): una historia inventada con cierre comentable, tono {tone}.{ig_tail}{no_narco}"
+        )
+    if mem.strip():
+        lines.append(
+            f"Inspiración en la charla de la sesión (no copiar literal): {mem[:280].strip()}{'…' if len(mem) > 280 else ''} — "
+            f"convertilo en premisa oscura en primera persona, tono {tone}.{ig_tail}{hint_block}{no_narco}"
+        )
     rng.shuffle(lines)
     out: list[dict[str, str]] = []
     for i, prompt in enumerate(lines[:7]):
@@ -724,11 +905,13 @@ def _ia_video_idea_pack(
     messages: list[dict],
     *,
     previous_pack: list[dict] | None = None,
+    topic_hint: str = "",
+    twist_hint: str = "",
 ) -> list[dict[str, str]]:
     seed = time.time_ns() % (2**32)
     client = _get_openai_client()
     if not client:
-        return _heuristic_video_ideas(pm, mem, seed=seed)
+        return _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
     slim: list[dict[str, str]] = []
     for m in messages[-16:]:
         if not isinstance(m, dict) or m.get("role") not in ("user", "assistant"):
@@ -739,16 +922,14 @@ def _ia_video_idea_pack(
         slim.append({"role": m["role"], "content": c})
     nonce = f"{secrets.token_hex(6)}-{int(time.time())}"
     lenses_pool = [
-        "documental breve con dato sorpresa",
-        "historia POV en segunda persona con giro final",
-        "listado contraintuitivo (lo que creés vs lo que pasa)",
-        "formato 'un solo día que lo cambió todo'",
-        "pregunta incómoda + evidencia",
-        "mini caso real ficticio con consecuencias",
-        "versus: dos caminos frente al mismo problema",
-        "cierre abierto que invite al comentario",
-        "analogía fuerte + desmontaje paso a paso",
-        "error común + experimento mental",
+        "secreto en la familia o pareja que sale a la luz",
+        "algo raro en la convivencia (noche, silencio, puerta, teléfono)",
+        "mentira o doble vida implicada sin explicarla del todo",
+        "vigilancia o sensación de ser observado",
+        "objeto o mensaje que no debería existir",
+        "identidad o pasado de alguien cercano que no cierra",
+        "confianza rota: descubrís algo que no querías saber",
+        "cierre inquietante que deja una pregunta abierta",
     ]
     rng = random.Random(seed)
     lenses = rng.sample(lenses_pool, k=min(4, len(lenses_pool)))
@@ -763,30 +944,41 @@ def _ia_video_idea_pack(
                     "hook": str(it.get("hook") or "")[:180],
                 }
             )
+    bible = (get_narrative_rules().get("channel_dark_confession_bible") or "").strip()
+    bible_snip = (bible[:3200] + "…") if len(bible) > 3200 else bible
     system = (
-        "Sos planner de contenidos YouTube. Español. Devolvé SOLO JSON con clave 'ideas' (array de 5 a 8 objetos). "
-        "Cada objeto: title (corto), hook (una línea), prompt (texto largo en español neutro para que otro modelo escriba el guion: "
-        "tema, público, tono, qué debe pasar en el video, duración aproximada en minutos, y CTA o cierre deseado). "
-        "Basate en el perfil, la memoria de sesión y el chat. "
-        "Si el perfil trae `idea_generation`, obedecelo al pie de la letra: `brief` define qué clase de ideas querés (género, registro, variedad); "
-        "`angles_to_favor` son temas o formatos a priorizar; `angles_to_avoid` es lo que no debe aparecer en ninguna sugerencia. "
-        "IMPORTANTE: cada pedido debe producir ideas NUEVAS (otros formatos, otros conflictos, otros ganchos). "
-        "No repitas títulos ni premises de ideas_anteriores_a_evitar. "
-        "Usá los `lentes_creativos` como estímulo de variedad (no copies literalmente los nombres en todos los títulos). "
-        "Sin markdown fuera del JSON."
+        "Sos el motor de ideas virales OSCURAS para YouTube (español). El canal NO es documental genérico ni listados: "
+        "son historias ficticias estilo Reddit / confesión inquietante, primera persona (yo), creíbles y adictivas.\n\n"
+        "Devolvé SOLO JSON con clave 'ideas' (array de 5 a 8 objetos). Cada objeto:\n"
+        "- title: corto, oscuro, curiosidad inmediata (estilo «No debí…», «Algo no cerraba con…»).\n"
+        "- hook: 1–2 oraciones máximo; primera persona; persona cercana + situación normal + algo que NO cierra (misterio implícito).\n"
+        "- prompt: briefing para otro modelo que escriba el guion COMPLETO: reforzá la misma premisa del hook, tono, "
+        "público, beats (sospecha → escalada → giro → cierre inquietante). Sin CTA de youtuber, sin 'en este video', "
+        "sin fantasmas o monstruos cliché, sin romance dramático vacío.\n\n"
+        "Si `pista_tema_actual` no está vacía, TODAS las ideas deben ser variaciones coherentes con esa pista (mismo eje emocional / conflicto), "
+        "no cambies de género a algo ajeno.\n"
+        "Si el perfil trae `idea_generation`, obedecelo: brief, angles_to_favor, angles_to_avoid.\n"
+        "Ideas NUEVAS respecto a ideas_anteriores_a_evitar. Usá `lentes_creativos` solo como eje de tensión (secreto, vigilancia, etc.), "
+        "no como formato de video distinto (nada de 'documental' o 'listado').\n"
+        + REDDIT_STORYTIME_IDEA_RULES
+        + (f"\n\n=== Biblia del canal (ideas) ===\n{bible_snip}" if bible_snip else "")
     )
+    th = (topic_hint or "").strip()
+    tw = (twist_hint or "").strip()
     user = json.dumps(
         {
             "perfil": merge_profile_disk(pm),
             "memoria_sesion": (mem or "")[:4000],
             "chat_reciente": slim,
-            "recordatorio_ideas": "Las propuestas deben alinearse con idea_generation del perfil cuando exista.",
+            "pista_tema_actual": th[:2000],
+            "variacion_o_giro": tw[:800],
+            "recordatorio_ideas": "Solo ideas oscuras tipo confesión Reddit; encuadrar en pista_tema_actual si viene.",
             "anti_repeticion_nonce": nonce,
             "lentes_creativos": lenses,
             "ideas_anteriores_a_evitar": prev_digest,
             "instruccion": (
-                f"Este es el pedido #{nonce}: generá un lote fresco. "
-                f"Explorá ángulos distintos a los de ideas_anteriores_a_evitar (si viene vacío, igual variá formatos y conflictos)."
+                f"Pedido #{nonce}: lote fresco de premisas inquietantes y distintas entre sí. "
+                f"No repitas ideas_anteriores_a_evitar. Si hay pista_tema_actual, no la ignores."
             ),
         },
         ensure_ascii=False,
@@ -816,7 +1008,7 @@ def _ia_video_idea_pack(
         parsed = parse_llm_json_object(raw) or {}
         ideas = parsed.get("ideas")
         if not isinstance(ideas, list) or not ideas:
-            return _heuristic_video_ideas(pm, mem, seed=seed)
+            return _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
         out: list[dict[str, str]] = []
         for it in ideas[:8]:
             if not isinstance(it, dict):
@@ -827,9 +1019,9 @@ def _ia_video_idea_pack(
             if len(prompt) < 40:
                 continue
             out.append({"title": title, "hook": hook or prompt[:120], "prompt": prompt})
-        return out if out else _heuristic_video_ideas(pm, mem, seed=seed)
+        return out if out else _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
     except Exception:
-        return _heuristic_video_ideas(pm, mem, seed=seed)
+        return _heuristic_video_ideas(pm, mem, seed=seed, topic_hint=topic_hint, twist_hint=twist_hint)
 
 
 def _pick_card(title: str, options: list[str], state_key: str, fmt=None) -> None:
@@ -848,7 +1040,8 @@ def page_create() -> None:
     st.markdown('<p class="saas-hero">Nuevo video</p>', unsafe_allow_html=True)
     sid = st.session_state.get("active_session_id") or "—"
     st.caption(
-        f"Paso {st.session_state.create_step} de 3 · Sesión: {sid} — al generar, el guion y el montaje usan el chat y la memoria de esa sesión."
+        f"Paso {st.session_state.create_step} de 3 · Sesión: {sid} — el guion usa el chat y la memoria. "
+        f"Si en el paso 2 configurás **gameplay**, el montaje es solo video de fondo + voz (sin personaje del catálogo)."
     )
     st.progress((st.session_state.create_step - 1) / 3)
 
@@ -878,6 +1071,23 @@ def page_create() -> None:
         elif not (pm.get("niche") or "").strip() and not (pm.get("tone") or "").strip():
             st.info("Si el perfil está vacío, andá a **Perfil** y charlá con el asistente o completá el formulario: así las sugerencias serán mucho más acertadas.")
 
+        st.markdown("#### Paquete completo automático")
+        st.caption(
+            "Un solo clic en el paso final: **idea viral**, **guion**, **escenas**, **título**, **descripción**, "
+            "**miniatura** (texto + prompt + layout) y **video** (voz + fondos + subtítulos), guiado solo por tu "
+            "**Perfil creativo** y el contexto de esta sesión. Narración sobre fondo/B-roll, **sin personaje** en pantalla."
+        )
+        if st.session_state.get("create_auto_full_package"):
+            st.success("Modo **paquete automático** activo: el tema del paso 3 es opcional (podés dejarlo vacío o añadir una pista corta).")
+            if st.button("Salir del modo paquete automático", key="saas_auto_pkg_off"):
+                st.session_state.create_auto_full_package = False
+                st.rerun()
+        elif st.button("Activar modo paquete automático", type="primary", use_container_width=True, key="saas_auto_pkg_on"):
+            st.session_state.create_auto_full_package = True
+            st.session_state.create_topic = ""
+            st.session_state.create_twist = ""
+            st.rerun()
+
         st.markdown("### 2 · Ideas sugeridas para el próximo video")
         ig = pm.get("idea_generation") if isinstance(pm.get("idea_generation"), dict) else {}
         if str(ig.get("brief") or "").strip() or str(ig.get("angles_to_favor") or "").strip() or str(ig.get("angles_to_avoid") or "").strip():
@@ -887,7 +1097,10 @@ def page_create() -> None:
                 + ("…" if len(str(ig.get("brief") or "")) > 160 else "")
                 + "** · Podés afinarlo en **Perfil → Editar perfil** (sección Ideas sugeridas) o con el asistente + «Actualizar perfil desde el chat»."
             )
-        st.caption("Generamos propuestas con tu perfil, la memoria de sesión y el chat reciente. Podés usar una tal cual o editarla abajo.")
+        st.caption(
+            "Propuestas con perfil, memoria de sesión y chat. Si ya cargaste tema o variación en el paso 3 "
+            "(o volviste con «Atrás»), esas pistas encuadran las ideas en el mismo eje: confesión oscura tipo Reddit."
+        )
         g1, g2, g3 = st.columns([1, 1, 2])
         with g1:
             if st.button("Generar ideas con IA", type="primary", use_container_width=True, key="saas_gen_ideas"):
@@ -898,12 +1111,18 @@ def page_create() -> None:
                     mem,
                     st.session_state.agent_messages,
                     previous_pack=prev_list,
+                    topic_hint=str(st.session_state.get("create_topic") or ""),
+                    twist_hint=str(st.session_state.get("create_twist") or ""),
                 )
                 st.rerun()
         with g2:
             if st.button("Ideas rápidas (sin API)", use_container_width=True, key="saas_heur_ideas"):
                 st.session_state.create_idea_pack = _heuristic_video_ideas(
-                    pm, mem, seed=time.time_ns() % (2**32)
+                    pm,
+                    mem,
+                    seed=time.time_ns() % (2**32),
+                    topic_hint=str(st.session_state.get("create_topic") or ""),
+                    twist_hint=str(st.session_state.get("create_twist") or ""),
                 )
                 st.rerun()
         with g3:
@@ -930,10 +1149,18 @@ def page_create() -> None:
                             st.session_state.create_twist = ""
                             st.rerun()
 
-        st.markdown("### 3 · Tema final del video (obligatorio)")
-        st.caption(
-            "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** vas a elegir personaje, fondo, voz, velocidad de voz, largo del guion (palabras), subtítulos, música y SFX — no hace falta repetir eso acá."
-        )
+        if st.session_state.get("create_auto_full_package"):
+            st.markdown("### 3 · Semilla opcional (modo automático)")
+            st.caption(
+                "Si lo dejás vacío, el sistema inventa la **idea viral** y el **brief del guion** solo con tu perfil y la sesión. "
+                "Si escribís algo, se usa como **pista de baja prioridad** si no choca con la idea generada."
+            )
+        else:
+            st.markdown("### 3 · Tema final del video (obligatorio)")
+            st.caption(
+                "Acá definís el **tema** que recibirá el generador de guion. En el **paso 2** elegís voz, largo, subtítulos y audio; "
+                "**personaje y fondo del catálogo** solo se usan si **no** activás modo gameplay (video .mp4 de fondo en el paso 2)."
+            )
         idea = st.text_area(
             "Tema / brief para el guion",
             value=st.session_state.create_topic,
@@ -952,24 +1179,121 @@ def page_create() -> None:
         combined = _build_video_topic()
         _, r = st.columns([3, 1])
         with r:
-            if st.button("Siguiente", type="primary", disabled=not combined.strip(), use_container_width=True):
+            _can_next = bool(combined.strip()) or bool(st.session_state.get("create_auto_full_package"))
+            if st.button("Siguiente", type="primary", disabled=not _can_next, use_container_width=True):
                 st.session_state.create_step = 2
                 st.rerun()
 
     elif st.session_state.create_step == 2:
+        _ctp = (st.session_state.get("create_topic") or "").strip()
+        _ctw = (st.session_state.get("create_twist") or "").strip()
+        _gp_ui = _saas_gameplay_path_filled()
+        st.markdown("### Imágenes por escena")
+        if _env_skip_support_images():
+            st.session_state.create_skip_support_images = True
+            st.info(
+                "Imágenes IA **apagadas** por `.env` (`SAAS_SKIP_SUPPORT_IMAGES=1`). "
+                "Solo personaje + fondo del catálogo. Sacá esa variable para volver a poder activarlas acá."
+            )
+        elif _gp_ui:
+            st.caption(
+                "Con **gameplay** de fondo no aplica: cada escena es trozo de video + voz (sin Replicate ni personaje del catálogo)."
+            )
+        else:
+            _gen_imgs = st.checkbox(
+                "Generar imágenes con IA (Replicate) por escena",
+                value=not bool(st.session_state.get("create_skip_support_images", True)),
+                help=(
+                    "Desmarcado = más rápido y sin créditos de imagen: solo personaje + fondo del catálogo. "
+                    "También podés forzar apagado global con SAAS_SKIP_SUPPORT_IMAGES=1 en .env."
+                ),
+                key="saas_create_gen_support_images",
+            )
+            st.session_state.create_skip_support_images = not _gen_imgs
+            if st.session_state.create_skip_support_images:
+                st.caption("Imágenes IA apagadas: cada clip usa personaje + fondo del catálogo.")
+            else:
+                st.caption("Imágenes IA activas: una imagen de apoyo Replicate por bloque.")
+        st.markdown("### Video de gameplay como fondo (opcional)")
+        with st.expander("Minecraft / parkour / cualquier .mp4 detrás de la historia", expanded=bool(_gp_ui)):
+            st.caption(
+                "Si completás la ruta, el render **solo** usa este video recortado por bloque + voz + subtítulos. "
+                "No se usa personaje del catálogo ni imagen Replicate por escena. Se generan 3 ideas virales y se elige la mejor."
+            )
+            st.session_state.create_gameplay_path = st.text_input(
+                "Ruta absoluta al .mp4",
+                value=st.session_state.get(
+                    "create_gameplay_path", os.getenv("GAMEPLAY_BACKGROUND_VIDEO", "")
+                ),
+                key="saas_create_gameplay_path",
+            )
+            _asp_opts = ["16:9 (YouTube)", "9:16 (TikTok)"]
+            _cur_asp = st.session_state.get("create_gameplay_aspect", "16:9")
+            _asp_idx = 1 if str(_cur_asp).strip() in ("9:16", "vertical") else 0
+            _sel = st.selectbox("Formato de salida", _asp_opts, index=_asp_idx, key="saas_gameplay_aspect")
+            st.session_state.create_gameplay_aspect = "9:16" if "9:16" in _sel else "16:9"
+        if _saas_gameplay_path_filled():
+            st.success(
+                "Modo **gameplay** activo: el paso 2 omite personaje y fondo del catálogo; el progreso dirá «Escena» (segmento de gameplay + audio), no clips con personaje."
+            )
+        if "create_align_script_to_theme_duration" not in st.session_state and "create_ignore_topic_duration_hint" in st.session_state:
+            st.session_state.create_align_script_to_theme_duration = not bool(
+                st.session_state.get("create_ignore_topic_duration_hint")
+            )
+        st.markdown("#### Largo del video")
+        st.caption(
+            "La longitud del guion la definís **vos** con los deslizadores de abajo (~140 palabras ≈ 1 min de narración). "
+            "El texto del tema no cambia ese objetivo salvo que actives la casilla opcional."
+        )
+        st.checkbox(
+            "Subir el mínimo de palabras si el tema pide más minutos (p. ej. «15–20 min» en el brief)",
+            help=(
+                "Si está activada, el sistema puede **aumentar** el objetivo de palabras cuando detecta una duración "
+                "pedida en el tema o la variación, aunque hayas elegido menos minutos/palabras."
+            ),
+            key="create_align_script_to_theme_duration",
+        )
+        _align_theme = bool(st.session_state.get("create_align_script_to_theme_duration", False))
+        _ignore_theme = not _align_theme
+        _prev_align = bool(st.session_state.get("_saas_prev_align_theme_duration", False))
+        if _align_theme and not _prev_align:
+            _bw_snap = max(80, min(10000, int(round(float(st.session_state.get("create_duration", 4) or 0) * _SAAS_WORDS_PER_MIN))))
+            st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+                _ctp,
+                _ctw,
+                int(st.session_state.get("create_target_words", _bw_snap)),
+                ignore_topic_duration_hint=False,
+            )
+        if not _align_theme and _prev_align:
+            _snap = max(80, int(round(2.0 * _SAAS_WORDS_PER_MIN)))
+            st.session_state.create_target_words = min(int(st.session_state.get("create_target_words", _snap)), _snap)
+        if "create_duration" not in st.session_state:
+            tw0 = int(st.session_state.get("create_target_words", 560) or 560)
+            st.session_state.create_duration = max(0, min(60, int(round(tw0 / max(1.0, _SAAS_WORDS_PER_MIN)))))
         if "create_target_words" not in st.session_state:
-            d = int(st.session_state.get("create_duration", 4) or 4)
-            st.session_state.create_target_words = max(80, min(10000, d * 140))
+            d0 = int(st.session_state.get("create_duration", 4) or 0)
+            d0 = max(0, min(60, d0))
+            st.session_state.create_duration = d0
+            bw0 = max(80, min(10000, int(round(float(d0) * _SAAS_WORDS_PER_MIN))))
+            st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+                _ctp, _ctw, bw0, ignore_topic_duration_hint=_ignore_theme
+            )
+            st.session_state._saas_dm_prev = d0
         if "create_voice_speed" not in st.session_state:
             st.session_state.create_voice_speed = 1.0
         st.markdown("### Estilo del video")
-        _pick_card(
-            "Personaje",
-            list(CHARACTERS.keys()),
-            "create_character",
-            lambda k: CHARACTERS[k].get("name", k),
-        )
-        _pick_card("Fondo", list(BACKGROUNDS.keys()), "create_background", lambda k: k.replace("_", " ").title())
+        if not _saas_gameplay_path_filled():
+            _pick_card(
+                "Personaje",
+                list(CHARACTERS.keys()),
+                "create_character",
+                lambda k: CHARACTERS[k].get("name", k),
+            )
+            _pick_card("Fondo", list(BACKGROUNDS.keys()), "create_background", lambda k: k.replace("_", " ").title())
+        else:
+            st.caption(
+                "**Personaje y fondo del catálogo:** no se usan en este render (solo importan voz, guion y el .mp4 de gameplay)."
+            )
         _pick_card("Voz", list(VOICES.keys()), "create_voice", lambda k: k.replace("_", " ").title())
         st.session_state.create_voice_speed = float(
             st.slider(
@@ -982,37 +1306,110 @@ def page_create() -> None:
             )
         )
         _pick_card("Preset", PRESETS, "create_preset", lambda k: k.replace("_", " "))
+        dm = int(
+            st.slider(
+                "Duración aproximada (minutos de narración)",
+                0,
+                60,
+                int(st.session_state.get("create_duration", 4) or 0),
+                step=1,
+                help=(
+                    f"Referencia: ~{int(_SAAS_WORDS_PER_MIN)} palabras por minuto. **0 min** = solo el tope mínimo técnico "
+                    f"(80 palabras); el máximo real lo marcás con **Palabras del guion**. Por defecto el texto del tema **no** "
+                    "modifica este objetivo (activá la casilla de arriba si querés que sí)."
+                ),
+            )
+        )
+        st.session_state.create_duration = dm
+        bw = max(80, min(10000, int(round(float(dm) * _SAAS_WORDS_PER_MIN))))
+        prev_dm = st.session_state.get("_saas_dm_prev")
+        if prev_dm is None:
+            st.session_state._saas_dm_prev = dm
+        elif int(prev_dm) != int(dm):
+            if _align_theme:
+                st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+                    _ctp, _ctw, bw, ignore_topic_duration_hint=False
+                )
+            else:
+                _cur_w = int(st.session_state.get("create_target_words", bw))
+                st.session_state.create_target_words = max(bw, min(10000, _cur_w))
+            st.session_state._saas_dm_prev = dm
+        _topic_for_hint = _brief_for_duration_hint(_ctp, _ctw)
+        _hint_m = _parse_duration_hint_max_minutes(_topic_for_hint)
+        if not _align_theme:
+            if _hint_m is not None:
+                st.caption(
+                    f"En el tema aparece una pista de **~{_hint_m} min**; **no** cambia el objetivo de palabras mientras la casilla "
+                    "de alinear con el tema esté desactivada. Subí minutos/palabras acá si querés un guion más largo."
+                )
+            else:
+                st.caption(
+                    f"Mínimo de palabras según minutos: **{bw}** (o 80 si elegiste 0 min). Ajustá el deslizador de palabras para el largo final."
+                )
+        elif _hint_m is not None:
+            st.caption(
+                f"Alineación con el **tema** activa: detectamos **~{_hint_m} min** en el brief; el mínimo de palabras puede subir "
+                f"hasta ≈{int(round(_hint_m * _SAAS_WORDS_PER_MIN))} (~{int(_SAAS_WORDS_PER_MIN)} pal/min). "
+                "Desactivá la casilla si preferís que solo cuenten los deslizadores."
+            )
+        else:
+            st.caption(
+                "Alineación con el tema activada, pero no hay duración clara en el texto: el piso lo marcan minutos y palabras."
+            )
+        tw_lo = (
+            _target_words_floor_from_topic_duration(_ctp, _ctw, bw, ignore_topic_duration_hint=False)
+            if _align_theme
+            else max(80, bw)
+        )
+        cur_tw = int(st.session_state.get("create_target_words", tw_lo))
+        cur_tw = max(tw_lo, min(10000, cur_tw))
         tw = int(
             st.slider(
                 "Palabras del guion (objetivo)",
-                80,
+                tw_lo,
                 10000,
-                int(st.session_state.get("create_target_words", 560)),
+                cur_tw,
                 step=20,
-                help="El generador intenta acercarse a este largo (tope 10000 por límites de la API).",
+                help=(
+                    "Por defecto el mínimo sigue los **minutos** (0 min ⇒ 80 palabras). "
+                    "Si activaste alinear con el tema, el mínimo puede subir si el brief pide más duración."
+                ),
             )
         )
-        st.session_state.create_target_words = tw
-        _bm, _pm = _saas_estimated_speech_minutes(tw, float(st.session_state.create_voice_speed))
+        st.session_state.create_target_words = _target_words_floor_from_topic_duration(
+            _ctp, _ctw, tw, ignore_topic_duration_hint=_ignore_theme
+        )
+        tw_effective = int(st.session_state.create_target_words)
+        _bm, _pm = _saas_estimated_speech_minutes(tw_effective, float(st.session_state.create_voice_speed))
         st.caption(
             f"Guion: ≈ **{_bm:.1f} min** a ~{int(_SAAS_WORDS_PER_MIN)} palabras/min. "
             f"Con la velocidad de voz elegida, el audio TTS ≈ **{_pm:.1f} min** (estimación)."
         )
+        st.session_state._saas_prev_align_theme_duration = _align_theme
 
         st.markdown("#### Subtítulos en el video")
         st.caption(
             "Tipografías **del sistema** (p. ej. Arial, Impact) — sin descargas extra; "
             "elegí el aspecto por la miniatura, no por nombre interno."
         )
-        st.caption(
-            "Imágenes de apoyo por bloque: Replicate **solo texto** (sin tu personaje en el B-roll). "
-            "Requiere `REPLICATE_API_TOKEN` en `.env`; si falta, el video igual usa fondo + personaje."
-        )
+        if _saas_gameplay_path_filled():
+            st.caption(
+                "Modo gameplay: los subtítulos **siempre** van en el MP4 (estilo grande centrado lo aplica el sistema al renderizar)."
+            )
+        else:
+            st.caption(
+                "Imágenes de apoyo por bloque: Replicate **solo texto** (sin tu personaje en el B-roll). "
+                "Requiere `REPLICATE_API_TOKEN` en `.env`; si falta, el video igual usa fondo + personaje."
+            )
         st.session_state.create_subtitles_enabled = st.checkbox(
             "Incluir subtítulos en el MP4",
-            value=bool(st.session_state.get("create_subtitles_enabled", True)),
+            value=True if _saas_gameplay_path_filled() else bool(st.session_state.get("create_subtitles_enabled", True)),
+            disabled=bool(_saas_gameplay_path_filled()),
+            help="En gameplay los subtítulos van siempre; el checkbox queda fijado en sí.",
         )
-        if st.session_state.create_subtitles_enabled:
+        if _saas_gameplay_path_filled():
+            st.session_state.create_subtitles_enabled = True
+        if st.session_state.create_subtitles_enabled and not _saas_gameplay_path_filled():
             _styles = get_subtitle_styles()
             _sub_keys = list_subtitle_style_keys(_styles)
             if not _sub_keys:
@@ -1131,8 +1528,21 @@ def page_create() -> None:
 
     else:
         st.markdown("### Listo para generar")
+        _gp = (st.session_state.get("create_gameplay_path") or "").strip()
         topic_final = _build_video_topic()
-        ch = get_character(st.session_state.create_character)
+        _ignore3 = not bool(st.session_state.get("create_align_script_to_theme_duration", False))
+        _tw_ready = _target_words_floor_from_topic_duration(
+            st.session_state.get("create_topic") or "",
+            st.session_state.get("create_twist") or "",
+            int(st.session_state.get("create_target_words", 560)),
+            ignore_topic_duration_hint=_ignore3,
+        )
+        st.session_state.create_target_words = _tw_ready
+        if st.session_state.get("create_auto_full_package") and not topic_final.strip():
+            topic_final = (
+                "(Paquete automático: idea viral + guion + publicación generados por el sistema según tu perfil creativo)"
+            )
+        ch = get_character(st.session_state.create_character) if not _gp else None
         bgm_note = "No"
         if st.session_state.get("create_use_bgm"):
             if st.session_state.get("create_safe_music_path"):
@@ -1142,18 +1552,59 @@ def page_create() -> None:
             elif st.session_state.get("create_use_bgm"):
                 bgm_note = "Sí (sin pista; revisá carpeta o .env)"
         sfx_note = "Sí" if st.session_state.get("create_use_sfx") and st.session_state.get("create_safe_sfx_path") else "No"
-        _sum_tw = int(st.session_state.get("create_target_words", 560))
+        _sum_tw = int(_tw_ready)
         _sum_bm, _sum_pm = _saas_estimated_speech_minutes(_sum_tw, float(st.session_state.get("create_voice_speed", 1.0)))
         _sub_on = bool(st.session_state.get("create_subtitles_enabled", True))
-        _sub_line = "**Subtítulos:** sí (el aspecto es el que marcaste con la miniatura en el paso anterior)." if _sub_on else "**Subtítulos:** no."
+        _sub_line = (
+            "**Subtítulos:** sí, estilo fijado por el sistema (gameplay)."
+            if _gp
+            else (
+                "**Subtítulos:** sí (el aspecto es el que marcaste con la miniatura en el paso anterior)."
+                if _sub_on
+                else "**Subtítulos:** no."
+            )
+        )
+        _gp_line = ""
+        if _gp:
+            _ga = str(st.session_state.get("create_gameplay_aspect") or "16:9")
+            _gp_line = (
+                f"\n\n**Montaje:** solo **gameplay** — un .mp4 de fondo recortado por **escena** + voz (no hay clips con personaje ni Replicate).\n"
+                f"**Archivo:** `{_gp[:100]}{'…' if len(_gp) > 100 else ''}` · formato **{_ga}**."
+            )
+        _gp_ok = True
+        if _gp:
+            try:
+                _gchk = Path(_gp).expanduser().resolve()
+                _gp_ok = _gchk.is_file()
+            except Exception:
+                _gp_ok = False
+            if not _gp_ok:
+                st.error(
+                    "La ruta de gameplay **no existe** o no es un archivo `.mp4` accesible. "
+                    "Volvé al **paso 2** y poné la ruta **absoluta** (ej. `/Users/vos/Videos/parkour.mp4`). "
+                    "Si queda vacío, el render usa **fondo del catálogo** (y Replicate por escena salvo que elijas «sin imágenes IA» en el paso 2), no Minecraft."
+                )
+            else:
+                st.caption(f"Gameplay: archivo encontrado (`{Path(_gp).expanduser().resolve().name}`).")
+        _char_bg = ""
+        if not _gp and ch is not None:
+            _char_bg = f"**Personaje:** {ch.get('name')} · **Fondo:** {st.session_state.create_background} · "
+        _img_line = ""
+        if not _gp:
+            if st.session_state.get("create_skip_support_images"):
+                _img_line = "\n\n**Imágenes por escena:** no — solo personaje + fondo del catálogo (sin Replicate)."
+            else:
+                _img_line = "\n\n**Imágenes por escena:** sí — imagen de apoyo con Replicate por bloque."
         st.markdown(
             f"**Tema (guion):** {topic_final[:320]}{'…' if len(topic_final) > 320 else ''}\n\n"
-            f"**Personaje:** {ch.get('name')} · **Fondo:** {st.session_state.create_background} · "
+            f"{_char_bg}"
             f"**Voz:** {st.session_state.create_voice} (×{float(st.session_state.get('create_voice_speed', 1.0)):.2f}) · "
             f"**Preset:** {st.session_state.create_preset} · "
             f"**Guion:** ~{_sum_tw} palabras (≈{_sum_bm:.1f} min; audio ≈{_sum_pm:.1f} min)\n\n"
             f"{_sub_line}\n\n"
             f"**Música:** {bgm_note} · **SFX:** {sfx_note}"
+            f"{_gp_line}"
+            f"{_img_line}"
         )
         c1, c2 = st.columns(2)
         with c1:
@@ -1161,13 +1612,35 @@ def page_create() -> None:
                 st.session_state.create_step = 2
                 st.rerun()
         with c2:
-            if st.button("Generar video", type="primary", use_container_width=True):
+            if st.button(
+                "Generar video",
+                type="primary",
+                use_container_width=True,
+                disabled=bool(_gp) and not _gp_ok,
+            ):
                 _session_persist()
                 pid = datetime.now().strftime("%Y%m%d%H%M%S")
-                _tw = int(st.session_state.get("create_target_words", 560))
+                _tw = _target_words_floor_from_topic_duration(
+                    st.session_state.get("create_topic") or "",
+                    st.session_state.get("create_twist") or "",
+                    int(st.session_state.get("create_target_words", 560)),
+                    ignore_topic_duration_hint=not bool(
+                        st.session_state.get("create_align_script_to_theme_duration", False)
+                    ),
+                )
+                st.session_state.create_target_words = _tw
                 _vs = float(st.session_state.get("create_voice_speed", 1.0))
                 _sub_en = bool(st.session_state.get("create_subtitles_enabled", True))
+                if (st.session_state.get("create_gameplay_path") or "").strip():
+                    _sub_en = True
                 _sub_st = str(st.session_state.get("create_subtitle_style") or "default")
+                _topic_for_pipeline = (
+                    ""
+                    if st.session_state.get("create_auto_full_package")
+                    and not (st.session_state.get("create_topic") or "").strip()
+                    and not (st.session_state.get("create_twist") or "").strip()
+                    else _build_video_topic()
+                )
                 _append_project(
                     {
                         "id": pid,
@@ -1190,11 +1663,14 @@ def page_create() -> None:
                         "safe_sfx_path": st.session_state.get("create_safe_sfx_path"),
                         "use_env_music": st.session_state.get("create_use_env_music", False),
                         "session_id": str(st.session_state.get("active_session_id") or ""),
+                        "auto_full_package": bool(st.session_state.get("create_auto_full_package")),
+                        "skip_support_images": bool(st.session_state.get("create_skip_support_images"))
+                        or _env_skip_support_images(),
                     }
                 )
                 st.session_state.render = {
                     "project_id": pid,
-                    "topic": topic_final,
+                    "topic": _topic_for_pipeline,
                     "holder": [None],
                     "err": [None],
                     "started": False,
@@ -1224,6 +1700,12 @@ def page_create() -> None:
                             "messages": list(st.session_state.agent_messages),
                         }
                     ),
+                    "auto_viral_idea": bool(st.session_state.get("create_auto_full_package")),
+                    "story_background_video": bool(st.session_state.get("create_auto_full_package")),
+                    "gameplay_video_path": (st.session_state.get("create_gameplay_path") or "").strip(),
+                    "video_aspect": str(st.session_state.get("create_gameplay_aspect") or "16:9"),
+                    "skip_support_images": bool(st.session_state.get("create_skip_support_images"))
+                    or _env_skip_support_images(),
                 }
                 if RENDER_PROGRESS.exists():
                     try:
@@ -1254,6 +1736,14 @@ def _run_mvp_thread(topic: str, holder: list, err: list, opts: dict | None) -> N
             if env_p and env_p.exists():
                 m_path = env_p
         use_env_flag = use_env and m_path is None
+        gpv = (opts.get("gameplay_video_path") or os.getenv("GAMEPLAY_BACKGROUND_VIDEO") or "").strip()
+        gpath: Path | None = None
+        if gpv:
+            gpath = Path(gpv).expanduser().resolve()
+            if not gpath.is_file():
+                raise FileNotFoundError(f"Video de gameplay no encontrado: {gpv}")
+        asp = str(opts.get("video_aspect") or os.getenv("GAMEPLAY_VIDEO_ASPECT") or "16:9").strip()
+        ot = opts.get("overlay_text")
         holder[0] = run_saas_mvp(
             topic,
             progress_path=RENDER_PROGRESS,
@@ -1271,6 +1761,12 @@ def _run_mvp_thread(topic: str, holder: list, err: list, opts: dict | None) -> N
             character_id=(str(opts.get("character_id") or "").strip() or None),
             background_id=(str(opts.get("background_id") or "").strip() or None),
             voice_id=(str(opts.get("voice_id") or "").strip() or None),
+            auto_viral_idea=bool(opts.get("auto_viral_idea")),
+            story_background_video=bool(opts.get("story_background_video")),
+            gameplay_video_path=gpath,
+            video_aspect=asp,
+            overlay_text=ot if isinstance(ot, dict) else None,
+            skip_support_images=bool(opts.get("skip_support_images")) or _env_skip_support_images(),
         )
     except Exception as e:
         err[0] = e
@@ -1286,6 +1782,18 @@ def page_rendering() -> None:
             st.session_state.nav = "Create"
             st.rerun()
         return
+
+    _gp_job = (job.get("gameplay_video_path") or "").strip()
+    if _gp_job:
+        st.info(
+            "**Modo gameplay:** cada paso une **voz + trozo del video de fondo** (escenas). "
+            "No se generan imágenes por bloque ni personaje del catálogo."
+        )
+    elif job.get("skip_support_images"):
+        st.info(
+            "**Sin imágenes IA por escena:** cada clip usa **solo personaje + fondo** del catálogo (sin Replicate). "
+            "El guion y la voz son iguales; el render suele ser más rápido."
+        )
 
     if not job.get("started"):
         job["started"] = True
@@ -1306,6 +1814,11 @@ def page_rendering() -> None:
             "character_id": str(job.get("character_id") or ""),
             "background_id": str(job.get("background_id") or ""),
             "voice_id": str(job.get("voice_id") or ""),
+            "auto_viral_idea": bool(job.get("auto_viral_idea")),
+            "story_background_video": bool(job.get("story_background_video")),
+            "gameplay_video_path": (job.get("gameplay_video_path") or "").strip(),
+            "video_aspect": str(job.get("video_aspect") or "16:9"),
+            "skip_support_images": bool(job.get("skip_support_images")),
         }
         t = threading.Thread(
             target=_run_mvp_thread,
@@ -1325,6 +1838,9 @@ def page_rendering() -> None:
             step = str(d.get("step", step))
         except Exception:
             pass
+
+    if _gp_job and "Clip " in step:
+        step = step.replace("Clip ", "Escena ")
 
     st.progress(min(1.0, pct / 100.0))
     st.caption(f"{int(pct)}% · {step}")
@@ -1386,6 +1902,15 @@ def page_rendering() -> None:
         )
         st.session_state.last_script = script_text
         st.session_state.last_blocks = plan_scenes(script_text)
+    st.session_state.last_full_package = {}
+    _fp_full = OUTPUT_DIR / "saas_full_package.json"
+    if _fp_full.exists():
+        try:
+            _raw_fp = json.loads(_fp_full.read_text(encoding="utf-8"))
+            if isinstance(_raw_fp, dict):
+                st.session_state.last_full_package = _raw_fp
+        except Exception:
+            pass
     prow = _load_project_row(pid)
     wc = meta.get("word_count") if isinstance(meta.get("word_count"), (int, float)) else None
     bpath = _write_project_bundle(
@@ -1397,11 +1922,13 @@ def page_rendering() -> None:
         word_count=int(wc) if wc is not None else None,
         job=job,
         project_row=prow,
+        full_package=st.session_state.last_full_package if st.session_state.last_full_package else None,
     )
+    _topic_ready = str((prow or {}).get("topic") or "").strip() or str(job.get("topic") or "").strip()
     upd: dict = {
         "status": "ready",
         "video_path": str(out),
-        "topic": job["topic"],
+        "topic": _topic_ready,
     }
     if bpath is not None:
         upd["bundle_path"] = str(bpath.resolve())
@@ -1554,6 +2081,37 @@ def page_review() -> None:
     if not st.session_state.get("last_script"):
         st.info("Generá un video primero.")
         return
+    pkg = st.session_state.get("last_full_package") or {}
+    if isinstance(pkg, dict) and (pkg.get("title") or pkg.get("idea")):
+        with st.expander("Paquete YouTube (automático)", expanded=True):
+            if pkg.get("idea"):
+                st.markdown("**Idea viral**")
+                st.write(str(pkg.get("idea")))
+            al = pkg.get("alt_ideas")
+            if isinstance(al, list) and al:
+                st.caption("Alternativas de idea: " + " · ".join(str(x) for x in al[:5]))
+            if pkg.get("title"):
+                st.markdown("**Título sugerido**")
+                st.write(str(pkg.get("title")))
+            al_t = pkg.get("alt_titles")
+            if isinstance(al_t, list) and al_t:
+                st.caption("Títulos alternativos: " + " · ".join(str(x) for x in al_t[:3]))
+            if pkg.get("description"):
+                st.markdown("**Descripción**")
+                st.text_area(
+                    "Descripción sugerida",
+                    str(pkg.get("description")),
+                    height=160,
+                    disabled=True,
+                    key="review_pkg_desc",
+                )
+            th = pkg.get("thumbnail") if isinstance(pkg.get("thumbnail"), dict) else {}
+            if th:
+                st.markdown("**Miniatura**")
+                st.json(th)
+            if pkg.get("video_path"):
+                st.caption(f"Video exportado: `{pkg.get('video_path')}`")
+        st.divider()
     left, right = st.columns([1.1, 1])
     with left:
         vp = st.session_state.get("last_video_path")
@@ -1654,6 +2212,27 @@ def page_profile() -> None:
         narr = st.selectbox("Voz preferida (MVP)", list(VOICES.keys()))
         lang = st.text_input("Registro lingüístico", value=str(pm.get("language_register") or ""))
         avoid = st.text_area("Temas o enfoques a evitar", value=str(pm.get("topics_to_avoid") or ""), height=72)
+        _ttf0 = pm.get("topics_to_focus")
+        if isinstance(_ttf0, list):
+            focus_default = ", ".join(str(x) for x in _ttf0 if str(x).strip())
+        else:
+            focus_default = str(_ttf0 or "").strip()
+        focus_in = st.text_area(
+            "Temas a priorizar (viral / paquete automático)",
+            value=focus_default,
+            height=56,
+            placeholder="Separá con comas o saltos de línea: traición, dinero, secretos familiares…",
+        )
+        title_style_in = st.text_input(
+            "Estilo de títulos (YouTube)",
+            value=str(pm.get("title_style") or ""),
+            placeholder="Ej.: corto y emocional, curiosidad misteriosa…",
+        )
+        thumb_style_in = st.text_input(
+            "Estilo de miniatura",
+            value=str(pm.get("thumbnail_style") or ""),
+            placeholder="Ej.: alto contraste, dramático, legible en móvil…",
+        )
 
         st.markdown("##### Público y marca")
         aud = pm.get("audience") or {}
@@ -1741,6 +2320,9 @@ def page_profile() -> None:
             updated["narrator_preference"] = narr
             updated["language_register"] = lang.strip()
             updated["topics_to_avoid"] = avoid.strip()
+            updated["topics_to_focus"] = [s.strip() for s in re.split(r"[,;\n]+", focus_in) if s.strip()][:40]
+            updated["title_style"] = title_style_in.strip()
+            updated["thumbnail_style"] = thumb_style_in.strip()
             updated["audience"] = {"who": a_who.strip(), "pain_points": a_pain.strip(), "reading_level": a_read.strip()}
             updated["channel"] = {
                 "name": ch_name.strip(),
@@ -1853,11 +2435,29 @@ def render_app() -> None:
     _theme()
     _init_state()
     _session_hydrate_from_disk()
+    # Prefer Documentary home when the active session is a documentary channel.
+    try:
+        from src.documentary.channel import is_documentary_profile
+        from src.documentary_ui import ensure_100_days_session_ready
+
+        ensure_100_days_session_ready()
+        _session_hydrate_from_disk()
+        if is_documentary_profile(st.session_state.get("creative_profile")):
+            if st.session_state.get("nav") == "Dashboard" and not st.session_state.get("_doc_nav_boot"):
+                st.session_state.nav = "Documentary"
+                st.session_state.doc_view = st.session_state.get("doc_view") or "home"
+                st.session_state._doc_nav_boot = True
+    except Exception:
+        pass
     _nav()
 
     nav = st.session_state.nav
     if nav == "Dashboard":
         page_dashboard()
+    elif nav == "Documentary":
+        from src.documentary_ui import page_documentary
+
+        page_documentary()
     elif nav == "Create":
         page_create()
     elif nav == "Library":
