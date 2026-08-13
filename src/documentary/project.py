@@ -149,8 +149,25 @@ def project_json_path(project_id: str) -> Path:
     return project_dir(project_id) / "project.json"
 
 
+def _pull_if_missing(project_id: str) -> None:
+    from src.documentary.runtime import on_vercel
+
+    if not on_vercel():
+        return
+    try:
+        from src.documentary import cloud_sync
+
+        if cloud_sync.configured():
+            cloud_sync.pull_project(project_id, light=True)
+    except Exception:
+        pass
+
+
 def load_project(project_id: str) -> dict[str, Any]:
     path = project_json_path(project_id)
+    if not path.exists():
+        _pull_if_missing(project_id)
+        path = project_json_path(project_id)
     if not path.exists():
         raise FileNotFoundError(f"Documentary project not found: {project_id}")
     data = json.loads(path.read_text(encoding="utf-8"))

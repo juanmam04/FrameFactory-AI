@@ -352,7 +352,10 @@ def create_app() -> FastAPI:
 
     @app.patch("/api/projects/{project_id}/step")
     def set_step(project_id: str, body: StepBody):
-        p = load_project(project_id)
+        try:
+            p = load_project(project_id)
+        except FileNotFoundError as e:
+            raise HTTPException(404, str(e)) from e
         if body.step not in STEPS:
             raise HTTPException(400, "Invalid step")
         step = body.step

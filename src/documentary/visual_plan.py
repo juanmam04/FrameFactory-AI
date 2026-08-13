@@ -145,6 +145,11 @@ def build_visual_plan(
 def load_visual_plan(project_id: str) -> dict[str, Any]:
     path = project_dir(project_id) / "flow-pack" / "visual-plan.json"
     if not path.exists():
+        from src.documentary.project import _pull_if_missing
+
+        _pull_if_missing(project_id)
+        path = project_dir(project_id) / "flow-pack" / "visual-plan.json"
+    if not path.exists():
         raise FileNotFoundError("visual-plan.json missing — generate Visual Plan first")
     return json.loads(path.read_text(encoding="utf-8"))
 
