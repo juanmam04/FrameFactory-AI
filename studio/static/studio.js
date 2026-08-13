@@ -332,11 +332,11 @@ function renderHome() {
           <svg viewBox="0 0 120 120" aria-hidden="true">
             <defs>
               <linearGradient id="dayGlow" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#5eead4"/>
-                <stop offset="100%" stop-color="#e8c98a"/>
+                <stop offset="0%" stop-color="#0f766e"/>
+                <stop offset="100%" stop-color="#14b8a6"/>
               </linearGradient>
             </defs>
-            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
+            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(15,23,32,.08)" stroke-width="2.5"/>
             <circle cx="60" cy="60" r="54" fill="none" stroke="url(#dayGlow)" stroke-width="3.5"
               stroke-linecap="round" stroke-dasharray="${ringDash} ${ringC}" transform="rotate(-90 60 60)"/>
           </svg>

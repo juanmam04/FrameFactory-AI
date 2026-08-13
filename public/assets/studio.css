@@ -153,70 +153,36 @@ button { cursor: pointer; }
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  min-height: 420px;
-  background:
-    radial-gradient(120% 80% at 50% -10%, rgba(94, 234, 212, 0.16), transparent 52%),
-    radial-gradient(90% 70% at 110% 110%, rgba(232, 201, 138, 0.14), transparent 48%),
-    #07090c;
-  color: #f6f3ea;
-  border-radius: 28px;
-  padding: 1.35rem 1.35rem 1.2rem;
-  box-shadow: 0 24px 60px rgba(7, 9, 12, 0.35);
+  background: linear-gradient(160deg, #ffffff 0%, #f7fbfa 100%);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.4rem 1.5rem 1.25rem;
   position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(232, 201, 138, 0.14);
 }
-.day-card::before {
-  content: "";
-  position: absolute;
-  inset: 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  pointer-events: none;
-}
-.day-card-glow {
-  position: absolute;
-  inset: auto -30% -45% auto;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(94, 234, 212, 0.22), transparent 68%);
-  pointer-events: none;
-}
-.day-card-top,
-.day-dial,
-.day-of,
-.day-ticks,
-.day-tagline,
-.day-card .meta {
-  position: relative;
-  z-index: 1;
-}
+.day-card-glow { display: none; }
 .day-card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(246, 243, 234, 0.55);
+  color: var(--accent);
 }
 .day-card-top span:last-child {
-  color: #5eead4;
-  letter-spacing: 0.08em;
+  color: var(--muted);
+  letter-spacing: 0.04em;
 }
 .day-dial {
   position: relative;
-  width: 210px;
-  height: 210px;
-  margin: 1.1rem auto 0.35rem;
+  width: 168px;
+  height: 168px;
+  margin: 0.9rem auto 0.2rem;
 }
-.day-dial svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 0 18px rgba(94, 234, 212, 0.18));
-}
+.day-dial svg { width: 100%; height: 100%; }
 .day-dial-num {
   position: absolute;
   inset: 0;
@@ -225,62 +191,54 @@ button { cursor: pointer; }
   text-align: center;
 }
 .day-dial-num em {
-  font-style: italic;
-  font-family: "Fraunces", Georgia, serif;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: rgba(246, 243, 234, 0.62);
-  letter-spacing: 0.18em;
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  color: var(--muted);
 }
 .day-dial-num strong {
   display: block;
-  font-family: "Fraunces", Georgia, serif;
-  font-optical-sizing: auto;
-  font-size: 4.4rem;
-  font-weight: 700;
-  letter-spacing: -0.06em;
-  line-height: 0.85;
-  background: linear-gradient(180deg, #fffaf0 20%, #e8c98a 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-size: 3.4rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  color: var(--ink);
 }
 .day-of {
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.75rem;
   text-align: center;
-  font-family: "Fraunces", Georgia, serif;
-  font-style: italic;
-  font-size: 0.95rem;
-  color: rgba(246, 243, 234, 0.62);
+  font-size: 0.92rem;
+  color: var(--muted);
 }
 .day-ticks {
   display: flex;
   align-items: flex-end;
   gap: 1.5px;
-  height: 16px;
-  margin: 0 0 0.55rem;
+  height: 14px;
+  margin: 0 0 0.45rem;
 }
 .day-ticks i {
   flex: 1;
-  height: 7px;
+  height: 6px;
   border-radius: 1px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--bg-2);
 }
-.day-ticks i.mark { height: 11px; }
+.day-ticks i.mark { height: 10px; }
 .day-ticks i.on {
-  height: 12px;
-  background: linear-gradient(180deg, #5eead4, #e8c98a);
+  height: 11px;
+  background: var(--accent);
 }
-.day-ticks i.on.mark { height: 16px; }
+.day-ticks i.on.mark { height: 14px; }
 .day-tagline {
-  margin: 0 0 0.95rem;
+  margin: 0 0 0.9rem;
   text-align: center;
   font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(232, 201, 138, 0.7);
+  color: var(--accent);
 }
 .day-card .meta {
   display: grid;
@@ -289,8 +247,8 @@ button { cursor: pointer; }
   margin-top: auto;
 }
 .day-card .meta div {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0.55rem 0.5rem 0.5rem;
   text-align: center;
@@ -298,15 +256,15 @@ button { cursor: pointer; }
 .day-card .meta span {
   display: block;
   font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(246, 243, 234, 0.45);
+  color: var(--muted);
 }
 .day-card .meta strong {
-  font-family: "Fraunces", Georgia, serif;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink);
 }
 
 .actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.25rem; }
