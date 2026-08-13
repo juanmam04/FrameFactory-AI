@@ -14,7 +14,7 @@ def documentary_bed_path() -> Path:
     else:
         root = Path(__file__).resolve().parents[2] / "output" / "audio"
     root.mkdir(parents=True, exist_ok=True)
-    dest = root / "documentary_bed.wav"
+    dest = root / "documentary_bed_v2.wav"
     if dest.is_file() and dest.stat().st_size > 20_000:
         return dest
     _write_pad(dest)
@@ -43,8 +43,8 @@ def _write_pad(dest: Path, seconds: float = 16.0, sr: int = 22050) -> None:
             s += 0.20 * math.sin(2 * math.pi * f * t)
             s += 0.07 * math.sin(2 * math.pi * f * 2 * t)
         s *= env * (0.75 + 0.25 * math.sin(2 * math.pi * 0.04 * t))
-        s = max(-1.0, min(1.0, s * 0.28))
-        frames += struct.pack("<h", int(s * 28000))
+        s = max(-1.0, min(1.0, s * 0.55))
+        frames += struct.pack("<h", int(s * 30000))
     dest.parent.mkdir(parents=True, exist_ok=True)
     with wave.open(str(dest), "w") as w:
         w.setnchannels(1)

@@ -107,7 +107,18 @@ def montar_slideshow(
     fade = min(0.5, max(0.25, float(fade_sec)), seg / 3)
     vol = max(0.0, min(0.22, float(music_volume)))
     music = musica_fondo if musica_fondo and musica_fondo.is_file() else None
+    if music is None:
+        try:
+            from src.documentary.music_bed import documentary_bed_path
+
+            bed = documentary_bed_path()
+            if bed.is_file():
+                music = bed
+        except Exception:
+            music = None
+    vol = max(0.12, min(0.40, float(vol) * 2.8))
     looks = [look, "none"] if str(look or "soft") != "none" else ["none"]
+    last = None
     if editorial:
         for lk in looks:
             try:
@@ -115,9 +126,8 @@ def montar_slideshow(
                     ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
                     duration_sec, motion, transition, fps=fps, crf=crf, preset=preset, look=lk,
                 )
-            except Exception:
-                continue
-    last = None
+            except Exception as e:
+                last = e
     for lk in looks:
         try:
             return _slideshow_concat(
@@ -139,24 +149,25 @@ def _vignette_vf(look: str) -> str:
     if k in ("none", "off", "0"):
         return ""
     if k in ("film", "strong", "cine"):
-        return ",vignette=angle=PI/5"
-    return ",vignette=angle=PI/4"
+        return ",vignette=angle=PI/3.2"
+    return ",vignette=angle=PI/2.8"
 
 
 def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
+    last = max(1, d - 1)
     if k == "pull":
-        z = "if(eq(on,1),1.14,max(1.0,zoom-0.0015))"
+        z = "if(eq(on,1),1.14,max(1.0,zoom-0.0024))"
         return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     if k == "pan":
         return (
-            f"zoompan=z=1.10:x='(iw-iw/zoom)*on/{max(1, d - 1)}':"
+            f"zoompan=z=1.12:x='(iw-iw/zoom)*on/{last}':"
             f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
         )
     return (
-        f"zoompan=z='min(zoom+0.0015,1.14)':x='iw/2-(iw/zoom/2)':"
+        f"zoompan=z='min(zoom+0.0024,1.14)':x='iw/2-(iw/zoom/2)':"
         f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     )
 
@@ -184,35 +195,43 @@ def _slideshow_editorial(
 
     fps = max(12, min(30, int(fps)))
     frames = max(8, int(round(seg * fps)))
-    fade = 0.35 if transition == "fade" else 0.0
+    fade = 0.45 if transition == "fade" else 0.0
     tmp = Path(tempfile.mkdtemp(prefix="ff-edit-"))
-    batches: list[Path] = []
-    chunk = 4 if width >= 1920 else 5
+    clips: list[Path] = []
     try:
-        for start in range(0, len(imgs), chunk):
-            part = imgs[start : start + chunk]
-            bout = tmp / f"b{start:03d}.mp4"
-            _encode_still_batch(
-                ff, part, bout, seg, width, height, motion, fade, frames, start,
+        for i, img in enumerate(imgs):
+            clip = tmp / f"s{i:03d}.mp4"
+            _encode_one_still(
+                ff, img, clip, seg, width, height, motion, fade, frames, i,
                 fps=fps, crf=crf, preset=preset, look=look,
             )
-            batches.append(bout)
+            clips.append(clip)
         video_only = tmp / "video.mp4"
-        if len(batches) == 1:
-            video_only = batches[0]
+        if len(clips) == 1:
+            video_only = clips[0]
         else:
-            lst = tmp / "batches.txt"
-            lst.write_text("".join(f"file '{b.resolve().as_posix()}'\n" for b in batches), encoding="utf-8")
+            lst = tmp / "clips.txt"
+            lst.write_text("".join(f"file '{c.resolve().as_posix()}'\n" for c in clips), encoding="utf-8")
             cmd = [
                 ff, "-hide_banner", "-loglevel", "error", "-y",
                 "-f", "concat", "-safe", "0", "-i", str(lst),
-                "-c:v", "libx264", "-preset", preset, "-crf", str(crf), "-pix_fmt", "yuv420p",
-                "-an", "-movflags", "+faststart", str(video_only),
+                "-c", "copy", "-an", "-movflags", "+faststart", str(video_only),
             ]
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=40)
             if r.returncode != 0 or not mp4_is_complete(video_only):
-                raise RuntimeError(ffmpeg_error_text(r.stderr or "concat batches"))
-        _mix_voice_music(ff, video_only, audio, music, vol, output_path, duration_sec)
+                cmd = [
+                    ff, "-hide_banner", "-loglevel", "error", "-y",
+                    "-f", "concat", "-safe", "0", "-i", str(lst),
+                    "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+                    "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(video_only),
+                ]
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=50)
+            if r.returncode != 0 or not mp4_is_complete(video_only):
+                raise RuntimeError(ffmpeg_error_text(r.stderr or "concat clips"))
+        try:
+            _mix_voice_music(ff, video_only, audio, music, vol, output_path, duration_sec)
+        except Exception:
+            _mix_voice_music(ff, video_only, audio, None, vol, output_path, duration_sec)
         if not mp4_is_complete(output_path):
             raise RuntimeError("editorial mix incomplete")
         return output_path
@@ -220,9 +239,9 @@ def _slideshow_editorial(
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def _encode_still_batch(
+def _encode_one_still(
     ff: str,
-    imgs: list[Path],
+    img: Path,
     out: Path,
     seg: float,
     width: int,
@@ -230,42 +249,37 @@ def _encode_still_batch(
     motion: str,
     fade: float,
     frames: int,
-    index0: int,
+    index: int,
     fps: int = 24,
     crf: int = 17,
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    parts: list[str] = []
-    src_w = 7200 if width >= 3000 else max(width * 2, 1920)
-    vig = _vignette_vf(look)
-    for i in range(len(imgs)):
-        zp = _ken_burns(motion, index0 + i, frames, width, height, fps=fps)
-        fo = max(0.08, seg - fade) if fade else 0
-        fades = (
-            f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
-            if fade
-            else ""
-        )
-        parts.append(
-            f"[{i}:v]scale={src_w}:-1,{zp}{fades}{vig},format=yuv420p,setsar=1[v{i}]"
-        )
-    concat = "".join(f"[v{i}]" for i in range(len(imgs)))
-    fc = ";".join(parts) + f";{concat}concat=n={len(imgs)}:v=1:a=0[vout]"
-    cmd = [ff, "-hide_banner", "-loglevel", "error", "-y"]
-    for p in imgs:
-        cmd.extend(["-loop", "1", "-t", f"{seg:.3f}", "-i", str(p.resolve())])
-    cmd.extend(
-        [
-            "-filter_complex", fc, "-map", "[vout]",
-            "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
-            "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(out),
-        ]
+    pre_w = int(width * 1.28)
+    pre_h = int(height * 1.28)
+    zp = _ken_burns(motion, index, frames, width, height, fps=fps)
+    fo = max(0.12, seg - fade) if fade else 0
+    fades = (
+        f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
+        if fade
+        else ""
     )
-    limit = 35 if width <= 1280 else 80
+    vig = _vignette_vf(look)
+    vf = (
+        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
+        f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
+    )
+    cmd = [
+        ff, "-hide_banner", "-loglevel", "error", "-y",
+        "-loop", "1", "-t", f"{seg:.3f}", "-i", str(img.resolve()),
+        "-vf", vf, "-t", f"{seg:.3f}",
+        "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
+        "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(out),
+    ]
+    limit = 22 if width <= 1280 else 55
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(out):
-        raise RuntimeError(ffmpeg_error_text(r.stderr or "still batch"))
+        raise RuntimeError(ffmpeg_error_text(r.stderr or "still clip"))
 
 
 def _mix_voice_music(
@@ -283,8 +297,9 @@ def _mix_voice_music(
         cmd.extend(
             [
                 "-filter_complex",
-                f"[1:a]volume=1[a1];[2:a]volume={vol:.3f}[a2];"
-                f"[a1][a2]amix=inputs=2:duration=first:dropout_transition=2[aout]",
+                "[1:a]aformat=sample_fmts=fltp:sample_rates=44100,volume=1[a1];"
+                f"[2:a]aformat=sample_fmts=fltp:sample_rates=44100,volume={vol:.3f}[a2];"
+                "[a1][a2]amix=inputs=2:duration=first:dropout_transition=2[aout]",
                 "-map", "0:v", "-map", "[aout]",
             ]
         )
@@ -401,8 +416,9 @@ def _slideshow_concat(
             [
                 "-filter_complex",
                 f"[0:v]{vf}[vout];"
-                f"[1:a]volume=1[a1];[2:a]volume={vol:.3f}[a2];"
-                f"[a1][a2]amix=inputs=2:duration=first[aout]",
+                "[1:a]aformat=sample_fmts=fltp:sample_rates=44100,volume=1[a1];"
+                f"[2:a]aformat=sample_fmts=fltp:sample_rates=44100,volume={vol:.3f}[a2];"
+                "[a1][a2]amix=inputs=2:duration=first[aout]",
                 "-map", "[vout]", "-map", "[aout]",
             ]
         )

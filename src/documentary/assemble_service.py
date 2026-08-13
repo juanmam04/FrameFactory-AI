@@ -366,6 +366,14 @@ def _resolve_music(project: dict[str, Any]) -> Path | None:
         if env_m and Path(env_m).is_file():
             return Path(env_m)
     except Exception:
+        pass
+    try:
+        from src.documentary.music_bed import documentary_bed_path
+
+        bed = documentary_bed_path()
+        if bed.is_file() and bed.stat().st_size > 0:
+            return bed
+    except Exception:
         return None
     return None
 
@@ -437,13 +445,13 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         width=1280,
         height=720,
         musica_fondo=_resolve_music(project),
-        music_volume=float(edit["music_volume"]),
+        music_volume=max(0.08, float(edit["music_volume"])),
         duration_sec=dur,
         motion=str(edit["motion"]),
         transition=str(edit["transition"]),
-        fps=20,
-        crf=23,
-        preset="ultrafast",
+        fps=24,
+        crf=20,
+        preset="veryfast",
         editorial=True,
         look=str(edit.get("look") or "soft"),
     )
