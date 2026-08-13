@@ -221,7 +221,13 @@ function render() {
 function renderHome() {
   const b = state.bootstrap;
   const s = b.stats;
-  const pct = Math.min(100, Math.round((s.day / Math.max(1, s.goal)) * 100));
+  const goal = Math.max(1, s.goal || 100);
+  const pct = Math.min(100, Math.round((s.day / goal) * 100));
+  const ringC = 2 * Math.PI * 54;
+  const ringDash = (pct / 100) * ringC;
+  const ticks = Array.from({ length: goal }, (_, i) =>
+    `<i class="${i < s.day ? "on" : ""}${ (i + 1) % 10 === 0 ? " mark" : "" }"></i>`
+  ).join("");
   stage().innerHTML = `
     <section class="hero">
       <div class="panel soft">
@@ -246,8 +252,31 @@ function renderHome() {
         <p id="sync-msg" class="lead" style="font-size:0.85rem;min-height:1.2em;opacity:.9"></p>
       </div>
       <div class="day-card">
-        <div class="label">Challenge progress · ${pct}%</div>
-        <div class="big">${String(s.day).padStart(2, "0")}<span style="opacity:.45;font-size:.45em"> / ${s.goal}</span></div>
+        <div class="day-card-glow" aria-hidden="true"></div>
+        <div class="day-card-top">
+          <span>100-day challenge</span>
+          <span>${pct}%</span>
+        </div>
+        <div class="day-dial">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="dayGlow" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#5eead4"/>
+                <stop offset="100%" stop-color="#e8c98a"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
+            <circle cx="60" cy="60" r="54" fill="none" stroke="url(#dayGlow)" stroke-width="3.5"
+              stroke-linecap="round" stroke-dasharray="${ringDash} ${ringC}" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="day-dial-num">
+            <em>Day</em>
+            <strong>${String(s.day).padStart(2, "0")}</strong>
+          </div>
+        </div>
+        <p class="day-of">of ${s.goal} cinematic stories</p>
+        <div class="day-ticks" aria-hidden="true">${ticks}</div>
+        <p class="day-tagline">One true story a day</p>
         <div class="meta">
           <div><span>Done</span><strong>${s.completed}</strong></div>
           <div><span>Active</span><strong>${s.in_progress}</strong></div>
