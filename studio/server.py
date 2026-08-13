@@ -198,7 +198,10 @@ def create_app() -> FastAPI:
                 f"<pre>Missing {html_path}. Vercel bundle did not include studio/templates.</pre>",
                 status_code=500,
             )
-        return HTMLResponse(html_path.read_text(encoding="utf-8"))
+        return HTMLResponse(
+            html_path.read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
 
     @app.get("/health")
     def health():
