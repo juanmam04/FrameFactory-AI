@@ -96,7 +96,7 @@ def _reject_heavy_on_vercel() -> None:
     if on_vercel():
         raise HTTPException(
             400,
-            "Voice and render need FFmpeg on your Mac. Run `npm run dev` locally, then Push to Supabase.",
+            "El video final necesita FFmpeg en tu Mac. La voz sí se genera acá. Para el render: npm run dev.",
         )
 
 
@@ -142,7 +142,7 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
             and pid
             and path.startswith("/api/")
         ):
-            if path.endswith("/step") or "/images/upload" in path:
+            if path.endswith("/step") or "/images/upload" in path or path.endswith("/voice"):
                 if path.endswith("/step"):
                     _sync_safe(lambda: cloud_sync.push_paths(pid, ["project.json"]))
             elif request.method == "DELETE" and "/images" in path:
@@ -640,9 +640,20 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
+    @app.get("/api/projects/{project_id}/audio")
+    def audio_file(project_id: str):
+        path = project_dir(project_id) / "audio" / "narration.mp3"
+        if not path.is_file() or path.stat().st_size <= 0:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, "audio/narration.mp3")
+        if path.is_file() and path.stat().st_size > 0:
+            return FileResponse(path, media_type="audio/mpeg")
+        raise HTTPException(404, "No hay narración todavía")
+
     @app.post("/api/projects/{project_id}/voice")
     def voice_generate(project_id: str):
-        _reject_heavy_on_vercel()
         try:
             from src.documentary.voice_service import generate_project_voice
 
@@ -650,6 +661,15 @@ def create_app() -> FastAPI:
             p = load_project(project_id)
             p["ui_step"] = "render"
             save_project(p)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id, ["project.json", "audio/narration.mp3"]
+                        )
+                    )
             return {"project": _project_full(p)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e

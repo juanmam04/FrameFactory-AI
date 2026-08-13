@@ -1190,28 +1190,29 @@ function onVercel() {
 
 function paintVoice(ws, p) {
   const dur = p.voice?.duration_sec;
-  if (onVercel()) {
-    ws.innerHTML = `
-      <div class="panel workspace">
-        <p class="lead">Voice runs on your Mac (FFmpeg / TTS). Open Studio locally with <code>npm run dev</code>, generate voice, then Push to Supabase.</p>
-      </div>`;
-    return;
-  }
+  const ready = !!(p.voice?.path || p.checkpoints?.voice_ready);
+  const clock = dur
+    ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, "0")}`
+    : "";
   ws.innerHTML = `
     <div class="panel workspace">
-      <p class="lead">${dur ? `Voice ready · ${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, "0")}` : "Generate one continuous narration track."}</p>
+      <h2 style="margin-top:0">Voz</h2>
+      <p class="lead">${ready
+        ? `Narración lista${clock ? ` · ${clock}` : ""}.`
+        : "Generá la narración acá (OpenAI / ElevenLabs). El video final se arma en tu Mac."}</p>
+      ${ready ? `<audio controls src="/api/projects/${encodeURIComponent(p.id)}/audio?t=${Date.now()}" style="width:min(100%,640px);margin:0.4rem 0 1rem;display:block"></audio>` : ""}
       <div class="actions">
-        <button class="btn btn-accent" id="gen-voice">Generate voice</button>
-        <button class="btn btn-primary" id="to-render">Continue to render</button>
+        <button class="btn btn-accent" id="gen-voice">${ready ? "Volver a generar voz" : "Generar voz"}</button>
+        <button class="btn btn-primary" id="to-render">Seguir</button>
       </div>
     </div>`;
   $("#gen-voice").onclick = async () => {
     try {
-      const data = await withBusy("Generating narration…", () =>
+      const data = await withBusy("Generando narración…", () =>
         api(`/api/projects/${encodeURIComponent(p.id)}/voice`, { method: "POST" })
       );
       state.project = data.project;
-      toast("Voice ready");
+      toast("Voz lista");
       renderProject();
     } catch (e) {
       toast(e.message);
@@ -1232,7 +1233,7 @@ function paintRender(ws, p) {
   if (onVercel()) {
     ws.innerHTML = `
       <div class="panel workspace">
-        <p class="lead">Render runs on your Mac. <code>npm run dev</code> → Render video → Push to Supabase so the other PCs see the episode.</p>
+        <p class="lead">El video final (FFmpeg) se arma en tu Mac: <code>npm run dev</code> → Render video. La voz ya la podés generar en esta web.</p>
         <div class="actions">
           <button class="btn btn-primary" id="home">Back to home</button>
         </div>

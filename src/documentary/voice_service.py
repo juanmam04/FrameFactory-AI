@@ -18,8 +18,8 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     if not project.get("script_approved"):
         raise ValueError("Approve the script before generating voice.")
 
-    oa = check_openai(live=True)
-    el = check_elevenlabs(live=True)
+    oa = check_openai(live=False)
+    el = check_elevenlabs(live=False)
     if oa.status != "ok" and el.status != "ok":
         details = []
         if oa.status != "ok":
