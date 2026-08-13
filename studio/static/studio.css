@@ -59,16 +59,21 @@ button { cursor: pointer; }
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.85rem 1.5rem;
-  padding-left: max(1.5rem, env(safe-area-inset-left));
-  padding-right: max(1.5rem, env(safe-area-inset-right));
-  padding-top: max(0.85rem, env(safe-area-inset-top));
   backdrop-filter: blur(16px);
   background: rgba(244, 246, 248, 0.82);
   border-bottom: 1px solid var(--line);
+  padding: 1.15rem clamp(1.5rem, 4.5vw, 2.75rem);
+  padding-left: max(clamp(1.5rem, 4.5vw, 2.75rem), env(safe-area-inset-left));
+  padding-right: max(clamp(1.5rem, 4.5vw, 2.75rem), env(safe-area-inset-right));
+  padding-top: max(1.15rem, env(safe-area-inset-top));
+}
+.top-inner {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 .top-brand {
   display: flex;
@@ -117,7 +122,7 @@ button { cursor: pointer; }
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
-  padding: 2rem 1rem 5.5rem;
+  padding: 2rem clamp(1.5rem, 4.5vw, 2.75rem) 5.5rem;
   animation: rise 420ms var(--ease) both;
 }
 @keyframes rise {
@@ -575,12 +580,14 @@ code { word-break: break-all; }
 @media (max-width: 860px) {
   .hero { grid-template-columns: minmax(0, 1fr); }
   .top {
+    padding: 1rem 1.35rem;
+    padding-left: max(1.35rem, env(safe-area-inset-left));
+    padding-right: max(1.35rem, env(safe-area-inset-right));
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  .top-inner {
     flex-wrap: wrap;
-    gap: 0.65rem 0.85rem;
-    padding: 0.7rem 1rem;
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
-    padding-top: max(0.7rem, env(safe-area-inset-top));
+    gap: 0.75rem 1rem;
   }
   .top-brand { min-width: 0; }
   .top-nav {

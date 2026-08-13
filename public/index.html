@@ -11,27 +11,29 @@
   <meta name="format-detection" content="telephone=no"/>
   <title>FrameFactory Studio</title>
   <link rel="manifest" href="/assets/manifest.webmanifest"/>
-  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg?v=20260814k"/>
-  <link rel="icon" type="image/png" href="/assets/logo.png?v=20260814k"/>
-  <link rel="apple-touch-icon" href="/assets/logo.png?v=20260814k"/>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg?v=20260814m"/>
+  <link rel="icon" type="image/png" href="/assets/logo.png?v=20260814m"/>
+  <link rel="apple-touch-icon" href="/assets/logo.png?v=20260814m"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/studio.css?v=20260814k"/>
+  <link rel="stylesheet" href="/assets/studio.css?v=20260814m"/>
 </head>
 <body>
   <div id="app">
     <header class="top">
-      <div class="top-brand" data-go="home">
-        <strong>FrameFactory</strong>
-        <small>100 Days Studio</small>
+      <div class="top-inner">
+        <div class="top-brand" data-go="home">
+          <strong>FrameFactory</strong>
+          <small>100 Days Studio</small>
+        </div>
+        <nav class="top-nav">
+          <button type="button" data-go="home" class="nav-link active">Home</button>
+          <button type="button" data-go="ideas" class="nav-link">New episode</button>
+          <button type="button" data-go="library" class="nav-link">Library</button>
+        </nav>
+        <div class="top-status" id="cred-pills"></div>
       </div>
-      <nav class="top-nav">
-        <button type="button" data-go="home" class="nav-link active">Home</button>
-        <button type="button" data-go="ideas" class="nav-link">New episode</button>
-        <button type="button" data-go="library" class="nav-link">Library</button>
-      </nav>
-      <div class="top-status" id="cred-pills"></div>
     </header>
 
     <main id="stage" class="stage"></main>
@@ -44,6 +46,6 @@
       </div>
     </div>
   </div>
-  <script src="/assets/studio.js?v=20260814k" type="module"></script>
+  <script src="/assets/studio.js?v=20260814m" type="module"></script>
 </body>
 </html>
