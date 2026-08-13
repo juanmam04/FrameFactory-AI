@@ -91,6 +91,7 @@ def montar_slideshow(
     crf: int = 17,
     preset: str = "veryfast",
     editorial: bool = True,
+    look: str = "soft",
 ) -> Path:
     """Stills + narration + Ken Burns + fades. Falls back to concat if the editorial pass fails."""
     ff = ffmpeg_exe()
@@ -106,18 +107,40 @@ def montar_slideshow(
     fade = min(0.5, max(0.25, float(fade_sec)), seg / 3)
     vol = max(0.0, min(0.22, float(music_volume)))
     music = musica_fondo if musica_fondo and musica_fondo.is_file() else None
+    looks = [look, "none"] if str(look or "soft") != "none" else ["none"]
     if editorial:
+        for lk in looks:
+            try:
+                return _slideshow_editorial(
+                    ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
+                    duration_sec, motion, transition, fps=fps, crf=crf, preset=preset, look=lk,
+                )
+            except Exception:
+                continue
+    last = None
+    for lk in looks:
         try:
-            return _slideshow_editorial(
-                ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
-                duration_sec, motion, transition, fps=fps, crf=crf, preset=preset,
+            return _slideshow_concat(
+                ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec,
+                fps=fps, crf=crf, preset=preset, look=lk,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            last = e
+    if last:
+        raise last
     return _slideshow_concat(
         ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec,
-        fps=fps, crf=crf, preset=preset,
+        fps=fps, crf=crf, preset=preset, look="none",
     )
+
+
+def _vignette_vf(look: str) -> str:
+    k = str(look or "soft").strip().lower()
+    if k in ("none", "off", "0"):
+        return ""
+    if k in ("film", "strong", "cine"):
+        return ",vignette=angle=PI/5"
+    return ",vignette=angle=PI/4"
 
 
 def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
@@ -154,6 +177,7 @@ def _slideshow_editorial(
     fps: int = 24,
     crf: int = 17,
     preset: str = "veryfast",
+    look: str = "soft",
 ) -> Path:
     """Ken Burns + per-still fades, in batches so Vercel does not die on 70 inputs."""
     import tempfile
@@ -170,7 +194,7 @@ def _slideshow_editorial(
             bout = tmp / f"b{start:03d}.mp4"
             _encode_still_batch(
                 ff, part, bout, seg, width, height, motion, fade, frames, start,
-                fps=fps, crf=crf, preset=preset,
+                fps=fps, crf=crf, preset=preset, look=look,
             )
             batches.append(bout)
         video_only = tmp / "video.mp4"
@@ -210,9 +234,11 @@ def _encode_still_batch(
     fps: int = 24,
     crf: int = 17,
     preset: str = "veryfast",
+    look: str = "soft",
 ) -> None:
     parts: list[str] = []
-    src_w = 7200 if width >= 3000 else 4200
+    src_w = 7200 if width >= 3000 else max(width * 2, 1920)
+    vig = _vignette_vf(look)
     for i in range(len(imgs)):
         zp = _ken_burns(motion, index0 + i, frames, width, height, fps=fps)
         fo = max(0.08, seg - fade) if fade else 0
@@ -222,7 +248,7 @@ def _encode_still_batch(
             else ""
         )
         parts.append(
-            f"[{i}:v]scale={src_w}:-1,{zp}{fades},format=yuv420p,setsar=1[v{i}]"
+            f"[{i}:v]scale={src_w}:-1,{zp}{fades}{vig},format=yuv420p,setsar=1[v{i}]"
         )
     concat = "".join(f"[v{i}]" for i in range(len(imgs)))
     fc = ";".join(parts) + f";{concat}concat=n={len(imgs)}:v=1:a=0[vout]"
@@ -236,7 +262,8 @@ def _encode_still_batch(
             "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(out),
         ]
     )
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=80)
+    limit = 35 if width <= 1280 else 80
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(out):
         raise RuntimeError(ffmpeg_error_text(r.stderr or "still batch"))
 
@@ -347,6 +374,7 @@ def _slideshow_concat(
     fps: int = 24,
     crf: int = 17,
     preset: str = "veryfast",
+    look: str = "soft",
 ) -> Path:
     list_file = output_path.with_suffix(".concat.txt")
     with list_file.open("w", encoding="utf-8") as fh:
@@ -363,7 +391,8 @@ def _slideshow_concat(
     fade_out_at = max(0.4, total - 0.4)
     vf = (
         f"scale={width}:{height}:force_original_aspect_ratio=increase,"
-        f"crop={width}:{height},fps={max(12, min(30, int(fps)))},format=yuv420p,"
+        f"crop={width}:{height},fps={max(12, min(30, int(fps)))},format=yuv420p"
+        f"{_vignette_vf(look)},"
         f"fade=t=in:st=0:d=0.35,fade=t=out:st={fade_out_at:.2f}:d=0.35"
     )
     if music is not None:
@@ -388,7 +417,8 @@ def _slideshow_concat(
             str(output_path),
         ]
     )
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
+    limit = 45 if (duration_sec or 0) < 30 else 240
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     list_file.unlink(missing_ok=True)
     if result.returncode != 0 or not mp4_is_complete(output_path):
         if output_path.is_file() and not mp4_is_complete(output_path):

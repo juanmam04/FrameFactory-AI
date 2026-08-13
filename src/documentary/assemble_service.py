@@ -55,6 +55,7 @@ DEFAULT_EDIT = {
     "motion": "mix",
     "transition": "fade",
     "music_volume": 0.08,
+    "look": "soft",
 }
 
 
@@ -72,11 +73,15 @@ def edit_settings(project: dict[str, Any]) -> dict[str, Any]:
         trans = "fade"
     vol = float(rec.get("music_volume") or 0.08)
     vol = min(0.18, max(0.04, vol))
+    look = str(rec.get("look") or "soft")
+    if look not in ("none", "soft", "film"):
+        look = "soft"
     return {
         "seconds_per_image": sec,
         "motion": motion,
         "transition": trans,
         "music_volume": vol,
+        "look": look,
     }
 
 
@@ -223,6 +228,7 @@ def assemble_and_render(
             crf=crf,
             preset=preset,
             editorial=editorial,
+            look=str(edit.get("look") or "soft"),
         )
         if not mp4_is_complete(Path(result)):
             Path(result).unlink(missing_ok=True)
@@ -303,16 +309,43 @@ def _resolve_music(project: dict[str, Any]) -> Path | None:
     return None
 
 
+def _pull_preview_assets(project_id: str) -> None:
+    """Don't pull the whole still library just to test 20 seconds."""
+    from src.documentary import cloud_sync
+    from src.documentary.import_images import list_project_images
+
+    if not cloud_sync.configured():
+        return
+    cloud_sync.pull_one(project_id, "audio/narration.mp3")
+    if len(list_project_images(project_id)) >= 3:
+        return
+    try:
+        rels = cloud_sync.list_rel_paths(project_id, "images/")
+    except Exception:
+        rels = []
+    n = 0
+    for rel in sorted(rels):
+        low = rel.lower()
+        if ".thumb." in low:
+            continue
+        if not low.endswith((".jpg", ".jpeg", ".png", ".webp")):
+            continue
+        cloud_sync.pull_one(project_id, rel)
+        n += 1
+        if n >= 6:
+            break
+
+
 def assemble_preview_clip(project: dict[str, Any]) -> Path:
-    """~20s editorial test: 4 stills, Ken Burns, transitions, music, first seconds of VO."""
+    """~20s editorial test: few stills, Ken Burns, vignette, music, first seconds of VO."""
     from src.documentary.runtime import on_vercel
 
     pid = str(project["id"])
     if on_vercel():
-        _pull_render_assets(pid)
+        _pull_preview_assets(pid)
     if not verificar_ffmpeg():
         raise RuntimeError("No hay FFmpeg en este servidor.")
-    images, missing = ordered_images_for_render(pid)
+    images, _missing = ordered_images_for_render(pid)
     if not images:
         raise RuntimeError("Subí imágenes antes de probar el render.")
     audio = project_dir(pid) / "audio" / "narration.mp3"
@@ -331,8 +364,8 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     while len(uniq) < 3:
         uniq.append(images[len(uniq) % len(images)])
     edit = edit_settings(project)
-    sec = float(edit["seconds_per_image"])
-    dur = sec * len(uniq)
+    sec = min(5.0, float(edit["seconds_per_image"]))
+    dur = min(20.0, sec * len(uniq))
     out = project_dir(pid) / "render" / "preview.mp4"
     out.parent.mkdir(parents=True, exist_ok=True)
     montar_slideshow(
@@ -340,17 +373,18 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         audio,
         out,
         segundos_por_imagen=sec,
-        width=1920,
-        height=1080,
+        width=1280,
+        height=720,
         musica_fondo=_resolve_music(project),
         music_volume=float(edit["music_volume"]),
         duration_sec=dur,
         motion=str(edit["motion"]),
         transition=str(edit["transition"]),
-        fps=24,
-        crf=18,
-        preset="veryfast",
+        fps=20,
+        crf=23,
+        preset="ultrafast",
         editorial=True,
+        look=str(edit.get("look") or "soft"),
     )
     if not mp4_is_complete(out):
         raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")

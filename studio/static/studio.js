@@ -40,7 +40,7 @@ async function api(path, opts = {}) {
     if (name === "AbortError" || name === "TimeoutError") {
       throw new Error("Se cortó la espera. Si el video quedó, va a aparecer para descargar.");
     }
-    throw new Error(e?.message || "Failed to fetch");
+    throw new Error("No se pudo conectar. Probá de nuevo.");
   }
   const raw = await res.text();
   let data = null;
@@ -1559,6 +1559,7 @@ function grabEditFromDom() {
     motion: document.getElementById("edit-motion")?.value || "mix",
     transition: document.getElementById("edit-trans")?.value || "fade",
     music_volume: Number(document.getElementById("edit-vol")?.value || 0.08),
+    look: document.getElementById("edit-look")?.value || "soft",
   };
 }
 
@@ -1576,6 +1577,7 @@ function paintRender(ws, p) {
       motion: "mix",
       transition: "fade",
       music_volume: 0.08,
+      look: "soft",
     };
     paintRender._edit = edit;
     const kind = st.state || (st.ready ? "done" : "idle");
@@ -1594,7 +1596,7 @@ function paintRender(ws, p) {
 
       <div class="panel soft" style="margin:1rem 0 1.2rem">
         <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
-        <p class="lead" style="margin:0 0 0.8rem">Zoom lento, transición entre fotos, música. Armá 20 segundos y mirá cómo queda.</p>
+        <p class="lead" style="margin:0 0 0.8rem">Zoom, fundido, viñeta en los bordes, música. Armá 20 segundos y mirá cómo queda.</p>
         <div class="actions" style="flex-wrap:wrap;gap:0.7rem;align-items:end">
           <label class="field" style="margin:0;min-width:8rem">Segundos por foto
             <select id="edit-sec">
@@ -1625,9 +1627,16 @@ function paintRender(ws, p) {
               <option value="0.12" ${opt(0.12, edit.music_volume)}>Un poco más</option>
             </select>
           </label>
+          <label class="field" style="margin:0;min-width:11rem">Bordes
+            <select id="edit-look">
+              <option value="none" ${opt("none", edit.look)}>Sin viñeta</option>
+              <option value="soft" ${opt("soft", edit.look || "soft")}>Oscurecer bordes</option>
+              <option value="film" ${opt("film", edit.look)}>Cine (más marcado)</option>
+            </select>
+          </label>
         </div>
         <div class="actions" style="margin-top:0.8rem">
-          <button class="btn btn-soft" id="try-edit" ${running ? "disabled" : ""}>Probar 20 segundos</button>
+          <button class="btn btn-soft" id="try-edit" ${running || paintRender._previewWait ? "disabled" : ""}>${paintRender._previewWait ? "Armando prueba…" : "Probar 20 segundos"}</button>
         </div>
         ${hasPrev ? `<video controls src="/api/projects/${id}/video/preview?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.8rem 0 0"></video>` : ""}
       </div>
@@ -1658,16 +1667,32 @@ function paintRender(ws, p) {
           method: "PUT",
           body: JSON.stringify(body),
         });
-        await withBusy("Armando 20 segundos de prueba…", () =>
-          api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 90000 })
-        );
-        paintRender._hasPreview = true;
-        toast("Prueba lista — mirá el clip");
-        const nxt = await api(`/api/projects/${id}/video/status`);
-        paint({ ...nxt, preview: true });
-      } catch (e) {
-        toast(e.message);
-      }
+      } catch {}
+      paintRender._previewWait = true;
+      paint({ ...st, preview: hasPrev });
+      toast("Armando 20 segundos…");
+      api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 50000 }).catch(() => {});
+      const t0 = Date.now();
+      const tickPrev = async () => {
+        try {
+          const nxt = await api(`/api/projects/${id}/video/status`);
+          if (nxt.preview) {
+            paintRender._previewWait = false;
+            paintRender._hasPreview = true;
+            toast("Prueba lista — mirá el clip");
+            paint({ ...nxt, preview: true });
+            return;
+          }
+        } catch {}
+        if (Date.now() - t0 > 50000) {
+          paintRender._previewWait = false;
+          toast("La prueba no terminó. Probá de nuevo.");
+          paint(st);
+          return;
+        }
+        setTimeout(tickPrev, 2000);
+      };
+      setTimeout(tickPrev, 2000);
     };
     $("#render").onclick = async () => {
       const body = grabEditFromDom() || paintRender._edit;

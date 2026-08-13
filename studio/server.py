@@ -1026,6 +1026,7 @@ def create_app() -> FastAPI:
                     "motion": body.motion,
                     "transition": body.transition,
                     "music_volume": body.music_volume,
+                    "look": body.look,
                 },
             )
             if on_vercel():
@@ -1300,6 +1301,7 @@ class RenderEditBody(BaseModel):
     motion: str | None = None
     transition: str | None = None
     music_volume: float | None = None
+    look: str | None = None
 
 
 def _err(e: BaseException) -> str:
