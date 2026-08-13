@@ -196,6 +196,7 @@ def pull_project(project_id: str, *, light: bool = False) -> dict[str, Any]:
     for rel, digest, content in rows:
         rel_s = str(rel)
         if light and not any(rel_s == p or rel_s.startswith(p) for p in _LIGHT_PREFIXES):
+            continue
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
