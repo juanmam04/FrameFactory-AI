@@ -41,6 +41,7 @@ from src.documentary.import_images import (
     delete_project_image,
     import_images,
     import_uploaded_images,
+    still_file,
     _refresh_after_image_delete,
 )
 from src.documentary.visual_plan import (
@@ -539,14 +540,17 @@ def create_app() -> FastAPI:
     @app.get("/api/projects/{project_id}/images/{number}")
     def image_file(project_id: str, number: int):
         root = project_dir(project_id) / "images"
-        name = f"{int(number):03d}.png"
-        path = root / name
-        if not path.is_file() or path.stat().st_size <= 0:
+        path = still_file(root, number)
+        if path is None:
             from src.documentary import cloud_sync
 
             if cloud_sync.configured():
-                cloud_sync.pull_one(project_id, f"images/{name}")
-        if path.is_file() and path.stat().st_size > 0:
+                n = int(number)
+                for name in (f"{n:03d}.jpg", f"{n:03d}.png", f"{n:03d}.webp", f"{n:03d}.jpeg"):
+                    if cloud_sync.pull_one(project_id, f"images/{name}"):
+                        path = still_file(root, number)
+                        break
+        if path is not None:
             return FileResponse(path)
         raise HTTPException(404, f"No image {int(number):03d}")
 
@@ -583,24 +587,19 @@ def create_app() -> FastAPI:
                 payload,
                 force_number=force_number,
             )
-            sync = sync_ready_from_disk(project_id)
             if on_vercel():
                 from src.documentary import cloud_sync
 
-                rels = ["project.json"]
-                for n in report.get("imported_numbers") or []:
-                    try:
-                        rels.append(f"images/{int(n):03d}.png")
-                    except (TypeError, ValueError):
-                        continue
-                if force_number is not None:
-                    rels.append(f"images/{int(force_number):03d}.png")
-                if cloud_sync.configured():
+                rels = list(report.get("stored") or [])
+                if not rels and force_number is not None:
+                    found = still_file(project_dir(project_id) / "images", force_number)
+                    if found is not None:
+                        rels = [f"images/{found.name}"]
+                if cloud_sync.configured() and rels:
                     _sync_safe(lambda: cloud_sync.push_paths(project_id, rels))
             return {
                 "ok": True,
                 "report": report,
-                "sync": sync,
             }
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
@@ -612,7 +611,11 @@ def create_app() -> FastAPI:
             from src.documentary import cloud_sync
 
             if cloud_sync.configured():
-                cloud_sync.delete_paths(project_id, [f"images/{int(number):03d}.png"])
+                n = int(number)
+                cloud_sync.delete_paths(
+                    project_id,
+                    [f"images/{n:03d}{ext}" for ext in (".jpg", ".jpeg", ".png", ".webp")],
+                )
             result = delete_project_image(project_id, number)
             sync = _refresh_after_image_delete(p)
             if on_vercel() and cloud_sync.configured():

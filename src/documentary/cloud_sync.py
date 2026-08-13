@@ -123,14 +123,6 @@ def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, 
                 data = path.read_bytes()
                 digest = _sha256(data)
                 cur.execute(
-                    "SELECT sha256 FROM ff_blobs WHERE project_id = %s AND rel_path = %s",
-                    (project_id, rel),
-                )
-                row = cur.fetchone()
-                if row and row[0] == digest:
-                    skipped += 1
-                    continue
-                cur.execute(
                     """
                     INSERT INTO ff_blobs (project_id, rel_path, sha256, content, updated_at)
                     VALUES (%s, %s, %s, %s, NOW())

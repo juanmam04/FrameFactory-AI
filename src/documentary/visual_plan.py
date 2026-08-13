@@ -379,7 +379,7 @@ def summarize_visuals(
     }
 
 
-def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
+def sync_ready_from_disk(project_id: str, *, check_remote: bool = True) -> dict[str, Any]:
     root = project_dir(project_id)
     images = root / "images"
     plan_path = root / "flow-pack" / "visual-plan.json"
@@ -395,19 +395,22 @@ def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
         visuals = json.loads(shot_path.read_text(encoding="utf-8")).get("shots") or []
 
     remote_nums: set[int] = set()
-    try:
-        from src.documentary import cloud_sync
+    if check_remote:
+        try:
+            from src.documentary import cloud_sync
 
-        if cloud_sync.configured():
-            for rel in cloud_sync.list_rel_paths(project_id, "images/"):
-                stem = Path(rel).stem
-                if stem.isdigit():
-                    remote_nums.add(int(stem))
-    except Exception:
-        pass
+            if cloud_sync.configured():
+                for rel in cloud_sync.list_rel_paths(project_id, "images/"):
+                    stem = Path(rel).stem
+                    if stem.isdigit():
+                        remote_nums.add(int(stem))
+        except Exception:
+            pass
+
+    from src.documentary.import_images import still_file
 
     def _has(num: int) -> bool:
-        return (images / f"{num:03d}.png").exists() or num in remote_nums
+        return still_file(images, num) is not None or num in remote_nums
 
     for v in visuals:
         num = int(v.get("number") or 0)

@@ -11,6 +11,39 @@ from src.documentary.flow_pack import load_shot_list
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 
 _NUM_RE = re.compile(r"^(\d{1,4})\.(png|jpg|jpeg|webp)$", re.I)
+_STILL_EXTS = (".jpg", ".jpeg", ".png", ".webp")
+
+
+def still_file(images_dir: Path, number: int) -> Path | None:
+    n = int(number)
+    for ext in _STILL_EXTS:
+        path = images_dir / f"{n:03d}{ext}"
+        if path.is_file() and path.stat().st_size > 0:
+            return path
+    return None
+
+
+def write_compressed_still(dest_root: Path, num: int, data: bytes, filename: str = "") -> Path:
+    """Store a YouTube-sized JPEG so uploads stay small and fast."""
+    dest_root.mkdir(parents=True, exist_ok=True)
+    dest = dest_root / f"{int(num):03d}.jpg"
+    suffix = Path(filename or "").suffix.lower()
+    if suffix in {".jpg", ".jpeg"} and len(data) <= 850_000:
+        dest.write_bytes(data)
+    else:
+        import io
+
+        from PIL import Image
+
+        with Image.open(io.BytesIO(data)) as im:
+            rgb = im.convert("RGB")
+            rgb.thumbnail((1920, 1080), Image.LANCZOS)
+            rgb.save(dest, format="JPEG", quality=82)
+    for ext in _STILL_EXTS:
+        extra = dest_root / f"{int(num):03d}{ext}"
+        if extra != dest and extra.exists():
+            extra.unlink()
+    return dest
 
 
 def import_images(
@@ -121,11 +154,9 @@ def import_uploaded_images(
 
     dest_root = project_dir(str(project["id"])) / "images"
     dest_root.mkdir(parents=True, exist_ok=True)
-    # Also keep a copy in flow-import for traceability
-    drop = project_dir(str(project["id"])) / "flow-import"
-    drop.mkdir(parents=True, exist_ok=True)
 
     imported_nums: list[int] = []
+    stored_rels: list[str] = []
     invalid: list[str] = []
     unknown: list[str] = []
     dim_issues: list[str] = []
@@ -159,32 +190,13 @@ def import_uploaded_images(
             continue
         seen.add(num)
 
-        drop_path = drop / f"{num:03d}{Path(name).suffix.lower() or '.png'}"
-        drop_path.write_bytes(data)
-        dest = dest_root / f"{num:03d}.png"
-        # Normalize to png via Pillow when possible; else raw copy
-        try:
-            from PIL import Image
-            import io
-
-            with Image.open(io.BytesIO(data)) as im:
-                rgb = im.convert("RGB") if im.mode not in ("RGB", "RGBA") else im
-                rgb.save(dest, format="PNG")
-        except Exception:
-            dest.write_bytes(data)
-
+        dest = write_compressed_still(dest_root, num, data, name)
         imported_nums.append(num)
-        issue = _dim_issue(dest, min_width)
-        if issue:
-            dim_issues.append(f"{num:03d}: {issue}")
+        stored_rels.append(f"images/{dest.name}")
 
     # Ready = existing files on disk after upload
     img_root = dest_root
-    ready_set = {
-        n
-        for n in expected_nums
-        if (img_root / f"{n:03d}.png").exists() and (img_root / f"{n:03d}.png").stat().st_size > 0
-    }
+    ready_set = {n for n in expected_nums if still_file(img_root, n)}
     missing = sorted(expected_nums - ready_set) if expected_nums else []
     ready = len(ready_set)
 
@@ -193,6 +205,7 @@ def import_uploaded_images(
         "ready": ready,
         "imported_files": len(imported_nums),
         "imported_numbers": [f"{n:03d}" for n in sorted(imported_nums)],
+        "stored": stored_rels,
         "missing": [f"{n:03d}" for n in missing],
         "duplicates": duplicates,
         "unknown_numbers": unknown,
@@ -208,11 +221,6 @@ def import_uploaded_images(
     else:
         project["ui_step"] = "images"
     save_project(project)
-    sync_shot_statuses_from_images(str(project["id"]))
-    append_log(
-        str(project["id"]),
-        f"upload import n={len(imported_nums)} ready={ready}/{expected_n} missing={len(missing)}",
-    )
     return report
 
 
@@ -246,11 +254,13 @@ def delete_project_image(project_id: str, number: int) -> dict[str, Any]:
     """Remove one still from disk (and caller should drop the Supabase blob)."""
     n = int(number)
     root = project_dir(project_id)
-    dest = root / "images" / f"{n:03d}.png"
+    img = root / "images"
     removed = False
-    if dest.is_file():
-        dest.unlink()
-        removed = True
+    for ext in _STILL_EXTS:
+        dest = img / f"{n:03d}{ext}"
+        if dest.is_file():
+            dest.unlink()
+            removed = True
     drop = root / "flow-import"
     if drop.is_dir():
         for extra in drop.glob(f"{n:03d}.*"):
@@ -265,9 +275,10 @@ def delete_all_project_images(project_id: str) -> dict[str, Any]:
     removed = 0
     img = root / "images"
     if img.is_dir():
-        for path in img.glob("*.png"):
-            path.unlink()
-            removed += 1
+        for path in img.iterdir():
+            if path.is_file() and path.suffix.lower() in _STILL_EXTS:
+                path.unlink()
+                removed += 1
     drop = root / "flow-import"
     if drop.is_dir():
         for extra in drop.iterdir():
@@ -296,7 +307,7 @@ def list_project_images(project_id: str) -> list[Path]:
     root = project_dir(project_id) / "images"
     if not root.exists():
         return []
-    return sorted(root.glob("*.png"))
+    return sorted(p for p in root.iterdir() if p.is_file() and p.suffix.lower() in _STILL_EXTS)
 
 
 def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
@@ -307,8 +318,8 @@ def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
     img_root = project_dir(project_id) / "images"
     for s in shots:
         n = int(s["number"])
-        p = img_root / f"{n:03d}.png"
-        if p.exists() and p.stat().st_size > 0:
+        p = still_file(img_root, n)
+        if p is not None:
             paths.append(p)
         else:
             missing.append(f"{n:03d}")

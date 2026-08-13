@@ -78,12 +78,13 @@ function pad3(n) {
   return String(n).padStart(3, "0");
 }
 
-function slotCard(v, projectId) {
+function slotCard(v, projectId, previewSrc = "") {
   const n = Number(v.number);
   const id = pad3(n);
   const has = String(v.status || "").toUpperCase() === "READY";
   const desc = v.description || v.action || v.acquisition_note || "";
   const kind = v.visual_type === "FLOW_REENACTMENT" ? "Google Flow" : "documento / foto real";
+  const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}`;
   return `
     <article class="shot" data-slot="${n}">
       <strong>Imagen ${id}</strong>
@@ -91,7 +92,7 @@ function slotCard(v, projectId) {
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
       <div class="slot-frame">
         ${has
-          ? `<img class="slot-thumb" src="/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}" alt="${id}" />`
+          ? `<img class="slot-thumb" src="${esc(src)}" alt="${id}" />`
           : `<div class="slot-placeholder">16:9</div>`}
       </div>
       <div class="slot-actions">
@@ -104,9 +105,9 @@ function slotCard(v, projectId) {
     </article>`;
 }
 
-function replaceSlotCard(card, projectId, v) {
+function replaceSlotCard(card, projectId, v, previewSrc = "") {
   const wrap = document.createElement("div");
-  wrap.innerHTML = slotCard(v, projectId);
+  wrap.innerHTML = slotCard(v, projectId, previewSrc);
   const next = wrap.firstElementChild;
   card.replaceWith(next);
   bindSlotUploads(next, projectId);
@@ -176,29 +177,36 @@ function bindSlotUploads(root, projectId) {
       fd.append("files", file, file.name);
       fd.append("force_number", String(n));
       const card = inp.closest("[data-slot]");
-      const label = inp.closest("label");
-      if (label) label.childNodes[0].textContent = "Subiendo… ";
-      inp.disabled = true;
-      try {
-        await api(`/api/projects/${encodeURIComponent(projectId)}/images/upload`, {
-          method: "POST",
-          body: fd,
+      const desc = [...(card?.querySelectorAll(".ff-episode-meta") || [])][1]?.textContent || "";
+      const previewSrc = URL.createObjectURL(file);
+      const next = replaceSlotCard(
+        card,
+        projectId,
+        { number: n, status: "READY", description: desc, visual_type: "FLOW_REENACTMENT" },
+        previewSrc
+      );
+      api(`/api/projects/${encodeURIComponent(projectId)}/images/upload`, {
+        method: "POST",
+        body: fd,
+      })
+        .then(() => {
+          toast(`${pad3(n)} lista`);
+          const img = next.querySelector(".slot-thumb");
+          if (img) {
+            img.src = `/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}`;
+          }
+          URL.revokeObjectURL(previewSrc);
+        })
+        .catch((e) => {
+          toast(e.message);
+          replaceSlotCard(next, projectId, {
+            number: n,
+            status: "MISSING",
+            description: desc,
+            visual_type: "FLOW_REENACTMENT",
+          });
+          URL.revokeObjectURL(previewSrc);
         });
-        const desc = [...(card?.querySelectorAll(".ff-episode-meta") || [])][1]?.textContent || "";
-        replaceSlotCard(card, projectId, {
-          number: n,
-          status: "READY",
-          description: desc,
-          visual_type: "FLOW_REENACTMENT",
-        });
-        toast(`${pad3(n)} lista`);
-      } catch (e) {
-        toast(e.message);
-        if (label) label.childNodes[0].textContent = "Subir esta imagen ";
-        inp.disabled = false;
-      } finally {
-        inp.value = "";
-      }
     };
   });
 }
