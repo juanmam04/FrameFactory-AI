@@ -1,4 +1,5 @@
 """FASE 9: Montaje automático de video con FFmpeg (imágenes + narración + música opcional)."""
+import os
 import subprocess
 import shutil
 import sys
@@ -9,9 +10,71 @@ from .config_loader import BASE, get_duracion_por_imagen
 OUTPUT_VIDEO = BASE / "output" / "videos"
 
 
+def ffmpeg_exe() -> str | None:
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    try:
+        if (os.getenv("VERCEL") or "").strip():
+            home = Path("/tmp/ff-home")
+            home.mkdir(parents=True, exist_ok=True)
+            os.environ["HOME"] = str(home)
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return None
+
+
 def verificar_ffmpeg() -> bool:
     """Verifica si FFmpeg está instalado y disponible en el PATH."""
-    return shutil.which("ffmpeg") is not None
+    return bool(ffmpeg_exe())
+
+
+def montar_slideshow(
+    lista_imagenes: list[Path],
+    audio_narracion: Path,
+    output_path: Path,
+    *,
+    segundos_por_imagen: float,
+    width: int = 1280,
+    height: int = 720,
+) -> Path:
+    """One FFmpeg pass: stills + narration. Used on Vercel (no Ken Burns)."""
+    ff = ffmpeg_exe()
+    if not ff:
+        raise RuntimeError("No hay FFmpeg en este servidor.")
+    imgs = [p for p in lista_imagenes if p.is_file() and p.stat().st_size > 0]
+    if not imgs:
+        raise RuntimeError("No hay imágenes para armar el video.")
+    if not audio_narracion.is_file() or audio_narracion.stat().st_size <= 0:
+        raise RuntimeError("Falta la narración.")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    list_file = output_path.with_suffix(".concat.txt")
+    seg = max(2.0, float(segundos_por_imagen))
+    with list_file.open("w", encoding="utf-8") as fh:
+        for p in imgs:
+            fh.write(f"file '{p.resolve().as_posix()}'\n")
+            fh.write(f"duration {seg:.3f}\n")
+        fh.write(f"file '{imgs[-1].resolve().as_posix()}'\n")
+    cmd = [
+        ff, "-y",
+        "-f", "concat", "-safe", "0", "-i", str(list_file),
+        "-i", str(audio_narracion),
+        "-vf",
+        f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},fps=24",
+        "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "28",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "128k",
+        "-shortest",
+        str(output_path),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
+    list_file.unlink(missing_ok=True)
+    if result.returncode != 0 or not output_path.is_file():
+        err = (result.stderr or result.stdout or "ffmpeg failed")[-900:]
+        raise RuntimeError(f"No se pudo armar el video: {err}")
+    return output_path
 
 
 def verificar_ffprobe() -> bool:

@@ -143,7 +143,7 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
             and pid
             and path.startswith("/api/")
         ):
-            if path.endswith("/step") or "/images/upload" in path or path.endswith("/voice"):
+            if path.endswith("/step") or "/images/upload" in path or path.endswith("/voice") or path.endswith("/render"):
                 if path.endswith("/step"):
                     _sync_safe(lambda: cloud_sync.push_paths(pid, ["project.json"]))
             elif request.method == "DELETE" and "/images" in path:
@@ -689,9 +689,20 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
+    @app.get("/api/projects/{project_id}/video")
+    def video_file(project_id: str):
+        path = project_dir(project_id) / "render" / "final.mp4"
+        if not path.is_file() or path.stat().st_size <= 0:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, "render/final.mp4")
+        if path.is_file() and path.stat().st_size > 0:
+            return FileResponse(path, media_type="video/mp4")
+        raise HTTPException(404, "No hay video todavía")
+
     @app.post("/api/projects/{project_id}/render")
     def render_video(project_id: str):
-        _reject_heavy_on_vercel()
         try:
             from src.documentary.assemble_service import assemble_and_render
 
@@ -699,6 +710,15 @@ def create_app() -> FastAPI:
             p = load_project(project_id)
             p["ui_step"] = "done"
             save_project(p)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id, ["project.json", "render/final.mp4"]
+                        )
+                    )
             return {"project": _project_full(p)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e

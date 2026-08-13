@@ -8,7 +8,7 @@ from typing import Any
 from src.config_loader import get_background_music_path
 from src.documentary.import_images import ordered_images_for_render
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
-from src.video_assembler import montar_video, verificar_ffmpeg
+from src.video_assembler import montar_slideshow, montar_video, verificar_ffmpeg
 
 
 def build_preview(project: dict[str, Any]) -> dict[str, Any]:
@@ -40,12 +40,38 @@ def build_preview(project: dict[str, Any]) -> dict[str, Any]:
     return preview
 
 
+def _pull_render_assets(project_id: str) -> None:
+    from src.documentary import cloud_sync
+    from src.documentary.flow_pack import load_shot_list
+    from src.documentary.import_images import still_file
+
+    if not cloud_sync.configured():
+        return
+    cloud_sync.pull_one(project_id, "audio/narration.mp3")
+    root = project_dir(project_id) / "images"
+    try:
+        shots = load_shot_list(project_id).get("shots") or []
+        nums = [int(s["number"]) for s in shots if s.get("number")]
+    except Exception:
+        nums = list(range(1, 80))
+    for n in nums:
+        if still_file(root, n) is not None:
+            continue
+        for name in (f"{n:03d}.jpg", f"{n:03d}.png", f"{n:03d}.webp", f"{n:03d}.jpeg"):
+            if cloud_sync.pull_one(project_id, f"images/{name}"):
+                break
+
+
 def assemble_and_render(
     project: dict[str, Any],
     *,
     allow_missing: bool = False,
     transiciones_suaves: bool = True,
 ) -> Path:
+    from src.documentary.runtime import on_vercel
+
+    if on_vercel():
+        _pull_render_assets(str(project["id"]))
     if not verificar_ffmpeg():
         raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
     pid = str(project["id"])
@@ -90,18 +116,29 @@ def assemble_and_render(
         out.replace(bak)
 
     log_path = project_dir(pid) / "logs" / "render.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        result = montar_video(
-            lista_imagenes=images,
-            audio_narracion=audio,
-            musica_fondo=music,
-            segundos_por_imagen=sec,
-            width=1920,
-            height=1080,
-            transiciones_suaves=transiciones_suaves,
-            output_path=out,
-            music_volume=float(project.get("music_volume") or 0.12),
-        )
+        if on_vercel():
+            result = montar_slideshow(
+                images,
+                audio,
+                out,
+                segundos_por_imagen=sec,
+                width=1280,
+                height=720,
+            )
+        else:
+            result = montar_video(
+                lista_imagenes=images,
+                audio_narracion=audio,
+                musica_fondo=music,
+                segundos_por_imagen=sec,
+                width=1920,
+                height=1080,
+                transiciones_suaves=transiciones_suaves,
+                output_path=out,
+                music_volume=float(project.get("music_volume") or 0.12),
+            )
         set_checkpoint(project, "assembly_ready", True)
         set_checkpoint(project, "render_ready", True)
         project["render"] = {"path": "render/final.mp4", "seconds_per_image": sec}

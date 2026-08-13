@@ -1230,35 +1230,24 @@ function paintVoice(ws, p) {
 
 function paintRender(ws, p) {
   const done = p.checkpoints?.render_ready || p.ui_step === "done";
-  if (onVercel()) {
-    ws.innerHTML = `
-      <div class="panel workspace">
-        <p class="lead">El video final (FFmpeg) se arma en tu Mac: <code>npm run dev</code> → Render video. La voz ya la podés generar en esta web.</p>
-        <div class="actions">
-          <button class="btn btn-primary" id="home">Back to home</button>
-        </div>
-      </div>`;
-    $("#home").onclick = () => {
-      location.hash = "";
-      go("home");
-    };
-    return;
-  }
   ws.innerHTML = `
     <div class="panel workspace">
-      <p class="lead">${done ? "Final render is ready in the project folder." : "Assemble images + voice into the final video."}</p>
+      <h2 style="margin-top:0">Video</h2>
+      <p class="lead">${done ? "El episodio ya está armado." : "Junta las imágenes con la narración y genera el MP4."}</p>
+      ${done ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
       <div class="actions">
-        <button class="btn btn-accent" id="render">${done ? "Re-render" : "Render video"}</button>
-        <button class="btn btn-primary" id="home">Back to home</button>
+        <button class="btn btn-accent" id="render">${done ? "Volver a renderizar" : "Renderizar video"}</button>
+        ${done ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video" download>Descargar MP4</a>` : ""}
+        <button class="btn btn-primary" id="home">Volver al inicio</button>
       </div>
     </div>`;
   $("#render").onclick = async () => {
     try {
-      const data = await withBusy("Rendering…", () =>
+      const data = await withBusy("Armando el video… esto puede tardar un par de minutos", () =>
         api(`/api/projects/${encodeURIComponent(p.id)}/render`, { method: "POST" })
       );
       state.project = data.project;
-      toast("Render complete");
+      toast("Video listo");
       await refreshBootstrap();
       renderProject();
     } catch (e) {
