@@ -1,7 +1,9 @@
 """FASE 9: Montaje automático de video con FFmpeg (imágenes + narración + música opcional)."""
+import os
 import subprocess
 import shutil
 import sys
+import time
 from pathlib import Path
 
 from .config_loader import BASE, get_duracion_por_imagen
@@ -9,9 +11,587 @@ from .config_loader import BASE, get_duracion_por_imagen
 OUTPUT_VIDEO = BASE / "output" / "videos"
 
 
+def ffmpeg_exe() -> str | None:
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    try:
+        if (os.getenv("VERCEL") or "").strip():
+            home = Path("/tmp/ff-home")
+            home.mkdir(parents=True, exist_ok=True)
+            os.environ["HOME"] = str(home)
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return None
+
+
 def verificar_ffmpeg() -> bool:
     """Verifica si FFmpeg está instalado y disponible en el PATH."""
-    return shutil.which("ffmpeg") is not None
+    return bool(ffmpeg_exe())
+
+
+def mp4_is_complete(path: Path | None) -> bool:
+    """True if the file looks like a finished MP4 (ftyp + moov), not a truncated render."""
+    if path is None or not path.is_file():
+        return False
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return False
+    if size < 64:
+        return False
+    chunk = min(size, 2_000_000)
+    try:
+        with path.open("rb") as fh:
+            head = fh.read(chunk)
+            tail = b""
+            if size > chunk:
+                fh.seek(max(0, size - chunk))
+                tail = fh.read(chunk)
+    except OSError:
+        return False
+    blob = head + tail
+    return b"ftyp" in head and b"moov" in blob
+
+
+def ffmpeg_error_text(stderr: str) -> str:
+    lines = [ln.strip() for ln in (stderr or "").splitlines() if ln.strip()]
+    useful = [
+        ln
+        for ln in lines
+        if any(
+            k in ln.lower()
+            for k in ("error", "invalid", "moov", "no such", "failed", "unknown", "not found")
+        )
+        and "enable-" not in ln.lower()
+        and "libav" not in ln.lower()
+        and "configuration:" not in ln.lower()
+    ]
+    if useful:
+        return " | ".join(useful[-4:])[:400]
+    return (stderr or "ffmpeg failed")[-400:]
+
+
+class EditorialPaused(Exception):
+    """Ran out of time mid-edit; caller should resume with cached still clips."""
+
+    def __init__(self, done: int, total: int):
+        super().__init__(f"editorial paused {done}/{total}")
+        self.done = int(done)
+        self.total = int(total)
+
+
+def montar_slideshow(
+    lista_imagenes: list[Path],
+    audio_narracion: Path,
+    output_path: Path,
+    *,
+    segundos_por_imagen: float,
+    width: int = 1280,
+    height: int = 720,
+    musica_fondo: Path | None = None,
+    music_volume: float = 0.08,
+    fade_sec: float = 0.4,
+    duration_sec: float | None = None,
+    motion: str = "mix",
+    transition: str = "fade",
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
+    editorial: bool = True,
+    look: str = "soft",
+    clip_dir: Path | None = None,
+    deadline_mono: float | None = None,
+    on_progress: object | None = None,
+    abort: object | None = None,
+    scale_to: tuple[int, int] | None = None,
+) -> Path:
+    """Stills + narration + Ken Burns + fades. Falls back to concat if the editorial pass fails."""
+    ff = ffmpeg_exe()
+    if not ff:
+        raise RuntimeError("No hay FFmpeg en este servidor.")
+    imgs = [p for p in lista_imagenes if p.is_file() and p.stat().st_size > 0]
+    if not imgs:
+        raise RuntimeError("No hay imágenes para armar el video.")
+    if not audio_narracion.is_file() or audio_narracion.stat().st_size <= 0:
+        raise RuntimeError("Falta la narración.")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    seg = min(7.0, max(2.8, float(segundos_por_imagen)))
+    fade = min(0.5, max(0.25, float(fade_sec)), seg / 3)
+    vol = max(0.0, min(0.22, float(music_volume)))
+    music = musica_fondo if musica_fondo and musica_fondo.is_file() else None
+    if music is None:
+        try:
+            from src.documentary.music_bed import documentary_bed_path
+
+            bed = documentary_bed_path()
+            if bed.is_file():
+                music = bed
+        except Exception:
+            music = None
+    vol = max(0.12, min(0.40, float(vol) * 2.8))
+    looks = [look, "none"] if str(look or "soft") != "none" else ["none"]
+    last = None
+    if editorial:
+        for lk in looks:
+            try:
+                return _slideshow_editorial(
+                    ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
+                    duration_sec, motion, transition, fps=fps, crf=crf, preset=preset, look=lk,
+                    clip_dir=clip_dir, deadline_mono=deadline_mono, on_progress=on_progress, abort=abort,
+                    scale_to=scale_to,
+                )
+            except EditorialPaused:
+                raise
+            except Exception as e:
+                last = e
+    for lk in looks:
+        try:
+            return _slideshow_concat(
+                ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec,
+                fps=fps, crf=crf, preset=preset, look=lk, motion=motion, transition=transition,
+            )
+        except Exception as e:
+            last = e
+    if last:
+        raise last
+    return _slideshow_concat(
+        ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec,
+        fps=fps, crf=crf, preset=preset, look="none", motion=motion, transition=transition,
+    )
+
+
+def _vignette_vf(look: str) -> str:
+    k = str(look or "soft").strip().lower()
+    if k in ("none", "off", "0"):
+        return ""
+    if k in ("film", "strong", "cine"):
+        return ",vignette=angle=PI/3.2"
+    return ",vignette=angle=PI/2.8"
+
+
+def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
+    styles = ("push", "pull", "pan")
+    k = kind if kind in styles else styles[index % 3]
+    d = max(8, int(frames))
+    last = max(1, d - 1)
+    z_end = 1.07
+    inc = (z_end - 1.0) / last
+    if k == "pull":
+        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
+        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    if k == "pan":
+        return (
+            f"zoompan=z=1.05:x='(iw-iw/zoom)*on/{last}':"
+            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
+        )
+    return (
+        f"zoompan=z='min(zoom+{inc:.6f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
+        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    )
+
+
+def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
+    """Slow Ken Burns via scale/crop (faster than zoompan, same documentary feel)."""
+    styles = ("push", "pull", "pan")
+    k = kind if kind in styles else styles[index % 3]
+    z = 0.07
+    dur = max(0.8, float(seg))
+    fill = (
+        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+        f"crop={width}:{height}"
+    )
+    if k == "pull":
+        return (
+            f"{fill},scale=w='2*trunc(iw*(1+{z}*(1-min(t/{dur:.3f}\\,1)))/2)':h=-2:eval=frame,"
+            f"crop={width}:{height}"
+        )
+    if k == "pan":
+        pw = int(width * 1.08) // 2 * 2
+        ph = int(height * 1.08) // 2 * 2
+        return (
+            f"scale={pw}:{ph}:force_original_aspect_ratio=increase,crop={pw}:{ph},"
+            f"crop={width}:{height}:x='(in_w-out_w)*min(t/{dur:.3f}\\,1)':y='(in_h-out_h)/2'"
+        )
+    return (
+        f"{fill},scale=w='2*trunc(iw*(1+{z}*min(t/{dur:.3f}\\,1))/2)':h=-2:eval=frame,"
+        f"crop={width}:{height}"
+    )
+
+
+def _slideshow_editorial(
+    ff: str,
+    imgs: list[Path],
+    audio: Path,
+    output_path: Path,
+    seg: float,
+    width: int,
+    height: int,
+    music: Path | None,
+    vol: float,
+    duration_sec: float | None,
+    motion: str,
+    transition: str,
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
+    look: str = "soft",
+    clip_dir: Path | None = None,
+    deadline_mono: float | None = None,
+    on_progress: object | None = None,
+    abort: object | None = None,
+    scale_to: tuple[int, int] | None = None,
+) -> Path:
+    """Ken Burns + per-still fades. Unique stills are encoded once and reused."""
+    import tempfile
+
+    fps = max(12, min(30, int(fps)))
+    frames = max(8, int(round(seg * fps)))
+    fade = 0.28 if transition == "fade" else 0.0
+    owned = clip_dir is None
+    tmp = Path(tempfile.mkdtemp(prefix="ff-edit-")) if owned else Path(clip_dir)
+    tmp.mkdir(parents=True, exist_ok=True)
+    clips: list[Path] = []
+    cache: dict[tuple[str, str], Path] = {}
+    styles = ("push", "pull", "pan")
+    try:
+        for i, img in enumerate(imgs):
+            if callable(abort):
+                abort()
+            style = motion if motion in styles else styles[i % 3]
+            key = (str(img.resolve()), style)
+            clip = cache.get(key)
+            if clip is None or not mp4_is_complete(clip):
+                if deadline_mono is not None and time.monotonic() >= float(deadline_mono):
+                    raise EditorialPaused(len(cache), len(imgs))
+                clip = tmp / f"u{len(cache):03d}.mp4"
+                _encode_one_still(
+                    ff, img, clip, seg, width, height, style, fade, frames, i,
+                    fps=fps, crf=crf, preset=preset, look=look,
+                )
+                cache[key] = clip
+            clips.append(clip)
+            if callable(on_progress):
+                on_progress(i + 1, len(imgs))
+        video_only = tmp / "video.mp4"
+        if len(clips) == 1:
+            video_only = clips[0]
+        else:
+            lst = tmp / "clips.txt"
+            lst.write_text("".join(f"file '{c.resolve().as_posix()}'\n" for c in clips), encoding="utf-8")
+            cmd = [
+                ff, "-hide_banner", "-loglevel", "error", "-y",
+                "-f", "concat", "-safe", "0", "-i", str(lst),
+                "-c", "copy", "-an", "-movflags", "+faststart", str(video_only),
+            ]
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=80)
+            if r.returncode != 0 or not mp4_is_complete(video_only):
+                cmd = [
+                    ff, "-hide_banner", "-loglevel", "error", "-y",
+                    "-f", "concat", "-safe", "0", "-i", str(lst),
+                    "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+                    "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(video_only),
+                ]
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+            if r.returncode != 0 or not mp4_is_complete(video_only):
+                raise RuntimeError(ffmpeg_error_text(r.stderr or "concat clips"))
+        try:
+            _mix_voice_music(
+                ff, video_only, audio, music, vol, output_path, duration_sec, scale_to=scale_to,
+            )
+        except Exception:
+            _mix_voice_music(
+                ff, video_only, audio, None, vol, output_path, duration_sec, scale_to=scale_to,
+            )
+        if not mp4_is_complete(output_path):
+            raise RuntimeError("editorial mix incomplete")
+        return output_path
+    finally:
+        if owned:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _encode_one_still(
+    ff: str,
+    img: Path,
+    out: Path,
+    seg: float,
+    width: int,
+    height: int,
+    motion: str,
+    fade: float,
+    frames: int,
+    index: int,
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
+    look: str = "soft",
+) -> None:
+    pre_w = int(width * 1.14) // 2 * 2
+    pre_h = int(height * 1.14) // 2 * 2
+    zp = _ken_burns(motion, index, frames, width, height, fps=fps)
+    fo = max(0.12, seg - fade) if fade else 0
+    fades = (
+        f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
+        if fade
+        else ""
+    )
+    vig = _vignette_vf(look)
+    vf = (
+        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
+        f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
+    )
+    part = out.with_suffix(".part.mp4")
+    cmd = [
+        ff, "-hide_banner", "-loglevel", "error", "-y",
+        "-loop", "1", "-i", str(img.resolve()),
+        "-vf", vf, "-frames:v", str(frames), "-t", f"{seg:.3f}",
+        "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
+        "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
+    ]
+    limit = 12 if width <= 1280 else 22
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
+    if r.returncode != 0 or not mp4_is_complete(part):
+        part.unlink(missing_ok=True)
+        raise RuntimeError(ffmpeg_error_text(r.stderr or "still clip"))
+    part.replace(out)
+
+
+def _mix_voice_music(
+    ff: str,
+    video: Path,
+    audio: Path,
+    music: Path | None,
+    vol: float,
+    dest: Path,
+    duration_sec: float | None,
+    scale_to: tuple[int, int] | None = None,
+) -> None:
+    sw, sh = (int(scale_to[0]), int(scale_to[1])) if scale_to else (0, 0)
+    scale_vf = f"scale={sw}:{sh}:flags=lanczos,setsar=1,format=yuv420p" if sw and sh else ""
+    cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(video), "-i", str(audio)]
+    if music is not None:
+        cmd.extend(["-stream_loop", "-1", "-i", str(music)])
+        vbranch = f"[0:v]{scale_vf}[vout];" if scale_vf else ""
+        vmap = "[vout]" if scale_vf else "0:v"
+        cmd.extend(
+            [
+                "-filter_complex",
+                f"{vbranch}"
+                "[1:a]aformat=sample_fmts=fltp:sample_rates=44100,volume=1[a1];"
+                f"[2:a]aformat=sample_fmts=fltp:sample_rates=44100,volume={vol:.3f}[a2];"
+                "[a1][a2]amix=inputs=2:duration=first:dropout_transition=2[aout]",
+                "-map", vmap, "-map", "[aout]",
+            ]
+        )
+    elif scale_vf:
+        cmd.extend(["-vf", scale_vf, "-map", "0:v", "-map", "1:a"])
+    else:
+        cmd.extend(["-map", "0:v", "-map", "1:a"])
+    if scale_vf:
+        cmd.extend(["-c:v", "libx264", "-preset", "ultrafast", "-crf", "18", "-pix_fmt", "yuv420p"])
+    else:
+        cmd.extend(["-c:v", "copy"])
+    cmd.extend(
+        [
+            "-c:a", "aac", "-b:a", "192k",
+            "-shortest", "-movflags", "+faststart", str(dest),
+        ]
+    )
+    mix_limit = 130 if (duration_sec or 0) > 60 else 90
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=mix_limit)
+    if r.returncode != 0 or not mp4_is_complete(dest):
+        raise RuntimeError(ffmpeg_error_text(r.stderr or "mix audio"))
+
+
+def _slideshow_fades(
+    ff: str,
+    imgs: list[Path],
+    audio: Path,
+    output_path: Path,
+    seg: float,
+    width: int,
+    height: int,
+    fade: float,
+    music: Path | None,
+    vol: float,
+) -> Path:
+    parts: list[str] = []
+    for i in range(len(imgs)):
+        fo = max(0.05, seg - fade)
+        parts.append(
+            f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=increase,"
+            f"crop={width}:{height},fps=24,setsar=1,format=yuv420p,"
+            f"fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}[v{i}]"
+        )
+    concat = "".join(f"[v{i}]" for i in range(len(imgs)))
+    fc = ";".join(parts) + f";{concat}concat=n={len(imgs)}:v=1:a=0[vout]"
+    cmd = [ff, "-y"]
+    for p in imgs:
+        cmd.extend(["-loop", "1", "-t", f"{seg:.3f}", "-i", str(p.resolve())])
+    cmd.extend(["-i", str(audio)])
+    maps_v = "[vout]"
+    if music is not None:
+        cmd.extend(["-stream_loop", "-1", "-i", str(music.resolve())])
+        n_aud = len(imgs)
+        n_mus = len(imgs) + 1
+        fc += (
+            f";[{n_aud}:a]aformat=sample_fmts=fltp:sample_rates=44100,volume=1[a1];"
+            f"[{n_mus}:a]aformat=sample_fmts=fltp:sample_rates=44100,volume={vol:.3f}[a2];"
+            f"[a1][a2]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+        )
+        cmd.extend(["-filter_complex", fc, "-map", maps_v, "-map", "[aout]"])
+    else:
+        cmd.extend(["-filter_complex", fc, "-map", maps_v, "-map", f"{len(imgs)}:a"])
+    cmd.extend(
+        [
+            "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "28",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "128k",
+            "-shortest", "-movflags", "+faststart",
+            str(output_path),
+        ]
+    )
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
+    if result.returncode != 0 or not mp4_is_complete(output_path):
+        if output_path.is_file() and not mp4_is_complete(output_path):
+            output_path.unlink(missing_ok=True)
+        err = ffmpeg_error_text(result.stderr or result.stdout or "ffmpeg failed")
+        raise RuntimeError(err)
+    return output_path
+
+
+def _concat_edit_vf(
+    *,
+    n: int,
+    seg: float,
+    width: int,
+    height: int,
+    fps: int,
+    look: str,
+    motion: str,
+    transition: str,
+    total: float,
+) -> str:
+    """One-pass pan/drift + per-still fades. Cheap enough for a 10 min Vercel encode."""
+    fps = max(12, min(30, int(fps)))
+    pw = int(width * 1.08) // 2 * 2
+    ph = int(height * 1.08) // 2 * 2
+    p = f"min(mod(t\\,{seg:.3f})/{max(seg, 0.01):.3f}\\,1)"
+    m = str(motion or "mix").strip().lower()
+    if m == "pull":
+        x = f"(in_w-out_w)*(1-{p})"
+        y = f"(in_h-out_h)/2"
+    elif m == "pan":
+        x = f"(in_w-out_w)*{p}"
+        y = f"(in_h-out_h)/2"
+    elif m == "push":
+        x = f"(in_w-out_w)*{p}"
+        y = f"(in_h-out_h)*(0.25+0.5*{p})"
+    else:
+        x = f"(in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p})"
+        y = f"(in_h-out_h)*(0.35+0.30*sin(2*PI*{p}))"
+    fade = 0.28 if str(transition or "fade") == "fade" else 0.0
+    bits = [
+        f"scale={pw}:{ph}:force_original_aspect_ratio=increase",
+        f"crop={pw}:{ph}",
+        f"crop={width}:{height}:x='{x}':y='{y}'",
+        f"fps={fps}",
+        "format=yuv420p",
+    ]
+    vig = _vignette_vf(look)
+    if vig.startswith(","):
+        bits.append(vig[1:])
+    if fade:
+        s = max(seg, 0.8)
+        d = min(fade, s / 3)
+        bits.append(
+            "eq=brightness='if(lt(mod(t"
+            f"\\,{s:.3f}),{d:.2f}),-0.7*(1-mod(t\\,{s:.3f})/{d:.2f}),"
+            f"if(gt(mod(t\\,{s:.3f}),{s:.3f}-{d:.2f}),"
+            f"-0.7*(1-({s:.3f}-mod(t\\,{s:.3f}))/{d:.2f}),0))'"
+        )
+    fade_out_at = max(0.4, float(total) - 0.35)
+    bits.append("fade=t=in:st=0:d=0.28")
+    bits.append(f"fade=t=out:st={fade_out_at:.2f}:d=0.35")
+    return ",".join(bits)
+
+
+def _slideshow_concat(
+    ff: str,
+    imgs: list[Path],
+    audio: Path,
+    output_path: Path,
+    seg: float,
+    width: int,
+    height: int,
+    music: Path | None,
+    vol: float,
+    duration_sec: float | None = None,
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
+    look: str = "soft",
+    motion: str = "mix",
+    transition: str = "fade",
+) -> Path:
+    list_file = output_path.with_suffix(".concat.txt")
+    with list_file.open("w", encoding="utf-8") as fh:
+        for p in imgs:
+            fh.write(f"file '{p.resolve().as_posix()}'\n")
+            fh.write(f"duration {seg:.3f}\n")
+        fh.write(f"file '{imgs[-1].resolve().as_posix()}'\n")
+    cmd = [
+        ff, "-hide_banner", "-y",
+        "-f", "concat", "-safe", "0", "-i", str(list_file),
+        "-i", str(audio),
+    ]
+    total = float(duration_sec or 0) or (seg * max(1, len(imgs)))
+    vf = _concat_edit_vf(
+        n=len(imgs),
+        seg=seg,
+        width=width,
+        height=height,
+        fps=fps,
+        look=look,
+        motion=motion,
+        transition=transition,
+        total=total,
+    )
+    if music is not None:
+        cmd.extend(["-stream_loop", "-1", "-i", str(music.resolve())])
+        cmd.extend(
+            [
+                "-filter_complex",
+                f"[0:v]{vf}[vout];"
+                "[1:a]aformat=sample_fmts=fltp:sample_rates=44100,volume=1[a1];"
+                f"[2:a]aformat=sample_fmts=fltp:sample_rates=44100,volume={vol:.3f}[a2];"
+                "[a1][a2]amix=inputs=2:duration=first[aout]",
+                "-map", "[vout]", "-map", "[aout]",
+            ]
+        )
+    else:
+        cmd.extend(["-vf", vf, "-map", "0:v", "-map", "1:a"])
+    cmd.extend(
+        [
+            "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "192k",
+            "-shortest", "-movflags", "+faststart",
+            str(output_path),
+        ]
+    )
+    limit = 45 if (duration_sec or 0) < 30 else 250
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
+    list_file.unlink(missing_ok=True)
+    if result.returncode != 0 or not mp4_is_complete(output_path):
+        if output_path.is_file() and not mp4_is_complete(output_path):
+            output_path.unlink(missing_ok=True)
+        err = ffmpeg_error_text(result.stderr or result.stdout or "ffmpeg failed")
+        raise RuntimeError(f"No se pudo armar el video: {err}")
+    return output_path
 
 
 def verificar_ffprobe() -> bool:

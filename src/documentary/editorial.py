@@ -49,8 +49,11 @@ The viewer must feel: "I cannot stop. I need to know what happens next."
    Wit, momentum, dread, awe — yes. Fabricated dialogue, fake witnesses, mind-reading — never.
    If research is thin: fewer scenes, sharper ones. Never pad with filler facts or fiction.
 
-9) ENDING THAT HAUNTS
-   Close on consequence, image, or unresolved true tension — not "lessons learned" or channel outro.
+9) ENDING THAT LANDS
+   The story is not finished until ENDING STATE has happened on screen.
+   Last 2 paragraphs: (1) what actually happened next — names, year, number;
+   (2) one image that answers the cold open. Not a TED talk. Not "uncertain future".
+   Never stop at layoffs/pandemic/questions if the Story Plan still has a later fact.
 
 PROHIBITED OPENINGS / PATTERNS:
 - "X is a company that…" / Wikipedia biography voice
@@ -111,6 +114,8 @@ Requirements:
 - Keep curiosity high every 2–4 sentences: the viewer must need the next beat.
 - Short paragraphs suitable for stills every few seconds.
 - Third person only (except real attributed quotes).
+- The last two paragraphs MUST deliver the Story Plan ENDING STATE (what happened next, with a year)
+  and answer the cold-open question. Do not stop mid-aftermath.
 - Deliver ONLY the narration text.
 """.strip()
 
@@ -124,18 +129,19 @@ Never invent facts. Never pitch business-advice or listicle videos.
 """.strip()
 
 VISUAL_DIRECTION = (
-    "Cinematic true-story documentary stills, 16:9. Show the world of the story: "
-    "protagonists doing something, real/recreated places, offices, factories, stores, products, "
-    "cities, meetings, events, consequences, time-period change, meaningful details. "
-    "Mix establishing / wide / close-up / environmental storytelling. "
-    "Avoid generic stock: CEO staring at camera, businessman at desk, handshake, laptop, "
-    "generic skyscraper, abstract money graphics. No cartoon, meme text, watermark, logo soup."
+    "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist "
+    "doing one specific action in a specific place at a specific time. Faces, hands, consequences. "
+    "Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, "
+    "courthouse steps, a single desk with one person — not the same open-plan office thirty times. "
+    "Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, "
+    "CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup."
 )
 
 FLOW_DIRECTOR_RULES = (
-    "You are the DIRECTOR for Google Flow (illustrator). "
-    "Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, "
-    "press moments, consequences. Prefer visually distinct scenes. "
-    "If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. "
-    "Not a literal dump of the sentence, not generic business stock."
+    "You are the DIRECTOR for Google Flow. One still = one story moment. "
+    "Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped "
+    "into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. "
+    "If the beat is a filing, show the document in someone's hands, not a room of extras. "
+    "Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. "
+    "No collage. No readable logos. Not a stock photo."
 )

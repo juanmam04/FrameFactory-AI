@@ -16,10 +16,7 @@ _ABSTRACT_ACTIONS = ("entra", "mira", "ve", "piensa", "trabaja", "se aproxima", 
 def _normalizar_action(texto: str) -> str:
     t = (texto or "").strip()
     if not t:
-        return "corre, se detiene en seco y extiende la mano hacia el evento principal"
-    low = t.lower()
-    if any(a in low for a in _ABSTRACT_ACTIONS):
-        return f"{t}. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso."
+        return "a named protagonist mid-action in a specific place from this story"
     return t
 
 

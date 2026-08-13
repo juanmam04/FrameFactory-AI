@@ -76,7 +76,13 @@ def _act_for_scene(idx: int, total_scenes: int) -> int:
     return 3
 
 
-def _beats_por_escena_llm(escena: Escena, act: int, tema: str, beat_offset: int) -> List[VisualBeat]:
+def _beats_por_escena_llm(
+    escena: Escena,
+    act: int,
+    tema: str,
+    beat_offset: int,
+    protagonists: Optional[List[str]] = None,
+) -> List[VisualBeat]:
     """Pide a la LLM que convierta una escena de texto en varios beats visuales."""
     # Permitir desactivar la LLM vía .env para evitar cuelgues/costos excesivos (usa solo fallback).
     if os.getenv("VISUAL_BEATS_LLM_DISABLED", "").strip().lower() in ("1", "true", "yes"):
@@ -94,13 +100,21 @@ def _beats_por_escena_llm(escena: Escena, act: int, tema: str, beat_offset: int)
     client = OpenAI(api_key=api_key)
 
     system = (
-        "Eres un director de cine que convierte escenas de un guion en BEATS VISUALES para imágenes estáticas.\n"
-        "Cada beat es un momento que se puede dibujar en una sola imagen 16:9.\n"
-        "Debes devolver un JSON con una lista de beats; cada beat tiene exactamente estas claves:\n"
+        "You are a documentary film director. Convert narration into VISUAL BEATS for still photographs.\n"
+        "Each beat is ONE 16:9 still that could not be swapped into another episode.\n"
+        "Return JSON only: a list of beats with exactly these keys:\n"
         "beat_id, scene, original_text, action, emotion, context, location, time_of_day, shot_role, camera_type, camera_position, camera_distance, importance.\n"
-        "shot_role DEBE ser uno de: establishing, action, reaction, detail, transition.\n"
-        "camera_type DEBE ser uno de: POV, over_the_shoulder, wide_shot, medium_shot, close_up, side_angle, top_down, low_angle, rear_view, environment_shot.\n"
-        "Devuelve SOLO JSON válido, sin comentarios ni texto extra."
+        "shot_role MUST be one of: establishing, action, reaction, detail, transition.\n"
+        "camera_type MUST be one of: POV, over_the_shoulder, wide_shot, medium_shot, close_up, side_angle, top_down, low_angle, rear_view, environment_shot.\n"
+        "HARD RULES:\n"
+        "- Name the person in `action` (the real protagonist of this sentence).\n"
+        "- `location` must be SPECIFIC (penthouse at 3am, jet cabin, empty floor after eviction, "
+        "courthouse steps, a printing plant) — never 'office', 'WeWork office', or 'conference room'.\n"
+        "- `action` = one physical verb happening NOW (rips a lease, dances on a desk, stares at a For Sale sign alone).\n"
+        "- One protagonist, maybe one counterpart. Never a crowd of anonymous workers unless the beat IS a mass event.\n"
+        "- FORBIDDEN: crowded coworking, rows of laptops, generic glass conference rooms, handshake, CEO portrait.\n"
+        "- Write action and location in English.\n"
+        "Return ONLY valid JSON, no extra text."
     )
 
     user_payload = {
@@ -109,12 +123,13 @@ def _beats_por_escena_llm(escena: Escena, act: int, tema: str, beat_offset: int)
         "numero_de_escena": escena.numero,
         "texto_escena": escena.texto,
         "beat_id_offset": beat_offset,
+        "protagonists": [p for p in (protagonists or []) if p][:8],
     }
 
     try:
         prompt_usuario = (
-            "Convierte la siguiente escena en 1 a 4 beats visuales cinematográficos.\n"
-            "Recuerda: responde SOLO JSON (lista), sin nada más.\n\n"
+            "Turn this scene into 1 visual beat (2 only if the narration truly contains two distinct moments).\n"
+            "Name the protagonist. Pick a unique location. JSON list only.\n\n"
             + json.dumps(user_payload, ensure_ascii=False)
         )
         r = client.chat.completions.create(
@@ -204,6 +219,7 @@ def generar_beats_para_escenas(
     escenas: list[Escena],
     tema: str,
     max_beats_total: int | None = None,
+    protagonists: list[str] | None = None,
 ) -> list[VisualBeat]:
     """Genera beats visuales para una lista de escenas.
 
@@ -220,7 +236,7 @@ def generar_beats_para_escenas(
             break
         act = _act_for_scene(idx, total_escenas)
         # Intentar LLM primero
-        llm_beats = _beats_por_escena_llm(escena, act, tema, beat_counter)
+        llm_beats = _beats_por_escena_llm(escena, act, tema, beat_counter, protagonists=protagonists)
         if not llm_beats:
             llm_beats = _beats_por_escena_fallback(escena, act, beat_counter)
 

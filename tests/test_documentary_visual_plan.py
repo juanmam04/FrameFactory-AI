@@ -60,9 +60,23 @@ def test_batch_grouping_23_flow():
     assert batches[0]["visual_numbers"] == list(range(1, 11))
     assert batches[1]["visual_numbers"] == list(range(11, 21))
     assert batches[2]["visual_numbers"] == [21, 22, 23]
+    assert batches[0].get("interchangeable") is True
 
 
-def test_mixed_types_batches_only_flow():
+def test_batches_group_by_moment_not_timeline():
+    visuals = [
+        {"number": 1, "visual_type": "FLOW_REENACTMENT", "narration": "The IPO was abruptly pulled overnight."},
+        {"number": 2, "visual_type": "FLOW_REENACTMENT", "narration": "Adam Neumann launched WeWork in 2010."},
+        {"number": 3, "visual_type": "FLOW_REENACTMENT", "narration": "SoftBank arranged a bailout after the collapse."},
+        {"number": 4, "visual_type": "FLOW_REENACTMENT", "narration": "Their vision was a community-driven space."},
+    ]
+    batches = group_flow_batches(visuals, batch_size=10)
+    by_mood = {b["moment_id"]: b["visual_numbers"] for b in batches}
+    assert 1 in by_mood.get("collapse", []) and 3 in by_mood.get("collapse", [])
+    assert 2 in by_mood.get("rise", []) and 4 in by_mood.get("rise", [])
+
+
+def test_mixed_types_all_go_to_flow():
     visuals = [
         {"number": 1, "visual_type": "FLOW_REENACTMENT"},
         {"number": 2, "visual_type": "FLOW_REENACTMENT"},
@@ -72,7 +86,8 @@ def test_mixed_types_batches_only_flow():
     ]
     batches = group_flow_batches(visuals, batch_size=10)
     assert len(batches) == 1
-    assert batches[0]["visual_numbers"] == [1, 2, 5]
+    assert batches[0]["visual_numbers"] == [1, 2, 3, 4, 5]
+    assert all(v["visual_type"] == "FLOW_REENACTMENT" for v in visuals)
 
 
 def test_number_preservation_mixed():
@@ -82,12 +97,12 @@ def test_number_preservation_mixed():
         {"number": 3, "visual_type": "FLOW_REENACTMENT"},
     ]
     batches = group_flow_batches(visuals, batch_size=10)
-    assert batches[0]["visual_numbers"] == [1, 3]
+    assert batches[0]["visual_numbers"] == [1, 2, 3]
     assert [v["number"] for v in visuals] == [1, 2, 3]
 
 
 def test_classify_document_vs_flow():
-    assert classify_visual_type("WeWork files its S-1 with the SEC") == "DOCUMENT"
+    assert classify_visual_type("WeWork files its S-1 with the SEC") == "FLOW_REENACTMENT"
     assert classify_visual_type("Neumann walks through a packed coworking floor") == "FLOW_REENACTMENT"
 
 
@@ -111,7 +126,7 @@ def test_reference_propagation_in_batch_prompt():
     assert refs and refs[0]["id"] == "CHAR_001"
     prompt = format_batch_prompt(batch, visuals, {"global_style": "doc"}, masters)
     assert "CHAR_001.png" in prompt or "Adam Neumann" in prompt
-    assert "SEPARATE IMAGE" in prompt
+    assert "SAME" in prompt.upper() or "MOMENT" in prompt.upper() or "climate" in prompt.lower()
 
 
 def test_bulk_import_ready(tmp_projects):

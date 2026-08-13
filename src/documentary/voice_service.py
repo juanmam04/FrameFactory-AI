@@ -18,8 +18,8 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     if not project.get("script_approved"):
         raise ValueError("Approve the script before generating voice.")
 
-    oa = check_openai(live=True)
-    el = check_elevenlabs(live=True)
+    oa = check_openai(live=False)
+    el = check_elevenlabs(live=False)
     if oa.status != "ok" and el.status != "ok":
         details = []
         if oa.status != "ok":
@@ -32,7 +32,12 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
             "Voice blocked — no working TTS provider.\n" + "\n".join(details)
         )
 
-    speed = float(velocidad if velocidad is not None else project.get("voice_speed") or 1.0)
+    if velocidad is not None:
+        speed = float(velocidad)
+    else:
+        raw = project.get("voice_speed")
+        speed = 1.2 if raw in (None, "", 1, 1.0) else float(raw)
+    speed = max(0.8, min(1.5, speed))
     # Generate into global OUTPUT_AUDIO then copy into project workspace (stem unique)
     stem = f"doc_{project['id']}_narration".replace("/", "_")
     path = generar_voz(script, nombre_archivo=stem, formato="mp3", velocidad=speed)
@@ -45,6 +50,7 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
 
     # cleanup global copy optional — keep for debugging
     duration = _probe_duration(dest)
+    project["voice_speed"] = speed
     project["voice"] = {"path": "audio/narration.mp3", "duration_sec": duration, "speed": speed}
     set_checkpoint(project, "voice_ready", True)
     set_checkpoint(project, "assembly_ready", False)
@@ -55,27 +61,19 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
 
 
 def _probe_duration(path: Path) -> float | None:
-    import shutil as sh
+    import re
     import subprocess
 
-    if not sh.which("ffprobe"):
+    from src.video_assembler import ffmpeg_exe
+
+    ff = ffmpeg_exe()
+    if not ff:
         return None
     try:
-        r = subprocess.run(
-            [
-                "ffprobe",
-                "-v",
-                "error",
-                "-show_entries",
-                "format=duration",
-                "-of",
-                "default=noprint_wrappers=1:nokey=1",
-                str(path),
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return float(r.stdout.strip())
+        r = subprocess.run([ff, "-i", str(path)], capture_output=True, text=True, timeout=30)
+        m = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", r.stderr or "")
+        if not m:
+            return None
+        return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
     except Exception:
         return None

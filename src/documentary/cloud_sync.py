@@ -17,7 +17,8 @@ from src.saas_sessions import OUTPUT_DIR, SESSIONS_PATH
 # Skip huge / regenerable artifacts by default.
 _SKIP_DIR_NAMES = {".git", "__pycache__", ".DS_Store"}
 _SKIP_SUFFIXES = {".pyc", ".pyo"}
-_MAX_FILE_BYTES = 40 * 1024 * 1024  # 40 MB per file
+_MAX_FILE_BYTES = 200 * 1024 * 1024  # 200 MB (1080p master)
+_schema_ok = False
 
 
 def _load_env() -> None:
@@ -53,11 +54,14 @@ def _connect():
     return psycopg.connect(
         _connect_url(url),
         prepare_threshold=None,
-        connect_timeout=20,
+        connect_timeout=8,
     )
 
 
 def ensure_schema() -> None:
+    global _schema_ok
+    if _schema_ok:
+        return
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -78,6 +82,7 @@ def ensure_schema() -> None:
                 """
             )
         conn.commit()
+    _schema_ok = True
 
 
 def _utc_now() -> str:
@@ -108,12 +113,7 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def push_project(project_id: str) -> dict[str, Any]:
-    ensure_schema()
-    root = projects_root() / project_id
-    if not root.is_dir():
-        raise FileNotFoundError(f"Proyecto no encontrado: {project_id}")
-    files = _iter_project_files(root)
+def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, int]:
     uploaded = 0
     skipped = 0
     with _connect() as conn:
@@ -122,14 +122,6 @@ def push_project(project_id: str) -> dict[str, Any]:
                 rel = path.relative_to(root).as_posix()
                 data = path.read_bytes()
                 digest = _sha256(data)
-                cur.execute(
-                    "SELECT sha256 FROM ff_blobs WHERE project_id = %s AND rel_path = %s",
-                    (project_id, rel),
-                )
-                row = cur.fetchone()
-                if row and row[0] == digest:
-                    skipped += 1
-                    continue
                 cur.execute(
                     """
                     INSERT INTO ff_blobs (project_id, rel_path, sha256, content, updated_at)
@@ -143,6 +135,46 @@ def push_project(project_id: str) -> dict[str, Any]:
                 )
                 uploaded += 1
         conn.commit()
+    return uploaded, skipped
+
+
+def delete_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
+    """Remove specific files from Supabase so deletes actually stick."""
+    ensure_schema()
+    rels = [str(p).replace("\\", "/") for p in rel_paths if str(p).strip()]
+    if not rels:
+        return {"ok": True, "deleted": 0, "at": _utc_now()}
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            placeholders = ",".join(["%s"] * len(rels))
+            cur.execute(
+                f"DELETE FROM ff_blobs WHERE project_id = %s AND rel_path IN ({placeholders})",
+                (project_id, *rels),
+            )
+            n = cur.rowcount or 0
+        conn.commit()
+    return {"ok": True, "deleted": n, "at": _utc_now()}
+
+
+def delete_image_blobs(project_id: str) -> dict[str, Any]:
+    ensure_schema()
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                (project_id, "images/%"),
+            )
+            n = cur.rowcount or 0
+        conn.commit()
+    return {"ok": True, "deleted": n, "at": _utc_now()}
+
+
+def push_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
+    """Upload only the given relative files (e.g. project.json, images/007.png)."""
+    ensure_schema()
+    root = projects_root() / project_id
+    files = [root / rel for rel in rel_paths if (root / rel).is_file()]
+    uploaded, skipped = _upsert_files(project_id, files, root) if files else (0, 0)
     return {
         "project_id": project_id,
         "uploaded": uploaded,
@@ -152,19 +184,69 @@ def push_project(project_id: str) -> dict[str, Any]:
     }
 
 
-def pull_project(project_id: str) -> dict[str, Any]:
+def push_project(project_id: str, *, include_images: bool = False) -> dict[str, Any]:
+    ensure_schema()
+    root = projects_root() / project_id
+    if not root.is_dir():
+        raise FileNotFoundError(f"Proyecto no encontrado: {project_id}")
+    files = _iter_project_files(root)
+    if not include_images:
+        files = [p for p in files if "images" not in p.relative_to(root).parts]
+    uploaded, skipped = _upsert_files(project_id, files, root)
+    return {
+        "project_id": project_id,
+        "uploaded": uploaded,
+        "unchanged": skipped,
+        "total_local": len(files),
+        "at": _utc_now(),
+    }
+
+
+_LIGHT_PREFIXES = (
+    "project.json",
+    "script/",
+    "metadata/",
+    "flow-pack/shot-list.json",
+    "flow-pack/visual-plan.json",
+    "flow-pack/story-bible.json",
+)
+
+
+def pull_project(project_id: str, *, light: bool = False) -> dict[str, Any]:
     ensure_schema()
     root = projects_root() / project_id
     root.mkdir(parents=True, exist_ok=True)
     written = 0
     with _connect() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT rel_path, sha256, content FROM ff_blobs WHERE project_id = %s",
-                (project_id,),
-            )
+            if light:
+                cur.execute(
+                    """
+                    SELECT rel_path, sha256, content FROM ff_blobs
+                    WHERE project_id = %s
+                      AND (
+                        rel_path = 'project.json'
+                        OR rel_path LIKE 'script/%%'
+                        OR rel_path LIKE 'metadata/%%'
+                        OR rel_path IN (
+                          'flow-pack/shot-list.json',
+                          'flow-pack/visual-plan.json',
+                          'flow-pack/story-bible.json'
+                        )
+                      )
+                    """,
+                    (project_id,),
+                )
+            else:
+                cur.execute(
+                    "SELECT rel_path, sha256, content FROM ff_blobs WHERE project_id = %s",
+                    (project_id,),
+                )
             rows = cur.fetchall()
     for rel, digest, content in rows:
+        rel_s = str(rel)
+        if light and not any(rel_s == p or rel_s.startswith(p) for p in _LIGHT_PREFIXES):
+            continue
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
@@ -202,6 +284,68 @@ def push_sessions() -> dict[str, Any]:
             )
         conn.commit()
     return {"ok": True, "sessions": len(payload.get("sessions") or []), "at": _utc_now()}
+
+
+def list_rel_paths(project_id: str, prefix: str = "") -> list[str]:
+    ensure_schema()
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            if prefix:
+                cur.execute(
+                    "SELECT rel_path FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                    (project_id, prefix + "%"),
+                )
+            else:
+                cur.execute(
+                    "SELECT rel_path FROM ff_blobs WHERE project_id = %s",
+                    (project_id,),
+                )
+            return [str(r[0]) for r in cur.fetchall()]
+
+
+def pull_prefix(project_id: str, prefix: str) -> int:
+    """Download every blob under prefix in one query (skips thumbs and files already on disk)."""
+    ensure_schema()
+    root = projects_root() / project_id
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT rel_path, content FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                (project_id, prefix + "%"),
+            )
+            rows = cur.fetchall()
+    written = 0
+    for rel, content in rows:
+        rel_s = str(rel)
+        if ".thumb." in rel_s:
+            continue
+        path = root / rel_s
+        if path.is_file() and path.stat().st_size > 0:
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(bytes(content))
+        written += 1
+    return written
+
+
+def pull_one(project_id: str, rel_path: str, *, force: bool = False) -> bool:
+    """Download a single blob to disk. Used for still thumbnails."""
+    ensure_schema()
+    dest = projects_root() / project_id / rel_path
+    if not force and dest.is_file() and dest.stat().st_size > 0:
+        return True
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT content FROM ff_blobs WHERE project_id = %s AND rel_path = %s",
+                (project_id, rel_path),
+            )
+            row = cur.fetchone()
+    if not row:
+        return False
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(bytes(row[0]))
+    return True
 
 
 def pull_sessions() -> dict[str, Any]:
@@ -248,10 +392,10 @@ def push_all() -> dict[str, Any]:
     }
 
 
-def pull_all() -> dict[str, Any]:
+def pull_all(*, light: bool = False) -> dict[str, Any]:
     ensure_schema()
     remote = list_remote_projects()
-    results = [pull_project(pid) for pid in remote]
+    results = [pull_project(pid, light=light) for pid in remote]
     sess = pull_sessions()
     return {
         "ok": True,

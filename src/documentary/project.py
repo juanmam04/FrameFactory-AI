@@ -46,6 +46,7 @@ CHECKPOINT_KEYS = (
     "voice_ready",
     "assembly_ready",
     "render_ready",
+    "captions_ready",
 )
 
 # Human-facing progress steps (UI). Internal checkpoints still drive gates.
@@ -58,7 +59,10 @@ PROGRESS_STEPS = (
     "flow",
     "images",
     "voice",
+    "music",
     "render",
+    "subs",
+    "publish",
     "done",
 )
 
@@ -79,9 +83,9 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "script_approved": False,
     "story_plan": {},
     "story_plan_approved": False,
-    "voice_speed": 1.0,
+    "voice_speed": 1.2,
     "music_path": "",
-    "music_volume": 0.12,
+    "music_volume": 0.08,
     "subtitles_enabled": True,
     "batch_size": 10,
     "flow_shot_index": 0,
@@ -93,6 +97,7 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "ui_step": "research",
     "checkpoints": {k: False for k in CHECKPOINT_KEYS},
     "import_report": {},
+    "youtube": {},
     "preview": {},
     "errors": [],
     "created_at": "",
@@ -111,8 +116,16 @@ def slugify(text: str, fallback: str = "project") -> str:
 
 
 def projects_root() -> Path:
-    PROJECTS_ROOT.mkdir(parents=True, exist_ok=True)
-    return PROJECTS_ROOT
+    from src.documentary.runtime import configure_workspace
+
+    configure_workspace()
+    raw = (os.getenv("FRAMEFACTORY_PROJECTS_DIR") or "").strip()
+    root = Path(raw) if raw else (BASE / "projects")
+    if not root.is_absolute():
+        root = (BASE / root).resolve()
+    globals()["PROJECTS_ROOT"] = root
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 def project_dir(project_id: str) -> Path:
@@ -141,8 +154,25 @@ def project_json_path(project_id: str) -> Path:
     return project_dir(project_id) / "project.json"
 
 
+def _pull_if_missing(project_id: str) -> None:
+    from src.documentary.runtime import on_vercel
+
+    if not on_vercel():
+        return
+    try:
+        from src.documentary import cloud_sync
+
+        if cloud_sync.configured():
+            cloud_sync.pull_project(project_id, light=True)
+    except Exception:
+        pass
+
+
 def load_project(project_id: str) -> dict[str, Any]:
     path = project_json_path(project_id)
+    if not path.exists():
+        _pull_if_missing(project_id)
+        path = project_json_path(project_id)
     if not path.exists():
         raise FileNotFoundError(f"Documentary project not found: {project_id}")
     data = json.loads(path.read_text(encoding="utf-8"))
@@ -330,18 +360,24 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
     images_full = bool(cps.get("images_imported")) and (expected == 0 or ready >= expected)
     images_partial = bool(cps.get("images_imported"))
     voice = bool(cps.get("voice_ready"))
-    rendered = bool(cps.get("render_ready")) and (project_dir(str(project["id"])) / "render" / "final.mp4").exists()
+    rendered = bool(cps.get("render_ready"))
+    captioned = bool(cps.get("captions_ready")) or (
+        project_dir(str(project["id"])) / "render" / "final_captions.mp4"
+    ).exists()
 
     flags = {
         "topic": has_topic,
         "research": has_research,
         "story": has_story_plan,
         "script": has_script and approved,
-        "flow": flow,
+        "flow": images_full or voice,
         "images": images_full or (images_partial and voice),
         "voice": voice,
+        "music": voice,
         "render": rendered,
-        "done": rendered,
+        "subs": captioned,
+        "publish": bool((project.get("youtube") or {}).get("title")),
+        "done": bool((project.get("youtube") or {}).get("title")),
     }
     current = "done"
     for step in PROGRESS_STEPS:
@@ -354,17 +390,17 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
             if step == "script" and has_script and not approved:
                 current = "script"
                 break
-            if step == "images" and flow and not images_full:
-                current = "images"
-                break
+            if step == "images":
+                continue
             current = step
             break
     else:
-        current = "done" if rendered else "render"
+        current = "done" if flags.get("publish") else ("publish" if rendered else "render")
 
-    if rendered:
-        current = "done"
-        flags["done"] = True
+    if rendered and not flags.get("subs"):
+        current = "subs"
+    elif rendered and flags.get("subs") and not flags.get("publish"):
+        current = "publish"
 
     return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": current}
 

@@ -14,11 +14,29 @@ for _env_local in (BASE / ".env.local", BASE / "env.local"):
 OUTPUT_AUDIO = BASE / "output" / "audio"
 
 
+def _audio_root() -> Path:
+    if (os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or "").strip():
+        root = Path("/tmp/ff-audio")
+    else:
+        root = OUTPUT_AUDIO
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def _concat_mp3(paths: list[Path], dest: Path) -> Path:
+    """Join MP3 chunks without FFmpeg (same encoder → frames concatenate)."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with dest.open("wb") as out:
+        for part in paths:
+            out.write(part.read_bytes())
+    return dest
+
+
 def generar_voz(
     texto: str,
     nombre_archivo: str = "narracion",
     formato: str = "mp3",
-    velocidad: float = 1.0,
+    velocidad: float = 1.2,
     *,
     voice_catalog: dict | None = None,
     elevenlabs_voice_id: str | None = None,
@@ -32,8 +50,7 @@ def generar_voz(
     openai_tts_voice: nombre de voz OpenAI TTS (p. ej. alloy, nova) si usás ese proveedor.
     voice_catalog: entrada del catálogo SaaS (provider openai|elevenlabs, openai_voice, elevenlabs_voice_id).
     """
-    OUTPUT_AUDIO.mkdir(parents=True, exist_ok=True)
-    path = OUTPUT_AUDIO / f"{nombre_archivo}.{formato}"
+    path = _audio_root() / f"{nombre_archivo}.{formato}"
 
     # Always re-read .env + .env.local (local wins) before calling providers.
     try:
@@ -110,8 +127,13 @@ def _aplicar_velocidad_audio(audio_path: Path, velocidad: float, output_path: Pa
     import subprocess
     import shutil
     
-    if not shutil.which("ffmpeg"):
-        # Si no hay FFmpeg, retornar audio original
+    try:
+        from src.video_assembler import ffmpeg_exe
+
+        ff = ffmpeg_exe()
+    except Exception:
+        ff = shutil.which("ffmpeg")
+    if not ff:
         return audio_path
     
     # FFmpeg atempo: valores entre 0.5 y 2.0
@@ -140,12 +162,19 @@ def _aplicar_velocidad_audio(audio_path: Path, velocidad: float, output_path: Pa
         # Crear archivo temporal para el audio procesado
         audio_velocidad = output_path.parent / f"{output_path.stem}_velocidad{output_path.suffix}"
         cmd = [
-            "ffmpeg", "-y", "-i", str(audio_path),
-            "-af", filter_complex,
+            ff, "-y", "-i", str(audio_path),
+            "-vn", "-af", filter_complex,
             "-c:a", "libmp3lame", "-b:a", "192k",
             str(audio_velocidad),
         ]
-        subprocess.run(cmd, check=True, capture_output=True)
+        result = subprocess.run(cmd, capture_output=True)
+        if result.returncode != 0:
+            cmd = [
+                ff, "-y", "-i", str(audio_path),
+                "-vn", "-af", filter_complex,
+                str(audio_velocidad),
+            ]
+            subprocess.run(cmd, check=True, capture_output=True)
         
         # Si el archivo temporal es diferente al original, reemplazarlo
         if audio_velocidad != output_path and audio_velocidad.exists():
@@ -238,7 +267,7 @@ def _elevenlabs(texto: str, path: Path, api_key: str, voice_id: str) -> Path:
                 print(f"   ⚠️ Error al generar chunk {i+1}: {e}")
                 raise
         
-        # Combinar archivos de audio usando FFmpeg
+        path_final = path.with_suffix(".mp3")
         if shutil.which("ffmpeg") and len(archivos_audio) > 1:
             print(f"   🔗 Combinando {len(archivos_audio)} archivos de audio de ElevenLabs...")
             list_file = path.parent / f"{path.stem}_concat.txt"
@@ -246,18 +275,15 @@ def _elevenlabs(texto: str, path: Path, api_key: str, voice_id: str) -> Path:
                 for audio_file in archivos_audio:
                     ruta_abs = str(audio_file.absolute()).replace("\\", "/")
                     f.write(f"file '{ruta_abs}'\n")
-            
-            path_final = path.with_suffix(".mp3")
             cmd = [
                 "ffmpeg", "-y", "-f", "concat", "-safe", "0",
                 "-i", str(list_file),
                 "-c:a", "libmp3lame", "-b:a", "192k",
-                "-af", "apad=pad_dur=0.1",  # Pequeño padding entre chunks
+                "-af", "apad=pad_dur=0.1",
                 str(path_final)
             ]
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
-                # Intentar sin padding si falla
                 cmd_simple = [
                     "ffmpeg", "-y", "-f", "concat", "-safe", "0",
                     "-i", str(list_file),
@@ -265,23 +291,13 @@ def _elevenlabs(texto: str, path: Path, api_key: str, voice_id: str) -> Path:
                     str(path_final)
                 ]
                 subprocess.run(cmd_simple, check=True, capture_output=True)
-            
-            # Limpiar archivos temporales
             list_file.unlink()
-            for audio_file in archivos_audio:
-                if audio_file.exists():
-                    audio_file.unlink()
-            
-            return path_final
         else:
-            # Si no hay FFmpeg, usar solo el primer chunk (no ideal)
-            print(f"   ⚠️ No se puede combinar chunks (FFmpeg no disponible), usando solo el primero")
-            if archivos_audio:
-                archivos_audio[0].rename(path.with_suffix(".mp3"))
-                for audio_file in archivos_audio[1:]:
-                    if audio_file.exists():
-                        audio_file.unlink()
-                return path.with_suffix(".mp3")
+            _concat_mp3(archivos_audio, path_final)
+        for audio_file in archivos_audio:
+            if audio_file.exists():
+                audio_file.unlink()
+        return path_final
     
     # Texto normal, generar directamente
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
@@ -416,28 +432,23 @@ def _openai_tts(texto: str, path: Path, formato: str, voice: str | None = None) 
         import subprocess
         import shutil
         
+        path_final = path.with_suffix(f".{ext}")
         if shutil.which("ffmpeg") and len(archivos_audio) > 1:
             print(f"   🔗 Combinando {len(archivos_audio)} archivos de audio...")
             list_file = path.parent / f"{path.stem}_concat.txt"
             with open(list_file, "w", encoding="utf-8") as f:
                 for audio_file in archivos_audio:
-                    # Usar ruta absoluta con comillas escapadas correctamente
                     ruta_abs = str(audio_file.absolute()).replace("\\", "/")
                     f.write(f"file '{ruta_abs}'\n")
-            
-            path_final = path.with_suffix(f".{ext}")
-            # Usar re-encoding para asegurar compatibilidad y continuidad
             cmd = [
                 "ffmpeg", "-y", "-f", "concat", "-safe", "0",
                 "-i", str(list_file),
-                "-c:a", "libmp3lame", "-b:a", "192k",  # Re-encodear para mejor compatibilidad
-                "-af", "apad=pad_dur=0.1",  # Agregar pequeño padding entre chunks para suavizar transiciones
+                "-c:a", "libmp3lame", "-b:a", "192k",
+                "-af", "apad=pad_dur=0.1",
                 str(path_final)
             ]
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
-                print(f"   ⚠️ Error al combinar con padding, intentando sin padding...")
-                # Intentar sin padding si falla
                 cmd_simple = [
                     "ffmpeg", "-y", "-f", "concat", "-safe", "0",
                     "-i", str(list_file),
@@ -445,23 +456,13 @@ def _openai_tts(texto: str, path: Path, formato: str, voice: str | None = None) 
                     str(path_final)
                 ]
                 subprocess.run(cmd_simple, check=True, capture_output=True)
-            
-            # Limpiar archivos temporales
             list_file.unlink()
-            for audio_file in archivos_audio:
-                if audio_file.exists():
-                    audio_file.unlink()
-            
-            return path_final
         else:
-            # Si no hay FFmpeg, usar solo el primer chunk (no ideal)
-            print(f"   ⚠️ No se puede combinar chunks (FFmpeg no disponible), usando solo el primero")
-            if archivos_audio:
-                archivos_audio[0].rename(path.with_suffix(f".{ext}"))
-                for audio_file in archivos_audio[1:]:
-                    if audio_file.exists():
-                        audio_file.unlink()
-                return path.with_suffix(f".{ext}")
+            _concat_mp3(archivos_audio, path_final)
+        for audio_file in archivos_audio:
+            if audio_file.exists():
+                audio_file.unlink()
+        return path_final
     else:
         # Texto normal, generar directamente
         voz_single = (voice or os.getenv("OPENAI_TTS_VOICE", "alloy")).strip() or "alloy"

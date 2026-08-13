@@ -1,9 +1,0 @@
-tema: POV: prueba imágenes Replicate
-proyecto: POV_prueba_imágenes_Replicate
-palabras_guion: 296
-escenas: 22
-beats: 1
-framespecs: 1
-
-Primeros beats (texto):
-  - [1] Era un día gris y lluvioso cuando te encontraste frente al espejo, observando tu reflejo.…

@@ -8,7 +8,13 @@ from typing import Any
 from src.documentary.channel import documentary_script_context, language_from_profile
 from src.documentary.editorial import DOCUMENTARY_INVARIANTS, STORY_CRAFT_BIBLE
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
-from src.documentary.script_quality import heuristic_script_quality, revise_script_once, strip_essay_tail
+from src.documentary.script_quality import (
+    close_script_ending,
+    ending_is_abrupt,
+    heuristic_script_quality,
+    revise_script_once,
+    strip_essay_tail,
+)
 from src.documentary.script_validation import editorial_warnings, strip_metadata_leaks, validate_documentary_script
 from src.documentary.story_plan import (
     get_story_plan,
@@ -59,9 +65,9 @@ def build_documentary_tema(project: dict[str, Any]) -> str:
         "Each paragraph should move an event, decision, or consequence forward.\n"
         "Use real names (people, companies, investors) when research supports them.\n"
         "Causality: A enables B. Cold open on the hook.\n"
-        "Close on ending_state only. HARD BAN on last paragraphs that moralize, summarize themes,\n"
-        "or lecture about startups/entrepreneurship/ambition/sustainability.\n"
-        "If you catch yourself writing 'underscores', 'broader', 'landscape', 'in conclusion' — delete and end earlier.\n"
+        "The LAST two paragraphs must be the ENDING STATE as events (year, number, who is left),\n"
+        "then one image that answers the cold open. Do not stop at 'uncertain future' or a lecture.\n"
+        "HARD BAN: 'underscores', 'broader implications', 'in conclusion', 'lessons', 'highlighted the vulnerabilities'.\n"
         "Spoken English. Short paragraphs. Do not invent facts."
     )
     return "\n\n".join(parts)
@@ -126,7 +132,8 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
         review = heuristic_script_quality(script, target_words=target)
         quality_meta = {"heuristic": review, "revised": False}
         needs_rev = (not review.get("pass")) or any(
-            "Ending leans" in p or "filler" in p.lower() or "Repetitive" in p for p in (review.get("problems") or [])
+            "Ending leans" in p or "abrupt" in p.lower() or "filler" in p.lower() or "Repetitive" in p
+            for p in (review.get("problems") or [])
         )
         pre_rev = script
         pre_wc = count_words(script)
@@ -152,6 +159,15 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
                 quality_meta["revised"] = False
                 quality_meta["revision_discarded_shrink"] = True
         script = strip_essay_tail(script)
+        plan = get_story_plan(project)
+        if ending_is_abrupt(script, str(plan.get("ending_state") or "")):
+            append_log(str(project["id"]), "script ending abrupt → append landing")
+            script = close_script_ending(
+                script,
+                ending_state=str(plan.get("ending_state") or ""),
+                hook=str(plan.get("hook") or ""),
+                research_notes=notes,
+            )
         wc = count_words(script)
     else:
         script = _mock_script(topic, target, research_notes=notes)

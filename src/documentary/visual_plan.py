@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
 from src.documentary.editorial import FLOW_DIRECTOR_RULES, VISUAL_DIRECTION
@@ -36,24 +37,41 @@ CAMERA_VARIETY = (
     "close_up",
     "environmental_detail",
     "over_the_shoulder",
-    "crowd",
-    "building_exterior",
+    "two_shot",
+    "hands_on_object",
     "object_detail",
     "intimate_moment",
-    "large_scale",
+    "doorway_threshold",
 )
 
 KEN_BURNS = ("slow_push", "slow_pull", "pan_left", "pan_right", "static")
 
-_NON_FLOW_CUES: list[tuple[str, tuple[str, ...]]] = [
-    ("DOCUMENT", ("s-1", "s1", "filing", "prospectus", "sec filing", "contract", "lease agreement")),
-    ("HEADLINE", ("headline", "newspaper", "wall street journal", "bloomberg", "new york times", "press report")),
-    ("SCREENSHOT", ("screenshot", "app screen", "website", "dashboard", "interface")),
-    ("LOGO", (" company logo", "logo of", "brand mark")),
-    ("CHART", ("chart", "graph", "valuation chart", "stock chart")),
-    ("MAP", ("map of", "across cities", "global expansion map")),
-    ("ARCHIVAL_PHOTO", ("photograph of", "archive photo", "historical photo")),
-    ("PRODUCT", ("product shot", "the product itself")),
+# Paper / screen props live IN the Flow still. Never ask the user for a real filing.
+_PAPER_PROPS: list[tuple[tuple[str, ...], str]] = [
+    (
+        ("s-1", "s1", "sec filing", "prospectus", "ipo filing", " filing"),
+        "Hands on a thick bound prospectus; pages dense; no readable SEC text.",
+    ),
+    (
+        ("contract", "lease agreement", "term sheet"),
+        "A contract packet on the table, signature page half-turned.",
+    ),
+    (
+        ("headline", "newspaper", "wall street journal", "bloomberg", "new york times", "press report"),
+        "A newspaper slapped on the desk, giant headline, letters not readable.",
+    ),
+    (
+        ("screenshot", "app screen", "website", "dashboard", "interface"),
+        "A laptop screen glowing; UI invented; no real brand interface.",
+    ),
+    (
+        ("chart", "graph", "valuation chart", "stock chart"),
+        "A printout of a rising-then-falling chart, numbers illegible.",
+    ),
+    (
+        ("map of", "global expansion map"),
+        "A paper map with pins, not a stock infographic.",
+    ),
 ]
 
 
@@ -89,10 +107,12 @@ def build_visual_plan(
     story = get_story_plan(project)
     beats = selected_beats(story) or (story.get("beats") or [])
     visuals = [_enrich_visual(i, shot, beats) for i, shot in enumerate(raw_shots, start=1)]
+    bible = _upgrade_bible(bible_raw, visuals, story)
+    _purge_stock_locations(bible)
+    _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm)
     visuals = _assign_camera_variety(visuals)
     visuals = _assign_durations(visuals)
 
-    bible = _upgrade_bible(bible_raw, visuals, story)
     masters = select_master_references(bible, visuals)
     # Attach flow prompts with master hints
     for v in visuals:
@@ -145,36 +165,560 @@ def build_visual_plan(
 def load_visual_plan(project_id: str) -> dict[str, Any]:
     path = project_dir(project_id) / "flow-pack" / "visual-plan.json"
     if not path.exists():
+        from src.documentary.project import _pull_if_missing
+
+        _pull_if_missing(project_id)
+        path = project_dir(project_id) / "flow-pack" / "visual-plan.json"
+    if not path.exists():
         raise FileNotFoundError("visual-plan.json missing — generate Visual Plan first")
-    return json.loads(path.read_text(encoding="utf-8"))
+    plan = refresh_flow_prompts(json.loads(path.read_text(encoding="utf-8")))
+    from src.documentary.import_images import attach_master_status
+
+    attach_master_status(project_id, plan.get("master_references") or [])
+    return plan
+
+
+def _promote_all_to_flow(visuals: list[dict[str, Any]]) -> None:
+    """Every still is a Flow photograph. No scavenger-hunt 'upload the real S-1' slots."""
+    for v in visuals:
+        v["visual_type"] = "FLOW_REENACTMENT"
+        v["person_strategy"] = "FLOW_REENACTMENT"
+        v.pop("acquisition_note", None)
+
+
+def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild Flow copy-paste prompts so old episodes pick up director rules."""
+    visuals = plan.get("visuals") or []
+    bible = plan.get("visual_bible") or {}
+    _promote_all_to_flow(visuals)
+    _purge_stock_locations(bible)
+    _tag_moments(visuals)
+    used: dict[str, set[int]] = {}
+    for v in visuals:
+        _concretize_visual(v, bible, used)
+        names = _cast_names(v, bible)
+        if names:
+            v["characters"] = names
+            refs = [str(x) for x in (v.get("reference_ids") or v.get("references") or [])]
+            refs = [r for r in refs if not str(r).upper().startswith("LOC_")]
+            for ent in bible.get("characters") or []:
+                if str(ent.get("name") or "") in names:
+                    eid = str(ent.get("id") or "")
+                    if eid and eid not in refs:
+                        refs.append(eid)
+            v["reference_ids"] = refs
+            v["references"] = refs
+    _dedupe_stills(visuals, bible)
+    _assign_camera_variety(visuals)
+    masters = select_master_references(bible, visuals)
+    plan["master_references"] = masters
+    plan["visual_bible"] = bible
+    for v in visuals:
+        if str(v.get("visual_type") or "") == "FLOW_REENACTMENT":
+            v["flow_prompt"] = format_single_prompt(v, bible, masters)
+    plan["flow_batches"] = group_flow_batches(visuals, batch_size=int(plan.get("batch_size") or 10))
+    for b in plan["flow_batches"]:
+        b["prompt"] = format_batch_prompt(b, visuals, bible, masters)
+        b["references_needed"] = batch_references(b, visuals, masters)
+    plan["stats"] = summarize_visuals(visuals, plan["flow_batches"], masters)
+    return plan
 
 
 def group_flow_batches(visuals: list[dict[str, Any]], *, batch_size: int = 10) -> list[dict[str, Any]]:
+    """One Flow pack per story MOMENT (rise/peak/crack/collapse/aftermath), not a timeline of 001→002."""
     size = max(1, int(batch_size))
-    flow = [v for v in visuals if str(v.get("visual_type") or "") == "FLOW_REENACTMENT"]
+    _promote_all_to_flow(visuals)
+    flow = list(visuals)
+    _tag_moments(flow)
+    order: list[str] = []
+    buckets: dict[str, list[dict[str, Any]]] = {}
+    for v in flow:
+        mid = str(v.get("moment_id") or "rise")
+        if mid not in buckets:
+            order.append(mid)
+            buckets[mid] = []
+        buckets[mid].append(v)
     batches: list[dict[str, Any]] = []
-    for i in range(0, len(flow), size):
-        chunk = flow[i : i + size]
-        nums = [int(v["number"]) for v in chunk]
-        batches.append(
-            {
-                "id": f"BATCH_{len(batches) + 1:02d}",
-                "visual_numbers": nums,
-                "label": _batch_label(nums),
-                "count": len(chunk),
-                "status": "ready_to_generate",
-                "imported": 0,
-            }
-        )
+    for mid in order:
+        chunk = buckets[mid]
+        label = str(chunk[0].get("moment_label") or mid)
+        for i in range(0, len(chunk), size):
+            part = chunk[i : i + size]
+            nums = [int(v["number"]) for v in part]
+            batches.append(
+                {
+                    "id": f"BATCH_{len(batches) + 1:02d}",
+                    "moment_id": mid,
+                    "moment_label": label,
+                    "visual_numbers": nums,
+                    "label": label,
+                    "count": len(part),
+                    "interchangeable": True,
+                    "status": "ready_to_generate",
+                    "imported": 0,
+                }
+            )
     return batches
 
 
 def _style_text(bible: dict[str, Any]) -> str:
-    raw = bible.get("global_style") or bible.get("visual_style") or VISUAL_DIRECTION
+    raw = (bible or {}).get("global_style") or (bible or {}).get("visual_style") or ""
     if isinstance(raw, dict):
-        bits = [str(raw.get("visual_style") or ""), str(raw.get("tone") or "")]
-        return " ".join(b for b in bits if b).strip() or VISUAL_DIRECTION
-    return str(raw)
+        bits = [str(raw.get("look") or raw.get("visual_style") or ""), str(raw.get("tone") or "")]
+        raw = " ".join(b for b in bits if b and not str(b).startswith("{"))
+    text = str(raw or "").strip()
+    if not text or text.startswith("{") or text.startswith("{'"):
+        return VISUAL_DIRECTION
+    return text
+
+
+_STOCKY_DESC = re.compile(
+    r"grupo de|a group of|busy office|open.?plan|cowork|people working|"
+    r"oficina llena|llena de gente|conference room|filled with desks|"
+    r"acción física visible|lugar principal de la historia|inversores aplaudi|"
+    r"empleados observa",
+    re.I,
+)
+_GENERIC_LOC = re.compile(
+    r"^(wework\s*)?(office|oficina|cowork(ing)?(\s+space)?|open.?plan|headquarters|hq|"
+    r"conference room|sala de (conferencias|reuniones)( moderna| de wework)?|"
+    r"ubicación específica.*)s?\.?$",
+    re.I,
+)
+_FILLER_ACTION = re.compile(r"\.?\s*Acci[oó]n f[ií]sica visible:.*$", re.I)
+_VO_LEAD = re.compile(
+    r"^(photograph this exact story beat:\s*)?(this |the |their |how |why |by \d{4}|to understand)",
+    re.I,
+)
+_PHYSICAL = re.compile(
+    r"\b(holds|holding|stands|standing|sits|sitting|walks|walking|stares|staring|"
+    r"rips|signs|dances|enters|hangs|places|reads|tears|runs|collapses|pours|"
+    r"watches|watching|drills|alone|sidewalk|term sheet|for sale|cartel|sosteniendo|"
+    r"frente a|phone in hand|empty floor)\b",
+    re.I,
+)
+_CAM_FIX = {
+    "crowd": "two_shot",
+    "building_exterior": "establishing_wide",
+    "building exterior": "establishing_wide",
+    "large_scale": "medium_action",
+    "large scale": "medium_action",
+}
+
+
+def _cast_names(visual: dict[str, Any], bible: dict[str, Any] | None) -> list[str]:
+    existing = [str(x).strip() for x in (visual.get("characters") or []) if str(x).strip()]
+    if existing:
+        return existing[:3]
+    text = " ".join(
+        str(visual.get(k) or "")
+        for k in ("narration_segment", "narration", "description", "action", "location")
+    ).lower()
+    names: list[str] = []
+    for ent in (bible or {}).get("characters") or []:
+        name = str(ent.get("name") or "").strip()
+        if name and name.lower() in text and name not in names:
+            names.append(name)
+    return names[:3]
+
+
+def _is_vo(text: str) -> bool:
+    t = " ".join((text or "").split())
+    if not t:
+        return True
+    if t.endswith("?") or t.lower().startswith("photograph this"):
+        return True
+    if _STOCKY_DESC.search(t):
+        return True
+    if _VO_LEAD.match(t) and not _PHYSICAL.search(t):
+        return True
+    if len(t.split()) > 22 and not _PHYSICAL.search(t):
+        return True
+    return False
+
+
+def _names_in_text(text: str, bible: dict[str, Any] | None) -> list[str]:
+    low = (text or "").lower()
+    out: list[str] = []
+    for ent in (bible or {}).get("characters") or []:
+        name = str(ent.get("name") or "").strip()
+        if name and name.lower() in low and name not in out:
+            out.append(name)
+    return out[:3]
+
+
+def _lead(bible: dict[str, Any] | None) -> str:
+    for c in (bible or {}).get("characters") or []:
+        name = str(c.get("name") or "").strip()
+        if name:
+            return name
+    return "the founder"
+
+
+_CANNED_STILL = re.compile(
+    r"ONE investor at a private table|cheap printed paper sign|"
+    r"emptied office floor at night|For Sale sign onto the company|"
+    r"raw unfinished floor|in a specific real place, body in motion|"
+    r"a group of (investors|entrepreneurs|employees)|busy office|open.?plan",
+    re.I,
+)
+
+_MOMENT_RULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    ("aftermath", "Qué quedó", ("spac", "2021", "layoff", "laid off", "covid", "pandemic", "remote work", "listed via")),
+    (
+        "collapse",
+        "Se cae",
+        (
+            "pulled",
+            "postponed",
+            "stepped down",
+            "bailout",
+            "plummet",
+            "8 billion",
+            "chaos",
+            "evaporated",
+            "existential",
+            "overnight",
+            "abruptly",
+        ),
+    ),
+    (
+        "crack",
+        "Se resquebraja",
+        ("s-1", "roadshow", "scrutiny", "skepticism", "governance", "erratic", "conflict of interest", "critics", "red flags"),
+    ),
+    ("peak", "En la cima", ("47 billion", "20 billion", "most valuable", "staggering milestone", "catapulted", "worldwide")),
+    (
+        "rise",
+        "Le va bien",
+        ("founded", "launch", "2010", "2014", "community", "vision", "series d", "gig economy", "opened", "started"),
+    ),
+)
+_FN_MOMENT = {
+    "hook": "collapse",
+    "setup": "rise",
+    "desire": "rise",
+    "progress": "rise",
+    "obstacle": "crack",
+    "escalation": "crack",
+    "turn": "collapse",
+    "consequence": "collapse",
+    "resolution": "aftermath",
+}
+_MOMENT_LABEL = {
+    "rise": "Le va bien",
+    "peak": "En la cima",
+    "crack": "Se resquebraja",
+    "collapse": "Se cae",
+    "aftermath": "Qué quedó",
+}
+_MOMENT_DIRECTOR = {
+    "rise": "ALL stills = the climb. Energy, cheap beginnings, belief. Nobody is ruined yet.",
+    "peak": "ALL stills = the high. Money, jet, the number, the illusion it will last.",
+    "crack": "ALL stills = the hairline fracture. Papers, doubt, 2am, the room going quiet.",
+    "collapse": "ALL stills = it breaking. Night, empty, the phone, the exit. No victory lap.",
+    "aftermath": "ALL stills = what is left. Quiet, leftover rooms, the smaller number.",
+}
+
+# Angles inside one moment — same climate, different camera. Not a sequence.
+_MOMENT_PALETTES: dict[str, tuple[tuple[str, str], ...]] = {
+    "rise": (
+        ("hangs a cheap paper sign on a raw storefront, almost nobody watching", "early-2010s NYC storefront"),
+        ("at a kitchen table, sketching a floor plan on scrap paper", "small apartment kitchen"),
+        ("walking a raw unfinished floor — paint cans, one table, selling a room that is not built", "raw loft"),
+        ("on a city sidewalk with a printed flyer, early street clothes, a few curious passersby", "sidewalk midday"),
+        ("laughing with ONE cofounder over coffee in a scuffed diner booth", "diner booth"),
+        ("carrying a cheap banner into an empty ground-floor space", "empty storefront interior"),
+        ("on a fire escape in daylight, looking at the block like it already belongs to them", "fire escape, day"),
+        ("in a tiny office with a second-hand desk, phone in hand, still hungry", "tiny first office"),
+        ("taping a floor plan to a brick wall, sleeves rolled", "brick-wall studio"),
+        ("on a bike or on foot through the neighborhood, the building behind them still ordinary", "neighborhood street"),
+    ),
+    "peak": (
+        ("on a private jet, looking out the window, a closed folder on the tray", "private jet cabin"),
+        ("walking out of a glass tower at golden hour, the city looking easy", "tower plaza, golden hour"),
+        ("at a long table with ONE investor and a bottle, the term sheet already signed", "private dining room"),
+        ("in a hotel suite overlooking the skyline, jacket off, the night still going", "hotel suite"),
+        ("on a rooftop at dusk, city below, phone face-down, nothing urgent yet", "rooftop dusk"),
+        ("in the back of a black car, skyline sliding by, calm", "car on the FDR"),
+        ("standing in a huge empty floor they just leased, arms open, daylight", "new empty floor, day"),
+        ("at a packed keynote edge of stage, lights, one person in focus", "conference stage wing"),
+        ("pouring a drink in a penthouse kitchen, the view doing the talking", "penthouse kitchen"),
+        ("crossing a plaza at noon like the building is already theirs", "corporate plaza, noon"),
+    ),
+    "crack": (
+        ("leans on a hotel-room desk at 2am, thick filing pages scattered", "hotel room at 2am"),
+        ("stands in a freight elevator with one banker, both silent, doors closing", "service elevator"),
+        ("at a printer at 5am, pulling a thick prospectus, the floor otherwise dark", "copy room at 5am"),
+        ("in a narrow hallway after a meeting, forehead against the wall", "empty conference hallway"),
+        ("on a rainy sidewalk outside a bank, the other person already walking away", "bank entrance in rain"),
+        ("reading a phone under a desk lamp, the rest of the room dark", "desk at night"),
+        ("in a dim bar booth with ONE other person, a handshake that already looks wrong", "back-room bar booth"),
+        ("waiting outside a closed boardroom door, chair against the wall", "corridor outside boardroom"),
+        ("sits alone at a corner table, a contract face-down, wine untouched", "quiet restaurant after closing"),
+        ("in the back seat, staring at a number that just got smaller", "car at night"),
+    ),
+    "collapse": (
+        ("walks away from a glass tower at night, phone lighting the face, street empty", "Manhattan sidewalk at night"),
+        ("alone on an emptied floor at night, one desk lamp, everyone else gone", "gutted office floor at night"),
+        ("on a loading dock at dusk, watching a moving truck pull away", "loading dock at dusk"),
+        ("waits on courthouse steps at dawn, coat collar up, no entourage", "courthouse steps at dawn"),
+        ("in a taxi in traffic, the company tower shrinking in the rear window", "yellow cab in traffic"),
+        ("in a boardroom AFTER everyone left, one chair kicked back, lights still on", "abandoned boardroom"),
+        ("on a fire escape at dusk, looking at the building no longer under control", "fire escape at dusk"),
+        ("crossing a plaza at noon, head down, no crowd in the frame", "city plaza at noon"),
+        ("in a bedroom doorway at night, still in a suit, home but not present", "apartment doorway at night"),
+        ("on a rooftop at night, holding a phone with the bad headline", "rooftop at night"),
+    ),
+    "aftermath": (
+        ("at a warehouse window with a for-lease flyer in hand", "industrial window, late day"),
+        ("walking an empty event space after the crowd left, chairs stacked", "ballroom after the event"),
+        ("on an emptied floor in daylight, dust in the sun, nobody coming back", "empty floor, day"),
+        ("in a taxi, older, watching a smaller sign on the same tower", "cab, grey day"),
+        ("at a kitchen table with a thinner stack of papers, morning", "apartment kitchen, morning"),
+        ("standing in a doorway of a space that used to be loud", "quiet doorway"),
+        ("on a sidewalk in winter light, the old HQ behind, ordinary traffic", "sidewalk, winter"),
+        ("in an office with half the desks gone, one plant still alive", "half-empty office"),
+        ("looking at a phone with a much smaller valuation, no reaction left", "desk, late day"),
+        ("closing a cardboard box of nameplates, the hallway empty", "storage hallway"),
+    ),
+}
+_UNIQUE_BEATS = _MOMENT_PALETTES["collapse"] + _MOMENT_PALETTES["rise"]
+_TIMES = ("dawn", "midday", "golden hour", "blue hour", "night", "3am", "rain", "winter light")
+_BEAT_DETAILS = (
+    "wool coat",
+    "open collar, no tie",
+    "2014-era thin laptop under one arm",
+    "paper cup going cold",
+    "scuffed dress shoes",
+    "a single page folded in a pocket",
+    "wedding ring catching the light",
+    "backpack from the first year",
+    "untucked shirt after a long night",
+    "keys to a space that is no longer theirs",
+    "a phone with the ringer off",
+)
+
+
+def _prop_from_narration(visual: dict[str, Any]) -> str:
+    text = " ".join(
+        str(visual.get(k) or "")
+        for k in ("narration_segment", "narration", "description", "action", "acquisition_note")
+    ).lower()
+    for cues, prop in _PAPER_PROPS:
+        if any(c in text for c in cues):
+            return prop
+    return ""
+
+
+def _tag_moments(visuals: list[dict[str, Any]]) -> None:
+    for v in visuals:
+        text = " ".join(
+            str(v.get(k) or "")
+            for k in ("narration_segment", "narration", "description", "action")
+        ).lower()
+        mid = ""
+        label = ""
+        for kid, lab, keys in _MOMENT_RULES:
+            if any(k in text for k in keys):
+                mid, label = kid, lab
+                break
+        if not mid:
+            fn = str(v.get("story_function") or v.get("function") or "").lower()
+            mid = _FN_MOMENT.get(fn, "rise")
+            label = _MOMENT_LABEL.get(mid, "Le va bien")
+        v["moment_id"] = mid
+        v["moment_label"] = label
+
+
+def _still_from_vo(
+    visual: dict[str, Any],
+    bible: dict[str, Any] | None,
+    used: dict[str, set[int]] | set[int] | None = None,
+) -> str:
+    still, _loc = _unique_beat(visual, bible, used)
+    return still
+
+
+def _unique_beat(
+    visual: dict[str, Any],
+    bible: dict[str, Any] | None,
+    used: dict[str, set[int]] | set[int] | None = None,
+) -> tuple[str, str]:
+    narr = str(visual.get("narration_segment") or visual.get("narration") or "").strip()
+    who = _names_in_text(narr, bible)
+    who_s = ", ".join(who) if who else _lead(bible)
+    n = max(1, int(visual.get("number") or 1))
+    mid = str(visual.get("moment_id") or "rise")
+    palette = _MOMENT_PALETTES.get(mid) or _UNIQUE_BEATS
+    if isinstance(used, dict):
+        taken = used.setdefault(mid, set())
+    else:
+        taken = used if used is not None else set()
+    start = (n - 1) % len(palette)
+    idx = start
+    for off in range(len(palette)):
+        cand = (start + off) % len(palette)
+        if cand not in taken:
+            idx = cand
+            break
+    taken.add(idx)
+    action, loc = palette[idx]
+    when = _TIMES[(n * 5 + idx) % len(_TIMES)]
+    detail = _BEAT_DETAILS[(n * 3 + idx) % len(_BEAT_DETAILS)]
+    still = f"{who_s} {action}, {when}, {detail}. No crowd, no open-plan office."
+    return still, loc
+
+
+def _concretize_visual(
+    visual: dict[str, Any],
+    bible: dict[str, Any] | None,
+    used: dict[str, set[int]] | set[int] | None = None,
+) -> None:
+    if str(visual.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
+        return
+    desc = _FILLER_ACTION.sub("", str(visual.get("description") or visual.get("action") or "")).strip(" .")
+    stale = (not desc) or _is_vo(desc) or _STOCKY_DESC.search(desc) or _CANNED_STILL.search(desc)
+    if stale:
+        still, loc = _unique_beat(visual, bible, used)
+        prop = _prop_from_narration(visual)
+        if prop:
+            still = f"{still.rstrip('. ')}. {prop}"
+        visual["description"] = still
+        visual["action"] = still
+        visual["location"] = loc
+        people = _names_in_text(still, bible) or _names_in_text(
+            str(visual.get("narration_segment") or ""), bible
+        )
+        if not people:
+            people = [_lead(bible)]
+        visual["characters"] = people[:2]
+    loc = str(visual.get("location") or "").strip()
+    if loc and (_GENERIC_LOC.match(loc) or _STOCKY_DESC.search(loc)):
+        visual["location"] = ""
+    st = str(visual.get("shot_type") or "")
+    visual["shot_type"] = _CAM_FIX.get(st, _CAM_FIX.get(st.replace("_", " "), st))
+
+
+def _dedupe_stills(visuals: list[dict[str, Any]], bible: dict[str, Any] | None) -> None:
+    seen: set[str] = set()
+    used: dict[str, set[int]] = {}
+    for v in visuals:
+        if str(v.get("visual_type") or "") != "FLOW_REENACTMENT":
+            continue
+        key = re.sub(r"[^a-z0-9]+", " ", str(v.get("description") or v.get("action") or "").lower()).strip()
+        if key and key not in seen:
+            seen.add(key)
+            continue
+        still, loc = _unique_beat(v, bible, used)
+        v["description"] = still
+        v["action"] = still
+        v["location"] = loc
+        seen.add(re.sub(r"[^a-z0-9]+", " ", still.lower()).strip())
+
+
+def _rewrite_stills(
+    visuals: list[dict[str, Any]],
+    bible: dict[str, Any],
+    topic: str,
+    *,
+    use_llm: bool,
+) -> None:
+    used: dict[str, set[int]] = {}
+    _tag_moments(visuals)
+    for v in visuals:
+        _concretize_visual(v, bible, used)
+    _dedupe_stills(visuals, bible)
+    if not use_llm:
+        return
+    flow = [v for v in visuals if str(v.get("visual_type") or "") == "FLOW_REENACTMENT"]
+    if not flow:
+        return
+    import os
+
+    key = (os.getenv("OPENAI_API_KEY") or "").strip()
+    if not key:
+        return
+    try:
+        from openai import OpenAI
+    except Exception:
+        return
+    client = OpenAI(api_key=key)
+    cast = [str(c.get("name") or "").strip() for c in (bible.get("characters") or []) if c.get("name")]
+    system = (
+        "You are a documentary stills photographer. Convert each narration line into ONE photograph.\n"
+        "Return ONLY a JSON list. Each item: number, action, location, characters (names from the cast only), time_of_day.\n"
+        "action = one sentence, a body doing something, a specific place. NEVER copy the narration. "
+        "NEVER a rhetorical question. NEVER a crowded office or coworking floor.\n"
+        "If the VO is abstract, invent the honest visual consequence "
+        "(empty floor after the crash, a For Sale sign at night, two cofounders on a sidewalk with a cheap sign).\n"
+        "Locations MUST change across the list: street, apartment, car, jet, empty hallway, restaurant, "
+        "sidewalk, bedroom at 3am, loading dock, courthouse steps — not 'office' twice in a row.\n"
+        "Keep the SAME emotional register as the moment (rise vs collapse). Different camera, same climate."
+    )
+    for i in range(0, len(flow), 8):
+        chunk = flow[i : i + 8]
+        payload = {
+            "topic": topic,
+            "cast": cast[:8],
+            "shots": [
+                {
+                    "number": int(v.get("number") or 0),
+                    "narration": str(v.get("narration_segment") or v.get("narration") or "")[:400],
+                }
+                for v in chunk
+            ],
+        }
+        try:
+            r = client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+                ],
+                temperature=0.7,
+                max_tokens=1400,
+            )
+            raw = (r.choices[0].message.content or "").strip()
+            blob = raw[raw.find("[") : raw.rfind("]") + 1]
+            rows = json.loads(blob) if blob else []
+        except Exception:
+            continue
+        if not isinstance(rows, list):
+            continue
+        by_n = {int(v["number"]): v for v in chunk}
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            try:
+                n = int(row.get("number") or 0)
+            except (TypeError, ValueError):
+                continue
+            v = by_n.get(n)
+            if v is None:
+                continue
+            action = str(row.get("action") or "").strip()
+            loc = str(row.get("location") or "").strip()
+            chars = [str(x).strip() for x in (row.get("characters") or []) if str(x).strip()]
+            if action and not _is_vo(action):
+                v["description"] = action
+                v["action"] = action
+            if loc and not _GENERIC_LOC.match(loc) and not _STOCKY_DESC.search(loc):
+                v["location"] = loc
+            if chars:
+                allowed = {c.lower() for c in cast}
+                v["characters"] = [c for c in chars if c.lower() in allowed][:3] or v.get("characters") or []
+    _dedupe_stills(flow, bible)
+
+
+def _story_description(visual: dict[str, Any], bible: dict[str, Any] | None = None) -> str:
+    raw = str(visual.get("description") or visual.get("action") or "").strip()
+    raw = _FILLER_ACTION.sub("", raw).strip(" .")
+    if raw.lower().startswith("photograph this exact"):
+        raw = ""
+    if raw and not _is_vo(raw) and not _STOCKY_DESC.search(raw) and not _CANNED_STILL.search(raw):
+        return raw
+    return _still_from_vo(visual, bible)
 
 
 def format_batch_prompt(
@@ -186,51 +730,63 @@ def format_batch_prompt(
     by_num = {int(v["number"]): v for v in visuals}
     nums = [int(n) for n in (batch.get("visual_numbers") or [])]
     n = len(nums)
+    mid = str(batch.get("moment_id") or "")
+    if not mid and nums:
+        mid = str((by_num.get(nums[0]) or {}).get("moment_id") or "rise")
+    label = str(batch.get("moment_label") or _MOMENT_LABEL.get(mid, "this moment"))
+    climate = _MOMENT_DIRECTOR.get(mid, "ALL stills share the same emotional register.")
     lines = [
-        f"Create {n} separate 16:9 cinematic documentary still images",
-        "illustrating the following sequence.",
+        f"Create {n} separate 16:9 cinematic documentary stills of ONE STORY MOMENT: {label.upper()}.",
+        climate,
+        "They are INTERCHANGEABLE — not a sequence, not 1 then 2 then 3. Different camera and place, SAME climate.",
+        "Do not create a collage. Do not tell a 10-step timeline. Do not repeat the same office/crowd.",
         "",
-        "IMPORTANT:",
-        "Each numbered item must be a SEPARATE IMAGE.",
-        "Do not create a collage or contact sheet.",
-        "",
-        "Maintain a consistent premium photorealistic documentary",
-        "photography style across all images.",
-        "",
-        "When a recurring character reference is provided, use that",
-        "same person whenever specified and preserve their identity.",
+        "HARD RULES:",
+        "- The same person must look like the same person across images (use character refs).",
+        "- Change location, time of day, and camera every shot.",
+        "- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,",
+        "  handshake, CEO portrait, anonymous extras filling the frame.",
         "",
         f"DIRECTOR: {FLOW_DIRECTOR_RULES}",
         f"STYLE: {_style_text(bible)[:320]}",
         "",
+        f"ANGLES on {label} (same moment, different photograph):",
+        "",
     ]
-    for idx, num in enumerate(nums, start=1):
+    for i, num in enumerate(nums, start=1):
         v = by_num.get(num) or {}
-        lines.append(f"{idx}. {format_scene_line(v, masters)}")
+        lines.append(f"{i}. {format_scene_line(v, masters, bible)}")
         lines.append("")
     lines.extend(
         [
             "GENERAL RULES:",
-            "- wide 16:9;",
-            "- photorealistic;",
-            "- documentary photography;",
-            "- realistic period details;",
-            "- varied camera compositions;",
-            "- no readable text unless explicitly requested;",
-            "- no accidental logos;",
-            "- no collage.",
+            "- 16:9 photoreal documentary;",
+            "- protagonist visible and doing the action;",
+            "- period-accurate wardrobe, phones, cars, interiors;",
+            "- every frame is the SAME emotional beat from a new angle;",
+            "- no readable text unless requested; no logos; no collage;",
+            "- no stock office crowd.",
         ]
     )
     return "\n".join(lines).strip() + "\n"
 
 
-def format_scene_line(visual: dict[str, Any], masters: list[dict[str, Any]] | None = None) -> str:
+def format_scene_line(
+    visual: dict[str, Any],
+    masters: list[dict[str, Any]] | None = None,
+    bible: dict[str, Any] | None = None,
+) -> str:
     num = int(visual.get("number") or 0)
     period = str(visual.get("period") or "").strip()
     loc = str(visual.get("location") or "").strip()
-    desc = str(visual.get("description") or visual.get("action") or "").strip()
-    cam = str(visual.get("shot_type") or visual.get("camera") or "medium_action").replace("_", " ")
+    if loc and (_GENERIC_LOC.match(loc) or _STOCKY_DESC.search(loc)):
+        loc = ""
+    desc = _story_description(visual, bible)
+    cam_key = str(visual.get("shot_type") or visual.get("camera") or "medium_action")
+    cam = _CAM_FIX.get(cam_key, _CAM_FIX.get(cam_key.replace("_", " "), cam_key)).replace("_", " ")
     refs = [str(rid) for rid in (visual.get("reference_ids") or visual.get("references") or [])]
+    # LOC masters in this project are generic coworking interiors — they make every still look the same.
+    refs = [r for r in refs if not r.upper().startswith("LOC_")]
     master_hint = ""
     if refs and masters:
         names = []
@@ -238,14 +794,20 @@ def format_scene_line(visual: dict[str, Any], masters: list[dict[str, Any]] | No
             if m.get("id") in refs:
                 names.append(str(m.get("master_filename") or m.get("name") or m.get("id")))
         if names:
-            master_hint = " Use " + ", ".join(names) + " reference."
+            master_hint = " Use " + ", ".join(names) + " as identity reference."
     elif refs:
-        master_hint = " Use " + ", ".join(refs) + " reference."
+        master_hint = " Use " + ", ".join(refs) + " as identity reference."
     when = f" {period}." if period else ""
     place = f" {loc}." if loc else ""
+    people = _cast_names(visual, bible)
+    who = (
+        f" Protagonist in frame: {', '.join(people[:3])} — same face as their master reference."
+        if people
+        else " One named person from this story in frame — not a crowd of extras."
+    )
     return (
-        f"{num:03d}.{when}{place} {desc} "
-        f"{cam} candid documentary shot, photorealistic, period-accurate details."
+        f"{when}{place} {desc}{who} "
+        f"{cam} candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock."
         f"{master_hint}"
     ).strip()
 
@@ -256,11 +818,11 @@ def format_single_prompt(
     masters: list[dict[str, Any]] | None = None,
 ) -> str:
     return (
-        "Create ONE separate 16:9 cinematic documentary still image.\n"
-        "Photorealistic documentary photography. No collage.\n"
+        "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\n"
+        "Photoreal. No collage. No crowded office stock.\n"
         f"STYLE: {_style_text(bible)[:280]}\n"
         f"DIRECTOR: {FLOW_DIRECTOR_RULES}\n\n"
-        f"{format_scene_line(visual, masters)}\n"
+        f"{format_scene_line(visual, bible=bible, masters=masters)}\n"
     )
 
 
@@ -289,6 +851,27 @@ def batch_references(
     return out
 
 
+_STOCK_LOC = re.compile(
+    r"headquarters|cowork|open.?plan|open.?concept|glass walls|bustling|"
+    r"diverse professionals|filled with people|networking|locations worldwide|"
+    r"communal tables|lounge areas|corporate office|open-plan|professionals working",
+    re.I,
+)
+
+
+def _is_stock_location(ent: dict[str, Any]) -> bool:
+    blob = " ".join(
+        str(ent.get(k) or "")
+        for k in ("name", "description", "visual_description")
+    )
+    return bool(_STOCK_LOC.search(blob))
+
+
+def _purge_stock_locations(bible: dict[str, Any]) -> None:
+    locs = [e for e in (bible.get("locations") or []) if isinstance(e, dict) and not _is_stock_location(e)]
+    bible["locations"] = locs
+
+
 def select_master_references(bible: dict[str, Any], visuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
     flow_nums = {int(v["number"]) for v in visuals if v.get("visual_type") == "FLOW_REENACTMENT"}
     masters: list[dict[str, Any]] = []
@@ -297,17 +880,21 @@ def select_master_references(bible: dict[str, Any], visuals: list[dict[str, Any]
         apps = ent.get("appears_in_shots") or []
         return len([n for n in apps if int(n) in flow_nums])
 
-    for ent in bible.get("characters") or []:
+    chars = [e for e in (bible.get("characters") or []) if e.get("name")]
+    for i, ent in enumerate(chars):
         c = _count(ent)
-        if c < 3 and not ent.get("reference_required"):
+        # Always lock the first two faces — that's what Flow needs for continuity.
+        if i >= 2 and c < 3 and not ent.get("reference_required"):
             continue
-        masters.append(_master_entry(ent, "character", c))
+        masters.append(_master_entry(ent, "character", max(c, 1)))
 
     for ent in bible.get("locations") or []:
+        if _is_stock_location(ent):
+            continue
         c = _count(ent)
         if c < 4 and not ent.get("reference_required"):
             continue
-        if sum(1 for m in masters if m.get("kind") == "location") >= 2:
+        if sum(1 for m in masters if m.get("kind") == "location") >= 1:
             continue
         masters.append(_master_entry(ent, "location", c))
 
@@ -373,7 +960,7 @@ def summarize_visuals(
     }
 
 
-def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
+def sync_ready_from_disk(project_id: str, *, check_remote: bool = True) -> dict[str, Any]:
     root = project_dir(project_id)
     images = root / "images"
     plan_path = root / "flow-pack" / "visual-plan.json"
@@ -388,12 +975,29 @@ def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
     elif shot_path.exists():
         visuals = json.loads(shot_path.read_text(encoding="utf-8")).get("shots") or []
 
+    remote_nums: set[int] = set()
+    if check_remote:
+        try:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                for rel in cloud_sync.list_rel_paths(project_id, "images/"):
+                    stem = Path(rel).stem
+                    if stem.isdigit():
+                        remote_nums.add(int(stem))
+        except Exception:
+            pass
+
+    from src.documentary.import_images import still_file
+
+    def _has(num: int) -> bool:
+        return still_file(images, num) is not None or num in remote_nums
+
     for v in visuals:
         num = int(v.get("number") or 0)
         if not num:
             continue
-        path = images / f"{num:03d}.png"
-        if path.exists():
+        if _has(num):
             v["status"] = "READY"
             ready.append(f"{num:03d}")
         else:
@@ -405,7 +1009,7 @@ def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
         plan["visuals"] = visuals
         for b in plan.get("flow_batches") or []:
             nums = [int(n) for n in b.get("visual_numbers") or []]
-            imported = sum(1 for n in nums if (images / f"{n:03d}.png").exists())
+            imported = sum(1 for n in nums if _has(n))
             b["imported"] = imported
             b["status"] = (
                 "complete"
@@ -418,7 +1022,7 @@ def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
         data = json.loads(shot_path.read_text(encoding="utf-8"))
         for s in data.get("shots") or []:
             num = int(s.get("number") or 0)
-            s["status"] = "READY" if (images / f"{num:03d}.png").exists() else "MISSING"
+            s["status"] = "READY" if _has(num) else "MISSING"
         data["ready_count"] = len(ready)
         data["missing"] = missing
         shot_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -505,15 +1109,10 @@ def plan_to_markdown(plan: dict[str, Any]) -> str:
 def _enrich_visual(i: int, shot: dict[str, Any], beats: list[dict]) -> dict[str, Any]:
     narr = str(shot.get("narration") or "").strip()
     action = str(shot.get("action") or "").strip()
-    vtype = classify_visual_type(narr + " " + action)
+    vtype = "FLOW_REENACTMENT"
     beat_id = map_story_beat(narr, beats, index=i)
     period = _guess_period(narr) or _guess_period(action)
-    if vtype in ("DOCUMENT", "HEADLINE", "SCREENSHOT", "LOGO", "CHART", "MAP"):
-        person_strategy = "NO_FACE"
-    elif vtype == "ARCHIVAL_PHOTO":
-        person_strategy = "ARCHIVAL_REAL"
-    else:
-        person_strategy = "FLOW_REENACTMENT"
+    person_strategy = "FLOW_REENACTMENT"
 
     desc = action or _description_from_narration(narr)
     visual = {
@@ -537,20 +1136,10 @@ def _enrich_visual(i: int, shot: dict[str, Any], beats: list[dict]) -> dict[str,
         "status": "MISSING",
         "flow_prompt": "",
     }
-    if vtype != "FLOW_REENACTMENT":
-        visual["acquisition_note"] = (
-            f"Import a real {vtype.replace('_', ' ').lower()} asset. "
-            f"Do NOT ask Flow to fake authentic filings/headlines/logos. "
-            f"Hint: {(desc or narr)[:160]}"
-        )
     return visual
 
 
 def classify_visual_type(text: str) -> str:
-    low = (text or "").lower()
-    for vtype, cues in _NON_FLOW_CUES:
-        if any(c in low for c in cues):
-            return vtype
     return "FLOW_REENACTMENT"
 
 
@@ -579,10 +1168,7 @@ def _guess_period(text: str) -> str:
 
 
 def _description_from_narration(narr: str) -> str:
-    s = " ".join((narr or "").split())
-    if len(s) > 220:
-        s = s[:217] + "…"
-    return s or "A concrete documentary moment from this company story"
+    return _still_from_vo({"narration": narr, "narration_segment": narr}, None)
 
 
 def _assign_camera_variety(visuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -657,7 +1243,7 @@ def _attach_from_visuals(bible: dict, visuals: list[dict]) -> None:
     for v in visuals:
         num = int(v.get("number") or 0)
         text = f"{v.get('narration_segment')} {v.get('description')} {v.get('location')}".lower()
-        for group in ("characters", "locations", "important_objects"):
+        for group in ("characters", "important_objects"):
             for ent in bible.get(group) or []:
                 name = str(ent.get("name") or "").lower()
                 if name and name in text:
@@ -669,8 +1255,15 @@ def _attach_from_visuals(bible: dict, visuals: list[dict]) -> None:
                     eid = str(ent.get("id") or "")
                     if eid and eid not in refs and v.get("visual_type") == "FLOW_REENACTMENT":
                         refs.append(eid)
+                    refs = [r for r in refs if not str(r).upper().startswith("LOC_")]
                     v["reference_ids"] = refs
                     v["references"] = refs
+                    if group == "characters":
+                        disp = str(ent.get("name") or "").strip()
+                        people = [str(x).strip() for x in (v.get("characters") or []) if str(x).strip()]
+                        if disp and disp not in people:
+                            people.append(disp)
+                        v["characters"] = people
     for group in ("characters", "locations", "important_objects"):
         for ent in bible.get(group) or []:
             apps = ent.get("appears_in_shots") or []
@@ -683,6 +1276,29 @@ def _attach_from_visuals(bible: dict, visuals: list[dict]) -> None:
 
 def _master_entry(ent: dict, kind: str, used: int) -> dict[str, Any]:
     eid = str(ent.get("id") or "REF")
+    name = str(ent.get("name") or eid)
+    look = str(ent.get("visual_description") or ent.get("description") or "").strip()
+    if kind == "character":
+        prompt = (
+            f"Generate ONE master reference of {name} for FACE continuity in a true-story documentary.\n"
+            f"{look}\n"
+            "Close-up to chest. Face fully visible, distinctive hair, period-accurate wardrobe. "
+            "Plain or empty background. Photoreal 16:9.\n"
+            "ZERO other people. NO open-plan office, NO laptops, NO coworking, NO crowd.\n"
+            "Reconstruction reference — not an archival photo."
+        )
+    elif kind == "location":
+        prompt = (
+            f"Generate ONE empty location plate of {name}. Architecture and light only.\n"
+            f"{look}\n"
+            "Photoreal 16:9 documentary. ZERO people. Not a stock coworking photo."
+        )
+    else:
+        prompt = (
+            f"Generate ONE object still of {name}.\n"
+            f"{look}\n"
+            "Hands allowed, no crowd, no logos, photoreal 16:9."
+        )
     return {
         "id": eid,
         "name": ent.get("name"),
@@ -691,13 +1307,7 @@ def _master_entry(ent: dict, kind: str, used: int) -> dict[str, Any]:
         "appearance_strategy": ent.get("appearance_strategy") or "FLOW_REENACTMENT",
         "reference_required": True,
         "master_filename": ent.get("master_reference_filename") or f"{eid}.png",
-        "master_prompt": (
-            f"Generate ONE clear master reference image for continuity.\n"
-            f"Name: {ent.get('name')}\n"
-            f"{ent.get('visual_description') or ent.get('description')}\n"
-            f"Photorealistic documentary style, 16:9, neutral pose, clear identity cues. "
-            f"Reconstruction reference for later scenes — not a claim of an archival photo."
-        ),
+        "master_prompt": prompt,
         "used_in_flow": used,
         "notes": ent.get("notes") or "",
     }

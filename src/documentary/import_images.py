@@ -11,6 +11,178 @@ from src.documentary.flow_pack import load_shot_list
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 
 _NUM_RE = re.compile(r"^(\d{1,4})\.(png|jpg|jpeg|webp)$", re.I)
+_STILL_EXTS = (".jpg", ".jpeg", ".png", ".webp")
+
+
+def still_file(images_dir: Path, number: int) -> Path | None:
+    n = int(number)
+    for ext in _STILL_EXTS:
+        path = images_dir / f"{n:03d}{ext}"
+        if path.is_file() and path.stat().st_size > 0:
+            return path
+    return None
+
+
+def ensure_still_thumb(images_dir: Path, number: int) -> Path | None:
+    """Small JPEG for the UI so we never ship 7MB PNGs to the browser."""
+    n = int(number)
+    thumb = images_dir / f"{n:03d}.thumb.jpg"
+    src = still_file(images_dir, n)
+    if src is not None:
+        stale = (
+            not thumb.is_file()
+            or thumb.stat().st_size <= 0
+            or thumb.stat().st_mtime + 0.5 < src.stat().st_mtime
+        )
+        if stale:
+            try:
+                from PIL import Image
+
+                with Image.open(src) as im:
+                    rgb = im.convert("RGB")
+                    rgb.thumbnail((960, 540), Image.LANCZOS)
+                    rgb.save(thumb, format="JPEG", quality=70)
+            except Exception:
+                return src
+        if thumb.is_file() and thumb.stat().st_size > 0:
+            return thumb
+        return src
+    if thumb.is_file() and thumb.stat().st_size > 0:
+        return thumb
+    return None
+
+
+def write_compressed_still(dest_root: Path, num: int, data: bytes, filename: str = "") -> Path:
+    """Store a YouTube-sized JPEG so uploads stay small and fast."""
+    return write_compressed_named(dest_root, f"{int(num):03d}", data, filename)
+
+
+def write_compressed_named(dest_root: Path, stem: str, data: bytes, filename: str = "") -> Path:
+    dest_root.mkdir(parents=True, exist_ok=True)
+    stem = Path(str(stem)).stem
+    dest = dest_root / f"{stem}.jpg"
+    suffix = Path(filename or "").suffix.lower()
+    if suffix in {".jpg", ".jpeg"} and len(data) <= 850_000:
+        dest.write_bytes(data)
+    else:
+        import io
+
+        from PIL import Image
+
+        with Image.open(io.BytesIO(data)) as im:
+            rgb = im.convert("RGB")
+            rgb.thumbnail((1920, 1080), Image.LANCZOS)
+            rgb.save(dest, format="JPEG", quality=90)
+    for ext in _STILL_EXTS:
+        extra = dest_root / f"{stem}{ext}"
+        if extra != dest and extra.exists():
+            extra.unlink()
+    old_thumb = dest_root / f"{stem}.thumb.jpg"
+    if old_thumb.is_file():
+        old_thumb.unlink()
+    return dest
+
+
+_MASTER_ID_RE = re.compile(r"^[A-Za-z]{2,8}_\d{3}$")
+
+
+def normalize_master_id(ref_id: str) -> str:
+    eid = str(ref_id or "").strip().upper().replace(".PNG", "").replace(".JPG", "").replace(".JPEG", "").replace(".WEBP", "")
+    eid = Path(eid).stem
+    if not _MASTER_ID_RE.match(eid):
+        raise ValueError(f"Referencia inválida: {ref_id}")
+    return eid
+
+
+def masters_dir(project_id: str) -> Path:
+    d = project_dir(project_id) / "flow-pack" / "references" / "masters"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def master_file(project_id: str, ref_id: str) -> Path | None:
+    eid = normalize_master_id(ref_id)
+    root = masters_dir(project_id)
+    for ext in _STILL_EXTS:
+        path = root / f"{eid}{ext}"
+        if path.is_file() and path.stat().st_size > 0:
+            return path
+    return None
+
+
+def ensure_master_thumb(project_id: str, ref_id: str) -> Path | None:
+    eid = normalize_master_id(ref_id)
+    root = masters_dir(project_id)
+    thumb = root / f"{eid}.thumb.jpg"
+    src = master_file(project_id, eid)
+    if src is not None:
+        stale = (
+            not thumb.is_file()
+            or thumb.stat().st_size <= 0
+            or thumb.stat().st_mtime + 0.5 < src.stat().st_mtime
+        )
+        if stale:
+            try:
+                from PIL import Image
+
+                with Image.open(src) as im:
+                    rgb = im.convert("RGB")
+                    rgb.thumbnail((960, 540), Image.LANCZOS)
+                    rgb.save(thumb, format="JPEG", quality=70)
+            except Exception:
+                return src
+        if thumb.is_file() and thumb.stat().st_size > 0:
+            return thumb
+        return src
+    if thumb.is_file() and thumb.stat().st_size > 0:
+        return thumb
+    return None
+
+
+def save_master_upload(project_id: str, ref_id: str, data: bytes, filename: str = "") -> dict[str, Any]:
+    eid = normalize_master_id(ref_id)
+    dest = write_compressed_named(masters_dir(project_id), eid, data, filename)
+    thumb = ensure_master_thumb(project_id, eid)
+    stored = [f"flow-pack/references/masters/{dest.name}"]
+    if thumb is not None and thumb.name != dest.name:
+        stored.append(f"flow-pack/references/masters/{thumb.name}")
+    append_log(project_id, f"master {eid} uploaded")
+    return {"id": eid, "stored": stored}
+
+
+def delete_master_image(project_id: str, ref_id: str) -> dict[str, Any]:
+    eid = normalize_master_id(ref_id)
+    root = masters_dir(project_id)
+    removed = False
+    for ext in _STILL_EXTS:
+        path = root / f"{eid}{ext}"
+        if path.is_file():
+            path.unlink()
+            removed = True
+    thumb = root / f"{eid}.thumb.jpg"
+    if thumb.is_file():
+        thumb.unlink()
+        removed = True
+    append_log(project_id, f"master {eid} deleted")
+    return {"ok": True, "removed": removed, "id": eid}
+
+
+def attach_master_status(project_id: str, masters: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    from src.documentary import cloud_sync
+
+    remote = cloud_sync.configured()
+    for m in masters:
+        try:
+            eid = normalize_master_id(str(m.get("id") or m.get("master_filename") or ""))
+        except ValueError:
+            m["status"] = "MISSING"
+            continue
+        if master_file(project_id, eid) is None and remote:
+            for name in (f"{eid}.jpg", f"{eid}.thumb.jpg", f"{eid}.png"):
+                if cloud_sync.pull_one(project_id, f"flow-pack/references/masters/{name}"):
+                    break
+        m["status"] = "READY" if master_file(project_id, eid) else "MISSING"
+    return masters
 
 
 def import_images(
@@ -121,11 +293,9 @@ def import_uploaded_images(
 
     dest_root = project_dir(str(project["id"])) / "images"
     dest_root.mkdir(parents=True, exist_ok=True)
-    # Also keep a copy in flow-import for traceability
-    drop = project_dir(str(project["id"])) / "flow-import"
-    drop.mkdir(parents=True, exist_ok=True)
 
     imported_nums: list[int] = []
+    stored_rels: list[str] = []
     invalid: list[str] = []
     unknown: list[str] = []
     dim_issues: list[str] = []
@@ -135,7 +305,7 @@ def import_uploaded_images(
     for filename, data in files:
         name = Path(filename).name
         num: int | None = None
-        if force_number is not None and len(files) == 1:
+        if force_number is not None and (len(files) == 1 or filename == files[0][0]):
             num = int(force_number)
         else:
             m = _NUM_RE.match(name)
@@ -154,37 +324,31 @@ def import_uploaded_images(
         if num in seen:
             duplicates.append(name)
             continue
-        if expected_nums and num not in expected_nums:
+        if expected_nums and num not in expected_nums and force_number is None:
             unknown.append(name)
             continue
         seen.add(num)
 
-        drop_path = drop / f"{num:03d}{Path(name).suffix.lower() or '.png'}"
-        drop_path.write_bytes(data)
-        dest = dest_root / f"{num:03d}.png"
-        # Normalize to png via Pillow when possible; else raw copy
-        try:
-            from PIL import Image
-            import io
-
-            with Image.open(io.BytesIO(data)) as im:
-                rgb = im.convert("RGB") if im.mode not in ("RGB", "RGBA") else im
-                rgb.save(dest, format="PNG")
-        except Exception:
-            dest.write_bytes(data)
-
+        dest = write_compressed_still(dest_root, num, data, name)
         imported_nums.append(num)
-        issue = _dim_issue(dest, min_width)
-        if issue:
-            dim_issues.append(f"{num:03d}: {issue}")
+        stored_rels.append(f"images/{dest.name}")
+        thumb = ensure_still_thumb(dest_root, num)
+        if thumb is not None and thumb.name != dest.name:
+            stored_rels.append(f"images/{thumb.name}")
+
+    if not imported_nums:
+        bits = []
+        if invalid:
+            bits.append(f"nombre inválido: {', '.join(invalid[:3])}")
+        if unknown:
+            bits.append(f"número que no existe en el plan: {', '.join(unknown[:3])}")
+        if duplicates:
+            bits.append("duplicadas")
+        raise ValueError("No se importó ninguna imagen. " + ("; ".join(bits) or "Archivo vacío o ilegible."))
 
     # Ready = existing files on disk after upload
     img_root = dest_root
-    ready_set = {
-        n
-        for n in expected_nums
-        if (img_root / f"{n:03d}.png").exists() and (img_root / f"{n:03d}.png").stat().st_size > 0
-    }
+    ready_set = {n for n in expected_nums if still_file(img_root, n)}
     missing = sorted(expected_nums - ready_set) if expected_nums else []
     ready = len(ready_set)
 
@@ -193,6 +357,7 @@ def import_uploaded_images(
         "ready": ready,
         "imported_files": len(imported_nums),
         "imported_numbers": [f"{n:03d}" for n in sorted(imported_nums)],
+        "stored": stored_rels,
         "missing": [f"{n:03d}" for n in missing],
         "duplicates": duplicates,
         "unknown_numbers": unknown,
@@ -200,19 +365,24 @@ def import_uploaded_images(
         "dimension_issues": dim_issues,
         "source_dir": "studio_upload",
     }
-    project["import_report"] = report
-    set_checkpoint(project, "images_imported", ready > 0)
-    if ready == expected_n and expected_n > 0:
-        set_checkpoint(project, "images_imported", True)
-        project["ui_step"] = "voice"
-    else:
-        project["ui_step"] = "images"
-    save_project(project)
-    sync_shot_statuses_from_images(str(project["id"]))
-    append_log(
-        str(project["id"]),
-        f"upload import n={len(imported_nums)} ready={ready}/{expected_n} missing={len(missing)}",
+    prev = dict(project.get("import_report") or {})
+    merged_nums = sorted(
+        set(str(x) for x in (prev.get("imported_numbers") or []))
+        | {f"{n:03d}" for n in imported_nums}
     )
+    report["imported_numbers"] = merged_nums
+    imported_set = {int(x) for x in merged_nums if str(x).lstrip("0").isdigit() or str(x) == "0"}
+    prev_missing = [str(m) for m in (prev.get("missing") or [])]
+    report["missing"] = [m for m in prev_missing if int(m) not in imported_set]
+    report["ready"] = max(int(prev.get("ready") or 0), len(merged_nums), ready)
+    project["import_report"] = report
+    set_checkpoint(project, "images_imported", True)
+    # Don't jump ui_step: a Vercel lambda only sees its own /tmp and would
+    # mark every other still as missing if we advanced/rewound from local disk.
+    try:
+        save_project(project)
+    except Exception:
+        pass
     return report
 
 
@@ -242,26 +412,103 @@ def replace_shot_image(project: dict[str, Any], shot_number: int, image_path: st
     return dest
 
 
+def delete_project_image(project_id: str, number: int) -> dict[str, Any]:
+    """Remove one still from disk (and caller should drop the Supabase blob)."""
+    n = int(number)
+    root = project_dir(project_id)
+    img = root / "images"
+    removed = False
+    for ext in _STILL_EXTS:
+        dest = img / f"{n:03d}{ext}"
+        if dest.is_file():
+            dest.unlink()
+            removed = True
+    thumb = img / f"{n:03d}.thumb.jpg"
+    if thumb.is_file():
+        thumb.unlink()
+        removed = True
+    drop = root / "flow-import"
+    if drop.is_dir():
+        for extra in drop.glob(f"{n:03d}.*"):
+            if extra.is_file():
+                extra.unlink()
+    append_log(project_id, f"deleted still {n:03d}")
+    return {"ok": True, "removed": removed, "number": f"{n:03d}"}
+
+
+def delete_all_project_images(project_id: str) -> dict[str, Any]:
+    root = project_dir(project_id)
+    removed = 0
+    img = root / "images"
+    if img.is_dir():
+        for path in img.iterdir():
+            if path.is_file() and (
+                path.suffix.lower() in _STILL_EXTS or path.name.endswith(".thumb.jpg")
+            ):
+                path.unlink()
+                removed += 1
+    drop = root / "flow-import"
+    if drop.is_dir():
+        for extra in drop.iterdir():
+            if extra.is_file():
+                extra.unlink()
+    append_log(project_id, f"deleted all stills n={removed}")
+    return {"ok": True, "removed": removed}
+
+
+def _refresh_after_image_delete(project: dict[str, Any]) -> dict[str, Any]:
+    from src.documentary.visual_plan import sync_ready_from_disk
+
+    pid = str(project["id"])
+    sync = sync_ready_from_disk(pid)
+    ready = int(sync.get("ready") or 0)
+    set_checkpoint(project, "images_imported", ready > 0)
+    set_checkpoint(project, "render_ready", False)
+    set_checkpoint(project, "assembly_ready", False)
+    if ready == 0:
+        project["ui_step"] = "images"
+    save_project(project)
+    return sync
+
+
 def list_project_images(project_id: str) -> list[Path]:
     root = project_dir(project_id) / "images"
     if not root.exists():
         return []
-    return sorted(root.glob("*.png"))
+    return sorted(p for p in root.iterdir() if p.is_file() and p.suffix.lower() in _STILL_EXTS)
 
 
 def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
-    """Return images in shot order; missing slots reported."""
+    """Timeline follows the narration. Inside a moment, stills are a pool (order does not matter)."""
     shots = load_shot_list(project_id).get("shots") or []
+    img_root = project_dir(project_id) / "images"
+    pools: dict[str, list[Path]] = {}
+    for s in shots:
+        mid = str(s.get("moment_id") or "rise")
+        p = still_file(img_root, int(s["number"]))
+        if p is not None:
+            pools.setdefault(mid, []).append(p)
     paths: list[Path] = []
     missing: list[str] = []
-    img_root = project_dir(project_id) / "images"
+    seen_empty: set[str] = set()
+    cursor: dict[str, int] = {}
     for s in shots:
         n = int(s["number"])
-        p = img_root / f"{n:03d}.png"
-        if p.exists() and p.stat().st_size > 0:
-            paths.append(p)
-        else:
-            missing.append(f"{n:03d}")
+        own = still_file(img_root, n)
+        mid = str(s.get("moment_id") or "rise")
+        pool = pools.get(mid) or []
+        if own is not None:
+            paths.append(own)
+            continue
+        if pool:
+            i = cursor.get(mid, 0)
+            paths.append(pool[i % len(pool)])
+            cursor[mid] = i + 1
+            continue
+        label = str(s.get("moment_label") or mid)
+        if label not in seen_empty:
+            seen_empty.add(label)
+            missing.append(label)
     return paths, missing
 
 

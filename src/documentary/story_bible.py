@@ -53,10 +53,12 @@ def _llm_extract(topic: str, script: str) -> dict[str, Any]:
         "Extract a LIGHT story bible for a fascinating TRUE company documentary. "
         "Return ONLY JSON with keys: global_style, characters, locations, important_objects, timeline_periods. "
         "Each entity: id (CHAR_001/LOC_001/OBJ_001/TIME_001), name, description, visual_description. "
-        "Describe people/places/objects as they appear in the real story world (action, places, products) — "
-        "not generic stock business imagery. "
-        "Do NOT invent people or places not supported by the script. "
-        "Omit characters if the story is mostly institutions/products."
+        "characters: named people (face, hair, wardrobe). These are the masters that matter.\n"
+        "locations: ONLY specific story places (a penthouse, a jet, courthouse steps, an empty floor at night). "
+        "visual_description of a location = EMPTY architecture, ZERO people. "
+        "FORBIDDEN locations: generic headquarters, coworking, open-plan office, "
+        "'worldwide offices', bustling professionals, glass conference rooms.\n"
+        "Do NOT invent people or places not in the script."
     )
     user = json.dumps({"topic": topic, "script": script[:12000]}, ensure_ascii=False)
     r = client.chat.completions.create(
@@ -96,22 +98,7 @@ def _heuristic_bible(topic: str, script: str, shots: list[dict], base: dict) -> 
                 "appears_in_shots": [],
             }
         )
-    locs = [
-        {
-            "id": "LOC_001",
-            "name": "Corporate office",
-            "description": "Generic corporate interior for business scenes",
-            "visual_description": "Open-plan office, glass walls, cool daylight, documentary realism",
-            "appears_in_shots": [],
-        },
-        {
-            "id": "LOC_002",
-            "name": "Press / public stage",
-            "description": "Public-facing corporate moment",
-            "visual_description": "Conference stage or media scrum, microphones, shallow depth of field",
-            "appears_in_shots": [],
-        },
-    ]
+    locs: list[dict[str, Any]] = []
     objs = [
         {
             "id": "OBJ_001",
