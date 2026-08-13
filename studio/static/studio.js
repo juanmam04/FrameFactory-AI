@@ -604,7 +604,7 @@ function renderProject() {
   const p = state.project;
   if (!p) return go("home");
   const step = p.ui_step || "research";
-  const steps = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "publish"];
+  const steps = ["topic", "research", "story", "script", "flow", "images", "voice", "music", "render", "subs", "publish"];
   const stepLabel = {
     topic: "1 Tema",
     research: "2 Info",
@@ -613,9 +613,11 @@ function renderProject() {
     flow: "5 Pedir imgs",
     images: "6 Subir imgs",
     voice: "7 Voz",
-    render: "8 Video",
-    publish: "9 YouTube",
-    done: "9 YouTube",
+    music: "8 Música",
+    render: "9 Video",
+    subs: "10 Subs",
+    publish: "11 YouTube",
+    done: "11 YouTube",
   };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
@@ -653,7 +655,9 @@ function renderProject() {
   if (step === "flow") return paintFlow(ws, p);
   if (step === "images") return paintImages(ws, p);
   if (step === "voice") return paintVoice(ws, p);
+  if (step === "music") return paintMusic(ws, p);
   if (step === "render") return paintRender(ws, p);
+  if (step === "subs") return paintSubs(ws, p);
   if (step === "publish" || step === "done") return paintPublish(ws, p);
   paintResearch(ws, p);
 }
@@ -1323,14 +1327,9 @@ function paintVoice(ws, p) {
         ? `Narración lista${clock ? ` · ${clock}` : ""} · x1.20.`
         : "Generá la narración acá (OpenAI / ElevenLabs). Sale un poco más rápida (x1.20)."}</p>
       ${ready ? `<audio controls src="/api/projects/${encodeURIComponent(p.id)}/audio?t=${Date.now()}" style="width:min(100%,640px);margin:0.4rem 0 1rem;display:block"></audio>` : ""}
-      <div class="music-bed" style="margin:1.1rem 0 1.4rem;padding:0.9rem 1rem;border:1px solid var(--line,#e5e7eb);border-radius:12px;max-width:640px">
-        <p style="margin:0 0 .25rem;font-weight:650">Música de fondo</p>
-        <p class="lead" style="margin:0 0 .55rem">La misma cama en todos los episodios. En el video va muy bajita, acá la escuchás clara.</p>
-        <audio id="music-bed" controls loop src="/api/music?v=20260813t" style="width:100%;display:block"></audio>
-      </div>
       <div class="actions">
         <button class="btn btn-accent" id="gen-voice">${ready ? "Volver a generar voz" : "Generar voz"}</button>
-        <button class="btn btn-primary" id="to-render">Seguir</button>
+        <button class="btn btn-primary" id="to-music">Seguir a la música</button>
       </div>
     </div>`;
   $("#gen-voice").onclick = async () => {
@@ -1345,6 +1344,26 @@ function paintVoice(ws, p) {
       toast(e.message);
     }
   };
+  $("#to-music").onclick = async () => {
+    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+      method: "PATCH",
+      body: JSON.stringify({ step: "music" }),
+    });
+    state.project = data.project;
+    renderProject();
+  };
+}
+
+function paintMusic(ws, p) {
+  ws.innerHTML = `
+    <div class="panel workspace">
+      <h2 style="margin-top:0">Música</h2>
+      <p class="lead">La misma cama en todos los episodios. En el video va muy bajita. Escuchala acá.</p>
+      <audio id="music-bed" controls loop src="/api/music?v=20260813v" style="width:min(100%,640px);margin:0.4rem 0 1rem;display:block"></audio>
+      <div class="actions">
+        <button class="btn btn-primary" id="to-render">Seguir al video</button>
+      </div>
+    </div>`;
   $("#to-render").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
@@ -1365,14 +1384,14 @@ function paintRender(ws, p) {
       <div class="actions">
         <button class="btn btn-accent" id="render">${done ? "Volver a renderizar" : "Renderizar video"}</button>
         ${done ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video" download>Descargar MP4</a>` : ""}
-        <button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>
+        <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
     </div>`;
-  $("#to-publish").onclick = async () => {
+  $("#to-subs").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
-      body: JSON.stringify({ step: "publish" }),
+      body: JSON.stringify({ step: "subs" }),
     });
     state.project = data.project;
     renderProject();
@@ -1393,6 +1412,87 @@ function paintRender(ws, p) {
   $("#home").onclick = () => {
     location.hash = "";
     go("home");
+  };
+}
+
+function paintSubs(ws, p) {
+  const cap = p.captions || {};
+  const burned = !!(cap.burned || p.checkpoints?.captions_ready);
+  ws.innerHTML = `
+    <div class="panel workspace">
+      <h2 style="margin-top:0">Subtítulos</h2>
+      <p class="lead">Inglés, abajo, sincronizados con la narración. Primero el texto, después el video con los captions quemados.</p>
+      <div class="field">
+        <label>Preview del texto (SRT)</label>
+        <textarea id="srt-box" rows="12" style="font-family:ui-monospace,monospace;font-size:0.85rem" placeholder="Tocá Armar subtítulos…"></textarea>
+      </div>
+      <div class="actions" style="margin-bottom:1rem">
+        <button class="btn btn-accent" id="gen-subs">Armar subtítulos</button>
+        <button class="btn btn-ghost" id="save-subs">Guardar texto</button>
+        <button class="btn btn-primary" id="burn-subs">Ponerlos en el video</button>
+      </div>
+      ${burned ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video/captions?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : `<p class="lead">Cuando los quemes, el preview del video aparece acá.</p>`}
+      <div class="actions">
+        ${burned ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video/captions" download>Descargar con subtítulos</a>` : ""}
+        <button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>
+      </div>
+    </div>`;
+  const box = $("#srt-box");
+  api(`/api/projects/${encodeURIComponent(p.id)}/captions`)
+    .then((data) => {
+      if (box && data.srt) box.value = data.srt;
+    })
+    .catch(() => {});
+  $("#gen-subs").onclick = async () => {
+    try {
+      const data = await withBusy("Armando subtítulos…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/captions`, { method: "POST" })
+      );
+      state.project = data.project;
+      if (box) box.value = data.srt || "";
+      toast(`${(data.cues || []).length} carteles`);
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  $("#save-subs").onclick = async () => {
+    try {
+      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/captions`, {
+        method: "PUT",
+        body: JSON.stringify({ srt: box.value || "" }),
+      });
+      state.project = data.project;
+      toast("Subtítulos guardados");
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  $("#burn-subs").onclick = async () => {
+    try {
+      if (box && box.value.trim()) {
+        await api(`/api/projects/${encodeURIComponent(p.id)}/captions`, {
+          method: "PUT",
+          body: JSON.stringify({ srt: box.value }),
+        });
+      }
+      const data = await withBusy("Quemando subtítulos en el video…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/captions/burn`, { method: "POST" })
+      );
+      state.project = data.project;
+      toast("Video con subtítulos listo");
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  $("#to-publish").onclick = async () => {
+    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+      method: "PATCH",
+      body: JSON.stringify({ step: "publish" }),
+    });
+    state.project = data.project;
+    renderProject();
   };
 }
 

@@ -96,7 +96,20 @@ from src.saas_sessions import (
 
 ROOT = Path(__file__).resolve().parent
 
-STEPS = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "publish", "done"]
+STEPS = [
+    "topic",
+    "research",
+    "story",
+    "script",
+    "flow",
+    "images",
+    "voice",
+    "music",
+    "render",
+    "subs",
+    "publish",
+    "done",
+]
 
 _PROJECT_RE = re.compile(r"^/api/projects/([^/]+)")
 
@@ -157,6 +170,8 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
                 or "/masters/upload" in path
                 or path.endswith("/voice")
                 or path.endswith("/render")
+                or path.endswith("/captions")
+                or "/captions/" in path
                 or path.endswith("/youtube")
             ):
                 if path.endswith("/step"):
@@ -808,7 +823,7 @@ def create_app() -> FastAPI:
 
             generate_project_voice(load_project(project_id))
             p = load_project(project_id)
-            p["ui_step"] = "render"
+            p["ui_step"] = "voice"
             save_project(p)
             if on_vercel():
                 from src.documentary import cloud_sync
@@ -842,7 +857,7 @@ def create_app() -> FastAPI:
 
             assemble_and_render(load_project(project_id))
             p = load_project(project_id)
-            p["ui_step"] = "publish"
+            p["ui_step"] = "render"
             save_project(p)
             if on_vercel():
                 from src.documentary import cloud_sync
@@ -851,6 +866,100 @@ def create_app() -> FastAPI:
                     _sync_safe(
                         lambda: cloud_sync.push_paths(
                             project_id, ["project.json", "render/final.mp4"]
+                        )
+                    )
+            return {"project": _project_full(p)}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.get("/api/projects/{project_id}/video/captions")
+    def captioned_video_file(project_id: str):
+        from src.documentary.captions import captioned_video_path
+
+        path = captioned_video_path(project_id)
+        if not path.is_file() or path.stat().st_size <= 0:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, "render/final_captions.mp4")
+        if path.is_file() and path.stat().st_size > 0:
+            return FileResponse(path, media_type="video/mp4")
+        raise HTTPException(404, "No hay video con subtítulos todavía")
+
+    @app.get("/api/projects/{project_id}/captions")
+    def captions_get(project_id: str):
+        from src.documentary.captions import captions_srt_path, srt_to_cues
+
+        p = load_project(project_id)
+        path = captions_srt_path(project_id)
+        if not path.is_file() or path.stat().st_size <= 0:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, "render/captions.srt")
+        srt = path.read_text(encoding="utf-8") if path.is_file() else ""
+        burned = bool((p.get("captions") or {}).get("burned"))
+        return {"srt": srt, "cues": srt_to_cues(srt), "burned": burned}
+
+    @app.post("/api/projects/{project_id}/captions")
+    def captions_generate(project_id: str):
+        try:
+            from src.documentary.captions import generate_captions
+
+            data = generate_captions(load_project(project_id))
+            p = load_project(project_id)
+            p["ui_step"] = "subs"
+            save_project(p)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id, ["project.json", "render/captions.srt"]
+                        )
+                    )
+            return {"project": _project_full(p), **data}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.put("/api/projects/{project_id}/captions")
+    def captions_save(project_id: str, body: CaptionsBody):
+        try:
+            from src.documentary.captions import save_captions
+
+            data = save_captions(load_project(project_id), body.srt or "")
+            p = load_project(project_id)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id, ["project.json", "render/captions.srt"]
+                        )
+                    )
+            return {"project": _project_full(p), **data}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/{project_id}/captions/burn")
+    def captions_burn(project_id: str):
+        try:
+            from src.documentary.captions import burn_captions
+
+            burn_captions(load_project(project_id))
+            p = load_project(project_id)
+            p["ui_step"] = "subs"
+            save_project(p)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id,
+                            ["project.json", "render/captions.srt", "render/final_captions.mp4"],
                         )
                     )
             return {"project": _project_full(p)}
@@ -968,6 +1077,10 @@ class YoutubeBody(BaseModel):
     thumbnail_prompt: str = ""
 
 
+class CaptionsBody(BaseModel):
+    srt: str = ""
+
+
 def _err(e: BaseException) -> str:
     msg = str(e) or e.__class__.__name__
     if len(msg) > 800:
@@ -1027,6 +1140,7 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "script_quality": p.get("script_quality") or {},
         "target_words": p.get("target_words") or 2000,
         "voice": p.get("voice") or {},
+        "captions": p.get("captions") or {},
         "youtube": _youtube_of(p),
         "checkpoints": p.get("checkpoints") or {},
         "flow_pack_path": str(project_dir(str(p["id"])) / "flow-pack") if p.get("id") else "",

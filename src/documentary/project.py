@@ -46,6 +46,7 @@ CHECKPOINT_KEYS = (
     "voice_ready",
     "assembly_ready",
     "render_ready",
+    "captions_ready",
 )
 
 # Human-facing progress steps (UI). Internal checkpoints still drive gates.
@@ -58,7 +59,9 @@ PROGRESS_STEPS = (
     "flow",
     "images",
     "voice",
+    "music",
     "render",
+    "subs",
     "publish",
     "done",
 )
@@ -358,6 +361,9 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
     images_partial = bool(cps.get("images_imported"))
     voice = bool(cps.get("voice_ready"))
     rendered = bool(cps.get("render_ready")) and (project_dir(str(project["id"])) / "render" / "final.mp4").exists()
+    captioned = bool(cps.get("captions_ready")) or (
+        project_dir(str(project["id"])) / "render" / "final_captions.mp4"
+    ).exists()
 
     flags = {
         "topic": has_topic,
@@ -367,7 +373,9 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
         "flow": flow,
         "images": images_full or (images_partial and voice),
         "voice": voice,
+        "music": voice,
         "render": rendered,
+        "subs": captioned,
         "publish": bool((project.get("youtube") or {}).get("title")),
         "done": bool((project.get("youtube") or {}).get("title")),
     }
@@ -390,7 +398,9 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
     else:
         current = "done" if flags.get("publish") else ("publish" if rendered else "render")
 
-    if rendered and not flags.get("publish"):
+    if rendered and not flags.get("subs"):
+        current = "subs"
+    elif rendered and flags.get("subs") and not flags.get("publish"):
         current = "publish"
 
     return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": current}

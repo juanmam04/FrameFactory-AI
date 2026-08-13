@@ -29,6 +29,8 @@ def test_progress_steps_include_topic_and_story():
     assert PROGRESS_STEPS[0] == "topic"
     assert "story" in PROGRESS_STEPS
     assert PROGRESS_STEPS.index("story") < PROGRESS_STEPS.index("script")
+    assert PROGRESS_STEPS.index("music") == PROGRESS_STEPS.index("voice") + 1
+    assert PROGRESS_STEPS.index("subs") == PROGRESS_STEPS.index("render") + 1
 
 
 def test_documentary_default_words_2000():

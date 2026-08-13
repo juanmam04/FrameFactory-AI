@@ -155,3 +155,16 @@ def test_abrupt_ending_detected_without_ending_state():
     state = "WeWork goes public via a SPAC merger in 2021, valuing the company at approximately $9 billion."
     assert ending_is_abrupt(cliff, state)
     assert not ending_is_abrupt(landed, state)
+
+
+def test_captions_cover_full_duration():
+    from src.documentary.captions import build_srt, srt_to_cues
+
+    srt = build_srt(
+        "In September 2019 the IPO was pulled. SoftBank arranged a bailout. WeWork later listed via a SPAC.",
+        90.0,
+    )
+    cues = srt_to_cues(srt)
+    assert len(cues) >= 2
+    assert cues[0]["start"].startswith("00:00:00")
+    assert cues[-1]["end"].startswith("00:01:30")

@@ -146,7 +146,16 @@ def assemble_and_render(
             )
         set_checkpoint(project, "assembly_ready", True)
         set_checkpoint(project, "render_ready", True)
+        set_checkpoint(project, "captions_ready", False)
+        try:
+            from src.documentary.captions import clear_burned_captions
+
+            clear_burned_captions(pid)
+        except Exception:
+            pass
         project["render"] = {"path": "render/final.mp4", "seconds_per_image": sec}
+        if isinstance(project.get("captions"), dict):
+            project["captions"]["burned"] = False
         save_project(project)
         append_log(pid, f"render ok → {result}")
         log_path.write_text(f"OK {result}\n", encoding="utf-8")
