@@ -80,13 +80,13 @@ button { cursor: pointer; }
 .top-brand strong { display: block; font-size: 0.95rem; letter-spacing: -0.02em; }
 .top-brand small { display: block; color: var(--muted); font-size: 0.72rem; }
 .mark {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
   object-fit: cover;
   display: block;
   box-shadow: 0 8px 18px rgba(15, 23, 32, 0.16);
-  background: #0F1720;
+  background: #0B1220;
 }
 .top-nav { display: flex; gap: 0.35rem; flex: 1; }
 .nav-link {
