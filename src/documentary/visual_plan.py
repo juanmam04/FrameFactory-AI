@@ -166,8 +166,9 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
     visuals = plan.get("visuals") or []
     bible = plan.get("visual_bible") or {}
     _purge_stock_locations(bible)
+    used: set[int] = set()
     for v in visuals:
-        _concretize_visual(v, bible)
+        _concretize_visual(v, bible, used)
         names = _cast_names(v, bible)
         if names:
             v["characters"] = names
@@ -180,6 +181,8 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
                         refs.append(eid)
             v["reference_ids"] = refs
             v["references"] = refs
+    _dedupe_stills(visuals, bible)
+    _assign_camera_variety(visuals)
     masters = select_master_references(bible, visuals)
     plan["master_references"] = masters
     plan["visual_bible"] = bible
@@ -306,47 +309,106 @@ def _lead(bible: dict[str, Any] | None) -> str:
     return "the founder"
 
 
-def _still_from_vo(visual: dict[str, Any], bible: dict[str, Any] | None) -> str:
+_CANNED_STILL = re.compile(
+    r"ONE investor at a private table|cheap printed paper sign|"
+    r"emptied office floor at night|For Sale sign onto the company|"
+    r"raw unfinished floor|in a specific real place, body in motion|"
+    r"a group of (investors|entrepreneurs|employees)|busy office|open.?plan",
+    re.I,
+)
+
+# One beat per still. Keyword buckets were collapsing every "billion/investors" line
+# into the same wine-and-term-sheet photo.
+_UNIQUE_BEATS: tuple[tuple[str, str], ...] = (
+    ("walks away from a glass tower at night, phone lighting the face, street empty", "Manhattan sidewalk at night"),
+    ("sits alone at a corner table, a contract face-down, wine untouched", "quiet restaurant after closing"),
+    ("stands in a freight elevator with one banker, both silent, doors closing", "service elevator"),
+    ("leans on a hotel-room desk at 2am, thick filing pages scattered, city lights behind", "hotel room at 2am"),
+    ("waits on courthouse steps at dawn, coat collar up, no entourage", "courthouse steps at dawn"),
+    ("in the back seat of a black car, staring at a dropped number on a phone", "car on FDR Drive"),
+    ("hangs a cheap paper sign on a raw storefront, almost nobody on the sidewalk", "early-2010s NYC storefront"),
+    ("alone on an emptied floor at night, one desk lamp, everyone else gone", "gutted office floor at night"),
+    ("on a loading dock at dusk, watching a moving truck pull away", "loading dock at dusk"),
+    ("at a kitchen table, sketching a floor plan on scrap paper", "small apartment kitchen"),
+    ("on a private jet, looking out the window, a closed folder on the tray", "private jet cabin"),
+    ("in a narrow hallway after a meeting, forehead against the wall", "empty conference hallway"),
+    ("on a rainy sidewalk outside a bank, the other person already walking away", "bank entrance in rain"),
+    ("in an unfinished space with paint cans, selling a room that is not built yet", "raw warehouse interior"),
+    ("on a rooftop at night, city below, holding a phone with a bad headline", "rooftop at night"),
+    ("in a dim bar booth with ONE other person, a handshake that already looks wrong", "back-room bar booth"),
+    ("walking an empty event space after the crowd left, chairs stacked", "ballroom after the event"),
+    ("at a printer at 5am, pulling a thick prospectus, the floor otherwise dark", "copy room at 5am"),
+    ("on a fire escape, looking at the building no longer under control", "fire escape at dusk"),
+    ("in a boardroom AFTER everyone left, one chair kicked back, lights still on", "abandoned boardroom"),
+    ("crossing a plaza at noon, head down, no crowd in the frame", "city plaza at noon"),
+    ("in a bedroom doorway at night, still in a suit, home but not present", "apartment doorway at night"),
+    ("at a warehouse window with a for-lease flyer in hand", "industrial window, late day"),
+    ("in a taxi in traffic, the company tower shrinking in the rear window", "yellow cab in traffic"),
+)
+_TIMES = ("dawn", "midday", "golden hour", "blue hour", "night", "3am", "rain", "winter light")
+_BEAT_DETAILS = (
+    "wool coat",
+    "open collar, no tie",
+    "2014-era thin laptop under one arm",
+    "paper cup going cold",
+    "scuffed dress shoes",
+    "a single page folded in a pocket",
+    "wedding ring catching the light",
+    "backpack from the first year",
+    "untucked shirt after a long night",
+    "keys to a space that is no longer theirs",
+    "a phone with the ringer off",
+)
+
+
+def _still_from_vo(
+    visual: dict[str, Any],
+    bible: dict[str, Any] | None,
+    used: set[int] | None = None,
+) -> str:
+    still, _loc = _unique_beat(visual, bible, used)
+    return still
+
+
+def _unique_beat(
+    visual: dict[str, Any],
+    bible: dict[str, Any] | None,
+    used: set[int] | None = None,
+) -> tuple[str, str]:
     narr = str(visual.get("narration_segment") or visual.get("narration") or "").strip()
     who = _names_in_text(narr, bible)
     who_s = ", ".join(who) if who else _lead(bible)
-    low = narr.lower()
-    if any(k in low for k in ("for sale", "ipo", "pulled", "offering")):
-        return (
-            f"{who_s} alone on a dark sidewalk as a worker drills a For Sale sign onto the company building. "
-            "Empty street, night, no employees in frame."
-        )
-    if any(k in low for k in ("raised", "funding", "series", "million", "billion", "softbank", "investors")):
-        return (
-            f"{who_s} and ONE investor at a private table, a term sheet between them, wine, no applause, no boardroom crowd."
-        )
-    if any(k in low for k in ("launch", "founded", "started", "opened", "2010")):
-        return (
-            f"{who_s} on a city sidewalk with a cheap printed paper sign, early-2010s street clothes, almost nobody watching."
-        )
-    if any(k in low for k in ("fallout", "crisis", "collapsed", "unstoppable", "questions", "overnight", "downfall")):
-        return (
-            f"{who_s} alone in an emptied office floor at night, one desk lamp, phone showing the bad headline. Everyone else is gone."
-        )
-    if any(k in low for k in ("community", "coworking", "freelance", "gig", "flexible office", "vision")):
-        return (
-            f"{who_s} walking a raw unfinished floor — exposed brick, one table, paint cans — selling a vision that does not exist yet."
-        )
-    clause = re.split(r"[.;?]", narr)[0].strip()[:120] if narr else "this turning point"
-    return (
-        f"{who_s} in a specific real place, body in motion, the visible consequence of: {clause}. "
-        "No crowd, no open-plan office."
-    )
+    n = max(1, int(visual.get("number") or 1))
+    start = (n - 1) % len(_UNIQUE_BEATS)
+    taken = used if used is not None else set()
+    idx = start
+    for off in range(len(_UNIQUE_BEATS)):
+        cand = (start + off) % len(_UNIQUE_BEATS)
+        if cand not in taken:
+            idx = cand
+            break
+    taken.add(idx)
+    action, loc = _UNIQUE_BEATS[idx]
+    when = _TIMES[(n * 5 + idx) % len(_TIMES)]
+    detail = _BEAT_DETAILS[(n * 3 + idx) % len(_BEAT_DETAILS)]
+    still = f"{who_s} {action}, {when}, {detail}. No crowd, no open-plan office."
+    return still, loc
 
 
-def _concretize_visual(visual: dict[str, Any], bible: dict[str, Any] | None) -> None:
+def _concretize_visual(
+    visual: dict[str, Any],
+    bible: dict[str, Any] | None,
+    used: set[int] | None = None,
+) -> None:
     if str(visual.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
         return
     desc = _FILLER_ACTION.sub("", str(visual.get("description") or visual.get("action") or "")).strip(" .")
-    if not desc or _is_vo(desc) or _STOCKY_DESC.search(desc):
-        still = _still_from_vo(visual, bible)
+    stale = (not desc) or _is_vo(desc) or _STOCKY_DESC.search(desc) or _CANNED_STILL.search(desc)
+    if stale:
+        still, loc = _unique_beat(visual, bible, used)
         visual["description"] = still
         visual["action"] = still
+        visual["location"] = loc
         people = _names_in_text(still, bible) or _names_in_text(
             str(visual.get("narration_segment") or ""), bible
         )
@@ -360,6 +422,23 @@ def _concretize_visual(visual: dict[str, Any], bible: dict[str, Any] | None) -> 
     visual["shot_type"] = _CAM_FIX.get(st, _CAM_FIX.get(st.replace("_", " "), st))
 
 
+def _dedupe_stills(visuals: list[dict[str, Any]], bible: dict[str, Any] | None) -> None:
+    seen: set[str] = set()
+    used: set[int] = set()
+    for v in visuals:
+        if str(v.get("visual_type") or "") != "FLOW_REENACTMENT":
+            continue
+        key = re.sub(r"[^a-z0-9]+", " ", str(v.get("description") or v.get("action") or "").lower()).strip()
+        if key and key not in seen:
+            seen.add(key)
+            continue
+        still, loc = _unique_beat(v, bible, used)
+        v["description"] = still
+        v["action"] = still
+        v["location"] = loc
+        seen.add(re.sub(r"[^a-z0-9]+", " ", still.lower()).strip())
+
+
 def _rewrite_stills(
     visuals: list[dict[str, Any]],
     bible: dict[str, Any],
@@ -367,8 +446,10 @@ def _rewrite_stills(
     *,
     use_llm: bool,
 ) -> None:
+    used: set[int] = set()
     for v in visuals:
-        _concretize_visual(v, bible)
+        _concretize_visual(v, bible, used)
+    _dedupe_stills(visuals, bible)
     if not use_llm:
         return
     flow = [v for v in visuals if str(v.get("visual_type") or "") == "FLOW_REENACTMENT"]
@@ -393,7 +474,8 @@ def _rewrite_stills(
         "If the VO is abstract, invent the honest visual consequence "
         "(empty floor after the crash, a For Sale sign at night, two cofounders on a sidewalk with a cheap sign).\n"
         "Locations MUST change across the list: street, apartment, car, jet, empty hallway, restaurant, "
-        "sidewalk, bedroom at 3am, loading dock, courthouse steps — not 'office' twice in a row."
+        "sidewalk, bedroom at 3am, loading dock, courthouse steps — not 'office' twice in a row.\n"
+        "NEVER reuse the same photograph. If two lines mention money or investors, they are STILL different images."
     )
     for i in range(0, len(flow), 8):
         chunk = flow[i : i + 8]
@@ -447,6 +529,7 @@ def _rewrite_stills(
             if chars:
                 allowed = {c.lower() for c in cast}
                 v["characters"] = [c for c in chars if c.lower() in allowed][:3] or v.get("characters") or []
+    _dedupe_stills(flow, bible)
 
 
 def _story_description(visual: dict[str, Any], bible: dict[str, Any] | None = None) -> str:
@@ -454,7 +537,7 @@ def _story_description(visual: dict[str, Any], bible: dict[str, Any] | None = No
     raw = _FILLER_ACTION.sub("", raw).strip(" .")
     if raw.lower().startswith("photograph this exact"):
         raw = ""
-    if raw and not _is_vo(raw) and not _STOCKY_DESC.search(raw):
+    if raw and not _is_vo(raw) and not _STOCKY_DESC.search(raw) and not _CANNED_STILL.search(raw):
         return raw
     return _still_from_vo(visual, bible)
 
