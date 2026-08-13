@@ -54,8 +54,13 @@ def ensure_still_thumb(images_dir: Path, number: int) -> Path | None:
 
 def write_compressed_still(dest_root: Path, num: int, data: bytes, filename: str = "") -> Path:
     """Store a YouTube-sized JPEG so uploads stay small and fast."""
+    return write_compressed_named(dest_root, f"{int(num):03d}", data, filename)
+
+
+def write_compressed_named(dest_root: Path, stem: str, data: bytes, filename: str = "") -> Path:
     dest_root.mkdir(parents=True, exist_ok=True)
-    dest = dest_root / f"{int(num):03d}.jpg"
+    stem = Path(str(stem)).stem
+    dest = dest_root / f"{stem}.jpg"
     suffix = Path(filename or "").suffix.lower()
     if suffix in {".jpg", ".jpeg"} and len(data) <= 850_000:
         dest.write_bytes(data)
@@ -69,13 +74,115 @@ def write_compressed_still(dest_root: Path, num: int, data: bytes, filename: str
             rgb.thumbnail((1920, 1080), Image.LANCZOS)
             rgb.save(dest, format="JPEG", quality=82)
     for ext in _STILL_EXTS:
-        extra = dest_root / f"{int(num):03d}{ext}"
+        extra = dest_root / f"{stem}{ext}"
         if extra != dest and extra.exists():
             extra.unlink()
-    old_thumb = dest_root / f"{int(num):03d}.thumb.jpg"
+    old_thumb = dest_root / f"{stem}.thumb.jpg"
     if old_thumb.is_file():
         old_thumb.unlink()
     return dest
+
+
+_MASTER_ID_RE = re.compile(r"^[A-Za-z]{2,8}_\d{3}$")
+
+
+def normalize_master_id(ref_id: str) -> str:
+    eid = str(ref_id or "").strip().upper().replace(".PNG", "").replace(".JPG", "").replace(".JPEG", "").replace(".WEBP", "")
+    eid = Path(eid).stem
+    if not _MASTER_ID_RE.match(eid):
+        raise ValueError(f"Referencia inválida: {ref_id}")
+    return eid
+
+
+def masters_dir(project_id: str) -> Path:
+    d = project_dir(project_id) / "flow-pack" / "references" / "masters"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def master_file(project_id: str, ref_id: str) -> Path | None:
+    eid = normalize_master_id(ref_id)
+    root = masters_dir(project_id)
+    for ext in _STILL_EXTS:
+        path = root / f"{eid}{ext}"
+        if path.is_file() and path.stat().st_size > 0:
+            return path
+    return None
+
+
+def ensure_master_thumb(project_id: str, ref_id: str) -> Path | None:
+    eid = normalize_master_id(ref_id)
+    root = masters_dir(project_id)
+    thumb = root / f"{eid}.thumb.jpg"
+    src = master_file(project_id, eid)
+    if src is not None:
+        stale = (
+            not thumb.is_file()
+            or thumb.stat().st_size <= 0
+            or thumb.stat().st_mtime + 0.5 < src.stat().st_mtime
+        )
+        if stale:
+            try:
+                from PIL import Image
+
+                with Image.open(src) as im:
+                    rgb = im.convert("RGB")
+                    rgb.thumbnail((960, 540), Image.LANCZOS)
+                    rgb.save(thumb, format="JPEG", quality=70)
+            except Exception:
+                return src
+        if thumb.is_file() and thumb.stat().st_size > 0:
+            return thumb
+        return src
+    if thumb.is_file() and thumb.stat().st_size > 0:
+        return thumb
+    return None
+
+
+def save_master_upload(project_id: str, ref_id: str, data: bytes, filename: str = "") -> dict[str, Any]:
+    eid = normalize_master_id(ref_id)
+    dest = write_compressed_named(masters_dir(project_id), eid, data, filename)
+    thumb = ensure_master_thumb(project_id, eid)
+    stored = [f"flow-pack/references/masters/{dest.name}"]
+    if thumb is not None and thumb.name != dest.name:
+        stored.append(f"flow-pack/references/masters/{thumb.name}")
+    append_log(project_id, f"master {eid} uploaded")
+    return {"id": eid, "stored": stored}
+
+
+def delete_master_image(project_id: str, ref_id: str) -> dict[str, Any]:
+    eid = normalize_master_id(ref_id)
+    root = masters_dir(project_id)
+    removed = False
+    for ext in _STILL_EXTS:
+        path = root / f"{eid}{ext}"
+        if path.is_file():
+            path.unlink()
+            removed = True
+    thumb = root / f"{eid}.thumb.jpg"
+    if thumb.is_file():
+        thumb.unlink()
+        removed = True
+    append_log(project_id, f"master {eid} deleted")
+    return {"ok": True, "removed": removed, "id": eid}
+
+
+def attach_master_status(project_id: str, masters: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    from src.documentary import cloud_sync
+
+    remote = cloud_sync.configured()
+    for m in masters:
+        try:
+            eid = normalize_master_id(str(m.get("id") or m.get("master_filename") or ""))
+        except ValueError:
+            m["status"] = "MISSING"
+            continue
+        if master_file(project_id, eid) is None and remote:
+            for name in (f"{eid}.jpg", f"{eid}.thumb.jpg", f"{eid}.png"):
+                if cloud_sync.pull_one(project_id, f"flow-pack/references/masters/{name}"):
+                    break
+        m["status"] = "READY" if master_file(project_id, eid) else "MISSING"
+    return masters
 
 
 def import_images(

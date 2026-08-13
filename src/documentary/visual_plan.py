@@ -154,7 +154,11 @@ def load_visual_plan(project_id: str) -> dict[str, Any]:
         path = project_dir(project_id) / "flow-pack" / "visual-plan.json"
     if not path.exists():
         raise FileNotFoundError("visual-plan.json missing — generate Visual Plan first")
-    return refresh_flow_prompts(json.loads(path.read_text(encoding="utf-8")))
+    plan = refresh_flow_prompts(json.loads(path.read_text(encoding="utf-8")))
+    from src.documentary.import_images import attach_master_status
+
+    attach_master_status(project_id, plan.get("master_references") or [])
+    return plan
 
 
 def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:

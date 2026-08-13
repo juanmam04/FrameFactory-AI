@@ -972,7 +972,7 @@ async function paintFlow(ws, p) {
       </div>
 
       <h2 style="margin-top:1.6rem">A) Caras que se repiten</h2>
-      <p class="lead">Solo protagonistas. Generá estas <strong>primero</strong> en Google Flow (1 imagen cada una) y usalas como referencia de cara. No pidas oficinas genéricas.</p>
+      <p class="lead">Copiá el texto → Google Flow → descargá → <strong>subí acá</strong>. El nombre que ponga Flow no importa.</p>
       <div class="list" id="masters"></div>
 
       <h2 style="margin-top:1.6rem">B) Grupos para pedir en Google Flow</h2>
@@ -997,28 +997,9 @@ async function paintFlow(ws, p) {
   if (toImagesBtn) toImagesBtn.onclick = goImages;
 
   $("#masters").innerHTML = masters.length
-    ? masters
-        .map(
-          (m) => `
-      <article class="shot">
-        <strong>${esc(m.name)}</strong>
-        <div class="ff-episode-meta">Se usa en ${m.used_in_flow || 0} escenas · guardala como ${esc(m.master_filename)}</div>
-        <pre style="max-height:100px;overflow:auto">${esc(m.master_prompt || "")}</pre>
-        <button class="btn btn-soft" data-copy-master="${esc(m.id)}">1) Copiar texto para Google Flow</button>
-      </article>`
-        )
-        .join("")
+    ? masters.map((m) => masterCard(m, p.id)).join("")
     : `<div class="notice">No hace falta una imagen “maestra” especial en este episodio.</div>`;
-
-  $("#masters").querySelectorAll("[data-copy-master]").forEach((btn) => {
-    btn.onclick = () => {
-      const m = masters.find((x) => x.id === btn.dataset.copyMaster);
-      if (m?.master_prompt) {
-        navigator.clipboard.writeText(m.master_prompt);
-        toast("Copiado. Pegalo en Google Flow.");
-      }
-    };
-  });
+  bindMasterUploads($("#masters"), p.id, masters);
 
   $("#batches").innerHTML = batches.length
     ? batches
@@ -1118,6 +1099,121 @@ async function paintFlow(ws, p) {
     ? nonFlow.map((v) => slotCard(v, p.id)).join("")
     : `<div class="notice">En este episodio casi todo se pide a Google Flow.</div>`;
   bindSlotUploads($("#nonflow"), p.id);
+}
+
+function masterCard(m, projectId, previewSrc = "") {
+  const id = m.id;
+  const has = String(m.status || "").toUpperCase() === "READY" || Boolean(previewSrc);
+  const src =
+    previewSrc ||
+    (has
+      ? `/api/projects/${encodeURIComponent(projectId)}/masters/${encodeURIComponent(id)}?v=${IMG_BOOT}`
+      : "");
+  const kind = m.kind === "character" ? "cara" : m.kind || "referencia";
+  return `
+    <article class="shot" data-master="${esc(id)}">
+      <strong>${esc(m.name || id)}</strong>
+      <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)} · ${m.used_in_flow || 0} escenas</div>
+      <pre>${esc(m.master_prompt || "")}</pre>
+      <div class="slot-frame">
+        ${has
+          ? `<img class="slot-thumb" src="${esc(src)}" alt="${esc(m.name || id)}" loading="lazy" decoding="async" />`
+          : `<div class="slot-placeholder">16:9</div>`}
+      </div>
+      <div class="slot-actions">
+        <button type="button" class="btn btn-soft" data-copy-master="${esc(id)}">1) Copiar texto</button>
+        <label class="btn ${has ? "btn-soft" : "btn-primary"} slot-upload">
+          ${has ? "Cambiar esta cara" : "2) Subir esta cara"}
+          <input type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" data-master-file="${esc(id)}" hidden />
+        </label>
+        ${has ? `<button type="button" class="btn btn-danger" data-master-delete="${esc(id)}">Eliminar</button>` : ""}
+      </div>
+    </article>`;
+}
+
+function replaceMasterCard(card, projectId, m, previewSrc = "") {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = masterCard(m, projectId, previewSrc);
+  const next = wrap.firstElementChild;
+  card.replaceWith(next);
+  bindMasterUploads(next, projectId, [m]);
+  return next;
+}
+
+function bindMasterUploads(root, projectId, masters) {
+  if (!root) return;
+  const list = masters || [];
+  root.querySelectorAll(".slot-thumb").forEach((img) => {
+    img.onerror = () => {
+      if ((img.src || "").startsWith("blob:")) return;
+      const frame = img.closest(".slot-frame");
+      img.remove();
+      if (frame && !frame.querySelector(".slot-placeholder")) {
+        frame.innerHTML = `<div class="slot-placeholder">16:9</div>`;
+      }
+    };
+  });
+  root.querySelectorAll("[data-copy-master]").forEach((btn) => {
+    btn.onclick = () => {
+      const m = list.find((x) => x.id === btn.dataset.copyMaster);
+      if (m?.master_prompt) {
+        navigator.clipboard.writeText(m.master_prompt);
+        toast("Copiado. Pegalo en Google Flow.");
+      }
+    };
+  });
+  root.querySelectorAll("[data-master-delete]").forEach((btn) => {
+    btn.onclick = async () => {
+      const id = btn.dataset.masterDelete;
+      const card = btn.closest("[data-master]");
+      const m = list.find((x) => x.id === id) || {
+        id,
+        master_prompt: card?.querySelector("pre")?.textContent || "",
+      };
+      btn.disabled = true;
+      try {
+        await api(`/api/projects/${encodeURIComponent(projectId)}/masters/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        });
+        m.status = "MISSING";
+        replaceMasterCard(card, projectId, m);
+        toast("Cara eliminada");
+      } catch (e) {
+        toast(e.message);
+        btn.disabled = false;
+      }
+    };
+  });
+  root.querySelectorAll("[data-master-file]").forEach((inp) => {
+    inp.onchange = async () => {
+      const id = inp.dataset.masterFile;
+      const file = inp.files && inp.files[0];
+      if (!file) return;
+      const card = inp.closest("[data-master]");
+      const m = list.find((x) => x.id === id) || {
+        id,
+        name: id,
+        master_prompt: card?.querySelector("pre")?.textContent || "",
+      };
+      const fd = new FormData();
+      fd.append("files", file, file.name);
+      fd.append("force_id", id);
+      const previewSrc = URL.createObjectURL(file);
+      m.status = "READY";
+      const next = replaceMasterCard(card, projectId, m, previewSrc);
+      api(`/api/projects/${encodeURIComponent(projectId)}/masters/upload`, {
+        method: "POST",
+        body: fd,
+      })
+        .then(() => toast(`${m.name || id} lista`))
+        .catch((e) => {
+          toast(e.message);
+          m.status = "MISSING";
+          replaceMasterCard(next, projectId, m);
+          URL.revokeObjectURL(previewSrc);
+        });
+    };
+  });
 }
 
 async function rebuildFlow() {

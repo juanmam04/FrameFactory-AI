@@ -40,10 +40,16 @@ from src.documentary.youtube_pack import generate_youtube_pack, save_youtube_pac
 from src.documentary.flow_pack import export_flow_pack, load_shot_list
 from src.documentary.import_images import (
     delete_all_project_images,
+    delete_master_image,
     delete_project_image,
+    ensure_master_thumb,
     ensure_still_thumb,
     import_images,
     import_uploaded_images,
+    master_file,
+    masters_dir,
+    normalize_master_id,
+    save_master_upload,
     still_file,
     _refresh_after_image_delete,
 )
@@ -148,13 +154,14 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
             if (
                 path.endswith("/step")
                 or "/images/upload" in path
+                or "/masters/upload" in path
                 or path.endswith("/voice")
                 or path.endswith("/render")
                 or path.endswith("/youtube")
             ):
                 if path.endswith("/step"):
                     _sync_safe(lambda: cloud_sync.push_paths(pid, ["project.json"]))
-            elif request.method == "DELETE" and "/images" in path:
+            elif request.method == "DELETE" and ("/images" in path or "/masters/" in path):
                 pass
             else:
                 _sync_safe(lambda: cloud_sync.push_project(pid, include_images=False))
@@ -641,6 +648,93 @@ def create_app() -> FastAPI:
                 "ok": True,
                 "report": report,
             }
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.get("/api/projects/{project_id}/masters/{ref_id}")
+    def master_image(project_id: str, ref_id: str):
+        try:
+            eid = normalize_master_id(ref_id)
+        except ValueError as e:
+            raise HTTPException(400, _err(e)) from e
+        found = master_file(project_id, eid)
+        thumb = masters_dir(project_id) / f"{eid}.thumb.jpg"
+        if found is None and not (thumb.is_file() and thumb.stat().st_size > 0):
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                for name in (f"{eid}.jpg", f"{eid}.png", f"{eid}.webp", f"{eid}.jpeg", f"{eid}.thumb.jpg"):
+                    if cloud_sync.pull_one(project_id, f"flow-pack/references/masters/{name}"):
+                        break
+        serve = ensure_master_thumb(project_id, eid)
+        if serve is None and thumb.is_file() and thumb.stat().st_size > 0:
+            serve = thumb
+        if serve is None:
+            raise HTTPException(404, f"No master {eid}")
+        return FileResponse(
+            serve,
+            media_type="image/jpeg" if serve.suffix.lower() in {".jpg", ".jpeg"} else None,
+            headers={"Cache-Control": "private, max-age=60, must-revalidate"},
+        )
+
+    @app.post("/api/projects/{project_id}/masters/upload")
+    async def master_upload(
+        project_id: str,
+        files: list[UploadFile] = File(...),
+        force_id: str | None = Form(default=None),
+    ):
+        try:
+            load_project(project_id)
+            if not force_id:
+                raise ValueError("Falta la cara (CHAR_001).")
+            eid = normalize_master_id(force_id)
+            raw = b""
+            fname = "upload.jpg"
+            for f in files:
+                raw = await f.read()
+                fname = f.filename or fname
+                if raw:
+                    break
+            if not raw:
+                raise ValueError("No files received.")
+            report = save_master_upload(project_id, eid, raw, fname)
+            from src.documentary import cloud_sync
+
+            rels = list(report.get("stored") or [])
+            if cloud_sync.configured() and rels:
+                cloud_sync.delete_paths(
+                    project_id,
+                    [
+                        f"flow-pack/references/masters/{eid}.png",
+                        f"flow-pack/references/masters/{eid}.webp",
+                        f"flow-pack/references/masters/{eid}.jpeg",
+                    ],
+                )
+                pushed = cloud_sync.push_paths(project_id, rels)
+                if on_vercel() and not pushed.get("uploaded") and not pushed.get("unchanged"):
+                    raise ValueError("No se pudo guardar la cara en la nube. Probá de nuevo.")
+            return {"ok": True, "report": report}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.delete("/api/projects/{project_id}/masters/{ref_id}")
+    def master_delete(project_id: str, ref_id: str):
+        try:
+            load_project(project_id)
+            eid = normalize_master_id(ref_id)
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.delete_paths(
+                    project_id,
+                    [
+                        f"flow-pack/references/masters/{eid}{ext}"
+                        for ext in (".jpg", ".jpeg", ".png", ".webp")
+                    ]
+                    + [f"flow-pack/references/masters/{eid}.thumb.jpg"],
+                )
+            result = delete_master_image(project_id, eid)
+            return {"ok": True, "deleted": result}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
