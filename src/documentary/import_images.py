@@ -469,18 +469,48 @@ def list_project_images(project_id: str) -> list[Path]:
 
 
 def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
-    """Return images in shot order; missing slots reported."""
+    """Timeline follows the narration. Inside a moment, stills are a pool (order does not matter)."""
     shots = load_shot_list(project_id).get("shots") or []
+    img_root = project_dir(project_id) / "images"
+    pools: dict[str, list[Path]] = {}
+    for s in shots:
+        if str(s.get("visual_type") or "FLOW_REENACTMENT") not in ("FLOW_REENACTMENT", ""):
+            p = still_file(img_root, int(s["number"]))
+            if p is not None:
+                pools.setdefault("_real", []).append(p)
+            continue
+        mid = str(s.get("moment_id") or "rise")
+        p = still_file(img_root, int(s["number"]))
+        if p is not None:
+            pools.setdefault(mid, []).append(p)
     paths: list[Path] = []
     missing: list[str] = []
-    img_root = project_dir(project_id) / "images"
+    seen_empty: set[str] = set()
+    cursor: dict[str, int] = {}
     for s in shots:
         n = int(s["number"])
-        p = still_file(img_root, n)
-        if p is not None:
-            paths.append(p)
-        else:
-            missing.append(f"{n:03d}")
+        own = still_file(img_root, n)
+        vt = str(s.get("visual_type") or "FLOW_REENACTMENT")
+        if vt not in ("FLOW_REENACTMENT", ""):
+            if own is not None:
+                paths.append(own)
+            else:
+                missing.append(f"{n:03d}")
+            continue
+        mid = str(s.get("moment_id") or "rise")
+        pool = pools.get(mid) or []
+        if own is not None:
+            paths.append(own)
+            continue
+        if pool:
+            i = cursor.get(mid, 0)
+            paths.append(pool[i % len(pool)])
+            cursor[mid] = i + 1
+            continue
+        label = str(s.get("moment_label") or mid)
+        if label not in seen_empty:
+            seen_empty.add(label)
+            missing.append(label)
     return paths, missing
 
 

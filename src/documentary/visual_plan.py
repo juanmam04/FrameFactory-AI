@@ -166,7 +166,8 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
     visuals = plan.get("visuals") or []
     bible = plan.get("visual_bible") or {}
     _purge_stock_locations(bible)
-    used: set[int] = set()
+    _tag_moments(visuals)
+    used: dict[str, set[int]] = {}
     for v in visuals:
         _concretize_visual(v, bible, used)
         names = _cast_names(v, bible)
@@ -189,29 +190,46 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
     for v in visuals:
         if str(v.get("visual_type") or "") == "FLOW_REENACTMENT":
             v["flow_prompt"] = format_single_prompt(v, bible, masters)
-    for b in plan.get("flow_batches") or []:
+    plan["flow_batches"] = group_flow_batches(visuals, batch_size=int(plan.get("batch_size") or 10))
+    for b in plan["flow_batches"]:
         b["prompt"] = format_batch_prompt(b, visuals, bible, masters)
         b["references_needed"] = batch_references(b, visuals, masters)
     return plan
 
 
 def group_flow_batches(visuals: list[dict[str, Any]], *, batch_size: int = 10) -> list[dict[str, Any]]:
+    """One Flow pack per story MOMENT (rise/peak/crack/collapse/aftermath), not a timeline of 001→002."""
     size = max(1, int(batch_size))
     flow = [v for v in visuals if str(v.get("visual_type") or "") == "FLOW_REENACTMENT"]
+    _tag_moments(flow)
+    order: list[str] = []
+    buckets: dict[str, list[dict[str, Any]]] = {}
+    for v in flow:
+        mid = str(v.get("moment_id") or "rise")
+        if mid not in buckets:
+            order.append(mid)
+            buckets[mid] = []
+        buckets[mid].append(v)
     batches: list[dict[str, Any]] = []
-    for i in range(0, len(flow), size):
-        chunk = flow[i : i + size]
-        nums = [int(v["number"]) for v in chunk]
-        batches.append(
-            {
-                "id": f"BATCH_{len(batches) + 1:02d}",
-                "visual_numbers": nums,
-                "label": _batch_label(nums),
-                "count": len(chunk),
-                "status": "ready_to_generate",
-                "imported": 0,
-            }
-        )
+    for mid in order:
+        chunk = buckets[mid]
+        label = str(chunk[0].get("moment_label") or mid)
+        for i in range(0, len(chunk), size):
+            part = chunk[i : i + size]
+            nums = [int(v["number"]) for v in part]
+            batches.append(
+                {
+                    "id": f"BATCH_{len(batches) + 1:02d}",
+                    "moment_id": mid,
+                    "moment_label": label,
+                    "visual_numbers": nums,
+                    "label": label,
+                    "count": len(part),
+                    "interchangeable": True,
+                    "status": "ready_to_generate",
+                    "imported": 0,
+                }
+            )
     return batches
 
 
@@ -317,34 +335,127 @@ _CANNED_STILL = re.compile(
     re.I,
 )
 
-# One beat per still. Keyword buckets were collapsing every "billion/investors" line
-# into the same wine-and-term-sheet photo.
-_UNIQUE_BEATS: tuple[tuple[str, str], ...] = (
-    ("walks away from a glass tower at night, phone lighting the face, street empty", "Manhattan sidewalk at night"),
-    ("sits alone at a corner table, a contract face-down, wine untouched", "quiet restaurant after closing"),
-    ("stands in a freight elevator with one banker, both silent, doors closing", "service elevator"),
-    ("leans on a hotel-room desk at 2am, thick filing pages scattered, city lights behind", "hotel room at 2am"),
-    ("waits on courthouse steps at dawn, coat collar up, no entourage", "courthouse steps at dawn"),
-    ("in the back seat of a black car, staring at a dropped number on a phone", "car on FDR Drive"),
-    ("hangs a cheap paper sign on a raw storefront, almost nobody on the sidewalk", "early-2010s NYC storefront"),
-    ("alone on an emptied floor at night, one desk lamp, everyone else gone", "gutted office floor at night"),
-    ("on a loading dock at dusk, watching a moving truck pull away", "loading dock at dusk"),
-    ("at a kitchen table, sketching a floor plan on scrap paper", "small apartment kitchen"),
-    ("on a private jet, looking out the window, a closed folder on the tray", "private jet cabin"),
-    ("in a narrow hallway after a meeting, forehead against the wall", "empty conference hallway"),
-    ("on a rainy sidewalk outside a bank, the other person already walking away", "bank entrance in rain"),
-    ("in an unfinished space with paint cans, selling a room that is not built yet", "raw warehouse interior"),
-    ("on a rooftop at night, city below, holding a phone with a bad headline", "rooftop at night"),
-    ("in a dim bar booth with ONE other person, a handshake that already looks wrong", "back-room bar booth"),
-    ("walking an empty event space after the crowd left, chairs stacked", "ballroom after the event"),
-    ("at a printer at 5am, pulling a thick prospectus, the floor otherwise dark", "copy room at 5am"),
-    ("on a fire escape, looking at the building no longer under control", "fire escape at dusk"),
-    ("in a boardroom AFTER everyone left, one chair kicked back, lights still on", "abandoned boardroom"),
-    ("crossing a plaza at noon, head down, no crowd in the frame", "city plaza at noon"),
-    ("in a bedroom doorway at night, still in a suit, home but not present", "apartment doorway at night"),
-    ("at a warehouse window with a for-lease flyer in hand", "industrial window, late day"),
-    ("in a taxi in traffic, the company tower shrinking in the rear window", "yellow cab in traffic"),
+_MOMENT_RULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    ("aftermath", "Qué quedó", ("spac", "2021", "layoff", "laid off", "covid", "pandemic", "remote work", "listed via")),
+    (
+        "collapse",
+        "Se cae",
+        (
+            "pulled",
+            "postponed",
+            "stepped down",
+            "bailout",
+            "plummet",
+            "8 billion",
+            "chaos",
+            "evaporated",
+            "existential",
+            "overnight",
+            "abruptly",
+        ),
+    ),
+    (
+        "crack",
+        "Se resquebraja",
+        ("s-1", "roadshow", "scrutiny", "skepticism", "governance", "erratic", "conflict of interest", "critics", "red flags"),
+    ),
+    ("peak", "En la cima", ("47 billion", "20 billion", "most valuable", "staggering milestone", "catapulted", "worldwide")),
+    (
+        "rise",
+        "Le va bien",
+        ("founded", "launch", "2010", "2014", "community", "vision", "series d", "gig economy", "opened", "started"),
+    ),
 )
+_FN_MOMENT = {
+    "hook": "collapse",
+    "setup": "rise",
+    "desire": "rise",
+    "progress": "rise",
+    "obstacle": "crack",
+    "escalation": "crack",
+    "turn": "collapse",
+    "consequence": "collapse",
+    "resolution": "aftermath",
+}
+_MOMENT_LABEL = {
+    "rise": "Le va bien",
+    "peak": "En la cima",
+    "crack": "Se resquebraja",
+    "collapse": "Se cae",
+    "aftermath": "Qué quedó",
+}
+_MOMENT_DIRECTOR = {
+    "rise": "ALL stills = the climb. Energy, cheap beginnings, belief. Nobody is ruined yet.",
+    "peak": "ALL stills = the high. Money, jet, the number, the illusion it will last.",
+    "crack": "ALL stills = the hairline fracture. Papers, doubt, 2am, the room going quiet.",
+    "collapse": "ALL stills = it breaking. Night, empty, the phone, the exit. No victory lap.",
+    "aftermath": "ALL stills = what is left. Quiet, leftover rooms, the smaller number.",
+}
+
+# Angles inside one moment — same climate, different camera. Not a sequence.
+_MOMENT_PALETTES: dict[str, tuple[tuple[str, str], ...]] = {
+    "rise": (
+        ("hangs a cheap paper sign on a raw storefront, almost nobody watching", "early-2010s NYC storefront"),
+        ("at a kitchen table, sketching a floor plan on scrap paper", "small apartment kitchen"),
+        ("walking a raw unfinished floor — paint cans, one table, selling a room that is not built", "raw loft"),
+        ("on a city sidewalk with a printed flyer, early street clothes, a few curious passersby", "sidewalk midday"),
+        ("laughing with ONE cofounder over coffee in a scuffed diner booth", "diner booth"),
+        ("carrying a cheap banner into an empty ground-floor space", "empty storefront interior"),
+        ("on a fire escape in daylight, looking at the block like it already belongs to them", "fire escape, day"),
+        ("in a tiny office with a second-hand desk, phone in hand, still hungry", "tiny first office"),
+        ("taping a floor plan to a brick wall, sleeves rolled", "brick-wall studio"),
+        ("on a bike or on foot through the neighborhood, the building behind them still ordinary", "neighborhood street"),
+    ),
+    "peak": (
+        ("on a private jet, looking out the window, a closed folder on the tray", "private jet cabin"),
+        ("walking out of a glass tower at golden hour, the city looking easy", "tower plaza, golden hour"),
+        ("at a long table with ONE investor and a bottle, the term sheet already signed", "private dining room"),
+        ("in a hotel suite overlooking the skyline, jacket off, the night still going", "hotel suite"),
+        ("on a rooftop at dusk, city below, phone face-down, nothing urgent yet", "rooftop dusk"),
+        ("in the back of a black car, skyline sliding by, calm", "car on the FDR"),
+        ("standing in a huge empty floor they just leased, arms open, daylight", "new empty floor, day"),
+        ("at a packed keynote edge of stage, lights, one person in focus", "conference stage wing"),
+        ("pouring a drink in a penthouse kitchen, the view doing the talking", "penthouse kitchen"),
+        ("crossing a plaza at noon like the building is already theirs", "corporate plaza, noon"),
+    ),
+    "crack": (
+        ("leans on a hotel-room desk at 2am, thick filing pages scattered", "hotel room at 2am"),
+        ("stands in a freight elevator with one banker, both silent, doors closing", "service elevator"),
+        ("at a printer at 5am, pulling a thick prospectus, the floor otherwise dark", "copy room at 5am"),
+        ("in a narrow hallway after a meeting, forehead against the wall", "empty conference hallway"),
+        ("on a rainy sidewalk outside a bank, the other person already walking away", "bank entrance in rain"),
+        ("reading a phone under a desk lamp, the rest of the room dark", "desk at night"),
+        ("in a dim bar booth with ONE other person, a handshake that already looks wrong", "back-room bar booth"),
+        ("waiting outside a closed boardroom door, chair against the wall", "corridor outside boardroom"),
+        ("sits alone at a corner table, a contract face-down, wine untouched", "quiet restaurant after closing"),
+        ("in the back seat, staring at a number that just got smaller", "car at night"),
+    ),
+    "collapse": (
+        ("walks away from a glass tower at night, phone lighting the face, street empty", "Manhattan sidewalk at night"),
+        ("alone on an emptied floor at night, one desk lamp, everyone else gone", "gutted office floor at night"),
+        ("on a loading dock at dusk, watching a moving truck pull away", "loading dock at dusk"),
+        ("waits on courthouse steps at dawn, coat collar up, no entourage", "courthouse steps at dawn"),
+        ("in a taxi in traffic, the company tower shrinking in the rear window", "yellow cab in traffic"),
+        ("in a boardroom AFTER everyone left, one chair kicked back, lights still on", "abandoned boardroom"),
+        ("on a fire escape at dusk, looking at the building no longer under control", "fire escape at dusk"),
+        ("crossing a plaza at noon, head down, no crowd in the frame", "city plaza at noon"),
+        ("in a bedroom doorway at night, still in a suit, home but not present", "apartment doorway at night"),
+        ("on a rooftop at night, holding a phone with the bad headline", "rooftop at night"),
+    ),
+    "aftermath": (
+        ("at a warehouse window with a for-lease flyer in hand", "industrial window, late day"),
+        ("walking an empty event space after the crowd left, chairs stacked", "ballroom after the event"),
+        ("on an emptied floor in daylight, dust in the sun, nobody coming back", "empty floor, day"),
+        ("in a taxi, older, watching a smaller sign on the same tower", "cab, grey day"),
+        ("at a kitchen table with a thinner stack of papers, morning", "apartment kitchen, morning"),
+        ("standing in a doorway of a space that used to be loud", "quiet doorway"),
+        ("on a sidewalk in winter light, the old HQ behind, ordinary traffic", "sidewalk, winter"),
+        ("in an office with half the desks gone, one plant still alive", "half-empty office"),
+        ("looking at a phone with a much smaller valuation, no reaction left", "desk, late day"),
+        ("closing a cardboard box of nameplates, the hallway empty", "storage hallway"),
+    ),
+}
+_UNIQUE_BEATS = _MOMENT_PALETTES["collapse"] + _MOMENT_PALETTES["rise"]
 _TIMES = ("dawn", "midday", "golden hour", "blue hour", "night", "3am", "rain", "winter light")
 _BEAT_DETAILS = (
     "wool coat",
@@ -361,10 +472,32 @@ _BEAT_DETAILS = (
 )
 
 
+def _tag_moments(visuals: list[dict[str, Any]]) -> None:
+    for v in visuals:
+        if str(v.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
+            continue
+        text = " ".join(
+            str(v.get(k) or "")
+            for k in ("narration_segment", "narration", "description", "action")
+        ).lower()
+        mid = ""
+        label = ""
+        for kid, lab, keys in _MOMENT_RULES:
+            if any(k in text for k in keys):
+                mid, label = kid, lab
+                break
+        if not mid:
+            fn = str(v.get("story_function") or v.get("function") or "").lower()
+            mid = _FN_MOMENT.get(fn, "rise")
+            label = _MOMENT_LABEL.get(mid, "Le va bien")
+        v["moment_id"] = mid
+        v["moment_label"] = label
+
+
 def _still_from_vo(
     visual: dict[str, Any],
     bible: dict[str, Any] | None,
-    used: set[int] | None = None,
+    used: dict[str, set[int]] | set[int] | None = None,
 ) -> str:
     still, _loc = _unique_beat(visual, bible, used)
     return still
@@ -373,22 +506,27 @@ def _still_from_vo(
 def _unique_beat(
     visual: dict[str, Any],
     bible: dict[str, Any] | None,
-    used: set[int] | None = None,
+    used: dict[str, set[int]] | set[int] | None = None,
 ) -> tuple[str, str]:
     narr = str(visual.get("narration_segment") or visual.get("narration") or "").strip()
     who = _names_in_text(narr, bible)
     who_s = ", ".join(who) if who else _lead(bible)
     n = max(1, int(visual.get("number") or 1))
-    start = (n - 1) % len(_UNIQUE_BEATS)
-    taken = used if used is not None else set()
+    mid = str(visual.get("moment_id") or "rise")
+    palette = _MOMENT_PALETTES.get(mid) or _UNIQUE_BEATS
+    if isinstance(used, dict):
+        taken = used.setdefault(mid, set())
+    else:
+        taken = used if used is not None else set()
+    start = (n - 1) % len(palette)
     idx = start
-    for off in range(len(_UNIQUE_BEATS)):
-        cand = (start + off) % len(_UNIQUE_BEATS)
+    for off in range(len(palette)):
+        cand = (start + off) % len(palette)
         if cand not in taken:
             idx = cand
             break
     taken.add(idx)
-    action, loc = _UNIQUE_BEATS[idx]
+    action, loc = palette[idx]
     when = _TIMES[(n * 5 + idx) % len(_TIMES)]
     detail = _BEAT_DETAILS[(n * 3 + idx) % len(_BEAT_DETAILS)]
     still = f"{who_s} {action}, {when}, {detail}. No crowd, no open-plan office."
@@ -398,7 +536,7 @@ def _unique_beat(
 def _concretize_visual(
     visual: dict[str, Any],
     bible: dict[str, Any] | None,
-    used: set[int] | None = None,
+    used: dict[str, set[int]] | set[int] | None = None,
 ) -> None:
     if str(visual.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
         return
@@ -424,7 +562,7 @@ def _concretize_visual(
 
 def _dedupe_stills(visuals: list[dict[str, Any]], bible: dict[str, Any] | None) -> None:
     seen: set[str] = set()
-    used: set[int] = set()
+    used: dict[str, set[int]] = {}
     for v in visuals:
         if str(v.get("visual_type") or "") != "FLOW_REENACTMENT":
             continue
@@ -446,7 +584,8 @@ def _rewrite_stills(
     *,
     use_llm: bool,
 ) -> None:
-    used: set[int] = set()
+    used: dict[str, set[int]] = {}
+    _tag_moments(visuals)
     for v in visuals:
         _concretize_visual(v, bible, used)
     _dedupe_stills(visuals, bible)
@@ -475,7 +614,7 @@ def _rewrite_stills(
         "(empty floor after the crash, a For Sale sign at night, two cofounders on a sidewalk with a cheap sign).\n"
         "Locations MUST change across the list: street, apartment, car, jet, empty hallway, restaurant, "
         "sidewalk, bedroom at 3am, loading dock, courthouse steps — not 'office' twice in a row.\n"
-        "NEVER reuse the same photograph. If two lines mention money or investors, they are STILL different images."
+        "Keep the SAME emotional register as the moment (rise vs collapse). Different camera, same climate."
     )
     for i in range(0, len(flow), 8):
         chunk = flow[i : i + 8]
@@ -551,25 +690,32 @@ def format_batch_prompt(
     by_num = {int(v["number"]): v for v in visuals}
     nums = [int(n) for n in (batch.get("visual_numbers") or [])]
     n = len(nums)
+    mid = str(batch.get("moment_id") or "")
+    if not mid and nums:
+        mid = str((by_num.get(nums[0]) or {}).get("moment_id") or "rise")
+    label = str(batch.get("moment_label") or _MOMENT_LABEL.get(mid, "this moment"))
+    climate = _MOMENT_DIRECTOR.get(mid, "ALL stills share the same emotional register.")
     lines = [
-        f"Create {n} separate 16:9 cinematic documentary stills — a STORY SEQUENCE, not stock.",
-        "Each block is labeled STILL 007, STILL 008... That number is the SLOT, not 'image 1 of 10'.",
-        "Do not create a collage. Do not repeat the same office/crowd.",
+        f"Create {n} separate 16:9 cinematic documentary stills of ONE STORY MOMENT: {label.upper()}.",
+        climate,
+        "They are INTERCHANGEABLE — not a sequence, not 1 then 2 then 3. Different camera and place, SAME climate.",
+        "Do not create a collage. Do not tell a 10-step timeline. Do not repeat the same office/crowd.",
         "",
         "HARD RULES:",
         "- The same person must look like the same person across images (use character refs).",
-        "- Change location, time of day, and camera every shot unless the story stays put.",
+        "- Change location, time of day, and camera every shot.",
         "- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,",
         "  handshake, CEO portrait, anonymous extras filling the frame.",
         "",
         f"DIRECTOR: {FLOW_DIRECTOR_RULES}",
         f"STYLE: {_style_text(bible)[:320]}",
         "",
+        f"ANGLES on {label} (same moment, different photograph):",
+        "",
     ]
-    for num in nums:
+    for i, num in enumerate(nums, start=1):
         v = by_num.get(num) or {}
-        lines.append(f"=== STILL {num:03d}  (this is slot {num:03d}, not batch-position) ===")
-        lines.append(format_scene_line(v, masters, bible))
+        lines.append(f"{i}. {format_scene_line(v, masters, bible)}")
         lines.append("")
     lines.extend(
         [
@@ -577,7 +723,7 @@ def format_batch_prompt(
             "- 16:9 photoreal documentary;",
             "- protagonist visible and doing the action;",
             "- period-accurate wardrobe, phones, cars, interiors;",
-            "- each image must be recognizable as a DIFFERENT moment;",
+            "- every frame is the SAME emotional beat from a new angle;",
             "- no readable text unless requested; no logos; no collage;",
             "- no stock office crowd.",
         ]
@@ -620,8 +766,8 @@ def format_scene_line(
         else " One named person from this story in frame — not a crowd of extras."
     )
     return (
-        f"{num:03d}.{when}{place} {desc}{who} "
-        f"{cam} candid documentary still, photoreal, period-accurate. Unique story moment, not stock."
+        f"{when}{place} {desc}{who} "
+        f"{cam} candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock."
         f"{master_hint}"
     ).strip()
 

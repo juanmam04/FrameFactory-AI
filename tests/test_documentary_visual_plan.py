@@ -60,6 +60,20 @@ def test_batch_grouping_23_flow():
     assert batches[0]["visual_numbers"] == list(range(1, 11))
     assert batches[1]["visual_numbers"] == list(range(11, 21))
     assert batches[2]["visual_numbers"] == [21, 22, 23]
+    assert batches[0].get("interchangeable") is True
+
+
+def test_batches_group_by_moment_not_timeline():
+    visuals = [
+        {"number": 1, "visual_type": "FLOW_REENACTMENT", "narration": "The IPO was abruptly pulled overnight."},
+        {"number": 2, "visual_type": "FLOW_REENACTMENT", "narration": "Adam Neumann launched WeWork in 2010."},
+        {"number": 3, "visual_type": "FLOW_REENACTMENT", "narration": "SoftBank arranged a bailout after the collapse."},
+        {"number": 4, "visual_type": "FLOW_REENACTMENT", "narration": "Their vision was a community-driven space."},
+    ]
+    batches = group_flow_batches(visuals, batch_size=10)
+    by_mood = {b["moment_id"]: b["visual_numbers"] for b in batches}
+    assert 1 in by_mood.get("collapse", []) and 3 in by_mood.get("collapse", [])
+    assert 2 in by_mood.get("rise", []) and 4 in by_mood.get("rise", [])
 
 
 def test_mixed_types_batches_only_flow():
@@ -111,7 +125,7 @@ def test_reference_propagation_in_batch_prompt():
     assert refs and refs[0]["id"] == "CHAR_001"
     prompt = format_batch_prompt(batch, visuals, {"global_style": "doc"}, masters)
     assert "CHAR_001.png" in prompt or "Adam Neumann" in prompt
-    assert "SEPARATE IMAGE" in prompt
+    assert "SAME" in prompt.upper() or "MOMENT" in prompt.upper() or "climate" in prompt.lower()
 
 
 def test_bulk_import_ready(tmp_projects):

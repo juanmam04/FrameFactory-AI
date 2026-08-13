@@ -79,7 +79,7 @@ def assemble_and_render(
     if preview["missing_images"] and not allow_missing:
         miss = preview["missing_images"]
         raise RuntimeError(
-            f"{len(miss)} images are still missing: " + ", ".join(miss[:40]) + ("…" if len(miss) > 40 else "")
+            f"Falta el bloque de imágenes: " + ", ".join(miss[:40]) + ("…" if len(miss) > 40 else "")
         )
     if not preview["voice_ok"]:
         raise RuntimeError("Voice is not ready yet. Generate voice before rendering.")

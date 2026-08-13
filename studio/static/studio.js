@@ -98,8 +98,8 @@ function slotCard(v, projectId, previewSrc = "") {
   const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?v=${IMG_BOOT}`;
   return `
     <article class="shot" data-slot="${n}">
-      <strong>Imagen ${id}</strong>
-      <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)}</div>
+      <strong>${esc(v.moment_label ? `${v.moment_label} · foto` : "Imagen")} ${id}</strong>
+      <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)}${v.moment_label ? " · sin orden" : ""}</div>
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
       <div class="slot-frame">
         ${has
@@ -972,12 +972,12 @@ async function paintFlow(ws, p) {
       <div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
         <h2 style="margin:0 0 0.5rem">Qué tenés que hacer acá (paso a paso)</h2>
         <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
-          <li><strong>De a UNA.</strong> En el recuadro 007 tocá “Copiar prompt 007” → pegalo en Flow → generá esa sola.</li>
-          <li><strong>Subila en ESE recuadro</strong> (007). Flow mezcla el orden si pedís 10 juntas: no mires el nombre del archivo.</li>
-          <li>La escena del texto (elevador, hotel, storefront) es la pista. El número del recuadro es la verdad.</li>
+          <li><strong>Un bloque = un momento.</strong> “Le va bien”, “Se cae”, etc. Pedí ~10 fotos de ESE clima, no un orden 1-2-3.</li>
+          <li><strong>Copiá el pedido del bloque</strong> → Flow. Si las mezcla, da igual: son intercambiables.</li>
+          <li><strong>Subí cualquiera en cualquier recuadro de ese bloque.</strong> Con 3–4 ya cubre ese tramo del video.</li>
         </ol>
         <p class="lead" style="margin-top:0.75rem;margin-bottom:0">
-          No uses el pedido de 10 a la vez si no vas a reconocer cada escena a ojo.
+          No hay que matchear “imagen 7 = prompt 7”.
         </p>
       </div>
 
@@ -994,8 +994,8 @@ async function paintFlow(ws, p) {
       <p class="lead">Copiá el texto → Google Flow → descargá → <strong>subí acá</strong>. El nombre que ponga Flow no importa.</p>
       <div class="list" id="masters"></div>
 
-      <h2 style="margin-top:1.6rem">B) Still por still</h2>
-      <p class="lead">Cada recuadro tiene su número. Copiá ESE prompt, generá esa imagen, subila ahí. Flow no respeta el orden del lote.</p>
+      <h2 style="margin-top:1.6rem">B) Bloques por momento</h2>
+      <p class="lead">Cada bloque es un clima del episodio. Diez ángulos del mismo momento. El orden adentro no importa.</p>
       <div class="list" id="batches"></div>
 
       <h2 style="margin-top:1.6rem">C) Cosas reales (no pedirle esto a la IA)</h2>
@@ -1030,14 +1030,16 @@ async function paintFlow(ws, p) {
           const slots = (b.visual_numbers || [])
             .map((n) => slotCard(byNum[Number(n)] || { number: n, visual_type: "FLOW_REENACTMENT" }, p.id))
             .join("");
+          const mood = b.moment_label || b.label || `Bloque ${bi + 1}`;
           return `
       <article class="shot" id="batch-${bi}">
-        <strong>Grupo ${bi + 1}</strong> — ${totalB} imágenes
-        <div class="ff-episode-meta">Referencias a adjuntar en Flow: ${esc(refs)}</div>
+        <strong>${esc(mood)}</strong> — ${totalB} fotos del mismo clima
+        <div class="ff-episode-meta">Sin orden. Flow puede mezclarlas. Subí en cualquier recuadro de este bloque.</div>
+        <div class="ff-episode-meta">Referencias en Flow: ${esc(refs)}</div>
         <div class="ff-episode-meta">Subidas: <strong>${done} / ${totalB}</strong></div>
         <div class="actions">
-          <button class="btn btn-ghost" data-copy-batch="${bi}">Copiar las 10 (Flow las desordena)</button>
-          <button class="btn btn-ghost" data-expand-batch="${bi}">Editar textos</button>
+          <button class="btn btn-primary" data-copy-batch="${bi}">Copiar pedido de este momento</button>
+          <button class="btn btn-ghost" data-expand-batch="${bi}">Editar ángulos</button>
         </div>
         <pre class="hidden" id="batch-prompt-${bi}" style="max-height:220px;overflow:auto;margin-top:0.6rem">${esc(b.prompt || "")}</pre>
         <div class="hidden" id="batch-expand-${bi}" style="margin-top:0.6rem"></div>
@@ -1054,7 +1056,7 @@ async function paintFlow(ws, p) {
       if (pre) pre.classList.remove("hidden");
       if (b?.prompt) {
         navigator.clipboard.writeText(b.prompt);
-        toast("Lote copiado. Flow NO las devuelve en orden — mejor copiá de a un recuadro.");
+        toast("Pedido del momento copiado. Pegalo en Flow — el orden de salida no importa.");
       }
     };
   });
