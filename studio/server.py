@@ -1,6 +1,7 @@
 """FrameFactory Documentary Studio — FastAPI (not Streamlit)."""
 from __future__ import annotations
 
+import json
 import os
 import re
 import traceback
@@ -35,6 +36,7 @@ from src.documentary.channel import (  # noqa: E402
     target_words_from_profile,
 )
 from src.documentary.credentials import credential_report
+from src.documentary.youtube_pack import generate_youtube_pack, save_youtube_pack
 from src.documentary.flow_pack import export_flow_pack, load_shot_list
 from src.documentary.import_images import (
     delete_all_project_images,
@@ -88,7 +90,7 @@ from src.saas_sessions import (
 
 ROOT = Path(__file__).resolve().parent
 
-STEPS = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "done"]
+STEPS = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "publish", "done"]
 
 _PROJECT_RE = re.compile(r"^/api/projects/([^/]+)")
 
@@ -143,7 +145,13 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
             and pid
             and path.startswith("/api/")
         ):
-            if path.endswith("/step") or "/images/upload" in path or path.endswith("/voice") or path.endswith("/render"):
+            if (
+                path.endswith("/step")
+                or "/images/upload" in path
+                or path.endswith("/voice")
+                or path.endswith("/render")
+                or path.endswith("/youtube")
+            ):
                 if path.endswith("/step"):
                     _sync_safe(lambda: cloud_sync.push_paths(pid, ["project.json"]))
             elif request.method == "DELETE" and "/images" in path:
@@ -708,7 +716,7 @@ def create_app() -> FastAPI:
 
             assemble_and_render(load_project(project_id))
             p = load_project(project_id)
-            p["ui_step"] = "done"
+            p["ui_step"] = "publish"
             save_project(p)
             if on_vercel():
                 from src.documentary import cloud_sync
@@ -720,6 +728,51 @@ def create_app() -> FastAPI:
                         )
                     )
             return {"project": _project_full(p)}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/{project_id}/youtube")
+    def youtube_generate(project_id: str):
+        try:
+            p = load_project(project_id)
+            pack = generate_youtube_pack(p)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id, ["project.json", "metadata/youtube.json"]
+                        )
+                    )
+            return {"project": _project_full(load_project(project_id)), "youtube": pack}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.put("/api/projects/{project_id}/youtube")
+    def youtube_save(project_id: str, body: YoutubeBody):
+        try:
+            p = load_project(project_id)
+            pack = save_youtube_pack(
+                p,
+                {
+                    "title": body.title,
+                    "alt_titles": body.alt_titles,
+                    "description": body.description,
+                    "thumbnail_text": body.thumbnail_text,
+                    "thumbnail_prompt": body.thumbnail_prompt,
+                },
+            )
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id, ["project.json", "metadata/youtube.json"]
+                        )
+                    )
+            return {"project": _project_full(load_project(project_id)), "youtube": pack}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
@@ -781,11 +834,37 @@ class ImportBody(BaseModel):
     source_dir: str = ""
 
 
+class YoutubeBody(BaseModel):
+    title: str = ""
+    alt_titles: list[str] = Field(default_factory=list)
+    description: str = ""
+    thumbnail_text: str = ""
+    thumbnail_prompt: str = ""
+
+
 def _err(e: BaseException) -> str:
     msg = str(e) or e.__class__.__name__
     if len(msg) > 800:
         msg = msg[:800] + "…"
     return msg
+
+
+def _youtube_of(p: dict[str, Any]) -> dict[str, Any]:
+    y = p.get("youtube") if isinstance(p.get("youtube"), dict) else {}
+    if str(y.get("title") or "").strip():
+        return y
+    pid = str(p.get("id") or "")
+    if not pid:
+        return y or {}
+    path = project_dir(pid) / "metadata" / "youtube.json"
+    if path.is_file():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+    return y or {}
 
 
 def _project_card(p: dict[str, Any]) -> dict[str, Any]:
@@ -822,6 +901,7 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "script_quality": p.get("script_quality") or {},
         "target_words": p.get("target_words") or 2000,
         "voice": p.get("voice") or {},
+        "youtube": _youtube_of(p),
         "checkpoints": p.get("checkpoints") or {},
         "flow_pack_path": str(project_dir(str(p["id"])) / "flow-pack") if p.get("id") else "",
     }

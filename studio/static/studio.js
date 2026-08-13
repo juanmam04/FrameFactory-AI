@@ -580,7 +580,7 @@ function renderProject() {
   const p = state.project;
   if (!p) return go("home");
   const step = p.ui_step || "research";
-  const steps = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "done"];
+  const steps = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "publish"];
   const stepLabel = {
     topic: "1 Tema",
     research: "2 Info",
@@ -590,7 +590,8 @@ function renderProject() {
     images: "6 Subir imgs",
     voice: "7 Voz",
     render: "8 Video",
-    done: "Listo",
+    publish: "9 YouTube",
+    done: "9 YouTube",
   };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
@@ -628,7 +629,8 @@ function renderProject() {
   if (step === "flow") return paintFlow(ws, p);
   if (step === "images") return paintImages(ws, p);
   if (step === "voice") return paintVoice(ws, p);
-  if (step === "render" || step === "done") return paintRender(ws, p);
+  if (step === "render") return paintRender(ws, p);
+  if (step === "publish" || step === "done") return paintPublish(ws, p);
   paintResearch(ws, p);
 }
 
@@ -1238,9 +1240,18 @@ function paintRender(ws, p) {
       <div class="actions">
         <button class="btn btn-accent" id="render">${done ? "Volver a renderizar" : "Renderizar video"}</button>
         ${done ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video" download>Descargar MP4</a>` : ""}
-        <button class="btn btn-primary" id="home">Volver al inicio</button>
+        <button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>
+        <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
     </div>`;
+  $("#to-publish").onclick = async () => {
+    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+      method: "PATCH",
+      body: JSON.stringify({ step: "publish" }),
+    });
+    state.project = data.project;
+    renderProject();
+  };
   $("#render").onclick = async () => {
     try {
       const data = await withBusy("Armando el video… esto puede tardar un par de minutos", () =>
@@ -1253,6 +1264,97 @@ function paintRender(ws, p) {
     } catch (e) {
       toast(e.message);
     }
+  };
+  $("#home").onclick = () => {
+    location.hash = "";
+    go("home");
+  };
+}
+
+function paintPublish(ws, p) {
+  const y = p.youtube || {};
+  const alts = (y.alt_titles || []).join("\n");
+  ws.innerHTML = `
+    <div class="panel workspace">
+      <h2 style="margin-top:0">YouTube</h2>
+      <p class="lead">Título, descripción y prompt de miniatura para subir el episodio.</p>
+      <div class="actions" style="margin-bottom:1rem">
+        <button class="btn btn-accent" id="gen-yt">Generar con IA</button>
+        <button class="btn btn-ghost" id="save-yt">Guardar</button>
+      </div>
+      <div class="field">
+        <label>Título</label>
+        <input id="yt-title" value="${esc(y.title || "")}" />
+        <button class="btn btn-soft" id="copy-title" style="margin-top:0.45rem">Copiar título</button>
+      </div>
+      <div class="field">
+        <label>Títulos alternativos</label>
+        <textarea id="yt-alts" rows="3">${esc(alts)}</textarea>
+      </div>
+      <div class="field">
+        <label>Descripción</label>
+        <textarea id="yt-desc" rows="10">${esc(y.description || "")}</textarea>
+        <button class="btn btn-soft" id="copy-desc" style="margin-top:0.45rem">Copiar descripción</button>
+      </div>
+      <div class="field">
+        <label>Texto sobre la miniatura (2–4 palabras)</label>
+        <input id="yt-thumb-text" value="${esc(y.thumbnail_text || "")}" />
+      </div>
+      <div class="field">
+        <label>Prompt de miniatura (Google Flow)</label>
+        <textarea id="yt-thumb" rows="6">${esc(y.thumbnail_prompt || "")}</textarea>
+        <button class="btn btn-soft" id="copy-thumb" style="margin-top:0.45rem">Copiar prompt</button>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" id="back-video">Volver al video</button>
+        <button class="btn btn-primary" id="home">Listo</button>
+      </div>
+    </div>`;
+  const packFromForm = () => ({
+    title: $("#yt-title").value,
+    alt_titles: $("#yt-alts").value.split("\n").map((s) => s.trim()).filter(Boolean),
+    description: $("#yt-desc").value,
+    thumbnail_text: $("#yt-thumb-text").value,
+    thumbnail_prompt: $("#yt-thumb").value,
+  });
+  $("#gen-yt").onclick = async () => {
+    try {
+      const data = await withBusy("Escribiendo título y miniatura…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/youtube`, { method: "POST" })
+      );
+      state.project = data.project;
+      toast("Pack de YouTube listo");
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  $("#save-yt").onclick = async () => {
+    try {
+      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/youtube`, {
+        method: "PUT",
+        body: JSON.stringify(packFromForm()),
+      });
+      state.project = data.project;
+      toast("Guardado");
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  const copy = (sel, label) => {
+    navigator.clipboard.writeText($(sel).value || "");
+    toast(`${label} copiado`);
+  };
+  $("#copy-title").onclick = () => copy("#yt-title", "Título");
+  $("#copy-desc").onclick = () => copy("#yt-desc", "Descripción");
+  $("#copy-thumb").onclick = () => copy("#yt-thumb", "Prompt");
+  $("#back-video").onclick = async () => {
+    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+      method: "PATCH",
+      body: JSON.stringify({ step: "render" }),
+    });
+    state.project = data.project;
+    renderProject();
   };
   $("#home").onclick = () => {
     location.hash = "";

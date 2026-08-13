@@ -59,6 +59,7 @@ PROGRESS_STEPS = (
     "images",
     "voice",
     "render",
+    "publish",
     "done",
 )
 
@@ -93,6 +94,7 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "ui_step": "research",
     "checkpoints": {k: False for k in CHECKPOINT_KEYS},
     "import_report": {},
+    "youtube": {},
     "preview": {},
     "errors": [],
     "created_at": "",
@@ -366,7 +368,8 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
         "images": images_full or (images_partial and voice),
         "voice": voice,
         "render": rendered,
-        "done": rendered,
+        "publish": bool((project.get("youtube") or {}).get("title")),
+        "done": bool((project.get("youtube") or {}).get("title")),
     }
     current = "done"
     for step in PROGRESS_STEPS:
@@ -385,11 +388,10 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
             current = step
             break
     else:
-        current = "done" if rendered else "render"
+        current = "done" if flags.get("publish") else ("publish" if rendered else "render")
 
-    if rendered:
-        current = "done"
-        flags["done"] = True
+    if rendered and not flags.get("publish"):
+        current = "publish"
 
     return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": current}
 
