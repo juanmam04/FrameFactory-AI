@@ -27,21 +27,29 @@ def ensure_still_thumb(images_dir: Path, number: int) -> Path | None:
     """Small JPEG for the UI so we never ship 7MB PNGs to the browser."""
     n = int(number)
     thumb = images_dir / f"{n:03d}.thumb.jpg"
+    src = still_file(images_dir, n)
+    if src is not None:
+        stale = (
+            not thumb.is_file()
+            or thumb.stat().st_size <= 0
+            or thumb.stat().st_mtime + 0.5 < src.stat().st_mtime
+        )
+        if stale:
+            try:
+                from PIL import Image
+
+                with Image.open(src) as im:
+                    rgb = im.convert("RGB")
+                    rgb.thumbnail((960, 540), Image.LANCZOS)
+                    rgb.save(thumb, format="JPEG", quality=70)
+            except Exception:
+                return src
+        if thumb.is_file() and thumb.stat().st_size > 0:
+            return thumb
+        return src
     if thumb.is_file() and thumb.stat().st_size > 0:
         return thumb
-    src = still_file(images_dir, n)
-    if src is None:
-        return None
-    try:
-        from PIL import Image
-
-        with Image.open(src) as im:
-            rgb = im.convert("RGB")
-            rgb.thumbnail((960, 540), Image.LANCZOS)
-            rgb.save(thumb, format="JPEG", quality=70)
-        return thumb
-    except Exception:
-        return src
+    return None
 
 
 def write_compressed_still(dest_root: Path, num: int, data: bytes, filename: str = "") -> Path:
@@ -64,6 +72,9 @@ def write_compressed_still(dest_root: Path, num: int, data: bytes, filename: str
         extra = dest_root / f"{int(num):03d}{ext}"
         if extra != dest and extra.exists():
             extra.unlink()
+    old_thumb = dest_root / f"{int(num):03d}.thumb.jpg"
+    if old_thumb.is_file():
+        old_thumb.unlink()
     return dest
 
 
@@ -206,7 +217,7 @@ def import_uploaded_images(
         if num in seen:
             duplicates.append(name)
             continue
-        if expected_nums and num not in expected_nums:
+        if expected_nums and num not in expected_nums and force_number is None:
             unknown.append(name)
             continue
         seen.add(num)
@@ -217,6 +228,16 @@ def import_uploaded_images(
         thumb = ensure_still_thumb(dest_root, num)
         if thumb is not None and thumb.name != dest.name:
             stored_rels.append(f"images/{thumb.name}")
+
+    if not imported_nums:
+        bits = []
+        if invalid:
+            bits.append(f"nombre inválido: {', '.join(invalid[:3])}")
+        if unknown:
+            bits.append(f"número que no existe en el plan: {', '.join(unknown[:3])}")
+        if duplicates:
+            bits.append("duplicadas")
+        raise ValueError("No se importó ninguna imagen. " + ("; ".join(bits) or "Archivo vacío o ilegible."))
 
     # Ready = existing files on disk after upload
     img_root = dest_root
@@ -285,6 +306,10 @@ def delete_project_image(project_id: str, number: int) -> dict[str, Any]:
         if dest.is_file():
             dest.unlink()
             removed = True
+    thumb = img / f"{n:03d}.thumb.jpg"
+    if thumb.is_file():
+        thumb.unlink()
+        removed = True
     drop = root / "flow-import"
     if drop.is_dir():
         for extra in drop.glob(f"{n:03d}.*"):
@@ -300,7 +325,9 @@ def delete_all_project_images(project_id: str) -> dict[str, Any]:
     img = root / "images"
     if img.is_dir():
         for path in img.iterdir():
-            if path.is_file() and path.suffix.lower() in _STILL_EXTS:
+            if path.is_file() and (
+                path.suffix.lower() in _STILL_EXTS or path.name.endswith(".thumb.jpg")
+            ):
                 path.unlink()
                 removed += 1
     drop = root / "flow-import"

@@ -557,11 +557,11 @@ def create_app() -> FastAPI:
 
             if cloud_sync.configured():
                 for name in (
-                    f"{n:03d}.thumb.jpg",
                     f"{n:03d}.jpg",
                     f"{n:03d}.png",
                     f"{n:03d}.webp",
                     f"{n:03d}.jpeg",
+                    f"{n:03d}.thumb.jpg",
                 ):
                     if cloud_sync.pull_one(project_id, f"images/{name}"):
                         break
@@ -573,7 +573,7 @@ def create_app() -> FastAPI:
             return FileResponse(
                 serve,
                 media_type="image/jpeg" if serve.suffix.lower() in {".jpg", ".jpeg"} else None,
-                headers={"Cache-Control": "public, max-age=604800"},
+                headers={"Cache-Control": "private, max-age=60, must-revalidate"},
             )
         raise HTTPException(404, f"No image {n:03d}")
 
@@ -610,16 +610,33 @@ def create_app() -> FastAPI:
                 payload,
                 force_number=force_number,
             )
-            if on_vercel():
-                from src.documentary import cloud_sync
+            from src.documentary import cloud_sync
 
-                rels = list(report.get("stored") or [])
-                if not rels and force_number is not None:
-                    found = still_file(project_dir(project_id) / "images", force_number)
-                    if found is not None:
-                        rels = [f"images/{found.name}"]
-                if cloud_sync.configured() and rels:
-                    _sync_safe(lambda: cloud_sync.push_paths(project_id, rels))
+            rels = list(report.get("stored") or [])
+            if not rels and force_number is not None:
+                found = still_file(project_dir(project_id) / "images", force_number)
+                if found is not None:
+                    rels = [f"images/{found.name}"]
+            if cloud_sync.configured() and rels:
+                nums: list[int] = []
+                for rel in rels:
+                    m = re.search(r"(\d{3})", Path(rel).name)
+                    if m:
+                        nums.append(int(m.group(1)))
+                stale: list[str] = []
+                for n in sorted(set(nums)):
+                    stale.extend(
+                        [
+                            f"images/{n:03d}.png",
+                            f"images/{n:03d}.webp",
+                            f"images/{n:03d}.jpeg",
+                        ]
+                    )
+                if stale:
+                    cloud_sync.delete_paths(project_id, stale)
+                pushed = cloud_sync.push_paths(project_id, rels)
+                if on_vercel() and not pushed.get("uploaded") and not pushed.get("unchanged"):
+                    raise ValueError("No se pudieron guardar las imágenes en la nube. Probá de nuevo.")
             return {
                 "ok": True,
                 "report": report,
@@ -637,7 +654,8 @@ def create_app() -> FastAPI:
                 n = int(number)
                 cloud_sync.delete_paths(
                     project_id,
-                    [f"images/{n:03d}{ext}" for ext in (".jpg", ".jpeg", ".png", ".webp")],
+                    [f"images/{n:03d}{ext}" for ext in (".jpg", ".jpeg", ".png", ".webp")]
+                    + [f"images/{n:03d}.thumb.jpg"],
                 )
             result = delete_project_image(project_id, number)
             sync = _refresh_after_image_delete(p)

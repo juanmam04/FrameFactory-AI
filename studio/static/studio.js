@@ -9,6 +9,7 @@ const state = {
 
 const stage = () => document.getElementById("stage");
 const $ = (sel, el = document) => el.querySelector(sel);
+const IMG_BOOT = Date.now();
 
 async function api(path, opts = {}) {
   const headers = { ...(opts.headers || {}) };
@@ -84,7 +85,7 @@ function slotCard(v, projectId, previewSrc = "") {
   const has = String(v.status || "").toUpperCase() === "READY";
   const desc = v.description || v.action || v.acquisition_note || "";
   const kind = v.visual_type === "FLOW_REENACTMENT" ? "Google Flow" : "documento / foto real";
-  const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}`;
+  const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?v=${IMG_BOOT}`;
   return `
     <article class="shot" data-slot="${n}">
       <strong>Imagen ${id}</strong>
@@ -136,6 +137,7 @@ function bindSlotUploads(root, projectId) {
   if (!root) return;
   root.querySelectorAll(".slot-thumb").forEach((img) => {
     img.onerror = () => {
+      if ((img.src || "").startsWith("blob:")) return;
       const frame = img.closest(".slot-frame");
       img.remove();
       if (frame && !frame.querySelector(".slot-placeholder")) {
@@ -191,11 +193,8 @@ function bindSlotUploads(root, projectId) {
       })
         .then(() => {
           toast(`${pad3(n)} lista`);
-          const img = next.querySelector(".slot-thumb");
-          if (img) {
-            img.src = `/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}`;
-          }
-          URL.revokeObjectURL(previewSrc);
+          // Keep the local preview. Switching to the API URL on Vercel often 404s
+          // for a few seconds and the onerror handler used to wipe the slot.
         })
         .catch((e) => {
           toast(e.message);

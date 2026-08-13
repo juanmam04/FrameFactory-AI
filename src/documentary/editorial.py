@@ -124,18 +124,19 @@ Never invent facts. Never pitch business-advice or listicle videos.
 """.strip()
 
 VISUAL_DIRECTION = (
-    "Cinematic true-story documentary stills, 16:9. Show the world of the story: "
-    "protagonists doing something, real/recreated places, offices, factories, stores, products, "
-    "cities, meetings, events, consequences, time-period change, meaningful details. "
-    "Mix establishing / wide / close-up / environmental storytelling. "
-    "Avoid generic stock: CEO staring at camera, businessman at desk, handshake, laptop, "
-    "generic skyscraper, abstract money graphics. No cartoon, meme text, watermark, logo soup."
+    "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist "
+    "doing one specific action in a specific place at a specific time. Faces, hands, consequences. "
+    "Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, "
+    "courthouse steps, a single desk with one person — not the same open-plan office thirty times. "
+    "Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, "
+    "CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup."
 )
 
 FLOW_DIRECTOR_RULES = (
-    "You are the DIRECTOR for Google Flow (illustrator). "
-    "Illustrate the EVENT, not the sentence — show offices filling, filings, cities, workers, products, "
-    "press moments, consequences. Prefer visually distinct scenes. "
-    "If the beat is a real document/headline/filing, mark DOCUMENT/HEADLINE rather than faking archival text. "
-    "Not a literal dump of the sentence, not generic business stock."
+    "You are the DIRECTOR for Google Flow. One still = one story moment. "
+    "Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped "
+    "into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. "
+    "If the beat is a filing, show the document in someone's hands, not a room of extras. "
+    "Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. "
+    "No collage. No readable logos. Not a stock photo."
 )

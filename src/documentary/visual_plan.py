@@ -37,11 +37,11 @@ CAMERA_VARIETY = (
     "close_up",
     "environmental_detail",
     "over_the_shoulder",
-    "crowd",
-    "building_exterior",
+    "two_shot",
+    "hands_on_object",
     "object_detail",
     "intimate_moment",
-    "large_scale",
+    "doorway_threshold",
 )
 
 KEN_BURNS = ("slow_push", "slow_pull", "pan_left", "pan_right", "static")
@@ -152,7 +152,31 @@ def load_visual_plan(project_id: str) -> dict[str, Any]:
         path = project_dir(project_id) / "flow-pack" / "visual-plan.json"
     if not path.exists():
         raise FileNotFoundError("visual-plan.json missing — generate Visual Plan first")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return refresh_flow_prompts(json.loads(path.read_text(encoding="utf-8")))
+
+
+def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild Flow copy-paste prompts so old episodes pick up director rules."""
+    visuals = plan.get("visuals") or []
+    bible = plan.get("visual_bible") or {}
+    masters = plan.get("master_references") or []
+    for v in visuals:
+        names = _cast_names(v, bible)
+        if names:
+            v["characters"] = names
+            refs = [str(x) for x in (v.get("reference_ids") or v.get("references") or [])]
+            for ent in bible.get("characters") or []:
+                if str(ent.get("name") or "") in names:
+                    eid = str(ent.get("id") or "")
+                    if eid and eid not in refs:
+                        refs.append(eid)
+            v["reference_ids"] = refs
+            v["references"] = refs
+        if str(v.get("visual_type") or "") == "FLOW_REENACTMENT":
+            v["flow_prompt"] = format_single_prompt(v, bible, masters)
+    for b in plan.get("flow_batches") or []:
+        b["prompt"] = format_batch_prompt(b, visuals, bible, masters)
+    return plan
 
 
 def group_flow_batches(visuals: list[dict[str, Any]], *, batch_size: int = 10) -> list[dict[str, Any]]:
@@ -176,11 +200,74 @@ def group_flow_batches(visuals: list[dict[str, Any]], *, batch_size: int = 10) -
 
 
 def _style_text(bible: dict[str, Any]) -> str:
-    raw = bible.get("global_style") or bible.get("visual_style") or VISUAL_DIRECTION
+    raw = (bible or {}).get("global_style") or (bible or {}).get("visual_style") or ""
     if isinstance(raw, dict):
-        bits = [str(raw.get("visual_style") or ""), str(raw.get("tone") or "")]
-        return " ".join(b for b in bits if b).strip() or VISUAL_DIRECTION
-    return str(raw)
+        bits = [str(raw.get("look") or raw.get("visual_style") or ""), str(raw.get("tone") or "")]
+        raw = " ".join(b for b in bits if b and not str(b).startswith("{"))
+    text = str(raw or "").strip()
+    if not text or text.startswith("{") or text.startswith("{'"):
+        return VISUAL_DIRECTION
+    return text
+
+
+_STOCKY_DESC = re.compile(
+    r"grupo de|a group of|busy office|open.?plan|cowork|people working|"
+    r"oficina llena|llena de gente|conference room|filled with desks|"
+    r"acción física visible|lugar principal de la historia|inversores aplaudi|"
+    r"empleados observa",
+    re.I,
+)
+_GENERIC_LOC = re.compile(
+    r"^(wework\s*)?(office|oficina|cowork(ing)?(\s+space)?|open.?plan|headquarters|hq|"
+    r"conference room|sala de (conferencias|reuniones)( moderna| de wework)?|"
+    r"ubicación específica.*)s?\.?$",
+    re.I,
+)
+_FILLER_ACTION = re.compile(r"\.?\s*Acci[oó]n f[ií]sica visible:.*$", re.I)
+
+
+def _cast_names(visual: dict[str, Any], bible: dict[str, Any] | None) -> list[str]:
+    existing = [str(x).strip() for x in (visual.get("characters") or []) if str(x).strip()]
+    if existing:
+        return existing[:3]
+    text = " ".join(
+        str(visual.get(k) or "")
+        for k in ("narration_segment", "narration", "description", "action", "location")
+    ).lower()
+    names: list[str] = []
+    for ent in (bible or {}).get("characters") or []:
+        name = str(ent.get("name") or "").strip()
+        if name and name.lower() in text and name not in names:
+            names.append(name)
+    if names:
+        return names[:3]
+    if str(visual.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
+        return []
+    leads = [str(c.get("name") or "").strip() for c in ((bible or {}).get("characters") or []) if c.get("name")]
+    return leads[:1]
+
+
+def _story_description(visual: dict[str, Any]) -> str:
+    raw = str(visual.get("description") or visual.get("action") or "").strip()
+    raw = _FILLER_ACTION.sub("", raw).strip(" .")
+    narr = str(visual.get("narration_segment") or visual.get("narration") or "").strip()
+    if not raw or _STOCKY_DESC.search(raw):
+        return _photograph_from_narration(narr or raw)
+    return raw
+
+
+def _photograph_from_narration(narr: str) -> str:
+    s = " ".join((narr or "").split())
+    clause = re.split(r"[.;]", s)[0].strip() if s else ""
+    if len(clause) > 200:
+        clause = clause[:197] + "…"
+    if not clause:
+        return "A named protagonist mid-action in a specific place from this story — not a stock office."
+    return (
+        f"Photograph this exact story beat: {clause}. "
+        "Show WHO (named person) and WHAT is happening right now. "
+        "One protagonist, readable place, no crowd of extras unless the beat IS a mass event."
+    )
 
 
 def format_batch_prompt(
@@ -193,18 +280,15 @@ def format_batch_prompt(
     nums = [int(n) for n in (batch.get("visual_numbers") or [])]
     n = len(nums)
     lines = [
-        f"Create {n} separate 16:9 cinematic documentary still images",
-        "illustrating the following sequence.",
+        f"Create {n} separate 16:9 cinematic documentary stills — a STORY SEQUENCE, not stock.",
+        "Each numbered item = ONE unique story beat with a named protagonist.",
+        "Do not create a collage. Do not repeat the same office/crowd.",
         "",
-        "IMPORTANT:",
-        "Each numbered item must be a SEPARATE IMAGE.",
-        "Do not create a collage or contact sheet.",
-        "",
-        "Maintain a consistent premium photorealistic documentary",
-        "photography style across all images.",
-        "",
-        "When a recurring character reference is provided, use that",
-        "same person whenever specified and preserve their identity.",
+        "HARD RULES:",
+        "- The same person must look like the same person across images (use character refs).",
+        "- Change location, time of day, and camera every shot unless the story stays put.",
+        "- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,",
+        "  handshake, CEO portrait, anonymous extras filling the frame.",
         "",
         f"DIRECTOR: {FLOW_DIRECTOR_RULES}",
         f"STYLE: {_style_text(bible)[:320]}",
@@ -212,31 +296,37 @@ def format_batch_prompt(
     ]
     for idx, num in enumerate(nums, start=1):
         v = by_num.get(num) or {}
-        lines.append(f"{idx}. {format_scene_line(v, masters)}")
+        lines.append(f"{idx}. {format_scene_line(v, masters, bible)}")
         lines.append("")
     lines.extend(
         [
             "GENERAL RULES:",
-            "- wide 16:9;",
-            "- photorealistic;",
-            "- documentary photography;",
-            "- realistic period details;",
-            "- varied camera compositions;",
-            "- no readable text unless explicitly requested;",
-            "- no accidental logos;",
-            "- no collage.",
+            "- 16:9 photoreal documentary;",
+            "- protagonist visible and doing the action;",
+            "- period-accurate wardrobe, phones, cars, interiors;",
+            "- each image must be recognizable as a DIFFERENT moment;",
+            "- no readable text unless requested; no logos; no collage;",
+            "- no stock office crowd.",
         ]
     )
     return "\n".join(lines).strip() + "\n"
 
 
-def format_scene_line(visual: dict[str, Any], masters: list[dict[str, Any]] | None = None) -> str:
+def format_scene_line(
+    visual: dict[str, Any],
+    masters: list[dict[str, Any]] | None = None,
+    bible: dict[str, Any] | None = None,
+) -> str:
     num = int(visual.get("number") or 0)
     period = str(visual.get("period") or "").strip()
     loc = str(visual.get("location") or "").strip()
-    desc = str(visual.get("description") or visual.get("action") or "").strip()
+    if loc and (_GENERIC_LOC.match(loc) or _STOCKY_DESC.search(loc)):
+        loc = ""
+    desc = _story_description(visual)
     cam = str(visual.get("shot_type") or visual.get("camera") or "medium_action").replace("_", " ")
     refs = [str(rid) for rid in (visual.get("reference_ids") or visual.get("references") or [])]
+    # LOC masters in this project are generic coworking interiors — they make every still look the same.
+    refs = [r for r in refs if not r.upper().startswith("LOC_")]
     master_hint = ""
     if refs and masters:
         names = []
@@ -244,14 +334,20 @@ def format_scene_line(visual: dict[str, Any], masters: list[dict[str, Any]] | No
             if m.get("id") in refs:
                 names.append(str(m.get("master_filename") or m.get("name") or m.get("id")))
         if names:
-            master_hint = " Use " + ", ".join(names) + " reference."
+            master_hint = " Use " + ", ".join(names) + " as identity reference."
     elif refs:
-        master_hint = " Use " + ", ".join(refs) + " reference."
+        master_hint = " Use " + ", ".join(refs) + " as identity reference."
     when = f" {period}." if period else ""
     place = f" {loc}." if loc else ""
+    people = _cast_names(visual, bible)
+    who = (
+        f" Protagonist in frame: {', '.join(people[:3])} — same face as their master reference."
+        if people
+        else " One named person from this story in frame — not a crowd of extras."
+    )
     return (
-        f"{num:03d}.{when}{place} {desc} "
-        f"{cam} candid documentary shot, photorealistic, period-accurate details."
+        f"{num:03d}.{when}{place} {desc}{who} "
+        f"{cam} candid documentary still, photoreal, period-accurate. Unique story moment, not stock."
         f"{master_hint}"
     ).strip()
 
@@ -262,11 +358,11 @@ def format_single_prompt(
     masters: list[dict[str, Any]] | None = None,
 ) -> str:
     return (
-        "Create ONE separate 16:9 cinematic documentary still image.\n"
-        "Photorealistic documentary photography. No collage.\n"
+        "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\n"
+        "Photoreal. No collage. No crowded office stock.\n"
         f"STYLE: {_style_text(bible)[:280]}\n"
         f"DIRECTOR: {FLOW_DIRECTOR_RULES}\n\n"
-        f"{format_scene_line(visual, masters)}\n"
+        f"{format_scene_line(visual, bible=bible, masters=masters)}\n"
     )
 
 
@@ -602,10 +698,7 @@ def _guess_period(text: str) -> str:
 
 
 def _description_from_narration(narr: str) -> str:
-    s = " ".join((narr or "").split())
-    if len(s) > 220:
-        s = s[:217] + "…"
-    return s or "A concrete documentary moment from this company story"
+    return _photograph_from_narration(narr)
 
 
 def _assign_camera_variety(visuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -694,6 +787,12 @@ def _attach_from_visuals(bible: dict, visuals: list[dict]) -> None:
                         refs.append(eid)
                     v["reference_ids"] = refs
                     v["references"] = refs
+                    if group == "characters":
+                        disp = str(ent.get("name") or "").strip()
+                        people = [str(x).strip() for x in (v.get("characters") or []) if str(x).strip()]
+                        if disp and disp not in people:
+                            people.append(disp)
+                        v["characters"] = people
     for group in ("characters", "locations", "important_objects"):
         for ent in bible.get(group) or []:
             apps = ent.get("appears_in_shots") or []

@@ -41,7 +41,18 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
         # Cap scenes if too many
         if len(escenas) > max_shots:
             escenas = escenas[:max_shots]
-        beats = generar_beats_para_escenas(escenas, str(project.get("topic") or ""), max_beats_total=max_shots)
+        story = project.get("story_plan") if isinstance(project.get("story_plan"), dict) else {}
+        protagonists = [
+            str(c.get("name") or "").strip()
+            for c in (story.get("characters") or [])
+            if isinstance(c, dict) and str(c.get("name") or "").strip()
+        ]
+        beats = generar_beats_para_escenas(
+            escenas,
+            str(project.get("topic") or ""),
+            max_beats_total=max_shots,
+            protagonists=protagonists,
+        )
         specs = beats_a_frame_specs(beats)
     finally:
         if not use_llm:
@@ -131,11 +142,9 @@ def _continuity_line(i: int, specs: list) -> str:
 def _guess_refs(location: str, text: str) -> list[str]:
     refs: list[str] = []
     low = f"{location} {text}".lower()
-    if any(k in low for k in ("office", "hq", "headquarters", "workspace")):
-        refs.append("LOC_001")
-    if any(k in low for k in ("press", "conference", "stage", "media")):
+    if any(k in low for k in ("press conference", "on stage", "keynote", "tv studio")):
         refs.append("LOC_002")
-    if any(k in low for k in ("report", "chart", "deck", "document", "balance")):
+    if any(k in low for k in ("s-1", "sec filing", "prospectus", "lease agreement")):
         refs.append("OBJ_001")
     return refs
 
@@ -172,8 +181,9 @@ def _compose_flow_prompt(
         f"CAMERA: {(camera or 'medium shot').strip()[:80]}",
         f"LIGHTING: {(lighting or 'natural').strip()[:60]}",
         f"CONTINUITY: {(continuity or '').strip()[:120]}",
-        "AVOID: CEO staring at camera, businessman at desk, handshake, laptop close-up, "
-        "generic skyscraper, abstract money graphics, cartoon, meme text, watermark.",
+        "AVOID: crowded coworking, rows of laptops, generic glass conference room, "
+        "CEO staring at camera, handshake, anonymous extras filling the frame, "
+        "generic skyscraper, abstract money, cartoon, meme text, watermark.",
         "REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.",
     ]
     raw_short = " ".join((raw or "").split())[:350]
