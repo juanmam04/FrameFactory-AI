@@ -317,7 +317,14 @@ code { word-break: break-all; }
   color: var(--ink);
 }
 
-.actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.25rem; max-width: 100%; }
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  max-width: 100%;
+}
+.actions.actions-center { justify-content: center; }
 .actions .btn { max-width: 100%; }
 .btn {
   border: 0;

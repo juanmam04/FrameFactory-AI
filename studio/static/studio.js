@@ -1643,7 +1643,7 @@ function paintRender(ws, p) {
 
       ${renderStatusView({ ...st, state: kind })}
       ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
-      <div class="actions">
+      <div class="actions actions-center">
         <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
         ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
         ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
