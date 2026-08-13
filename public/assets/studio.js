@@ -146,6 +146,14 @@ function setNav(view) {
   });
 }
 
+async function recheckKeys({ busy = false } = {}) {
+  const run = () => api("/api/credentials/recheck", { method: "POST" });
+  const c = busy ? await withBusy("Checking keys…", run) : await run();
+  if (state.bootstrap) state.bootstrap.credentials = c;
+  renderCreds(c);
+  return c;
+}
+
 function renderCreds(creds) {
   const host = document.getElementById("cred-pills");
   if (!creds) {
@@ -160,9 +168,7 @@ function renderCreds(creds) {
   `;
   $("#recheck", host)?.addEventListener("click", async () => {
     try {
-      const c = await withBusy("Checking keys…", () => api("/api/credentials/recheck", { method: "POST" }));
-      state.bootstrap.credentials = c;
-      renderCreds(c);
+      const c = await recheckKeys({ busy: true });
       toast(c.ready_research ? "OpenAI ready" : c.openai.detail);
     } catch (e) {
       toast(e.message);
@@ -181,6 +187,7 @@ async function boot() {
   try {
     state.bootstrap = await api("/api/bootstrap");
     renderCreds(state.bootstrap.credentials);
+    recheckKeys().catch((e) => toast(e.message));
     const hash = location.hash.replace("#", "");
     if (hash.startsWith("project/")) {
       const id = decodeURIComponent(hash.slice("project/".length));
@@ -1158,7 +1165,11 @@ function paintRender(ws, p) {
 }
 
 async function refreshBootstrap() {
+  const prev = state.bootstrap?.credentials;
   state.bootstrap = await api("/api/bootstrap");
+  if (prev && prev.openai?.status && prev.openai.status !== "unchecked") {
+    state.bootstrap.credentials = prev;
+  }
   renderCreds(state.bootstrap.credentials);
 }
 
