@@ -703,3 +703,6 @@ def _ensure_channel() -> tuple[dict[str, Any], dict[str, Any]]:
     set_active_session(store, sid)
     sess = get_session(load_store(), sid) or {"id": sid, "title": "100 Days — Business Documentaries"}
     return sess, profile
+
+
+app = create_app()
