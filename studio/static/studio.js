@@ -20,15 +20,25 @@ async function api(path, opts = {}) {
     ...opts,
     headers,
   });
+  const raw = await res.text();
   let data = null;
   try {
-    data = await res.json();
+    data = raw ? JSON.parse(raw) : null;
   } catch {
     data = null;
   }
   if (!res.ok) {
-    const detail = data?.detail || data?.message || res.statusText || "Request failed";
+    const detail =
+      data?.detail ||
+      data?.message ||
+      data?.error ||
+      (raw && raw.slice(0, 400)) ||
+      res.statusText ||
+      "Request failed";
     throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+  if (data && data.boot_error) {
+    console.error(data.boot_error);
   }
   return data;
 }

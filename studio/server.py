@@ -65,8 +65,6 @@ from src.documentary.story_plan import (
     plan_to_markdown,
     save_story_plan,
 )
-from src.documentary.voice_service import generate_project_voice
-from src.documentary.assemble_service import assemble_and_render
 from src.saas_creative_profile import merge_profile_disk
 from src.saas_sessions import (
     OUTPUT_DIR,
@@ -104,7 +102,11 @@ def _sync_safe(fn) -> None:
 class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
-        if path.startswith("/assets") or path in {"/health", "/"}:
+        if path.startswith("/assets") or path in {"/health", "/", "/api/ping"}:
+            return await call_next(request)
+        # Vercel: never auto-pull (psycopg/native crash + /tmp + timeouts).
+        # Use the Home Push/Pull buttons instead.
+        if on_vercel():
             return await call_next(request)
         from src.documentary import cloud_sync
 
@@ -156,57 +158,83 @@ def create_app() -> FastAPI:
     def health():
         return {"ok": True, "app": "documentary-studio", "vercel": on_vercel()}
 
+    @app.get("/api/ping")
+    def ping():
+        return {"ok": True, "vercel": on_vercel()}
+
     # ── channel / home ──────────────────────────────────────────────
     @app.get("/api/bootstrap")
     def bootstrap():
-        reload_env()
-        sess, profile = _ensure_channel()
-        goal = goal_count_from_profile(profile, 100)
-        stats = session_stats(str(sess.get("id") or ""), goal)
-        projects = [
-            _project_card(p)
-            for p in sorted(
-                list_projects_for_session(str(sess.get("id") or "")),
-                key=lambda x: int(x.get("episode_number") or 0),
-            )
-        ]
-        creds = credential_report(live=False)
-        return {
-            "runtime": {
-                "vercel": on_vercel(),
-                "voice_render": not on_vercel(),
-            },
-            "channel": {
-                "name": channel_display_name(profile, str(sess.get("title") or "")),
-                "session_id": sess.get("id"),
-                "tagline": (profile.get("channel") or {}).get("tagline")
-                or "Fascinating true stories about companies.",
-            },
-            "workspace": {
-                "projects_dir": str(PROJECTS_ROOT),
-                "data_dir": str(OUTPUT_DIR),
-                "synced": bool(
-                    (
-                        os.getenv("DATABASE_URL")
-                        or os.getenv("FRAMEFACTORY_WORKSPACE")
-                        or os.getenv("FRAMEFACTORY_PROJECTS_DIR")
-                        or ""
-                    ).strip()
-                ),
-                "supabase": bool((os.getenv("DATABASE_URL") or "").strip()),
-            },
-            "stats": stats,
-            "projects": projects,
-            "credentials": {
-                "openai": {"status": creds["openai"].status, "detail": creds["openai"].detail},
-                "elevenlabs": {
-                    "status": creds["elevenlabs"].status,
-                    "detail": creds["elevenlabs"].detail,
+        try:
+            reload_env()
+            sess, profile = _ensure_channel()
+            goal = goal_count_from_profile(profile, 100)
+            stats = session_stats(str(sess.get("id") or ""), goal)
+            projects = [
+                _project_card(p)
+                for p in sorted(
+                    list_projects_for_session(str(sess.get("id") or "")),
+                    key=lambda x: int(x.get("episode_number") or 0),
+                )
+            ]
+            creds = credential_report(live=False)
+            return {
+                "runtime": {
+                    "vercel": on_vercel(),
+                    "voice_render": not on_vercel(),
                 },
-                "ready_research": creds["ready_research"],
-                "ready_voice": creds["ready_voice"],
-            },
-        }
+                "channel": {
+                    "name": channel_display_name(profile, str(sess.get("title") or "")),
+                    "session_id": sess.get("id"),
+                    "tagline": (profile.get("channel") or {}).get("tagline")
+                    or "Fascinating true stories about companies.",
+                },
+                "workspace": {
+                    "projects_dir": str(PROJECTS_ROOT),
+                    "data_dir": str(OUTPUT_DIR),
+                    "synced": bool(
+                        (
+                            os.getenv("DATABASE_URL")
+                            or os.getenv("FRAMEFACTORY_WORKSPACE")
+                            or os.getenv("FRAMEFACTORY_PROJECTS_DIR")
+                            or ""
+                        ).strip()
+                    ),
+                    "supabase": bool((os.getenv("DATABASE_URL") or "").strip()),
+                },
+                "stats": stats,
+                "projects": projects,
+                "credentials": {
+                    "openai": {"status": creds["openai"].status, "detail": creds["openai"].detail},
+                    "elevenlabs": {
+                        "status": creds["elevenlabs"].status,
+                        "detail": creds["elevenlabs"].detail,
+                    },
+                    "ready_research": creds["ready_research"],
+                    "ready_voice": creds["ready_voice"],
+                },
+            }
+        except Exception as e:
+            traceback.print_exc()
+            return {
+                "runtime": {"vercel": on_vercel(), "voice_render": False},
+                "channel": {"name": "FrameFactory", "session_id": "", "tagline": str(e)},
+                "workspace": {
+                    "projects_dir": "",
+                    "data_dir": "",
+                    "synced": False,
+                    "supabase": bool((os.getenv("DATABASE_URL") or "").strip()),
+                },
+                "stats": {"day": 0, "goal": 100, "completed": 0, "in_progress": 0, "remaining": 100},
+                "projects": [],
+                "credentials": {
+                    "openai": {"status": "error", "detail": str(e)},
+                    "elevenlabs": {"status": "unchecked", "detail": ""},
+                    "ready_research": False,
+                    "ready_voice": False,
+                },
+                "boot_error": traceback.format_exc(),
+            }
 
     @app.post("/api/credentials/recheck")
     def recheck_credentials():
@@ -509,6 +537,8 @@ def create_app() -> FastAPI:
     def voice_generate(project_id: str):
         _reject_heavy_on_vercel()
         try:
+            from src.documentary.voice_service import generate_project_voice
+
             generate_project_voice(load_project(project_id))
             p = load_project(project_id)
             p["ui_step"] = "render"
@@ -521,6 +551,8 @@ def create_app() -> FastAPI:
     def render_video(project_id: str):
         _reject_heavy_on_vercel()
         try:
+            from src.documentary.assemble_service import assemble_and_render
+
             assemble_and_render(load_project(project_id))
             p = load_project(project_id)
             p["ui_step"] = "done"
