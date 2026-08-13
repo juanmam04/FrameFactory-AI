@@ -43,7 +43,7 @@ def _run(coro):
         asyncio.set_event_loop(None)
 
 
-def invoke(
+async def invoke_async(
     method: str,
     path: str,
     body: bytes = b"",
@@ -75,8 +75,17 @@ def invoke(
         "client": ("127.0.0.1", 0),
         "server": ("127.0.0.1", 443),
     }
-    _run(studio_app()(scope, receive, send))
+    await studio_app()(scope, receive, send)
     return result
+
+
+def invoke(
+    method: str,
+    path: str,
+    body: bytes = b"",
+    header_list: list[tuple[bytes, bytes]] | None = None,
+) -> dict[str, Any]:
+    return _run(invoke_async(method, path, body, header_list))
 
 
 def json_bytes(obj: Any, status: int = 200) -> tuple[int, bytes, str]:
@@ -110,23 +119,31 @@ def minimal_bootstrap(err: str | None = None) -> dict[str, Any]:
     }
 
 
-def dispatch(method: str, path: str, body: bytes, raw_headers: list[tuple[str, str]]) -> tuple[int, bytes, str]:
+def _from_asgi(out: dict[str, Any]) -> tuple[int, bytes, str]:
+    status = int(out.get("status") or 500)
+    payload = out.get("body") or b""
+    ctype = "application/json"
+    for k, v in out.get("headers") or []:
+        if k.decode().lower() == "content-type":
+            ctype = v.decode()
+            break
+    return status, payload, ctype
+
+
+async def dispatch_async(method: str, path: str, body: bytes, raw_headers: list[tuple[str, str]]) -> tuple[int, bytes, str]:
     headers = [(k.lower().encode(), v.encode()) for k, v in raw_headers]
     try:
-        out = invoke(method, path, body, headers)
-        status = int(out.get("status") or 500)
-        payload = out.get("body") or b""
-        ctype = "application/json"
-        for k, v in out.get("headers") or []:
-            if k.decode().lower() == "content-type":
-                ctype = v.decode()
-                break
-        return status, payload, ctype
+        out = await invoke_async(method, path, body, headers)
+        return _from_asgi(out)
     except Exception as exc:  # noqa: BLE001
         err = f"{type(exc).__name__}: {exc}\n{traceback.format_exc()}"
         if "bootstrap" in path:
             return json_bytes(minimal_bootstrap(err), 200)
         return json_bytes({"detail": err}, 500)
+
+
+def dispatch(method: str, path: str, body: bytes, raw_headers: list[tuple[str, str]]) -> tuple[int, bytes, str]:
+    return _run(dispatch_async(method, path, body, raw_headers))
 
 
 def resolve_path(raw_path: str, headers: list[tuple[str, str]]) -> str:

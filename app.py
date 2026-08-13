@@ -29,14 +29,14 @@ def health():
 @app.api_route("/api/{full_path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
 async def studio_proxy(full_path: str, request: Request):
     try:
-        from src.vercel_bridge import dispatch
+        from src.vercel_bridge import dispatch_async
 
         body = await request.body()
         headers = [(str(k), str(v)) for k, v in request.headers.items()]
         path = request.url.path
         if request.url.query:
             path = f"{path}?{request.url.query}"
-        status, raw, ctype = dispatch(request.method, path, body, headers)
+        status, raw, ctype = await dispatch_async(request.method, path, body, headers)
         return Response(content=raw, status_code=status, media_type=ctype)
     except Exception as exc:  # noqa: BLE001
         err = f"{type(exc).__name__}: {exc}\n{traceback.format_exc()}"
