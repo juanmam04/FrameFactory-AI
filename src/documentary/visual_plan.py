@@ -90,10 +90,11 @@ def build_visual_plan(
     story = get_story_plan(project)
     beats = selected_beats(story) or (story.get("beats") or [])
     visuals = [_enrich_visual(i, shot, beats) for i, shot in enumerate(raw_shots, start=1)]
+    bible = _upgrade_bible(bible_raw, visuals, story)
+    _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm)
     visuals = _assign_camera_variety(visuals)
     visuals = _assign_durations(visuals)
 
-    bible = _upgrade_bible(bible_raw, visuals, story)
     masters = select_master_references(bible, visuals)
     # Attach flow prompts with master hints
     for v in visuals:
@@ -161,6 +162,7 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
     bible = plan.get("visual_bible") or {}
     masters = plan.get("master_references") or []
     for v in visuals:
+        _concretize_visual(v, bible)
         names = _cast_names(v, bible)
         if names:
             v["characters"] = names
@@ -224,6 +226,24 @@ _GENERIC_LOC = re.compile(
     re.I,
 )
 _FILLER_ACTION = re.compile(r"\.?\s*Acci[oó]n f[ií]sica visible:.*$", re.I)
+_VO_LEAD = re.compile(
+    r"^(photograph this exact story beat:\s*)?(this |the |their |how |why |by \d{4}|to understand)",
+    re.I,
+)
+_PHYSICAL = re.compile(
+    r"\b(holds|holding|stands|standing|sits|sitting|walks|walking|stares|staring|"
+    r"rips|signs|dances|enters|hangs|places|reads|tears|runs|collapses|pours|"
+    r"watches|watching|drills|alone|sidewalk|term sheet|for sale|cartel|sosteniendo|"
+    r"frente a|phone in hand|empty floor)\b",
+    re.I,
+)
+_CAM_FIX = {
+    "crowd": "two_shot",
+    "building_exterior": "establishing_wide",
+    "building exterior": "establishing_wide",
+    "large_scale": "medium_action",
+    "large scale": "medium_action",
+}
 
 
 def _cast_names(visual: dict[str, Any], bible: dict[str, Any] | None) -> list[str]:
@@ -239,35 +259,193 @@ def _cast_names(visual: dict[str, Any], bible: dict[str, Any] | None) -> list[st
         name = str(ent.get("name") or "").strip()
         if name and name.lower() in text and name not in names:
             names.append(name)
-    if names:
-        return names[:3]
+    return names[:3]
+
+
+def _is_vo(text: str) -> bool:
+    t = " ".join((text or "").split())
+    if not t:
+        return True
+    if t.endswith("?") or t.lower().startswith("photograph this"):
+        return True
+    if _STOCKY_DESC.search(t):
+        return True
+    if _VO_LEAD.match(t) and not _PHYSICAL.search(t):
+        return True
+    if len(t.split()) > 22 and not _PHYSICAL.search(t):
+        return True
+    return False
+
+
+def _names_in_text(text: str, bible: dict[str, Any] | None) -> list[str]:
+    low = (text or "").lower()
+    out: list[str] = []
+    for ent in (bible or {}).get("characters") or []:
+        name = str(ent.get("name") or "").strip()
+        if name and name.lower() in low and name not in out:
+            out.append(name)
+    return out[:3]
+
+
+def _lead(bible: dict[str, Any] | None) -> str:
+    for c in (bible or {}).get("characters") or []:
+        name = str(c.get("name") or "").strip()
+        if name:
+            return name
+    return "the founder"
+
+
+def _still_from_vo(visual: dict[str, Any], bible: dict[str, Any] | None) -> str:
+    narr = str(visual.get("narration_segment") or visual.get("narration") or "").strip()
+    who = _names_in_text(narr, bible)
+    who_s = ", ".join(who) if who else _lead(bible)
+    low = narr.lower()
+    if any(k in low for k in ("for sale", "ipo", "pulled", "offering")):
+        return (
+            f"{who_s} alone on a dark sidewalk as a worker drills a For Sale sign onto the company building. "
+            "Empty street, night, no employees in frame."
+        )
+    if any(k in low for k in ("raised", "funding", "series", "million", "billion", "softbank", "investors")):
+        return (
+            f"{who_s} and ONE investor at a private table, a term sheet between them, wine, no applause, no boardroom crowd."
+        )
+    if any(k in low for k in ("launch", "founded", "started", "opened", "2010")):
+        return (
+            f"{who_s} on a city sidewalk with a cheap printed paper sign, early-2010s street clothes, almost nobody watching."
+        )
+    if any(k in low for k in ("fallout", "crisis", "collapsed", "unstoppable", "questions", "overnight", "downfall")):
+        return (
+            f"{who_s} alone in an emptied office floor at night, one desk lamp, phone showing the bad headline. Everyone else is gone."
+        )
+    if any(k in low for k in ("community", "coworking", "freelance", "gig", "flexible office", "vision")):
+        return (
+            f"{who_s} walking a raw unfinished floor — exposed brick, one table, paint cans — selling a vision that does not exist yet."
+        )
+    clause = re.split(r"[.;?]", narr)[0].strip()[:120] if narr else "this turning point"
+    return (
+        f"{who_s} in a specific real place, body in motion, the visible consequence of: {clause}. "
+        "No crowd, no open-plan office."
+    )
+
+
+def _concretize_visual(visual: dict[str, Any], bible: dict[str, Any] | None) -> None:
     if str(visual.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
-        return []
-    leads = [str(c.get("name") or "").strip() for c in ((bible or {}).get("characters") or []) if c.get("name")]
-    return leads[:1]
+        return
+    desc = _FILLER_ACTION.sub("", str(visual.get("description") or visual.get("action") or "")).strip(" .")
+    if not desc or _is_vo(desc) or _STOCKY_DESC.search(desc):
+        still = _still_from_vo(visual, bible)
+        visual["description"] = still
+        visual["action"] = still
+        people = _names_in_text(still, bible) or _names_in_text(
+            str(visual.get("narration_segment") or ""), bible
+        )
+        if not people:
+            people = [_lead(bible)]
+        visual["characters"] = people[:2]
+    loc = str(visual.get("location") or "").strip()
+    if loc and (_GENERIC_LOC.match(loc) or _STOCKY_DESC.search(loc)):
+        visual["location"] = ""
+    st = str(visual.get("shot_type") or "")
+    visual["shot_type"] = _CAM_FIX.get(st, _CAM_FIX.get(st.replace("_", " "), st))
 
 
-def _story_description(visual: dict[str, Any]) -> str:
+def _rewrite_stills(
+    visuals: list[dict[str, Any]],
+    bible: dict[str, Any],
+    topic: str,
+    *,
+    use_llm: bool,
+) -> None:
+    for v in visuals:
+        _concretize_visual(v, bible)
+    if not use_llm:
+        return
+    flow = [v for v in visuals if str(v.get("visual_type") or "") == "FLOW_REENACTMENT"]
+    if not flow:
+        return
+    import os
+
+    key = (os.getenv("OPENAI_API_KEY") or "").strip()
+    if not key:
+        return
+    try:
+        from openai import OpenAI
+    except Exception:
+        return
+    client = OpenAI(api_key=key)
+    cast = [str(c.get("name") or "").strip() for c in (bible.get("characters") or []) if c.get("name")]
+    system = (
+        "You are a documentary stills photographer. Convert each narration line into ONE photograph.\n"
+        "Return ONLY a JSON list. Each item: number, action, location, characters (names from the cast only), time_of_day.\n"
+        "action = one sentence, a body doing something, a specific place. NEVER copy the narration. "
+        "NEVER a rhetorical question. NEVER a crowded office or coworking floor.\n"
+        "If the VO is abstract, invent the honest visual consequence "
+        "(empty floor after the crash, a For Sale sign at night, two cofounders on a sidewalk with a cheap sign).\n"
+        "Locations MUST change across the list: street, apartment, car, jet, empty hallway, restaurant, "
+        "sidewalk, bedroom at 3am, loading dock, courthouse steps — not 'office' twice in a row."
+    )
+    for i in range(0, len(flow), 8):
+        chunk = flow[i : i + 8]
+        payload = {
+            "topic": topic,
+            "cast": cast[:8],
+            "shots": [
+                {
+                    "number": int(v.get("number") or 0),
+                    "narration": str(v.get("narration_segment") or v.get("narration") or "")[:400],
+                }
+                for v in chunk
+            ],
+        }
+        try:
+            r = client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+                ],
+                temperature=0.7,
+                max_tokens=1400,
+            )
+            raw = (r.choices[0].message.content or "").strip()
+            blob = raw[raw.find("[") : raw.rfind("]") + 1]
+            rows = json.loads(blob) if blob else []
+        except Exception:
+            continue
+        if not isinstance(rows, list):
+            continue
+        by_n = {int(v["number"]): v for v in chunk}
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            try:
+                n = int(row.get("number") or 0)
+            except (TypeError, ValueError):
+                continue
+            v = by_n.get(n)
+            if v is None:
+                continue
+            action = str(row.get("action") or "").strip()
+            loc = str(row.get("location") or "").strip()
+            chars = [str(x).strip() for x in (row.get("characters") or []) if str(x).strip()]
+            if action and not _is_vo(action):
+                v["description"] = action
+                v["action"] = action
+            if loc and not _GENERIC_LOC.match(loc) and not _STOCKY_DESC.search(loc):
+                v["location"] = loc
+            if chars:
+                allowed = {c.lower() for c in cast}
+                v["characters"] = [c for c in chars if c.lower() in allowed][:3] or v.get("characters") or []
+
+
+def _story_description(visual: dict[str, Any], bible: dict[str, Any] | None = None) -> str:
     raw = str(visual.get("description") or visual.get("action") or "").strip()
     raw = _FILLER_ACTION.sub("", raw).strip(" .")
-    narr = str(visual.get("narration_segment") or visual.get("narration") or "").strip()
-    if not raw or _STOCKY_DESC.search(raw):
-        return _photograph_from_narration(narr or raw)
-    return raw
-
-
-def _photograph_from_narration(narr: str) -> str:
-    s = " ".join((narr or "").split())
-    clause = re.split(r"[.;]", s)[0].strip() if s else ""
-    if len(clause) > 200:
-        clause = clause[:197] + "…"
-    if not clause:
-        return "A named protagonist mid-action in a specific place from this story — not a stock office."
-    return (
-        f"Photograph this exact story beat: {clause}. "
-        "Show WHO (named person) and WHAT is happening right now. "
-        "One protagonist, readable place, no crowd of extras unless the beat IS a mass event."
-    )
+    if raw.lower().startswith("photograph this exact"):
+        raw = ""
+    if raw and not _is_vo(raw) and not _STOCKY_DESC.search(raw):
+        return raw
+    return _still_from_vo(visual, bible)
 
 
 def format_batch_prompt(
@@ -322,8 +500,9 @@ def format_scene_line(
     loc = str(visual.get("location") or "").strip()
     if loc and (_GENERIC_LOC.match(loc) or _STOCKY_DESC.search(loc)):
         loc = ""
-    desc = _story_description(visual)
-    cam = str(visual.get("shot_type") or visual.get("camera") or "medium_action").replace("_", " ")
+    desc = _story_description(visual, bible)
+    cam_key = str(visual.get("shot_type") or visual.get("camera") or "medium_action")
+    cam = _CAM_FIX.get(cam_key, _CAM_FIX.get(cam_key.replace("_", " "), cam_key)).replace("_", " ")
     refs = [str(rid) for rid in (visual.get("reference_ids") or visual.get("references") or [])]
     # LOC masters in this project are generic coworking interiors — they make every still look the same.
     refs = [r for r in refs if not r.upper().startswith("LOC_")]
@@ -698,7 +877,7 @@ def _guess_period(text: str) -> str:
 
 
 def _description_from_narration(narr: str) -> str:
-    return _photograph_from_narration(narr)
+    return _still_from_vo({"narration": narr, "narration_segment": narr}, None)
 
 
 def _assign_camera_variety(visuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
