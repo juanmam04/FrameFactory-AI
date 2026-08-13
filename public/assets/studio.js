@@ -1308,6 +1308,11 @@ function paintVoice(ws, p) {
         ? `Narración lista${clock ? ` · ${clock}` : ""} · x1.20.`
         : "Generá la narración acá (OpenAI / ElevenLabs). Sale un poco más rápida (x1.20)."}</p>
       ${ready ? `<audio controls src="/api/projects/${encodeURIComponent(p.id)}/audio?t=${Date.now()}" style="width:min(100%,640px);margin:0.4rem 0 1rem;display:block"></audio>` : ""}
+      <div class="music-bed" style="margin:1.1rem 0 1.4rem;padding:0.9rem 1rem;border:1px solid var(--line,#e5e7eb);border-radius:12px;max-width:640px">
+        <p style="margin:0 0 .25rem;font-weight:650">Música de fondo</p>
+        <p class="lead" style="margin:0 0 .55rem">La misma cama en todos los episodios. En el video va muy bajita, acá la escuchás clara.</p>
+        <audio id="music-bed" controls loop src="/api/music?v=20260813t" style="width:100%;display:block"></audio>
+      </div>
       <div class="actions">
         <button class="btn btn-accent" id="gen-voice">${ready ? "Volver a generar voz" : "Generar voz"}</button>
         <button class="btn btn-primary" id="to-render">Seguir</button>

@@ -775,6 +775,20 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
+    @app.get("/api/music")
+    def music_bed():
+        from src.documentary.music_bed import documentary_bed_path
+
+        path = documentary_bed_path()
+        if not path.is_file() or path.stat().st_size <= 0:
+            raise HTTPException(404, "No hay música de fondo")
+        return FileResponse(
+            path,
+            media_type="audio/wav",
+            filename="documentary_bed.wav",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
+
     @app.get("/api/projects/{project_id}/audio")
     def audio_file(project_id: str):
         path = project_dir(project_id) / "audio" / "narration.mp3"
