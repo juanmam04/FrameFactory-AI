@@ -210,6 +210,40 @@ def _pull_render_assets(project_id: str) -> None:
     cloud_sync.pull_prefix(project_id, "images/")
 
 
+def _probe_audio_sec(path: Path) -> float:
+    from src.documentary.voice_service import _probe_duration
+
+    try:
+        return float(_probe_duration(path) or 0)
+    except Exception:
+        return 0.0
+
+
+def _wipe_old_render(project_id: str) -> None:
+    """Drop the previous final so a new render cannot serve the first-test file."""
+    rnd = project_dir(project_id) / "render"
+    for name in ("final.mp4", "final_master.mp4", "final_captions.mp4", "final_burn.mp4"):
+        try:
+            (rnd / name).unlink(missing_ok=True)
+        except OSError:
+            pass
+    try:
+        from src.documentary import cloud_sync
+
+        if cloud_sync.configured():
+            cloud_sync.delete_paths(
+                project_id,
+                [
+                    "render/final.mp4",
+                    "render/final_master.mp4",
+                    "render/final_captions.mp4",
+                    "render/final_burn.mp4",
+                ],
+            )
+    except Exception:
+        pass
+
+
 def assemble_and_render(
     project: dict[str, Any],
     *,
@@ -234,7 +268,9 @@ def assemble_and_render(
     music = _resolve_music(project)
     edit = edit_settings(project)
     music_vol = float(edit["music_volume"])
-    duration = (project.get("voice") or {}).get("duration_sec")
+    duration = float((project.get("voice") or {}).get("duration_sec") or 0)
+    if duration <= 0:
+        duration = _probe_audio_sec(audio)
     from src.documentary.reuse_stills import plan_still_timeline
 
     images, sec, reuse = plan_still_timeline(
@@ -243,11 +279,14 @@ def assemble_and_render(
     if not images:
         raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
+    _wipe_old_render(pid)
     out = project_dir(pid) / "render" / "final.mp4"
     log_path = project_dir(pid) / "logs" / "render.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
+    scale_to = None
     if vercel:
-        width, height, fps, crf, preset = 1920, 1080, 24, 18, "ultrafast"
+        width, height, fps, crf, preset = 1280, 720, 24, 20, "ultrafast"
+        scale_to = (1920, 1080)
         quality_label = "Full HD 1080p"
     else:
         width, height, fps, crf, preset = 3840, 2160, 24, 16, "medium"
@@ -285,6 +324,7 @@ def assemble_and_render(
             preset=preset,
             editorial=True,
             look=str(edit.get("look") or "soft"),
+            scale_to=scale_to,
         )
         _abort_if_cancelled(pid)
         if not mp4_is_complete(Path(result)):
@@ -302,7 +342,7 @@ def assemble_and_render(
         try:
             from src.documentary.captions import burn_into_final
 
-            burn_into_final(project, width=width)
+            burn_into_final(project, width=int((scale_to or (width, height))[0]))
             burned = True
         except Exception as cap_err:
             append_log(pid, f"captions burn skip: {cap_err}")
@@ -325,8 +365,8 @@ def assemble_and_render(
             {
                 "path": "render/final.mp4",
                 "seconds_per_image": sec,
-                "width": width,
-                "height": height,
+                "width": int((scale_to or (width, height))[0]),
+                "height": int((scale_to or (width, height))[1]),
                 "fps": fps,
                 "reuse": reuse,
                 "state": "done",

@@ -106,6 +106,7 @@ def montar_slideshow(
     deadline_mono: float | None = None,
     on_progress: object | None = None,
     abort: object | None = None,
+    scale_to: tuple[int, int] | None = None,
 ) -> Path:
     """Stills + narration + Ken Burns + fades. Falls back to concat if the editorial pass fails."""
     ff = ffmpeg_exe()
@@ -133,14 +134,14 @@ def montar_slideshow(
     vol = max(0.12, min(0.40, float(vol) * 2.8))
     looks = [look, "none"] if str(look or "soft") != "none" else ["none"]
     last = None
-    long_job = len(imgs) > 8
-    if editorial and not long_job:
+    if editorial:
         for lk in looks:
             try:
                 return _slideshow_editorial(
                     ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
                     duration_sec, motion, transition, fps=fps, crf=crf, preset=preset, look=lk,
                     clip_dir=clip_dir, deadline_mono=deadline_mono, on_progress=on_progress, abort=abort,
+                    scale_to=scale_to,
                 )
             except EditorialPaused:
                 raise
@@ -169,6 +170,27 @@ def _vignette_vf(look: str) -> str:
     if k in ("film", "strong", "cine"):
         return ",vignette=angle=PI/3.2"
     return ",vignette=angle=PI/2.8"
+
+
+def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
+    styles = ("push", "pull", "pan")
+    k = kind if kind in styles else styles[index % 3]
+    d = max(8, int(frames))
+    last = max(1, d - 1)
+    z_end = 1.07
+    inc = (z_end - 1.0) / last
+    if k == "pull":
+        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
+        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    if k == "pan":
+        return (
+            f"zoompan=z=1.05:x='(iw-iw/zoom)*on/{last}':"
+            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
+        )
+    return (
+        f"zoompan=z='min(zoom+{inc:.6f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
+        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    )
 
 
 def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
@@ -220,8 +242,9 @@ def _slideshow_editorial(
     deadline_mono: float | None = None,
     on_progress: object | None = None,
     abort: object | None = None,
+    scale_to: tuple[int, int] | None = None,
 ) -> Path:
-    """Ken Burns + per-still fades, in batches so Vercel does not die on 70 inputs."""
+    """Ken Burns + per-still fades. Unique stills are encoded once and reused."""
     import tempfile
 
     fps = max(12, min(30, int(fps)))
@@ -231,18 +254,24 @@ def _slideshow_editorial(
     tmp = Path(tempfile.mkdtemp(prefix="ff-edit-")) if owned else Path(clip_dir)
     tmp.mkdir(parents=True, exist_ok=True)
     clips: list[Path] = []
+    cache: dict[tuple[str, str], Path] = {}
+    styles = ("push", "pull", "pan")
     try:
         for i, img in enumerate(imgs):
             if callable(abort):
                 abort()
-            clip = tmp / f"s{i:03d}.mp4"
-            if not mp4_is_complete(clip):
+            style = motion if motion in styles else styles[i % 3]
+            key = (str(img.resolve()), style)
+            clip = cache.get(key)
+            if clip is None or not mp4_is_complete(clip):
                 if deadline_mono is not None and time.monotonic() >= float(deadline_mono):
-                    raise EditorialPaused(i, len(imgs))
+                    raise EditorialPaused(len(cache), len(imgs))
+                clip = tmp / f"u{len(cache):03d}.mp4"
                 _encode_one_still(
-                    ff, img, clip, seg, width, height, motion, fade, frames, i,
+                    ff, img, clip, seg, width, height, style, fade, frames, i,
                     fps=fps, crf=crf, preset=preset, look=look,
                 )
+                cache[key] = clip
             clips.append(clip)
             if callable(on_progress):
                 on_progress(i + 1, len(imgs))
@@ -269,9 +298,13 @@ def _slideshow_editorial(
             if r.returncode != 0 or not mp4_is_complete(video_only):
                 raise RuntimeError(ffmpeg_error_text(r.stderr or "concat clips"))
         try:
-            _mix_voice_music(ff, video_only, audio, music, vol, output_path, duration_sec)
+            _mix_voice_music(
+                ff, video_only, audio, music, vol, output_path, duration_sec, scale_to=scale_to,
+            )
         except Exception:
-            _mix_voice_music(ff, video_only, audio, None, vol, output_path, duration_sec)
+            _mix_voice_music(
+                ff, video_only, audio, None, vol, output_path, duration_sec, scale_to=scale_to,
+            )
         if not mp4_is_complete(output_path):
             raise RuntimeError("editorial mix incomplete")
         return output_path
@@ -296,7 +329,9 @@ def _encode_one_still(
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    motion_vf = _motion_vf(motion, index, seg, width, height)
+    pre_w = int(width * 1.14) // 2 * 2
+    pre_h = int(height * 1.14) // 2 * 2
+    zp = _ken_burns(motion, index, frames, width, height, fps=fps)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
         f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
@@ -304,16 +339,19 @@ def _encode_one_still(
         else ""
     )
     vig = _vignette_vf(look)
-    vf = f"{motion_vf}{fades}{vig},format=yuv420p,setsar=1"
+    vf = (
+        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
+        f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
+    )
     part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
-        "-framerate", str(fps), "-loop", "1", "-t", f"{seg:.3f}", "-i", str(img.resolve()),
-        "-vf", vf, "-r", str(fps), "-t", f"{seg:.3f}",
+        "-loop", "1", "-i", str(img.resolve()),
+        "-vf", vf, "-frames:v", str(frames), "-t", f"{seg:.3f}",
         "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    limit = 18 if width <= 1280 else 28
+    limit = 12 if width <= 1280 else 22
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(part):
         part.unlink(missing_ok=True)
@@ -329,26 +367,36 @@ def _mix_voice_music(
     vol: float,
     dest: Path,
     duration_sec: float | None,
+    scale_to: tuple[int, int] | None = None,
 ) -> None:
+    sw, sh = (int(scale_to[0]), int(scale_to[1])) if scale_to else (0, 0)
+    scale_vf = f"scale={sw}:{sh}:flags=lanczos,setsar=1,format=yuv420p" if sw and sh else ""
     cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(video), "-i", str(audio)]
     if music is not None:
         cmd.extend(["-stream_loop", "-1", "-i", str(music)])
+        vbranch = f"[0:v]{scale_vf}[vout];" if scale_vf else ""
+        vmap = "[vout]" if scale_vf else "0:v"
         cmd.extend(
             [
                 "-filter_complex",
+                f"{vbranch}"
                 "[1:a]aformat=sample_fmts=fltp:sample_rates=44100,volume=1[a1];"
                 f"[2:a]aformat=sample_fmts=fltp:sample_rates=44100,volume={vol:.3f}[a2];"
                 "[a1][a2]amix=inputs=2:duration=first:dropout_transition=2[aout]",
-                "-map", "0:v", "-map", "[aout]",
+                "-map", vmap, "-map", "[aout]",
             ]
         )
+    elif scale_vf:
+        cmd.extend(["-vf", scale_vf, "-map", "0:v", "-map", "1:a"])
     else:
         cmd.extend(["-map", "0:v", "-map", "1:a"])
-    if duration_sec and float(duration_sec) > 0:
-        cmd.extend(["-t", f"{float(duration_sec):.3f}"])
+    if scale_vf:
+        cmd.extend(["-c:v", "libx264", "-preset", "ultrafast", "-crf", "18", "-pix_fmt", "yuv420p"])
+    else:
+        cmd.extend(["-c:v", "copy"])
     cmd.extend(
         [
-            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+            "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart", str(dest),
         ]
     )
