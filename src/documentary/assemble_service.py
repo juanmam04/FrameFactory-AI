@@ -10,7 +10,7 @@ from src.config_loader import get_background_music_path
 
 from src.documentary.import_images import ordered_images_for_render
 from src.documentary.project import _utc_now, append_log, project_dir, save_project, set_checkpoint
-from src.video_assembler import montar_slideshow, montar_video, mp4_is_complete, verificar_ffmpeg
+from src.video_assembler import montar_slideshow, mp4_is_complete, verificar_ffmpeg
 
 
 def set_render_state(
@@ -186,61 +186,88 @@ def assemble_and_render(
 
     log_path = project_dir(pid) / "logs" / "render.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
+    vercel = on_vercel()
+    if vercel:
+        width, height, fps, crf, preset = 1920, 1080, 24, 17, "veryfast"
+        editorial = float(duration or 0) <= 30
+        quality_label = "Full HD 1080p"
+    else:
+        width, height, fps, crf, preset = 3840, 2160, 24, 16, "medium"
+        editorial = True
+        quality_label = "4K"
     try:
-        if on_vercel():
-            result = montar_slideshow(
-                images,
-                audio,
-                out,
-                segundos_por_imagen=sec,
-                width=1280,
-                height=720,
-                musica_fondo=music,
-                music_volume=music_vol,
-                duration_sec=float(duration or 0) or None,
-                motion=str(edit["motion"]),
-                transition=str(edit["transition"]),
-            )
-        else:
-            result = montar_video(
-                lista_imagenes=images,
-                audio_narracion=audio,
-                musica_fondo=music,
-                segundos_por_imagen=sec,
-                width=1920,
-                height=1080,
-                transiciones_suaves=transiciones_suaves or edit["transition"] == "fade",
-                output_path=out,
-                music_volume=music_vol,
-            )
+        try:
+            from src.documentary.captions import captions_srt_path, generate_captions
+
+            srt = captions_srt_path(pid)
+            if not srt.is_file() or srt.stat().st_size <= 0:
+                generate_captions(project)
+        except Exception as e:
+            append_log(pid, f"captions srt skip: {e}")
+        result = montar_slideshow(
+            images,
+            audio,
+            out,
+            segundos_por_imagen=sec,
+            width=width,
+            height=height,
+            musica_fondo=music,
+            music_volume=music_vol,
+            duration_sec=float(duration or 0) or None,
+            motion=str(edit["motion"]),
+            transition=str(edit["transition"]),
+            fps=fps,
+            crf=crf,
+            preset=preset,
+            editorial=editorial,
+        )
         if not mp4_is_complete(Path(result)):
             Path(result).unlink(missing_ok=True)
             raise RuntimeError("El render no terminó bien (video incompleto). Probá de nuevo.")
-        set_checkpoint(project, "assembly_ready", True)
-        set_checkpoint(project, "render_ready", True)
-        set_checkpoint(project, "captions_ready", False)
         try:
-            from src.documentary.captions import clear_burned_captions
+            import shutil as _sh
 
-            clear_burned_captions(pid)
+            from src.documentary.captions import master_video_path
+
+            _sh.copy2(Path(result), master_video_path(pid))
         except Exception:
             pass
+        burned = False
+        try:
+            from src.documentary.captions import burn_into_final
+
+            burn_into_final(project, width=width)
+            burned = True
+        except Exception as cap_err:
+            append_log(pid, f"captions burn skip: {cap_err}")
+        set_checkpoint(project, "assembly_ready", True)
+        set_checkpoint(project, "render_ready", True)
+        if burned:
+            set_checkpoint(project, "captions_ready", True)
         rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+        msg = (
+            f"Terminado · {quality_label} · subtítulos incluidos."
+            if burned
+            else f"Terminado · {quality_label}. Los subtítulos no se pudieron quemar."
+        )
         rec.update(
             {
                 "path": "render/final.mp4",
                 "seconds_per_image": sec,
+                "width": width,
+                "height": height,
+                "fps": fps,
                 "state": "done",
-                "message": "Terminado. Ya lo podés descargar.",
+                "message": msg,
                 "error": "",
                 "finished_at": _utc_now(),
             }
         )
         project["render"] = rec
         if isinstance(project.get("captions"), dict):
-            project["captions"]["burned"] = False
+            project["captions"]["burned"] = burned
         save_project(project)
-        append_log(pid, f"render ok → {result}")
+        append_log(pid, f"render ok → {result} {quality_label} captions={burned}")
         log_path.write_text(f"OK {result}\n", encoding="utf-8")
         return Path(result)
     except Exception as e:
@@ -305,13 +332,17 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         audio,
         out,
         segundos_por_imagen=sec,
-        width=1280,
-        height=720,
+        width=1920,
+        height=1080,
         musica_fondo=_resolve_music(project),
         music_volume=float(edit["music_volume"]),
         duration_sec=dur,
         motion=str(edit["motion"]),
         transition=str(edit["transition"]),
+        fps=24,
+        crf=18,
+        preset="veryfast",
+        editorial=True,
     )
     if not mp4_is_complete(out):
         raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")

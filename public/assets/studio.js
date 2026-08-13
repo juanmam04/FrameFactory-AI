@@ -173,7 +173,7 @@ async function compressStill(file) {
     ctx.fillRect(0, 0, w, h);
     ctx.drawImage(bmp, 0, 0, w, h);
     bmp.close();
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
     if (!blob || blob.size < 40) return file;
     const base = String(file.name || "still").replace(/\.[^.]+$/, "");
     return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
@@ -1590,7 +1590,7 @@ function paintRender(ws, p) {
     ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Video</h2>
-      <p class="lead">Ninguna foto más de 7 segundos. Si hay pocas, se reciclan. Antes del episodio completo, probá el look.</p>
+      <p class="lead">Ninguna foto más de 7 segundos. El episodio se descarga en Full HD 1080p 24fps con subtítulos en inglés ya quemados. (Flow no da 4K; 4K se intenta en tu Mac.)</p>
 
       <div class="panel soft" style="margin:1rem 0 1.2rem">
         <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
@@ -1636,8 +1636,7 @@ function paintRender(ws, p) {
       ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
-        ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar video final</a>` : ""}
-        ${captions ? `<a class="btn btn-ghost" href="/api/projects/${id}/video/captions?download=1" download="${esc(p.id)}-subs.mp4">Descargar con subtítulos</a>` : ""}
+        ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
         <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
@@ -1678,7 +1677,7 @@ function paintRender(ws, p) {
         body: JSON.stringify(body),
       }).catch(() => {});
       paint({ state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions });
-      api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 220000 }).catch(() => {});
+      api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 }).catch(() => {});
       startPoll();
     };
     $("#home").onclick = () => {
@@ -1732,7 +1731,7 @@ function paintSubs(ws, p) {
   ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Subtítulos</h2>
-      <p class="lead">Inglés, abajo, sincronizados con la narración. Primero el texto, después el video con los captions quemados.</p>
+      <p class="lead">Inglés, abajo, ya van en el video que descargás. Acá podés corregir el texto y volver a quemarlos.</p>
       <div class="field">
         <label>Preview del texto (SRT)</label>
         <textarea id="srt-box" rows="12" style="font-family:ui-monospace,monospace;font-size:0.85rem" placeholder="Tocá Armar subtítulos…"></textarea>
@@ -1742,10 +1741,9 @@ function paintSubs(ws, p) {
         <button class="btn btn-ghost" id="save-subs">Guardar texto</button>
         <button class="btn btn-primary" id="burn-subs">Ponerlos en el video</button>
       </div>
-      ${burned ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video/captions?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : `<p class="lead">Cuando los quemes, el preview del video aparece acá.</p>`}
+      ${burned ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : `<p class="lead">Si el render ya terminó, los subtítulos deberían estar en el archivo. Si no, tocá Ponerlos en el video.</p>`}
       <div class="actions">
-        <a class="btn btn-primary" href="/api/projects/${encodeURIComponent(p.id)}/video?download=1" download="${esc(p.id)}.mp4">Descargar video final</a>
-        ${burned ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video/captions?download=1" download="${esc(p.id)}-subs.mp4">Descargar con subtítulos</a>` : ""}
+        <a class="btn btn-primary" href="/api/projects/${encodeURIComponent(p.id)}/video?download=1" download="${esc(p.id)}.mp4">Descargar Full HD (con subtítulos)</a>
         <button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>
       </div>
     </div>`;

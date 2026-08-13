@@ -880,6 +880,10 @@ def create_app() -> FastAPI:
             rec = proj.get("render") if isinstance(proj.get("render"), dict) else {}
         except Exception:
             rec = {}
+        if proj is not None:
+            captions = captions or bool((proj.get("captions") or {}).get("burned")) or bool(
+                (proj.get("checkpoints") or {}).get("captions_ready")
+            )
         state = str(rec.get("state") or "").strip() or ("done" if ready else "idle")
         message = str(rec.get("message") or "")
         started = str(rec.get("started_at") or "")
@@ -903,7 +907,7 @@ def create_app() -> FastAPI:
                                 _sync_safe(lambda: _cs.push_paths(project_id, ["project.json"]))
             except Exception:
                 pass
-        if ready:
+        if ready and state != "running":
             state = "done"
             message = message or "Terminado. Ya lo podés descargar."
         labels = {
@@ -965,7 +969,18 @@ def create_app() -> FastAPI:
         try:
             assemble_and_render(load_project(project_id))
             p = load_project(project_id)
-            set_render_state(p, "done", message="Terminado. Ya lo podés descargar.")
+            cap_ok = bool((p.get("captions") or {}).get("burned") or (p.get("checkpoints") or {}).get("captions_ready"))
+            q = (p.get("render") or {}).get("height") if isinstance(p.get("render"), dict) else None
+            q_label = "4K" if q and int(q) >= 2000 else "Full HD 1080p"
+            set_render_state(
+                p,
+                "done",
+                message=(
+                    f"Terminado · {q_label} · subtítulos incluidos."
+                    if cap_ok
+                    else f"Terminado · {q_label}."
+                ),
+            )
             p["ui_step"] = "render"
             save_project(p)
             if on_vercel():
@@ -974,7 +989,14 @@ def create_app() -> FastAPI:
                 if cloud_sync.configured():
                     _sync_safe(
                         lambda: cloud_sync.push_paths(
-                            project_id, ["project.json", "render/final.mp4"]
+                            project_id,
+                            [
+                                "project.json",
+                                "render/final.mp4",
+                                "render/final_master.mp4",
+                                "render/final_captions.mp4",
+                                "render/captions.srt",
+                            ],
                         )
                     )
             return {"project": _project_full(p)}
@@ -1063,6 +1085,14 @@ def create_app() -> FastAPI:
             if download:
                 kwargs["filename"] = f"{project_id}-subs.mp4"
             return FileResponse(path, **kwargs)
+        final = project_dir(project_id) / "render" / "final.mp4"
+        p = load_project(project_id)
+        burned = bool((p.get("captions") or {}).get("burned") or (p.get("checkpoints") or {}).get("captions_ready"))
+        if burned and final.is_file() and final.stat().st_size > 0:
+            kwargs = {"media_type": "video/mp4"}
+            if download:
+                kwargs["filename"] = f"{project_id}-subs.mp4"
+            return FileResponse(final, **kwargs)
         raise HTTPException(404, "No hay video con subtítulos todavía")
 
     @app.get("/api/projects/{project_id}/captions")
@@ -1138,7 +1168,12 @@ def create_app() -> FastAPI:
                     _sync_safe(
                         lambda: cloud_sync.push_paths(
                             project_id,
-                            ["project.json", "render/captions.srt", "render/final_captions.mp4"],
+                            [
+                                "project.json",
+                                "render/captions.srt",
+                                "render/final.mp4",
+                                "render/final_captions.mp4",
+                            ],
                         )
                     )
             return {"project": _project_full(p)}

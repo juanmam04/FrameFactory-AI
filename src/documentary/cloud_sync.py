@@ -17,7 +17,7 @@ from src.saas_sessions import OUTPUT_DIR, SESSIONS_PATH
 # Skip huge / regenerable artifacts by default.
 _SKIP_DIR_NAMES = {".git", "__pycache__", ".DS_Store"}
 _SKIP_SUFFIXES = {".pyc", ".pyo"}
-_MAX_FILE_BYTES = 90 * 1024 * 1024  # 90 MB (final.mp4)
+_MAX_FILE_BYTES = 200 * 1024 * 1024  # 200 MB (1080p master)
 _schema_ok = False
 
 

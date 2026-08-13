@@ -72,7 +72,7 @@ def write_compressed_named(dest_root: Path, stem: str, data: bytes, filename: st
         with Image.open(io.BytesIO(data)) as im:
             rgb = im.convert("RGB")
             rgb.thumbnail((1920, 1080), Image.LANCZOS)
-            rgb.save(dest, format="JPEG", quality=82)
+            rgb.save(dest, format="JPEG", quality=90)
     for ext in _STILL_EXTS:
         extra = dest_root / f"{stem}{ext}"
         if extra != dest and extra.exists():

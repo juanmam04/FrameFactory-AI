@@ -87,6 +87,10 @@ def montar_slideshow(
     duration_sec: float | None = None,
     motion: str = "mix",
     transition: str = "fade",
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
+    editorial: bool = True,
 ) -> Path:
     """Stills + narration + Ken Burns + fades. Falls back to concat if the editorial pass fails."""
     ff = ffmpeg_exe()
@@ -102,32 +106,35 @@ def montar_slideshow(
     fade = min(0.5, max(0.25, float(fade_sec)), seg / 3)
     vol = max(0.0, min(0.22, float(music_volume)))
     music = musica_fondo if musica_fondo and musica_fondo.is_file() else None
-    try:
-        return _slideshow_editorial(
-            ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
-            duration_sec, motion, transition,
-        )
-    except Exception:
-        return _slideshow_concat(
-            ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec
-        )
+    if editorial:
+        try:
+            return _slideshow_editorial(
+                ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
+                duration_sec, motion, transition, fps=fps, crf=crf, preset=preset,
+            )
+        except Exception:
+            pass
+    return _slideshow_concat(
+        ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec,
+        fps=fps, crf=crf, preset=preset,
+    )
 
 
-def _ken_burns(kind: str, index: int, frames: int, width: int, height: int) -> str:
+def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     if k == "pull":
         z = "if(eq(on,1),1.14,max(1.0,zoom-0.0015))"
-        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps=15"
+        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     if k == "pan":
         return (
             f"zoompan=z=1.10:x='(iw-iw/zoom)*on/{max(1, d - 1)}':"
-            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps=15"
+            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
         )
     return (
         f"zoompan=z='min(zoom+0.0015,1.14)':x='iw/2-(iw/zoom/2)':"
-        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps=15"
+        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     )
 
 
@@ -144,21 +151,27 @@ def _slideshow_editorial(
     duration_sec: float | None,
     motion: str,
     transition: str,
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
 ) -> Path:
     """Ken Burns + per-still fades, in batches so Vercel does not die on 70 inputs."""
     import tempfile
 
-    fps = 15
+    fps = max(12, min(30, int(fps)))
     frames = max(8, int(round(seg * fps)))
     fade = 0.35 if transition == "fade" else 0.0
     tmp = Path(tempfile.mkdtemp(prefix="ff-edit-"))
     batches: list[Path] = []
-    chunk = 5
+    chunk = 4 if width >= 1920 else 5
     try:
         for start in range(0, len(imgs), chunk):
             part = imgs[start : start + chunk]
             bout = tmp / f"b{start:03d}.mp4"
-            _encode_still_batch(ff, part, bout, seg, width, height, motion, fade, frames, start)
+            _encode_still_batch(
+                ff, part, bout, seg, width, height, motion, fade, frames, start,
+                fps=fps, crf=crf, preset=preset,
+            )
             batches.append(bout)
         video_only = tmp / "video.mp4"
         if len(batches) == 1:
@@ -169,7 +182,7 @@ def _slideshow_editorial(
             cmd = [
                 ff, "-hide_banner", "-loglevel", "error", "-y",
                 "-f", "concat", "-safe", "0", "-i", str(lst),
-                "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
+                "-c:v", "libx264", "-preset", preset, "-crf", str(crf), "-pix_fmt", "yuv420p",
                 "-an", "-movflags", "+faststart", str(video_only),
             ]
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
@@ -194,10 +207,14 @@ def _encode_still_batch(
     fade: float,
     frames: int,
     index0: int,
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
 ) -> None:
     parts: list[str] = []
+    src_w = 7200 if width >= 3000 else 4200
     for i in range(len(imgs)):
-        zp = _ken_burns(motion, index0 + i, frames, width, height)
+        zp = _ken_burns(motion, index0 + i, frames, width, height, fps=fps)
         fo = max(0.08, seg - fade) if fade else 0
         fades = (
             f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
@@ -205,7 +222,7 @@ def _encode_still_batch(
             else ""
         )
         parts.append(
-            f"[{i}:v]scale=3600:-1,{zp}{fades},format=yuv420p,setsar=1[v{i}]"
+            f"[{i}:v]scale={src_w}:-1,{zp}{fades},format=yuv420p,setsar=1[v{i}]"
         )
     concat = "".join(f"[v{i}]" for i in range(len(imgs)))
     fc = ";".join(parts) + f";{concat}concat=n={len(imgs)}:v=1:a=0[vout]"
@@ -215,7 +232,7 @@ def _encode_still_batch(
     cmd.extend(
         [
             "-filter_complex", fc, "-map", "[vout]",
-            "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage",
+            "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
             "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(out),
         ]
     )
@@ -250,7 +267,7 @@ def _mix_voice_music(
         cmd.extend(["-t", f"{float(duration_sec):.3f}"])
     cmd.extend(
         [
-            "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
+            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart", str(dest),
         ]
     )
@@ -327,6 +344,9 @@ def _slideshow_concat(
     music: Path | None,
     vol: float,
     duration_sec: float | None = None,
+    fps: int = 24,
+    crf: int = 17,
+    preset: str = "veryfast",
 ) -> Path:
     list_file = output_path.with_suffix(".concat.txt")
     with list_file.open("w", encoding="utf-8") as fh:
@@ -343,7 +363,7 @@ def _slideshow_concat(
     fade_out_at = max(0.4, total - 0.4)
     vf = (
         f"scale={width}:{height}:force_original_aspect_ratio=increase,"
-        f"crop={width}:{height},fps=15,format=yuv420p,"
+        f"crop={width}:{height},fps={max(12, min(30, int(fps)))},format=yuv420p,"
         f"fade=t=in:st=0:d=0.35,fade=t=out:st={fade_out_at:.2f}:d=0.35"
     )
     if music is not None:
@@ -361,14 +381,14 @@ def _slideshow_concat(
         cmd.extend(["-vf", vf, "-map", "0:v", "-map", "1:a"])
     cmd.extend(
         [
-            "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage", "-crf", "28",
+            "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
             "-pix_fmt", "yuv420p",
-            "-c:a", "aac", "-b:a", "128k",
+            "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart",
             str(output_path),
         ]
     )
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=200)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
     list_file.unlink(missing_ok=True)
     if result.returncode != 0 or not mp4_is_complete(output_path):
         if output_path.is_file() and not mp4_is_complete(output_path):

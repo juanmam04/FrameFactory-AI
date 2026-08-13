@@ -9,8 +9,12 @@ from src.documentary.project import append_log, project_dir, save_project, set_c
 from src.video_assembler import ffmpeg_error_text, ffmpeg_exe, mp4_is_complete
 
 _DOC_STYLE = (
-    "Fontname=Arial,Fontsize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
+    "Fontname=Liberation Sans,Fontsize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
     "BorderStyle=1,Outline=2,Shadow=0,Alignment=2,MarginV=42,MarginL=48,MarginR=48"
+)
+
+_REPO_FONT = (
+    Path(__file__).resolve().parents[2] / "studio" / "static" / "fonts" / "LiberationSans-Regular.ttf"
 )
 
 
@@ -20,6 +24,10 @@ def captions_srt_path(project_id: str) -> Path:
 
 def captioned_video_path(project_id: str) -> Path:
     return project_dir(project_id) / "render" / "final_captions.mp4"
+
+
+def master_video_path(project_id: str) -> Path:
+    return project_dir(project_id) / "render" / "final_master.mp4"
 
 
 def srt_to_cues(srt: str) -> list[dict[str, Any]]:
@@ -125,51 +133,125 @@ def ensure_final_mp4(project_id: str) -> Path:
     raise RuntimeError("El video quedó a medias o no está. Volvé al paso Video y renderizá de nuevo.")
 
 
-def burn_captions(project: dict[str, Any]) -> Path:
-    pid = str(project["id"])
-    src = ensure_final_mp4(pid)
-    srt = captions_srt_path(pid)
-    if not srt.is_file() or srt.stat().st_size <= 0:
-        generate_captions(project)
-        srt = captions_srt_path(pid)
+def caption_font_path() -> Path | None:
+    for path in (
+        _REPO_FONT,
+        Path("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+        Path("/System/Library/Fonts/Supplemental/Arial.ttf"),
+        Path("/Library/Fonts/Arial.ttf"),
+    ):
+        if path.is_file():
+            return path
+    return None
+
+
+def apply_captions_file(
+    src: Path,
+    srt: Path,
+    dest: Path,
+    *,
+    width: int = 1920,
+    crf: int = 17,
+    preset: str = "veryfast",
+) -> Path:
+    """Burn English SRT onto an mp4. Prefers drawtext (works on Vercel), then libass, then PNG overlays."""
+    import subprocess
+
     ff = ffmpeg_exe()
     if not ff:
         raise RuntimeError("No hay FFmpeg en este servidor.")
-    dest = captioned_video_path(pid)
+    if not mp4_is_complete(src):
+        raise RuntimeError("El video fuente está incompleto.")
+    if not srt.is_file() or srt.stat().st_size <= 0:
+        raise RuntimeError("No hay archivo de subtítulos.")
     dest.parent.mkdir(parents=True, exist_ok=True)
-    import subprocess
-
+    if dest.exists():
+        dest.unlink(missing_ok=True)
+    cues = srt_to_cues(srt.read_text(encoding="utf-8"))
+    if not cues:
+        raise RuntimeError("El SRT no tiene carteles.")
+    fontsize = 72 if width >= 3000 else 42 if width >= 1600 else 28
+    font = caption_font_path()
+    last_err = ""
+    if font is not None:
+        vf = _drawtext_filter(cues, font, fontsize)
+        cmd = [
+            ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
+            "-vf", vf,
+            "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+            "-pix_fmt", "yuv420p",
+            "-c:a", "copy",
+            "-movflags", "+faststart",
+            str(dest),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        if result.returncode == 0 and mp4_is_complete(dest):
+            return dest
+        last_err = ffmpeg_error_text(result.stderr or result.stdout or "drawtext")
+        dest.unlink(missing_ok=True)
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
         "-vf", _subtitles_filter(srt),
-        "-c:v", "libx264", "-preset", "veryfast", "-crf", "28",
+        "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
         "-pix_fmt", "yuv420p",
         "-c:a", "copy",
         "-movflags", "+faststart",
         str(dest),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
-    if result.returncode != 0 or not mp4_is_complete(dest):
-        if dest.is_file():
-            dest.unlink(missing_ok=True)
-        err = (result.stderr or result.stdout or "").lower()
-        if "subtitles" in err or "ass" in err or "no such filter" in err or result.returncode != 0:
-            _burn_with_overlays(ff, src, dest, srt_to_cues(srt.read_text(encoding="utf-8")))
-        if not mp4_is_complete(dest):
-            raise RuntimeError(
-                "No se pudieron quemar los subtítulos: "
-                + ffmpeg_error_text(result.stderr or result.stdout or "ffmpeg failed")
-            )
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    if result.returncode == 0 and mp4_is_complete(dest):
+        return dest
+    last_err = ffmpeg_error_text(result.stderr or result.stdout or last_err or "subtitles")
+    dest.unlink(missing_ok=True)
+    _burn_with_overlays(ff, src, dest, cues, width=width, crf=crf, preset=preset)
+    if not mp4_is_complete(dest):
+        raise RuntimeError("No se pudieron quemar los subtítulos: " + last_err)
+    return dest
+
+
+def burn_into_final(project: dict[str, Any], *, width: int = 1920) -> Path:
+    """Write English captions onto render/final.mp4 from the caption-free master."""
+    import shutil
+
+    pid = str(project["id"])
+    master = master_video_path(pid)
+    if not mp4_is_complete(master):
+        try:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(pid, "render/final_master.mp4", force=True)
+        except Exception:
+            pass
+    if not mp4_is_complete(master):
+        src = ensure_final_mp4(pid)
+        master.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, master)
+    srt = captions_srt_path(pid)
+    if not srt.is_file() or srt.stat().st_size <= 0:
+        generate_captions(project)
+        srt = captions_srt_path(pid)
+    tmp = project_dir(pid) / "render" / "final_burn.mp4"
+    apply_captions_file(master, srt, tmp, width=width, crf=17, preset="veryfast")
+    cap = captioned_video_path(pid)
+    shutil.copy2(tmp, cap)
+    final = project_dir(pid) / "render" / "final.mp4"
+    tmp.replace(final)
     project["captions"] = {
         **(project.get("captions") or {}),
         "path": "render/captions.srt",
-        "video": "render/final_captions.mp4",
+        "video": "render/final.mp4",
         "burned": True,
     }
     set_checkpoint(project, "captions_ready", True)
     save_project(project)
-    append_log(pid, "captions burned")
-    return dest
+    append_log(pid, "captions burned into final.mp4")
+    return final
+
+
+def burn_captions(project: dict[str, Any]) -> Path:
+    return burn_into_final(project)
 
 
 def clear_burned_captions(project_id: str) -> None:
@@ -223,6 +305,38 @@ def _subtitles_filter(srt: Path) -> str:
     return f"subtitles='{escaped}':force_style='{_DOC_STYLE}'"
 
 
+def _fontfile_esc(path: Path) -> str:
+    return path.resolve().as_posix().replace("\\", "/").replace(":", r"\:").replace("'", r"\'")
+
+
+def _drawtext_escape(text: str) -> str:
+    t = " ".join(str(text or "").split())
+    t = t.replace("\\", "\\\\").replace("'", "’").replace(":", r"\:").replace("%", r"\%")
+    return t[:160]
+
+
+def _drawtext_filter(cues: list[dict[str, Any]], font: Path, fontsize: int) -> str:
+    parts: list[str] = []
+    font_esc = _fontfile_esc(font)
+    for cue in cues[:160]:
+        text = _drawtext_escape(str(cue.get("text") or ""))
+        if not text:
+            continue
+        start = _srt_sec(str(cue.get("start") or "0"))
+        end = _srt_sec(str(cue.get("end") or "0"))
+        if end <= start:
+            end = start + 1.2
+        parts.append(
+            "drawtext="
+            f"fontfile='{font_esc}':fontsize={fontsize}:fontcolor=white:"
+            "borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-th-72:"
+            f"enable='between(t,{start:.3f},{end:.3f})':text='{text}':expansion=none"
+        )
+    if not parts:
+        raise RuntimeError("No hay carteles para dibujar.")
+    return ",".join(parts)
+
+
 def _srt_sec(ts: str) -> float:
     ts = (ts or "0").replace(",", ".")
     parts = ts.split(":")
@@ -234,28 +348,24 @@ def _srt_sec(ts: str) -> float:
 def _caption_font(size: int):
     from PIL import ImageFont
 
-    for path in (
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/Library/Fonts/Arial.ttf",
-    ):
-        if Path(path).is_file():
-            return ImageFont.truetype(path, size)
+    path = caption_font_path()
+    if path is not None:
+        return ImageFont.truetype(str(path), size)
     try:
         return ImageFont.load_default(size=size)
     except TypeError:
         return ImageFont.load_default()
 
 
-def _cue_png(text: str, dest: Path, width: int = 1280, height: int = 140) -> None:
+def _cue_png(text: str, dest: Path, width: int = 1920, height: int = 160) -> None:
     from PIL import Image, ImageDraw
 
     im = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(im)
-    font = _caption_font(28)
+    font_size = 42 if width >= 1600 else 28
+    font = _caption_font(font_size)
     lines = [ln.strip() for ln in str(text or "").splitlines() if ln.strip()] or [""]
-    line_h = 34
+    line_h = int(font_size * 1.25)
     total_h = line_h * len(lines)
     y0 = max(8, (height - total_h) // 2)
     for i, line in enumerate(lines):
@@ -273,28 +383,57 @@ def _cue_png(text: str, dest: Path, width: int = 1280, height: int = 140) -> Non
     im.save(dest, "PNG")
 
 
-def _burn_with_overlays(ff: str, src: Path, dest: Path, cues: list[dict[str, Any]]) -> Path:
+def _merge_cues(cues: list[dict[str, Any]], max_n: int = 48) -> list[dict[str, Any]]:
+    if len(cues) <= max_n:
+        return cues
+    out: list[dict[str, Any]] = []
+    step = max(2, int(round(len(cues) / max_n)))
+    for i in range(0, len(cues), step):
+        chunk = cues[i : i + step]
+        text = " ".join(" ".join(str(c.get("text") or "").split()) for c in chunk).strip()
+        out.append(
+            {
+                "start": chunk[0].get("start"),
+                "end": chunk[-1].get("end"),
+                "text": text[:160],
+            }
+        )
+    return out
+
+
+def _burn_with_overlays(
+    ff: str,
+    src: Path,
+    dest: Path,
+    cues: list[dict[str, Any]],
+    *,
+    width: int = 1920,
+    crf: int = 17,
+    preset: str = "veryfast",
+) -> Path:
     """Burn captions without libass: overlay PIL PNGs (works with imageio-ffmpeg on Vercel)."""
     import shutil
     import subprocess
     import tempfile
 
+    cues = _merge_cues(cues)
     if not cues:
         raise RuntimeError("No hay carteles para quemar.")
+    bar_h = 180 if width >= 1600 else 140
     tmp = Path(tempfile.mkdtemp(prefix="ff-subs-"))
     try:
         cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src)]
         parts: list[str] = []
         last = "0:v"
-        for i, cue in enumerate(cues[:120]):
+        for i, cue in enumerate(cues):
             png = tmp / f"c{i:03d}.png"
-            _cue_png(cue.get("text") or "", png)
+            _cue_png(cue.get("text") or "", png, width=width, height=bar_h)
             cmd.extend(["-i", str(png)])
             start = _srt_sec(str(cue.get("start") or "0"))
             end = _srt_sec(str(cue.get("end") or "0"))
             out = f"v{i}"
             parts.append(
-                f"[{last}][{i + 1}:v]overlay=0:H-h-36:enable='between(t,{start:.3f},{end:.3f})'[{out}]"
+                f"[{last}][{i + 1}:v]overlay=0:H-h-48:enable='between(t,{start:.3f},{end:.3f})'[{out}]"
             )
             last = out
         cmd.extend(
@@ -308,9 +447,9 @@ def _burn_with_overlays(ff: str, src: Path, dest: Path, cues: list[dict[str, Any
                 "-c:v",
                 "libx264",
                 "-preset",
-                "veryfast",
+                preset,
                 "-crf",
-                "28",
+                str(crf),
                 "-pix_fmt",
                 "yuv420p",
                 "-c:a",
@@ -321,7 +460,7 @@ def _burn_with_overlays(ff: str, src: Path, dest: Path, cues: list[dict[str, Any
                 str(dest),
             ]
         )
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=260)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=150)
         if result.returncode != 0 or not mp4_is_complete(dest):
             if dest.is_file():
                 dest.unlink(missing_ok=True)

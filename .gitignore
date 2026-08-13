@@ -25,6 +25,7 @@ projects/**/render/
 !output/.gitkeep
 !studio/static/logo.png
 !studio/static/logo.svg
+!studio/static/fonts/*.ttf
 
 # Node backend
 backend/node_modules/
