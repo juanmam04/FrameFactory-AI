@@ -525,10 +525,15 @@ def create_app() -> FastAPI:
     @app.get("/api/projects/{project_id}/images/{number}")
     def image_file(project_id: str, number: int):
         root = project_dir(project_id) / "images"
-        for name in (f"{int(number):03d}.png", f"{int(number):03d}.jpg", f"{int(number):03d}.jpeg", f"{int(number):03d}.webp"):
-            path = root / name
-            if path.is_file():
-                return FileResponse(path)
+        name = f"{int(number):03d}.png"
+        path = root / name
+        if not path.is_file() or path.stat().st_size <= 0:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, f"images/{name}")
+        if path.is_file() and path.stat().st_size > 0:
+            return FileResponse(path)
         raise HTTPException(404, f"No image {int(number):03d}")
 
     @app.post("/api/projects/{project_id}/images/import")

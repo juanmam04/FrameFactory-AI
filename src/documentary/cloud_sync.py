@@ -263,6 +263,43 @@ def push_sessions() -> dict[str, Any]:
     return {"ok": True, "sessions": len(payload.get("sessions") or []), "at": _utc_now()}
 
 
+def list_rel_paths(project_id: str, prefix: str = "") -> list[str]:
+    ensure_schema()
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            if prefix:
+                cur.execute(
+                    "SELECT rel_path FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                    (project_id, prefix + "%"),
+                )
+            else:
+                cur.execute(
+                    "SELECT rel_path FROM ff_blobs WHERE project_id = %s",
+                    (project_id,),
+                )
+            return [str(r[0]) for r in cur.fetchall()]
+
+
+def pull_one(project_id: str, rel_path: str) -> bool:
+    """Download a single blob to disk. Used for still thumbnails."""
+    ensure_schema()
+    dest = projects_root() / project_id / rel_path
+    if dest.is_file() and dest.stat().st_size > 0:
+        return True
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT content FROM ff_blobs WHERE project_id = %s AND rel_path = %s",
+                (project_id, rel_path),
+            )
+            row = cur.fetchone()
+    if not row:
+        return False
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(bytes(row[0]))
+    return True
+
+
 def pull_sessions() -> dict[str, Any]:
     ensure_schema()
     with _connect() as conn:

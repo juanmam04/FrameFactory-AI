@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
 from src.documentary.editorial import FLOW_DIRECTOR_RULES, VISUAL_DIRECTION
@@ -393,12 +394,26 @@ def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
     elif shot_path.exists():
         visuals = json.loads(shot_path.read_text(encoding="utf-8")).get("shots") or []
 
+    remote_nums: set[int] = set()
+    try:
+        from src.documentary import cloud_sync
+
+        if cloud_sync.configured():
+            for rel in cloud_sync.list_rel_paths(project_id, "images/"):
+                stem = Path(rel).stem
+                if stem.isdigit():
+                    remote_nums.add(int(stem))
+    except Exception:
+        pass
+
+    def _has(num: int) -> bool:
+        return (images / f"{num:03d}.png").exists() or num in remote_nums
+
     for v in visuals:
         num = int(v.get("number") or 0)
         if not num:
             continue
-        path = images / f"{num:03d}.png"
-        if path.exists():
+        if _has(num):
             v["status"] = "READY"
             ready.append(f"{num:03d}")
         else:
@@ -410,7 +425,7 @@ def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
         plan["visuals"] = visuals
         for b in plan.get("flow_batches") or []:
             nums = [int(n) for n in b.get("visual_numbers") or []]
-            imported = sum(1 for n in nums if (images / f"{n:03d}.png").exists())
+            imported = sum(1 for n in nums if _has(n))
             b["imported"] = imported
             b["status"] = (
                 "complete"
@@ -423,7 +438,7 @@ def sync_ready_from_disk(project_id: str) -> dict[str, Any]:
         data = json.loads(shot_path.read_text(encoding="utf-8"))
         for s in data.get("shots") or []:
             num = int(s.get("number") or 0)
-            s["status"] = "READY" if (images / f"{num:03d}.png").exists() else "MISSING"
+            s["status"] = "READY" if _has(num) else "MISSING"
         data["ready_count"] = len(ready)
         data["missing"] = missing
         shot_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
