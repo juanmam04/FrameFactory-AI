@@ -111,8 +111,16 @@ def slugify(text: str, fallback: str = "project") -> str:
 
 
 def projects_root() -> Path:
-    PROJECTS_ROOT.mkdir(parents=True, exist_ok=True)
-    return PROJECTS_ROOT
+    from src.documentary.runtime import configure_workspace
+
+    configure_workspace()
+    raw = (os.getenv("FRAMEFACTORY_PROJECTS_DIR") or "").strip()
+    root = Path(raw) if raw else (BASE / "projects")
+    if not root.is_absolute():
+        root = (BASE / root).resolve()
+    globals()["PROJECTS_ROOT"] = root
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 def project_dir(project_id: str) -> Path:

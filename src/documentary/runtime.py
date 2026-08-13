@@ -10,11 +10,22 @@ def on_vercel() -> bool:
 
 
 def configure_workspace() -> None:
-    """Must run before importing project/saas_sessions path constants."""
+    """Point project/session dirs at /tmp on Vercel (repo FS is read-only)."""
     if not on_vercel():
         return
-    os.environ.setdefault("FRAMEFACTORY_WORKSPACE", "/tmp/ff-workspace")
-    os.environ.setdefault("FRAMEFACTORY_PROJECTS_DIR", "/tmp/ff-projects")
-    os.environ.setdefault("FRAMEFACTORY_DATA_DIR", "/tmp/ff-data")
+    os.environ["FRAMEFACTORY_WORKSPACE"] = "/tmp/ff-workspace"
+    os.environ["FRAMEFACTORY_PROJECTS_DIR"] = "/tmp/ff-projects"
+    os.environ["FRAMEFACTORY_DATA_DIR"] = "/tmp/ff-data"
     for key in ("FRAMEFACTORY_WORKSPACE", "FRAMEFACTORY_PROJECTS_DIR", "FRAMEFACTORY_DATA_DIR"):
         Path(os.environ[key]).mkdir(parents=True, exist_ok=True)
+    import sys
+
+    proj = sys.modules.get("src.documentary.project")
+    if proj is not None:
+        proj.PROJECTS_ROOT = Path("/tmp/ff-projects")
+        proj._WORKSPACE = Path("/tmp/ff-workspace")
+    sess = sys.modules.get("src.saas_sessions")
+    if sess is not None:
+        sess.OUTPUT_DIR = Path("/tmp/ff-data")
+        sess.SESSIONS_PATH = Path("/tmp/ff-data") / "saas_sessions.json"
+        sess._WORKSPACE = Path("/tmp/ff-workspace")

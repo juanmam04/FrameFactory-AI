@@ -4,6 +4,10 @@ from __future__ import annotations
 import os
 import traceback
 
+from src.documentary.runtime import configure_workspace
+
+configure_workspace()
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
 
