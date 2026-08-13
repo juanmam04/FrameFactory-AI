@@ -661,6 +661,8 @@ def create_app() -> FastAPI:
                     cloud_sync.delete_paths(project_id, stale)
                 pushed = cloud_sync.push_paths(project_id, rels)
                 if on_vercel() and not pushed.get("uploaded") and not pushed.get("unchanged"):
+                    pushed = cloud_sync.push_paths(project_id, rels)
+                if on_vercel() and not pushed.get("uploaded") and not pushed.get("unchanged"):
                     raise ValueError("No se pudieron guardar las imágenes en la nube. Probá de nuevo.")
             return {
                 "ok": True,

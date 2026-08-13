@@ -96,6 +96,7 @@ function slotCard(v, projectId, previewSrc = "") {
   const desc = v.description || v.action || v.acquisition_note || "";
   const kind = v.visual_type === "FLOW_REENACTMENT" ? "Google Flow" : "documento / foto real";
   const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?v=${IMG_BOOT}`;
+  const local = previewSrc ? ` data-local="1"` : "";
   return `
     <article class="shot" data-slot="${n}">
       <strong>${esc(v.moment_label ? `${v.moment_label} · foto` : "Imagen")} ${id}</strong>
@@ -103,7 +104,7 @@ function slotCard(v, projectId, previewSrc = "") {
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
       <div class="slot-frame">
         ${has
-          ? `<img class="slot-thumb" src="${esc(src)}" alt="${id}" loading="lazy" decoding="async" />`
+          ? `<img class="slot-thumb" src="${esc(src)}" alt="${id}" loading="lazy" decoding="async"${local} />`
           : `<div class="slot-placeholder">16:9</div>`}
       </div>
       <div class="slot-actions">
@@ -112,7 +113,7 @@ function slotCard(v, projectId, previewSrc = "") {
           : ""}
         <label class="btn ${has ? "btn-soft" : "btn-primary"} slot-upload">
           ${has ? "Cambiar esta" : "2) Subir esta imagen"}
-          <input type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" data-slot-file="${n}" hidden />
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.heic,.heif" multiple data-slot-file="${n}" hidden />
         </label>
         ${has ? `<button type="button" class="btn btn-danger" data-slot-delete="${n}">Eliminar esta</button>` : ""}
       </div>
@@ -146,11 +147,177 @@ function bindDeleteAll(btn, projectId) {
   };
 }
 
+async function compressStill(file) {
+  try {
+    if (!file) return file;
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 1920 / bmp.width, 1080 / bmp.height);
+    const w = Math.max(1, Math.round(bmp.width * scale));
+    const h = Math.max(1, Math.round(bmp.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d", { alpha: false });
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    bmp.close();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob || blob.size < 40) return file;
+    const base = String(file.name || "still").replace(/\.[^.]+$/, "");
+    return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
+
+function slotMeta(card) {
+  const metas = [...(card?.querySelectorAll(".ff-episode-meta") || [])];
+  const strong = card?.querySelector("strong")?.textContent || "";
+  const mood = strong.includes("·") ? strong.split("·")[0].replace(/\s*foto\s*$/i, "").trim() : "";
+  return {
+    desc: metas[1]?.textContent || "",
+    moment_label: mood && mood !== "Imagen" ? mood : "",
+    visual_type: (metas[0]?.textContent || "").includes("documento") ? "OTHER" : "FLOW_REENACTMENT",
+  };
+}
+
+function slotIsBusy(card) {
+  if (!card) return true;
+  if (card.dataset.uploading === "1") return true;
+  return Boolean(card.querySelector(".slot-thumb"));
+}
+
+function cardsInSameBatch(card) {
+  const wrap = card?.closest(".batch-slots");
+  if (wrap) return [...wrap.querySelectorAll(":scope > [data-slot]")];
+  return card ? [card] : [];
+}
+
+function pickTargetCards(startCard, count) {
+  const cards = cardsInSameBatch(startCard);
+  const startN = Number(startCard.dataset.slot);
+  const rotated = [
+    ...cards.filter((c) => Number(c.dataset.slot) >= startN),
+    ...cards.filter((c) => Number(c.dataset.slot) < startN),
+  ];
+  const empty = rotated.filter((c) => c === startCard || !slotIsBusy(c));
+  const rest = empty.filter((c) => c !== startCard);
+  return [startCard, ...rest].slice(0, count);
+}
+
+const _stillQ = [];
+let _stillActive = 0;
+const STILL_PARALLEL = 1;
+
+function enqueueStill(job) {
+  _stillQ.push(job);
+  pumpStills();
+}
+
+function pumpStills() {
+  while (_stillActive < STILL_PARALLEL && _stillQ.length) {
+    const job = _stillQ.shift();
+    _stillActive += 1;
+    runStillUpload(job).finally(() => {
+      _stillActive -= 1;
+      const left = _stillQ.length + _stillActive;
+      if (left > 0) toast(`Subiendo… quedan ${left}`, 1600);
+      pumpStills();
+    });
+  }
+}
+
+async function runStillUpload(job) {
+  const { projectId, n, file, previewSrc, desc, moment_label, visual_type } = job;
+  let lastErr = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const jpeg = await compressStill(file);
+      const fd = new FormData();
+      fd.append("files", jpeg, jpeg.name || `still-${pad3(n)}.jpg`);
+      fd.append("force_number", String(n));
+      await api(`/api/projects/${encodeURIComponent(projectId)}/images/upload`, {
+        method: "POST",
+        body: fd,
+      });
+      const live = document.querySelector(`[data-slot="${n}"]`);
+      if (live) live.dataset.uploading = "";
+      toast(`${pad3(n)} lista`);
+      return;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  toast(lastErr?.message || `No se pudo subir ${pad3(n)}`);
+  const live = document.querySelector(`[data-slot="${n}"]`);
+  if (live) {
+    replaceSlotCard(live, projectId, {
+      number: n,
+      status: "MISSING",
+      description: desc,
+      visual_type: visual_type || "FLOW_REENACTMENT",
+      moment_label,
+    });
+  }
+  if (previewSrc) URL.revokeObjectURL(previewSrc);
+}
+
+function beginStillUploads(projectId, files, targetCards) {
+  const list = [...files].filter(Boolean);
+  if (!list.length || !targetCards.length) return;
+  if (list.length > targetCards.length) {
+    toast(`Solo hay ${targetCards.length} recuadros libres. El resto subilo después.`);
+  }
+  const n = Math.min(list.length, targetCards.length);
+  for (let i = 0; i < n; i += 1) {
+    const file = list[i];
+    const card = targetCards[i];
+    const num = Number(card.dataset.slot);
+    const meta = slotMeta(card);
+    const previewSrc = URL.createObjectURL(file);
+    card.dataset.uploading = "1";
+    const next = replaceSlotCard(
+      card,
+      projectId,
+      {
+        number: num,
+        status: "READY",
+        description: meta.desc,
+        visual_type: meta.visual_type,
+        moment_label: meta.moment_label,
+      },
+      previewSrc
+    );
+    next.dataset.uploading = "1";
+    enqueueStill({
+      projectId,
+      n: num,
+      file,
+      previewSrc,
+      card: next,
+      desc: meta.desc,
+      moment_label: meta.moment_label,
+      visual_type: meta.visual_type,
+    });
+  }
+}
+
 function bindSlotUploads(root, projectId) {
   if (!root) return;
   root.querySelectorAll(".slot-thumb").forEach((img) => {
     img.onerror = () => {
-      if ((img.src || "").startsWith("blob:")) return;
+      if (img.dataset.local === "1" || (img.src || "").startsWith("blob:")) return;
+      const tries = Number(img.dataset.tries || "0");
+      if (tries < 2) {
+        img.dataset.tries = String(tries + 1);
+        const u = new URL(img.src, location.href);
+        u.searchParams.set("r", String(Date.now()));
+        setTimeout(() => {
+          img.src = `${u.pathname}${u.search}`;
+        }, 800);
+        return;
+      }
       const frame = img.closest(".slot-frame");
       img.remove();
       if (frame && !frame.querySelector(".slot-placeholder")) {
@@ -177,16 +344,13 @@ function bindSlotUploads(root, projectId) {
       btn.disabled = true;
       try {
         await api(`/api/projects/${encodeURIComponent(projectId)}/images/${n}`, { method: "DELETE" });
-        const metas = [...(card?.querySelectorAll(".ff-episode-meta") || [])];
-        const desc = metas[1]?.textContent || "";
-        const visual_type = (metas[0]?.textContent || "").includes("documento")
-          ? "OTHER"
-          : "FLOW_REENACTMENT";
+        const meta = slotMeta(card);
         replaceSlotCard(card, projectId, {
           number: n,
           status: "MISSING",
-          description: desc,
-          visual_type,
+          description: meta.desc,
+          visual_type: meta.visual_type,
+          moment_label: meta.moment_label,
         });
         toast(`${pad3(n)} eliminada`);
       } catch (e) {
@@ -196,41 +360,26 @@ function bindSlotUploads(root, projectId) {
     };
   });
   root.querySelectorAll("[data-slot-file]").forEach((inp) => {
-    inp.onchange = async () => {
-      const n = Number(inp.dataset.slotFile);
-      const file = inp.files && inp.files[0];
-      if (!file) return;
-      const fd = new FormData();
-      fd.append("files", file, file.name);
-      fd.append("force_number", String(n));
+    inp.onchange = () => {
+      const files = [...(inp.files || [])];
+      inp.value = "";
+      if (!files.length) return;
       const card = inp.closest("[data-slot]");
-      const desc = [...(card?.querySelectorAll(".ff-episode-meta") || [])][1]?.textContent || "";
-      const previewSrc = URL.createObjectURL(file);
-      const next = replaceSlotCard(
-        card,
-        projectId,
-        { number: n, status: "READY", description: desc, visual_type: "FLOW_REENACTMENT" },
-        previewSrc
-      );
-      api(`/api/projects/${encodeURIComponent(projectId)}/images/upload`, {
-        method: "POST",
-        body: fd,
-      })
-        .then(() => {
-          toast(`${pad3(n)} lista`);
-          // Keep the local preview. Switching to the API URL on Vercel often 404s
-          // for a few seconds and the onerror handler used to wipe the slot.
-        })
-        .catch((e) => {
-          toast(e.message);
-          replaceSlotCard(next, projectId, {
-            number: n,
-            status: "MISSING",
-            description: desc,
-            visual_type: "FLOW_REENACTMENT",
-          });
-          URL.revokeObjectURL(previewSrc);
-        });
+      beginStillUploads(projectId, files, pickTargetCards(card, files.length));
+    };
+  });
+  root.querySelectorAll("[data-batch-files]").forEach((inp) => {
+    inp.onchange = () => {
+      const files = [...(inp.files || [])];
+      inp.value = "";
+      if (!files.length) return;
+      const wrap = inp.closest("article")?.querySelector(".batch-slots");
+      const targets = [...(wrap?.querySelectorAll(":scope > [data-slot]") || [])].filter((c) => !slotIsBusy(c));
+      if (!targets.length) {
+        toast("Este bloque ya está lleno");
+        return;
+      }
+      beginStillUploads(projectId, files, targets);
     };
   });
 }
@@ -974,7 +1123,7 @@ async function paintFlow(ws, p) {
         <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
           <li><strong>Un bloque = un momento.</strong> “Le va bien”, “Se cae”, etc. Pedí ~10 fotos de ESE clima, no un orden 1-2-3.</li>
           <li><strong>Copiá el pedido del bloque</strong> → Flow. Si las mezcla, da igual: son intercambiables.</li>
-          <li><strong>Subí cualquiera en cualquier recuadro de ese bloque.</strong> Con 3–4 ya cubre ese tramo del video.</li>
+          <li><strong>Subí varias de una</strong> con “Subir varias a este bloque”. Se acomodan solas en los recuadros vacíos.</li>
         </ol>
         <p class="lead" style="margin-top:0.75rem;margin-bottom:0">
           No hay que matchear “imagen 7 = prompt 7”.
@@ -1039,11 +1188,15 @@ async function paintFlow(ws, p) {
         <div class="ff-episode-meta">Subidas: <strong>${done} / ${totalB}</strong></div>
         <div class="actions">
           <button class="btn btn-primary" data-copy-batch="${bi}">Copiar pedido de este momento</button>
+          <label class="btn btn-soft slot-upload">
+            Subir varias a este bloque
+            <input type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.heic,.heif" multiple data-batch-files="${bi}" hidden />
+          </label>
           <button class="btn btn-ghost" data-expand-batch="${bi}">Editar ángulos</button>
         </div>
         <pre class="hidden" id="batch-prompt-${bi}" style="max-height:220px;overflow:auto;margin-top:0.6rem">${esc(b.prompt || "")}</pre>
         <div class="hidden" id="batch-expand-${bi}" style="margin-top:0.6rem"></div>
-        <div class="list" style="margin-top:0.8rem">${slots}</div>
+        <div class="list batch-slots" style="margin-top:0.8rem">${slots}</div>
       </article>`;
         })
         .join("")
@@ -1281,7 +1434,7 @@ async function paintImages(ws, p) {
           <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
         </div>
       </div>
-      <div class="list" id="slots">${
+      <div class="list batch-slots" id="slots">${
         visuals.length
           ? visuals.map((v) => slotCard(v, p.id)).join("")
           : `<div class="notice">Todavía no hay plan. Volvé a “Pedir imgs”.</div>`

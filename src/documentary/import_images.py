@@ -305,7 +305,7 @@ def import_uploaded_images(
     for filename, data in files:
         name = Path(filename).name
         num: int | None = None
-        if force_number is not None and len(files) == 1:
+        if force_number is not None and (len(files) == 1 or filename == files[0][0]):
             num = int(force_number)
         else:
             m = _NUM_RE.match(name)
@@ -365,14 +365,24 @@ def import_uploaded_images(
         "dimension_issues": dim_issues,
         "source_dir": "studio_upload",
     }
+    prev = dict(project.get("import_report") or {})
+    merged_nums = sorted(
+        set(str(x) for x in (prev.get("imported_numbers") or []))
+        | {f"{n:03d}" for n in imported_nums}
+    )
+    report["imported_numbers"] = merged_nums
+    imported_set = {int(x) for x in merged_nums if str(x).lstrip("0").isdigit() or str(x) == "0"}
+    prev_missing = [str(m) for m in (prev.get("missing") or [])]
+    report["missing"] = [m for m in prev_missing if int(m) not in imported_set]
+    report["ready"] = max(int(prev.get("ready") or 0), len(merged_nums), ready)
     project["import_report"] = report
-    set_checkpoint(project, "images_imported", ready > 0)
-    if ready == expected_n and expected_n > 0:
-        set_checkpoint(project, "images_imported", True)
-        project["ui_step"] = "voice"
-    else:
-        project["ui_step"] = "images"
-    save_project(project)
+    set_checkpoint(project, "images_imported", True)
+    # Don't jump ui_step: a Vercel lambda only sees its own /tmp and would
+    # mark every other still as missing if we advanced/rewound from local disk.
+    try:
+        save_project(project)
+    except Exception:
+        pass
     return report
 
 
