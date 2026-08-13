@@ -152,7 +152,16 @@ def push_project(project_id: str) -> dict[str, Any]:
     }
 
 
-def pull_project(project_id: str) -> dict[str, Any]:
+_LIGHT_PREFIXES = (
+    "project.json",
+    "script/",
+    "flow-pack/shot-list.json",
+    "flow-pack/visual-plan.json",
+    "flow-pack/story-bible.json",
+)
+
+
+def pull_project(project_id: str, *, light: bool = False) -> dict[str, Any]:
     ensure_schema()
     root = projects_root() / project_id
     root.mkdir(parents=True, exist_ok=True)
@@ -165,6 +174,9 @@ def pull_project(project_id: str) -> dict[str, Any]:
             )
             rows = cur.fetchall()
     for rel, digest, content in rows:
+        rel_s = str(rel)
+        if light and not any(rel_s == p or rel_s.startswith(p) for p in _LIGHT_PREFIXES):
+            continue
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
@@ -248,10 +260,10 @@ def push_all() -> dict[str, Any]:
     }
 
 
-def pull_all() -> dict[str, Any]:
+def pull_all(*, light: bool = False) -> dict[str, Any]:
     ensure_schema()
     remote = list_remote_projects()
-    results = [pull_project(pid) for pid in remote]
+    results = [pull_project(pid, light=light) for pid in remote]
     sess = pull_sessions()
     return {
         "ok": True,

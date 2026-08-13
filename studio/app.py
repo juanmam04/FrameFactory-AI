@@ -117,8 +117,8 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
             if pid:
                 _sync_safe(lambda: cloud_sync.pull_project(pid))
                 _sync_safe(cloud_sync.pull_sessions)
-            elif path.startswith("/api/"):
-                _sync_safe(cloud_sync.pull_all)
+            elif path in {"/api/bootstrap", "/api/sync/status"}:
+                _sync_safe(lambda: cloud_sync.pull_all(light=True))
 
         response = await call_next(request)
 
@@ -138,11 +138,19 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 def create_app() -> FastAPI:
     app = FastAPI(title="FrameFactory Studio", docs_url="/api/docs")
     app.add_middleware(WorkspaceSyncMiddleware)
-    app.mount("/assets", StaticFiles(directory=str(ROOT / "static")), name="assets")
+    static_dir = ROOT / "static"
+    if static_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(static_dir), check_dir=False), name="assets")
 
     @app.get("/", response_class=HTMLResponse)
     def index():
-        return HTMLResponse((ROOT / "templates" / "index.html").read_text(encoding="utf-8"))
+        html_path = ROOT / "templates" / "index.html"
+        if not html_path.is_file():
+            return HTMLResponse(
+                f"<pre>Missing {html_path}. Vercel bundle did not include studio/templates.</pre>",
+                status_code=500,
+            )
+        return HTMLResponse(html_path.read_text(encoding="utf-8"))
 
     @app.get("/health")
     def health():
