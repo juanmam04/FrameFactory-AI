@@ -114,6 +114,7 @@ button { cursor: pointer; }
 }
 .pill.ok { background: rgba(6, 118, 71, 0.1); color: var(--ok); }
 .pill.bad { background: rgba(180, 35, 24, 0.1); color: var(--danger); }
+.pill.warn { background: rgba(180, 120, 0, 0.14); color: #8a5a00; }
 
 .stage {
   width: 100%;

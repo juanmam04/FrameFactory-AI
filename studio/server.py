@@ -864,10 +864,65 @@ def create_app() -> FastAPI:
                     rels = set()
                 ready = ready or "render/final.mp4" in rels
                 captions = captions or "render/final_captions.mp4" in rels
+        rec: dict = {}
+        proj = None
+        try:
+            from src.documentary import cloud_sync as _cs0
+
+            if _cs0.configured():
+                _cs0.pull_one(project_id, "project.json", force=True)
+            proj = load_project(project_id)
+            rec = proj.get("render") if isinstance(proj.get("render"), dict) else {}
+        except Exception:
+            rec = {}
+        state = str(rec.get("state") or "").strip() or ("done" if ready else "idle")
+        message = str(rec.get("message") or "")
+        started = str(rec.get("started_at") or "")
+        if state == "running" and started:
+            try:
+                from datetime import datetime, timezone
+
+                t0 = datetime.fromisoformat(started.replace("Z", "+00:00"))
+                age = (datetime.now(timezone.utc) - t0).total_seconds()
+                if age > 360:
+                    state = "error"
+                    message = "Se cortó (más de 6 min). Tocá Renderizar de nuevo."
+                    if proj is not None:
+                        from src.documentary.assemble_service import set_render_state
+
+                        set_render_state(proj, "error", error=message)
+                        if on_vercel():
+                            from src.documentary import cloud_sync as _cs
+
+                            if _cs.configured():
+                                _sync_safe(lambda: _cs.push_paths(project_id, ["project.json"]))
+            except Exception:
+                pass
+        if ready:
+            state = "done"
+            message = message or "Terminado. Ya lo podés descargar."
+        labels = {
+            "idle": "No iniciado",
+            "running": "En curso",
+            "done": "Terminado",
+            "error": "Error",
+        }
         return {
             "ready": bool(ready),
             "bytes": local.stat().st_size if local.is_file() else 0,
             "captions": bool(captions),
+            "state": state,
+            "label": labels.get(state, state),
+            "message": message
+            or {
+                "idle": "Todavía no se armó el video.",
+                "running": "Armando el video… unos minutos.",
+                "done": "Terminado. Ya lo podés descargar.",
+                "error": "Falló el render.",
+            }.get(state, ""),
+            "error": str(rec.get("error") or "") if state == "error" else "",
+            "started_at": started,
+            "updated_at": str(rec.get("updated_at") or ""),
         }
 
     @app.get("/api/projects/{project_id}/video")
@@ -891,11 +946,19 @@ def create_app() -> FastAPI:
 
     @app.post("/api/projects/{project_id}/render")
     def render_video(project_id: str):
-        try:
-            from src.documentary.assemble_service import assemble_and_render
+        from src.documentary.assemble_service import assemble_and_render, set_render_state
 
+        p = load_project(project_id)
+        set_render_state(p, "running", message="Armando el video…")
+        if on_vercel():
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
+        try:
             assemble_and_render(load_project(project_id))
             p = load_project(project_id)
+            set_render_state(p, "done", message="Terminado. Ya lo podés descargar.")
             p["ui_step"] = "render"
             save_project(p)
             if on_vercel():
@@ -909,6 +972,16 @@ def create_app() -> FastAPI:
                     )
             return {"project": _project_full(p)}
         except Exception as e:
+            try:
+                p = load_project(project_id)
+                set_render_state(p, "error", error=_err(e))
+                if on_vercel():
+                    from src.documentary import cloud_sync
+
+                    if cloud_sync.configured():
+                        _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
+            except Exception:
+                pass
             raise HTTPException(400, _err(e)) from e
 
     @app.get("/api/projects/{project_id}/video/captions")
@@ -1182,6 +1255,7 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "script_quality": p.get("script_quality") or {},
         "target_words": p.get("target_words") or 2000,
         "voice": p.get("voice") or {},
+        "render": p.get("render") if isinstance(p.get("render"), dict) else {},
         "captions": p.get("captions") or {},
         "youtube": _youtube_of(p),
         "checkpoints": p.get("checkpoints") or {},

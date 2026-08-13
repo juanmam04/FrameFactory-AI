@@ -7,8 +7,44 @@ from typing import Any
 
 from src.config_loader import get_background_music_path
 from src.documentary.import_images import ordered_images_for_render
-from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
+from src.documentary.project import _utc_now, append_log, project_dir, save_project, set_checkpoint
 from src.video_assembler import montar_slideshow, montar_video, mp4_is_complete, verificar_ffmpeg
+
+
+def set_render_state(
+    project: dict[str, Any],
+    state: str,
+    *,
+    message: str = "",
+    error: str = "",
+) -> dict[str, Any]:
+    rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+    now = _utc_now()
+    rec["state"] = state
+    rec["updated_at"] = now
+    if state == "running":
+        rec["started_at"] = now
+        rec["finished_at"] = ""
+        rec["error"] = ""
+        rec["message"] = message or "Armando el video…"
+        set_checkpoint(project, "render_ready", False)
+    elif state == "done":
+        rec["finished_at"] = now
+        rec["error"] = ""
+        rec["message"] = message or "Terminado. Ya lo podés descargar."
+        set_checkpoint(project, "render_ready", True)
+    elif state == "error":
+        rec["finished_at"] = now
+        rec["error"] = (error or message or "Falló el render.")[:400]
+        rec["message"] = rec["error"]
+        set_checkpoint(project, "render_ready", False)
+    else:
+        rec["state"] = "idle"
+        rec["message"] = message or "Todavía no se armó el video."
+        rec["error"] = ""
+    project["render"] = rec
+    save_project(project)
+    return rec
 
 
 def build_preview(project: dict[str, Any]) -> dict[str, Any]:
@@ -144,7 +180,18 @@ def assemble_and_render(
             clear_burned_captions(pid)
         except Exception:
             pass
-        project["render"] = {"path": "render/final.mp4", "seconds_per_image": sec}
+        rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+        rec.update(
+            {
+                "path": "render/final.mp4",
+                "seconds_per_image": sec,
+                "state": "done",
+                "message": "Terminado. Ya lo podés descargar.",
+                "error": "",
+                "finished_at": _utc_now(),
+            }
+        )
+        project["render"] = rec
         if isinstance(project.get("captions"), dict):
             project["captions"]["burned"] = False
         save_project(project)
@@ -154,6 +201,10 @@ def assemble_and_render(
     except Exception as e:
         append_log(pid, f"render FAIL: {e}")
         log_path.write_text(f"FAIL {e}\n", encoding="utf-8")
+        try:
+            set_render_state(project, "error", error=str(e)[:400])
+        except Exception:
+            pass
         raise
 
 

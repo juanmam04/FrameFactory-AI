@@ -1528,16 +1528,49 @@ function paintMusic(ws, p) {
   };
 }
 
+function renderStatusView(st) {
+  const state = st.state || (st.ready ? "done" : "idle");
+  const label = st.label || { idle: "No iniciado", running: "En curso", done: "Terminado", error: "Error" }[state] || state;
+  const cls = state === "done" ? "ok" : state === "error" ? "bad" : state === "running" ? "warn" : "";
+  const msg =
+    st.message ||
+    {
+      idle: "Todavía no se armó el video.",
+      running: "Armando el video… unos minutos. Esta pantalla se actualiza sola.",
+      done: "Terminado. Ya lo podés descargar.",
+      error: "Falló el render.",
+    }[state] ||
+    "";
+  return `
+    <div style="display:flex;align-items:flex-start;gap:0.85rem;margin:1rem 0 1.2rem;padding:1rem 1.15rem;border-radius:16px;border:1px solid var(--line,#d8dee6);background:var(--soft,#f4f6f8)">
+      <span class="pill ${cls}">${esc(label)}</span>
+      <div>
+        <strong>${esc(label)}</strong>
+        <p class="lead" style="margin:0.25rem 0 0">${esc(msg)}</p>
+      </div>
+    </div>`;
+}
+
 function paintRender(ws, p) {
   const id = encodeURIComponent(p.id);
-  const paint = (done, captions) => {
+  if (paintRender._poll) {
+    clearTimeout(paintRender._poll);
+    paintRender._poll = null;
+  }
+  const paint = (st) => {
+    const kind = st.state || (st.ready ? "done" : "idle");
+    paintRender._kind = kind;
+    const done = kind === "done" || !!st.ready;
+    const running = kind === "running";
+    const captions = !!st.captions;
     ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Video</h2>
-      <p class="lead">${done ? "El episodio ya está armado. Descargalo acá." : "Junta las imágenes con la narración y música bajita. Tarda un par de minutos, no media hora."}</p>
+      <p class="lead">Junta las imágenes con la narración y música bajita. El estado de acá te dice si está andando, si terminó o si falló.</p>
+      ${renderStatusView({ ...st, state: kind })}
       ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
       <div class="actions">
-        <button class="btn btn-accent" id="render">${done ? "Volver a renderizar" : "Renderizar video"}</button>
+        <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar video"}</button>
         ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar video final</a>` : ""}
         ${captions ? `<a class="btn btn-ghost" href="/api/projects/${id}/video/captions?download=1" download="${esc(p.id)}-subs.mp4">Descargar con subtítulos</a>` : ""}
         <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
@@ -1545,6 +1578,7 @@ function paintRender(ws, p) {
       </div>
     </div>`;
     $("#to-subs").onclick = async () => {
+      if (paintRender._poll) clearTimeout(paintRender._poll);
       const data = await api(`/api/projects/${id}/step`, {
         method: "PATCH",
         body: JSON.stringify({ step: "subs" }),
@@ -1553,46 +1587,49 @@ function paintRender(ws, p) {
       renderProject();
     };
     $("#render").onclick = async () => {
-      try {
-        overlay(true, "Armando el video… máximo unos 4 minutos");
-        let data = null;
-        try {
-          data = await api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 200000 });
-        } catch (e) {
-          overlay(true, "Buscando si el video igual quedó…");
-          for (let i = 0; i < 8; i += 1) {
-            await new Promise((r) => setTimeout(r, 4000));
-            const st = await api(`/api/projects/${id}/video/status`);
-            if (st.ready) {
-              const proj = await api(`/api/projects/${id}`);
-              data = { project: proj.project, recovered: true };
-              break;
-            }
-          }
-          if (!data) throw e;
-        }
-        if (data.project) state.project = data.project;
-        if (state.project.checkpoints) state.project.checkpoints.render_ready = true;
-        toast(data.recovered ? "El video sí había quedado. Descargalo." : "Video listo");
-        await refreshBootstrap();
-        renderProject();
-      } catch (e) {
-        toast(e.message === "Failed to fetch" ? "Se cortó la conexión. Tocá de nuevo: si quedó, aparece Descargar." : e.message);
-      } finally {
-        overlay(false);
-      }
+      paint({ state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions });
+      api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 220000 }).catch(() => {});
+      startPoll();
     };
     $("#home").onclick = () => {
+      if (paintRender._poll) clearTimeout(paintRender._poll);
       location.hash = "";
       go("home");
     };
   };
-  const localDone = !!(p.checkpoints?.render_ready || p.ui_step === "done");
-  paint(localDone, !!(p.checkpoints?.captions_ready));
+  const startPoll = () => {
+    if (paintRender._poll) clearTimeout(paintRender._poll);
+    const tick = async () => {
+      try {
+        const prev = paintRender._kind;
+        const next = await api(`/api/projects/${id}/video/status`);
+        paint(next);
+        if (next.state === "running") {
+          paintRender._poll = setTimeout(tick, 3000);
+        } else if (prev === "running" && (next.state === "done" || next.ready)) {
+          toast("Video listo");
+          if (state.project?.checkpoints) state.project.checkpoints.render_ready = true;
+        } else if (prev === "running" && next.state === "error") {
+          toast(next.message || "Falló el render");
+        }
+      } catch {
+        paintRender._poll = setTimeout(tick, 4000);
+      }
+    };
+    paintRender._poll = setTimeout(tick, 1500);
+  };
+  const rec = p.render || {};
+  const first = {
+    state: rec.state || (p.checkpoints?.render_ready ? "done" : "idle"),
+    label: rec.state === "done" || p.checkpoints?.render_ready ? "Terminado" : rec.state === "running" ? "En curso" : rec.state === "error" ? "Error" : "No iniciado",
+    message: rec.message || "",
+    ready: !!p.checkpoints?.render_ready,
+    captions: !!p.checkpoints?.captions_ready,
+    error: rec.error || "",
+  };
+  paint(first);
   api(`/api/projects/${id}/video/status`)
-    .then((st) => {
-      if (st.ready || st.captions) paint(!!st.ready || localDone, !!st.captions);
-    })
+    .then((st) => paint(st))
     .catch(() => {});
 }
 
