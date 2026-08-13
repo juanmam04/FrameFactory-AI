@@ -435,7 +435,7 @@ code { word-break: break-all; }
   font-weight: 700;
   color: var(--muted);
 }
-.field textarea, .field input {
+.field textarea, .field input, .field select {
   width: 100%;
   border: 1px solid var(--line-2);
   border-radius: 16px;
@@ -445,9 +445,41 @@ code { word-break: break-all; }
   outline: none;
   transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
 }
-.field textarea:focus, .field input:focus {
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.72rem 2.4rem 0.72rem 0.95rem;
+  border-radius: 999px;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%235b6775' d='M1.1 1.2 6 6.1 10.9 1.2' stroke='%235b6775' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.95rem center;
+  background-size: 12px 8px;
+  box-shadow: var(--shadow-sm);
+}
+.field select:hover {
+  border-color: rgba(15, 23, 32, 0.22);
+}
+.field textarea:focus, .field input:focus, .field select:focus {
   border-color: rgba(15, 118, 110, 0.45);
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+label.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.edit-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.85rem;
+  margin: 0.2rem 0 0.4rem;
+  align-items: end;
 }
 .script-box {
   min-height: 340px;
@@ -655,7 +687,8 @@ code { word-break: break-all; }
   .day-dial { width: 140px; height: 140px; }
   .day-dial-num strong { font-size: 2.7rem; }
   .field textarea,
-  .field input {
+  .field input,
+  .field select {
     font-size: 16px; /* iOS: no zoom on focus */
     padding: 0.85rem 0.9rem;
   }

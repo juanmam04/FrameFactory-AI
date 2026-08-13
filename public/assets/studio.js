@@ -1597,8 +1597,8 @@ function paintRender(ws, p) {
       <div class="panel soft" style="margin:1rem 0 1.2rem">
         <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
         <p class="lead" style="margin:0 0 0.8rem">Zoom, fundido, viñeta en los bordes, música. Armá 20 segundos y mirá cómo queda.</p>
-        <div class="actions" style="flex-wrap:wrap;gap:0.7rem;align-items:end">
-          <label class="field" style="margin:0;min-width:8rem">Segundos por foto
+        <div class="edit-picks">
+          <label class="field">Segundos por foto
             <select id="edit-sec">
               <option value="4" ${opt(4, edit.seconds_per_image)}>4s</option>
               <option value="5" ${opt(5, edit.seconds_per_image)}>5s</option>
@@ -1606,7 +1606,7 @@ function paintRender(ws, p) {
               <option value="7" ${opt(7, edit.seconds_per_image)}>7s (máximo)</option>
             </select>
           </label>
-          <label class="field" style="margin:0;min-width:10rem">Movimiento
+          <label class="field">Movimiento
             <select id="edit-motion">
               <option value="mix" ${opt("mix", edit.motion)}>Mezcla (recomendado)</option>
               <option value="push" ${opt("push", edit.motion)}>Zoom in lento</option>
@@ -1614,20 +1614,20 @@ function paintRender(ws, p) {
               <option value="pan" ${opt("pan", edit.motion)}>Paneo</option>
             </select>
           </label>
-          <label class="field" style="margin:0;min-width:9rem">Transición
+          <label class="field">Transición
             <select id="edit-trans">
               <option value="fade" ${opt("fade", edit.transition)}>Fundido</option>
               <option value="cut" ${opt("cut", edit.transition)}>Corte seco</option>
             </select>
           </label>
-          <label class="field" style="margin:0;min-width:9rem">Música
+          <label class="field">Música
             <select id="edit-vol">
               <option value="0.05" ${opt(0.05, edit.music_volume)}>Muy baja</option>
               <option value="0.08" ${opt(0.08, edit.music_volume)}>Baja (doc)</option>
               <option value="0.12" ${opt(0.12, edit.music_volume)}>Un poco más</option>
             </select>
           </label>
-          <label class="field" style="margin:0;min-width:11rem">Bordes
+          <label class="field">Bordes
             <select id="edit-look">
               <option value="none" ${opt("none", edit.look)}>Sin viñeta</option>
               <option value="soft" ${opt("soft", edit.look || "soft")}>Oscurecer bordes</option>
