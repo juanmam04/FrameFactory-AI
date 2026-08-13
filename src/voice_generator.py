@@ -36,7 +36,7 @@ def generar_voz(
     texto: str,
     nombre_archivo: str = "narracion",
     formato: str = "mp3",
-    velocidad: float = 1.0,
+    velocidad: float = 1.2,
     *,
     voice_catalog: dict | None = None,
     elevenlabs_voice_id: str | None = None,
@@ -127,8 +127,13 @@ def _aplicar_velocidad_audio(audio_path: Path, velocidad: float, output_path: Pa
     import subprocess
     import shutil
     
-    if not shutil.which("ffmpeg"):
-        # Si no hay FFmpeg, retornar audio original
+    try:
+        from src.video_assembler import ffmpeg_exe
+
+        ff = ffmpeg_exe()
+    except Exception:
+        ff = shutil.which("ffmpeg")
+    if not ff:
         return audio_path
     
     # FFmpeg atempo: valores entre 0.5 y 2.0
@@ -157,12 +162,19 @@ def _aplicar_velocidad_audio(audio_path: Path, velocidad: float, output_path: Pa
         # Crear archivo temporal para el audio procesado
         audio_velocidad = output_path.parent / f"{output_path.stem}_velocidad{output_path.suffix}"
         cmd = [
-            "ffmpeg", "-y", "-i", str(audio_path),
-            "-af", filter_complex,
+            ff, "-y", "-i", str(audio_path),
+            "-vn", "-af", filter_complex,
             "-c:a", "libmp3lame", "-b:a", "192k",
             str(audio_velocidad),
         ]
-        subprocess.run(cmd, check=True, capture_output=True)
+        result = subprocess.run(cmd, capture_output=True)
+        if result.returncode != 0:
+            cmd = [
+                ff, "-y", "-i", str(audio_path),
+                "-vn", "-af", filter_complex,
+                str(audio_velocidad),
+            ]
+            subprocess.run(cmd, check=True, capture_output=True)
         
         # Si el archivo temporal es diferente al original, reemplazarlo
         if audio_velocidad != output_path and audio_velocidad.exists():

@@ -39,8 +39,11 @@ def montar_slideshow(
     segundos_por_imagen: float,
     width: int = 1280,
     height: int = 720,
+    musica_fondo: Path | None = None,
+    music_volume: float = 0.08,
+    fade_sec: float = 0.4,
 ) -> Path:
-    """One FFmpeg pass: stills + narration. Used on Vercel (no Ken Burns)."""
+    """Stills + narration + quiet bed + simple fades. Used on Vercel."""
     ff = ffmpeg_exe()
     if not ff:
         raise RuntimeError("No hay FFmpeg en este servidor.")
@@ -50,8 +53,88 @@ def montar_slideshow(
     if not audio_narracion.is_file() or audio_narracion.stat().st_size <= 0:
         raise RuntimeError("Falta la narración.")
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    seg = max(2.4, float(segundos_por_imagen))
+    fade = min(0.5, max(0.25, float(fade_sec)), seg / 3)
+    vol = max(0.0, min(0.25, float(music_volume)))
+    music = musica_fondo if musica_fondo and musica_fondo.is_file() else None
+
+    try:
+        return _slideshow_fades(
+            ff, imgs, audio_narracion, output_path, seg, width, height, fade, music, vol
+        )
+    except Exception:
+        return _slideshow_concat(
+            ff, imgs, audio_narracion, output_path, seg, width, height, music, vol
+        )
+
+
+def _slideshow_fades(
+    ff: str,
+    imgs: list[Path],
+    audio: Path,
+    output_path: Path,
+    seg: float,
+    width: int,
+    height: int,
+    fade: float,
+    music: Path | None,
+    vol: float,
+) -> Path:
+    parts: list[str] = []
+    for i in range(len(imgs)):
+        fo = max(0.05, seg - fade)
+        parts.append(
+            f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=increase,"
+            f"crop={width}:{height},fps=24,setsar=1,format=yuv420p,"
+            f"fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}[v{i}]"
+        )
+    concat = "".join(f"[v{i}]" for i in range(len(imgs)))
+    fc = ";".join(parts) + f";{concat}concat=n={len(imgs)}:v=1:a=0[vout]"
+    cmd = [ff, "-y"]
+    for p in imgs:
+        cmd.extend(["-loop", "1", "-t", f"{seg:.3f}", "-i", str(p.resolve())])
+    cmd.extend(["-i", str(audio)])
+    maps_v = "[vout]"
+    if music is not None:
+        cmd.extend(["-stream_loop", "-1", "-i", str(music.resolve())])
+        n_aud = len(imgs)
+        n_mus = len(imgs) + 1
+        fc += (
+            f";[{n_aud}:a]aformat=sample_fmts=fltp:sample_rates=44100,volume=1[a1];"
+            f"[{n_mus}:a]aformat=sample_fmts=fltp:sample_rates=44100,volume={vol:.3f}[a2];"
+            f"[a1][a2]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+        )
+        cmd.extend(["-filter_complex", fc, "-map", maps_v, "-map", "[aout]"])
+    else:
+        cmd.extend(["-filter_complex", fc, "-map", maps_v, "-map", f"{len(imgs)}:a"])
+    cmd.extend(
+        [
+            "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "28",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "128k",
+            "-shortest", "-movflags", "+faststart",
+            str(output_path),
+        ]
+    )
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
+    if result.returncode != 0 or not output_path.is_file():
+        err = (result.stderr or result.stdout or "ffmpeg failed")[-900:]
+        raise RuntimeError(err)
+    return output_path
+
+
+def _slideshow_concat(
+    ff: str,
+    imgs: list[Path],
+    audio: Path,
+    output_path: Path,
+    seg: float,
+    width: int,
+    height: int,
+    music: Path | None,
+    vol: float,
+) -> Path:
     list_file = output_path.with_suffix(".concat.txt")
-    seg = max(2.0, float(segundos_por_imagen))
     with list_file.open("w", encoding="utf-8") as fh:
         for p in imgs:
             fh.write(f"file '{p.resolve().as_posix()}'\n")
@@ -60,15 +143,31 @@ def montar_slideshow(
     cmd = [
         ff, "-y",
         "-f", "concat", "-safe", "0", "-i", str(list_file),
-        "-i", str(audio_narracion),
-        "-vf",
-        f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},fps=24",
-        "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "28",
-        "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-b:a", "128k",
-        "-shortest",
-        str(output_path),
+        "-i", str(audio),
     ]
+    vf = f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},fps=24"
+    if music is not None:
+        cmd.extend(["-stream_loop", "-1", "-i", str(music.resolve())])
+        cmd.extend(
+            [
+                "-filter_complex",
+                f"[0:v]{vf}[vout];"
+                f"[1:a]volume=1[a1];[2:a]volume={vol:.3f}[a2];"
+                f"[a1][a2]amix=inputs=2:duration=first[aout]",
+                "-map", "[vout]", "-map", "[aout]",
+            ]
+        )
+    else:
+        cmd.extend(["-vf", vf, "-map", "0:v", "-map", "1:a"])
+    cmd.extend(
+        [
+            "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "28",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "128k",
+            "-shortest",
+            str(output_path),
+        ]
+    )
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
     list_file.unlink(missing_ok=True)
     if result.returncode != 0 or not output_path.is_file():

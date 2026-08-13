@@ -64,10 +64,17 @@ def get_background_music_path() -> Path | None:
         if _env_local.is_file():
             load_dotenv(_env_local, override=True)
     p = os.getenv("BACKGROUND_MUSIC_PATH")
-    if not p:
+    if p:
+        path = Path(p)
+        path = path if path.is_absolute() else BASE / path
+        if path.is_file():
+            return path
+    try:
+        from src.documentary.music_bed import documentary_bed_path
+
+        return documentary_bed_path()
+    except Exception:
         return None
-    path = Path(p)
-    return path if path.is_absolute() else BASE / path
 
 
 def get_instrucciones_descripcion() -> dict:

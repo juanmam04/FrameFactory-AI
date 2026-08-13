@@ -102,6 +102,9 @@ def assemble_and_render(
                 music = Path(env_m)
         except Exception:
             pass
+    music_vol = float(project.get("music_volume") or 0.08)
+    if music_vol >= 0.12:
+        music_vol = 0.08
 
     duration = (project.get("voice") or {}).get("duration_sec")
     sec = float(duration) / len(images) if duration else None
@@ -126,6 +129,8 @@ def assemble_and_render(
                 segundos_por_imagen=sec,
                 width=1280,
                 height=720,
+                musica_fondo=music,
+                music_volume=music_vol,
             )
         else:
             result = montar_video(
@@ -137,7 +142,7 @@ def assemble_and_render(
                 height=1080,
                 transiciones_suaves=transiciones_suaves,
                 output_path=out,
-                music_volume=float(project.get("music_volume") or 0.12),
+                music_volume=music_vol,
             )
         set_checkpoint(project, "assembly_ready", True)
         set_checkpoint(project, "render_ready", True)

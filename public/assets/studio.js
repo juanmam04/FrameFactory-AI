@@ -1305,8 +1305,8 @@ function paintVoice(ws, p) {
     <div class="panel workspace">
       <h2 style="margin-top:0">Voz</h2>
       <p class="lead">${ready
-        ? `Narración lista${clock ? ` · ${clock}` : ""}.`
-        : "Generá la narración acá (OpenAI / ElevenLabs). El video final se arma en tu Mac."}</p>
+        ? `Narración lista${clock ? ` · ${clock}` : ""} · x1.20.`
+        : "Generá la narración acá (OpenAI / ElevenLabs). Sale un poco más rápida (x1.20)."}</p>
       ${ready ? `<audio controls src="/api/projects/${encodeURIComponent(p.id)}/audio?t=${Date.now()}" style="width:min(100%,640px);margin:0.4rem 0 1rem;display:block"></audio>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="gen-voice">${ready ? "Volver a generar voz" : "Generar voz"}</button>
@@ -1340,7 +1340,7 @@ function paintRender(ws, p) {
   ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Video</h2>
-      <p class="lead">${done ? "El episodio ya está armado." : "Junta las imágenes con la narración y genera el MP4."}</p>
+      <p class="lead">${done ? "El episodio ya está armado." : "Junta las imágenes con la narración, música bajita y fundidos simples."}</p>
       ${done ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="render">${done ? "Volver a renderizar" : "Renderizar video"}</button>
