@@ -242,6 +242,56 @@ def replace_shot_image(project: dict[str, Any], shot_number: int, image_path: st
     return dest
 
 
+def delete_project_image(project_id: str, number: int) -> dict[str, Any]:
+    """Remove one still from disk (and caller should drop the Supabase blob)."""
+    n = int(number)
+    root = project_dir(project_id)
+    dest = root / "images" / f"{n:03d}.png"
+    removed = False
+    if dest.is_file():
+        dest.unlink()
+        removed = True
+    drop = root / "flow-import"
+    if drop.is_dir():
+        for extra in drop.glob(f"{n:03d}.*"):
+            if extra.is_file():
+                extra.unlink()
+    append_log(project_id, f"deleted still {n:03d}")
+    return {"ok": True, "removed": removed, "number": f"{n:03d}"}
+
+
+def delete_all_project_images(project_id: str) -> dict[str, Any]:
+    root = project_dir(project_id)
+    removed = 0
+    img = root / "images"
+    if img.is_dir():
+        for path in img.glob("*.png"):
+            path.unlink()
+            removed += 1
+    drop = root / "flow-import"
+    if drop.is_dir():
+        for extra in drop.iterdir():
+            if extra.is_file():
+                extra.unlink()
+    append_log(project_id, f"deleted all stills n={removed}")
+    return {"ok": True, "removed": removed}
+
+
+def _refresh_after_image_delete(project: dict[str, Any]) -> dict[str, Any]:
+    from src.documentary.visual_plan import sync_ready_from_disk
+
+    pid = str(project["id"])
+    sync = sync_ready_from_disk(pid)
+    ready = int(sync.get("ready") or 0)
+    set_checkpoint(project, "images_imported", ready > 0)
+    set_checkpoint(project, "render_ready", False)
+    set_checkpoint(project, "assembly_ready", False)
+    if ready == 0:
+        project["ui_step"] = "images"
+    save_project(project)
+    return sync
+
+
 def list_project_images(project_id: str) -> list[Path]:
     root = project_dir(project_id) / "images"
     if not root.exists():

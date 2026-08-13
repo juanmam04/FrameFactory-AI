@@ -523,20 +523,47 @@ button { cursor: pointer; }
   max-height: 140px;
   overflow: auto;
 }
+.slot-frame {
+  width: min(100%, 640px);
+  aspect-ratio: 16 / 9;
+  margin: 0.85rem auto 0.7rem;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0b0f14;
+  box-shadow: 0 14px 36px rgba(15, 23, 32, 0.12);
+}
 .slot-thumb {
   display: block;
   width: 100%;
-  max-height: 200px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 10px;
-  margin: 0.5rem 0;
-  background: #111;
+  background: #0b0f14;
+}
+.slot-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+.slot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
 }
 .slot-upload {
   display: inline-block;
   cursor: pointer;
-  margin-top: 0.45rem;
 }
 .slot-upload input {
   display: none;
+}
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid rgba(180, 35, 24, 0.28);
 }

@@ -146,6 +146,37 @@ def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, 
     return uploaded, skipped
 
 
+def delete_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
+    """Remove specific files from Supabase so deletes actually stick."""
+    ensure_schema()
+    rels = [str(p).replace("\\", "/") for p in rel_paths if str(p).strip()]
+    if not rels:
+        return {"ok": True, "deleted": 0, "at": _utc_now()}
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            placeholders = ",".join(["%s"] * len(rels))
+            cur.execute(
+                f"DELETE FROM ff_blobs WHERE project_id = %s AND rel_path IN ({placeholders})",
+                (project_id, *rels),
+            )
+            n = cur.rowcount or 0
+        conn.commit()
+    return {"ok": True, "deleted": n, "at": _utc_now()}
+
+
+def delete_image_blobs(project_id: str) -> dict[str, Any]:
+    ensure_schema()
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                (project_id, "images/%"),
+            )
+            n = cur.rowcount or 0
+        conn.commit()
+    return {"ok": True, "deleted": n, "at": _utc_now()}
+
+
 def push_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
     """Upload only the given relative files (e.g. project.json, images/007.png)."""
     ensure_schema()

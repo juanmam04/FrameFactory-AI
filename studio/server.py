@@ -36,7 +36,13 @@ from src.documentary.channel import (  # noqa: E402
 )
 from src.documentary.credentials import credential_report
 from src.documentary.flow_pack import export_flow_pack, load_shot_list
-from src.documentary.import_images import import_images, import_uploaded_images
+from src.documentary.import_images import (
+    delete_all_project_images,
+    delete_project_image,
+    import_images,
+    import_uploaded_images,
+    _refresh_after_image_delete,
+)
 from src.documentary.visual_plan import (
     format_single_prompt,
     load_visual_plan,
@@ -138,6 +144,8 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
             if path.endswith("/step") or "/images/upload" in path:
                 if path.endswith("/step"):
                     _sync_safe(lambda: cloud_sync.push_paths(pid, ["project.json"]))
+            elif request.method == "DELETE" and "/images" in path:
+                pass
             else:
                 _sync_safe(lambda: cloud_sync.push_project(pid, include_images=False))
         return response
@@ -594,6 +602,38 @@ def create_app() -> FastAPI:
                 "report": report,
                 "sync": sync,
             }
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.delete("/api/projects/{project_id}/images/{number}")
+    def images_delete_one(project_id: str, number: int):
+        try:
+            p = load_project(project_id)
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.delete_paths(project_id, [f"images/{int(number):03d}.png"])
+            result = delete_project_image(project_id, number)
+            sync = _refresh_after_image_delete(p)
+            if on_vercel() and cloud_sync.configured():
+                _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
+            return {"ok": True, "deleted": result, "sync": sync}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.delete("/api/projects/{project_id}/images")
+    def images_delete_all(project_id: str):
+        try:
+            p = load_project(project_id)
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.delete_image_blobs(project_id)
+            result = delete_all_project_images(project_id)
+            sync = _refresh_after_image_delete(p)
+            if on_vercel() and cloud_sync.configured():
+                _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
+            return {"ok": True, "deleted": result, "sync": sync}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 

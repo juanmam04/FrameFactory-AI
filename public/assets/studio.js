@@ -89,18 +89,83 @@ function slotCard(v, projectId) {
       <strong>Imagen ${id}</strong>
       <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)}</div>
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
-      ${has ? `<img class="slot-thumb" src="/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}" alt="${id}" />` : ""}
-      <label class="btn ${has ? "btn-soft" : "btn-primary"} slot-upload">
-        ${has ? "Cambiar esta" : "Subir esta imagen"}
-        <input type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" data-slot-file="${n}" hidden />
-      </label>
+      <div class="slot-frame">
+        ${has
+          ? `<img class="slot-thumb" src="/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}" alt="${id}" />`
+          : `<div class="slot-placeholder">16:9</div>`}
+      </div>
+      <div class="slot-actions">
+        <label class="btn ${has ? "btn-soft" : "btn-primary"} slot-upload">
+          ${has ? "Cambiar esta" : "Subir esta imagen"}
+          <input type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" data-slot-file="${n}" hidden />
+        </label>
+        ${has ? `<button type="button" class="btn btn-danger" data-slot-delete="${n}">Eliminar esta</button>` : ""}
+      </div>
     </article>`;
+}
+
+function replaceSlotCard(card, projectId, v) {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = slotCard(v, projectId);
+  const next = wrap.firstElementChild;
+  card.replaceWith(next);
+  bindSlotUploads(next, projectId);
+  return next;
+}
+
+function bindDeleteAll(btn, projectId) {
+  if (!btn) return;
+  btn.onclick = async () => {
+    if (!confirm("¿Borrar todas las imágenes de este episodio?")) return;
+    try {
+      await withBusy("Eliminando imágenes…", () =>
+        api(`/api/projects/${encodeURIComponent(projectId)}/images`, { method: "DELETE" })
+      );
+      toast("Todas las imágenes eliminadas");
+      state.shots = null;
+      state.visualPlan = null;
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
 }
 
 function bindSlotUploads(root, projectId) {
   if (!root) return;
   root.querySelectorAll(".slot-thumb").forEach((img) => {
-    img.onerror = () => img.remove();
+    img.onerror = () => {
+      const frame = img.closest(".slot-frame");
+      img.remove();
+      if (frame && !frame.querySelector(".slot-placeholder")) {
+        frame.innerHTML = `<div class="slot-placeholder">16:9</div>`;
+      }
+    };
+  });
+  root.querySelectorAll("[data-slot-delete]").forEach((btn) => {
+    btn.onclick = async () => {
+      const n = Number(btn.dataset.slotDelete);
+      const card = btn.closest("[data-slot]");
+      btn.disabled = true;
+      try {
+        await api(`/api/projects/${encodeURIComponent(projectId)}/images/${n}`, { method: "DELETE" });
+        const metas = [...(card?.querySelectorAll(".ff-episode-meta") || [])];
+        const desc = metas[1]?.textContent || "";
+        const visual_type = (metas[0]?.textContent || "").includes("documento")
+          ? "OTHER"
+          : "FLOW_REENACTMENT";
+        replaceSlotCard(card, projectId, {
+          number: n,
+          status: "MISSING",
+          description: desc,
+          visual_type,
+        });
+        toast(`${pad3(n)} eliminada`);
+      } catch (e) {
+        toast(e.message);
+        btn.disabled = false;
+      }
+    };
   });
   root.querySelectorAll("[data-slot-file]").forEach((inp) => {
     inp.onchange = async () => {
@@ -120,14 +185,12 @@ function bindSlotUploads(root, projectId) {
           body: fd,
         });
         const desc = [...(card?.querySelectorAll(".ff-episode-meta") || [])][1]?.textContent || "";
-        const wrap = document.createElement("div");
-        wrap.innerHTML = slotCard(
-          { number: n, status: "READY", description: desc, visual_type: "FLOW_REENACTMENT" },
-          projectId
-        );
-        const next = wrap.firstElementChild;
-        card.replaceWith(next);
-        bindSlotUploads(next, projectId);
+        replaceSlotCard(card, projectId, {
+          number: n,
+          status: "READY",
+          description: desc,
+          visual_type: "FLOW_REENACTMENT",
+        });
         toast(`${pad3(n)} lista`);
       } catch (e) {
         toast(e.message);
@@ -886,6 +949,7 @@ async function paintFlow(ws, p) {
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
         <button class="btn btn-ghost" id="to-images">Ver todas juntas</button>
+        <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
       </div>
 
       <h2 style="margin-top:1.6rem">A) Caras / lugares que se repiten</h2>
@@ -976,6 +1040,7 @@ async function paintFlow(ws, p) {
     };
   });
   bindSlotUploads($("#batches"), p.id);
+  bindDeleteAll($("#delete-all-stills"), p.id);
 
   $("#batches").querySelectorAll("[data-expand-batch]").forEach((btn) => {
     btn.onclick = () => {
@@ -1076,6 +1141,9 @@ async function paintImages(ws, p) {
         <h2 style="margin-top:0">Una imagen, un botón</h2>
         <p class="lead">Progreso: <strong>${ready} de ${expected}</strong></p>
         <p class="lead">Tocá <strong>Subir esta imagen</strong> en el recuadro que corresponda y elegí el archivo. El nombre no importa.</p>
+        <div class="actions" style="margin-top:0.8rem">
+          <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
+        </div>
       </div>
       <div class="list" id="slots">${
         visuals.length
@@ -1089,6 +1157,7 @@ async function paintImages(ws, p) {
     </div>`;
 
   bindSlotUploads($("#slots"), p.id);
+  bindDeleteAll($("#delete-all-stills"), p.id);
   $("#back-flow").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
