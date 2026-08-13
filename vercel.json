@@ -1,14 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.py" }
+    { "source": "/api/(.*)", "destination": "/app.py" },
+    { "source": "/health", "destination": "/app.py" }
   ],
   "functions": {
-    "api/index.py": {
+    "app.py": {
       "maxDuration": 60,
-      "memory": 1024,
-      "includeFiles": "{src/**,studio/**,config/**}"
+      "includeFiles": "studio/**"
     }
   }
 }
