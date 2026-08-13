@@ -888,15 +888,17 @@ def create_app() -> FastAPI:
         state = str(rec.get("state") or "").strip() or ("done" if ready else "idle")
         message = str(rec.get("message") or "")
         started = str(rec.get("started_at") or "")
-        if state == "running" and started:
+        need_continue = bool(rec.get("need_continue"))
+        if state == "running":
             try:
                 from datetime import datetime, timezone
 
-                t0 = datetime.fromisoformat(started.replace("Z", "+00:00"))
+                stamp = str(rec.get("updated_at") or started or "")
+                t0 = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
                 age = (datetime.now(timezone.utc) - t0).total_seconds()
-                if age > 360:
+                if age > 480 and not need_continue:
                     state = "error"
-                    message = "Se cortó (más de 6 min). Tocá Renderizar de nuevo."
+                    message = "Se cortó. Tocá Renderizar de nuevo."
                     if proj is not None:
                         from src.documentary.assemble_service import set_render_state
 
@@ -938,6 +940,9 @@ def create_app() -> FastAPI:
             "updated_at": str(rec.get("updated_at") or ""),
             "preview": bool(preview),
             "edit": rec.get("edit") if isinstance(rec.get("edit"), dict) else {},
+            "need_continue": bool(rec.get("need_continue")) and state == "running",
+            "kb_done": rec.get("kb_done") or 0,
+            "kb_total": rec.get("kb_total") or 0,
         }
 
     @app.get("/api/projects/{project_id}/video")
@@ -976,8 +981,15 @@ def create_app() -> FastAPI:
             if cloud_sync.configured():
                 _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
         try:
-            assemble_and_render(load_project(project_id))
+            assembled = assemble_and_render(load_project(project_id))
             p = load_project(project_id)
+            if assembled is None or bool((p.get("render") or {}).get("need_continue")):
+                if on_vercel():
+                    from src.documentary import cloud_sync
+
+                    if cloud_sync.configured():
+                        _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
+                return {"ok": True, "continue": True, "project": _project_full(p)}
             if render_was_cancelled(project_id) or bool((p.get("render") or {}).get("cancelled")):
                 return {"ok": True, "cancelled": True, "project": _project_full(p)}
             cap_ok = bool((p.get("captions") or {}).get("burned") or (p.get("checkpoints") or {}).get("captions_ready"))

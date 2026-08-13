@@ -3,6 +3,7 @@ import os
 import subprocess
 import shutil
 import sys
+import time
 from pathlib import Path
 
 from .config_loader import BASE, get_duracion_por_imagen
@@ -73,6 +74,15 @@ def ffmpeg_error_text(stderr: str) -> str:
     return (stderr or "ffmpeg failed")[-400:]
 
 
+class EditorialPaused(Exception):
+    """Ran out of time mid-edit; caller should resume with cached still clips."""
+
+    def __init__(self, done: int, total: int):
+        super().__init__(f"editorial paused {done}/{total}")
+        self.done = int(done)
+        self.total = int(total)
+
+
 def montar_slideshow(
     lista_imagenes: list[Path],
     audio_narracion: Path,
@@ -92,6 +102,10 @@ def montar_slideshow(
     preset: str = "veryfast",
     editorial: bool = True,
     look: str = "soft",
+    clip_dir: Path | None = None,
+    deadline_mono: float | None = None,
+    on_progress: object | None = None,
+    abort: object | None = None,
 ) -> Path:
     """Stills + narration + Ken Burns + fades. Falls back to concat if the editorial pass fails."""
     ff = ffmpeg_exe()
@@ -125,7 +139,10 @@ def montar_slideshow(
                 return _slideshow_editorial(
                     ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
                     duration_sec, motion, transition, fps=fps, crf=crf, preset=preset, look=lk,
+                    clip_dir=clip_dir, deadline_mono=deadline_mono, on_progress=on_progress, abort=abort,
                 )
+            except EditorialPaused:
+                raise
             except Exception as e:
                 last = e
     for lk in looks:
@@ -153,24 +170,31 @@ def _vignette_vf(look: str) -> str:
     return ",vignette=angle=PI/2.8"
 
 
-def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
+def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
+    """Slow Ken Burns via scale/crop (faster than zoompan, same documentary feel)."""
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
-    d = max(8, int(frames))
-    last = max(1, d - 1)
-    z_end = 1.07
-    inc = (z_end - 1.0) / last
+    z = 0.07
+    dur = max(0.8, float(seg))
+    fill = (
+        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+        f"crop={width}:{height}"
+    )
     if k == "pull":
-        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
-        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
-    if k == "pan":
         return (
-            f"zoompan=z=1.05:x='(iw-iw/zoom)*on/{last}':"
-            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
+            f"{fill},scale=w='2*trunc(iw*(1+{z}*(1-min(t/{dur:.3f}\\,1)))/2)':h=-2:eval=frame,"
+            f"crop={width}:{height}"
+        )
+    if k == "pan":
+        pw = int(width * 1.08) // 2 * 2
+        ph = int(height * 1.08) // 2 * 2
+        return (
+            f"scale={pw}:{ph}:force_original_aspect_ratio=increase,crop={pw}:{ph},"
+            f"crop={width}:{height}:x='(in_w-out_w)*min(t/{dur:.3f}\\,1)':y='(in_h-out_h)/2'"
         )
     return (
-        f"zoompan=z='min(zoom+{inc:.6f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
-        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+        f"{fill},scale=w='2*trunc(iw*(1+{z}*min(t/{dur:.3f}\\,1))/2)':h=-2:eval=frame,"
+        f"crop={width}:{height}"
     )
 
 
@@ -191,6 +215,10 @@ def _slideshow_editorial(
     crf: int = 17,
     preset: str = "veryfast",
     look: str = "soft",
+    clip_dir: Path | None = None,
+    deadline_mono: float | None = None,
+    on_progress: object | None = None,
+    abort: object | None = None,
 ) -> Path:
     """Ken Burns + per-still fades, in batches so Vercel does not die on 70 inputs."""
     import tempfile
@@ -198,16 +226,25 @@ def _slideshow_editorial(
     fps = max(12, min(30, int(fps)))
     frames = max(8, int(round(seg * fps)))
     fade = 0.28 if transition == "fade" else 0.0
-    tmp = Path(tempfile.mkdtemp(prefix="ff-edit-"))
+    owned = clip_dir is None
+    tmp = Path(tempfile.mkdtemp(prefix="ff-edit-")) if owned else Path(clip_dir)
+    tmp.mkdir(parents=True, exist_ok=True)
     clips: list[Path] = []
     try:
         for i, img in enumerate(imgs):
+            if callable(abort):
+                abort()
             clip = tmp / f"s{i:03d}.mp4"
-            _encode_one_still(
-                ff, img, clip, seg, width, height, motion, fade, frames, i,
-                fps=fps, crf=crf, preset=preset, look=look,
-            )
+            if not mp4_is_complete(clip):
+                if deadline_mono is not None and time.monotonic() >= float(deadline_mono):
+                    raise EditorialPaused(i, len(imgs))
+                _encode_one_still(
+                    ff, img, clip, seg, width, height, motion, fade, frames, i,
+                    fps=fps, crf=crf, preset=preset, look=look,
+                )
             clips.append(clip)
+            if callable(on_progress):
+                on_progress(i + 1, len(imgs))
         video_only = tmp / "video.mp4"
         if len(clips) == 1:
             video_only = clips[0]
@@ -219,7 +256,7 @@ def _slideshow_editorial(
                 "-f", "concat", "-safe", "0", "-i", str(lst),
                 "-c", "copy", "-an", "-movflags", "+faststart", str(video_only),
             ]
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=40)
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=80)
             if r.returncode != 0 or not mp4_is_complete(video_only):
                 cmd = [
                     ff, "-hide_banner", "-loglevel", "error", "-y",
@@ -227,7 +264,7 @@ def _slideshow_editorial(
                     "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
                     "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(video_only),
                 ]
-                r = subprocess.run(cmd, capture_output=True, text=True, timeout=50)
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
             if r.returncode != 0 or not mp4_is_complete(video_only):
                 raise RuntimeError(ffmpeg_error_text(r.stderr or "concat clips"))
         try:
@@ -238,7 +275,8 @@ def _slideshow_editorial(
             raise RuntimeError("editorial mix incomplete")
         return output_path
     finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+        if owned:
+            shutil.rmtree(tmp, ignore_errors=True)
 
 
 def _encode_one_still(
@@ -257,9 +295,7 @@ def _encode_one_still(
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    pre_w = int(width * 1.28)
-    pre_h = int(height * 1.28)
-    zp = _ken_burns(motion, index, frames, width, height, fps=fps)
+    motion_vf = _motion_vf(motion, index, seg, width, height)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
         f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
@@ -267,21 +303,21 @@ def _encode_one_still(
         else ""
     )
     vig = _vignette_vf(look)
-    vf = (
-        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
-        f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
-    )
+    vf = f"{motion_vf}{fades}{vig},format=yuv420p,setsar=1"
+    part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
-        "-loop", "1", "-t", f"{seg:.3f}", "-i", str(img.resolve()),
-        "-vf", vf, "-t", f"{seg:.3f}",
+        "-framerate", str(fps), "-loop", "1", "-t", f"{seg:.3f}", "-i", str(img.resolve()),
+        "-vf", vf, "-r", str(fps), "-t", f"{seg:.3f}",
         "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
-        "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(out),
+        "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    limit = 22 if width <= 1280 else 55
+    limit = 18 if width <= 1280 else 28
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
-    if r.returncode != 0 or not mp4_is_complete(out):
+    if r.returncode != 0 or not mp4_is_complete(part):
+        part.unlink(missing_ok=True)
         raise RuntimeError(ffmpeg_error_text(r.stderr or "still clip"))
+    part.replace(out)
 
 
 def _mix_voice_music(
@@ -315,7 +351,8 @@ def _mix_voice_music(
             "-shortest", "-movflags", "+faststart", str(dest),
         ]
     )
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+    mix_limit = 130 if (duration_sec or 0) > 60 else 90
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=mix_limit)
     if r.returncode != 0 or not mp4_is_complete(dest):
         raise RuntimeError(ffmpeg_error_text(r.stderr or "mix audio"))
 

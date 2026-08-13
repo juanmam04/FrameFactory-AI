@@ -10,7 +10,7 @@ from src.config_loader import get_background_music_path
 
 from src.documentary.import_images import ordered_images_for_render
 from src.documentary.project import _utc_now, append_log, load_project, project_dir, save_project, set_checkpoint
-from src.video_assembler import montar_slideshow, mp4_is_complete, verificar_ffmpeg
+from src.video_assembler import EditorialPaused, montar_slideshow, mp4_is_complete, verificar_ffmpeg
 
 
 def set_render_state(
@@ -29,6 +29,7 @@ def set_render_state(
         rec["finished_at"] = ""
         rec["error"] = ""
         rec["cancelled"] = False
+        rec["need_continue"] = False
         rec["message"] = message or "Armando el video…"
         set_checkpoint(project, "render_ready", False)
         try:
@@ -199,7 +200,7 @@ def build_preview(project: dict[str, Any]) -> dict[str, Any]:
     return preview
 
 
-def _pull_render_assets(project_id: str) -> None:
+def _pull_render_assets(project_id: str, *, clips: bool = False) -> None:
     from src.documentary import cloud_sync
 
     if not cloud_sync.configured():
@@ -207,6 +208,55 @@ def _pull_render_assets(project_id: str) -> None:
     cloud_sync.pull_one(project_id, "audio/narration.mp3")
     cloud_sync.pull_one(project_id, "flow-pack/shot-list.json")
     cloud_sync.pull_prefix(project_id, "images/")
+    if clips:
+        cloud_sync.pull_prefix(project_id, "render/kb/")
+
+
+def _kb_signature(images: list[Path], *, width: int, height: int, fps: int, edit: dict[str, Any], sec: float) -> str:
+    import hashlib
+
+    h = hashlib.sha1()
+    for p in images:
+        h.update(p.name.encode("utf-8", "ignore"))
+        try:
+            h.update(str(p.stat().st_size).encode())
+        except OSError:
+            pass
+    return (
+        f"e2|{width}x{height}|{fps}|{edit.get('motion')}|{edit.get('transition')}|"
+        f"{edit.get('look')}|{float(sec):.2f}|{len(images)}|{h.hexdigest()[:10]}"
+    )
+
+
+def _push_kb_range(project_id: str, kb: Path, start: int, end: int) -> None:
+    from src.documentary import cloud_sync
+
+    if not cloud_sync.configured():
+        return
+    rels = ["project.json"]
+    for i in range(max(0, int(start)), max(0, int(end))):
+        p = kb / f"s{i:03d}.mp4"
+        if mp4_is_complete(p):
+            rels.append(f"render/kb/{p.name}")
+    try:
+        cloud_sync.push_paths(project_id, rels)
+    except Exception:
+        pass
+
+
+def _note_edit_progress(project: dict[str, Any], done: int, total: int, *, pause: bool = False) -> None:
+    rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+    rec["state"] = "running"
+    rec["kb_done"] = int(done)
+    rec["kb_total"] = int(total)
+    rec["need_continue"] = bool(pause)
+    rec["updated_at"] = _utc_now()
+    if pause:
+        rec["message"] = f"Editando fotos {done}/{total}… sigue en la próxima tanda."
+    else:
+        rec["message"] = f"Editando fotos {done}/{total} (zoom y fundidos)…"
+    project["render"] = rec
+    save_project(project)
 
 
 def assemble_and_render(
@@ -214,11 +264,12 @@ def assemble_and_render(
     *,
     allow_missing: bool = False,
     transiciones_suaves: bool = True,
-) -> Path:
+) -> Path | None:
     from src.documentary.runtime import on_vercel
 
-    if on_vercel():
-        _pull_render_assets(str(project["id"]))
+    vercel = on_vercel()
+    if vercel:
+        _pull_render_assets(str(project["id"]), clips=False)
     if not verificar_ffmpeg():
         raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
     pid = str(project["id"])
@@ -242,22 +293,46 @@ def assemble_and_render(
         raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
     out = project_dir(pid) / "render" / "final.mp4"
-    # versioned backup if exists
-    if out.exists():
-        bak = project_dir(pid) / "render" / f"final_backup_{_ts()}.mp4"
-        out.replace(bak)
-
     log_path = project_dir(pid) / "logs" / "render.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    vercel = on_vercel()
     if vercel:
-        width, height, fps, crf, preset = 1920, 1080, 24, 17, "veryfast"
-        editorial = float(duration or 0) <= 30
+        width, height, fps, crf, preset = 1920, 1080, 24, 18, "ultrafast"
         quality_label = "Full HD 1080p"
     else:
         width, height, fps, crf, preset = 3840, 2160, 24, 16, "medium"
-        editorial = True
         quality_label = "4K"
+    import time as _time
+
+    kb = project_dir(pid) / "render" / "kb"
+    sig = _kb_signature(images, width=width, height=height, fps=fps, edit=edit, sec=sec)
+    rec0 = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+    same_edit = str(rec0.get("kb_sig") or "") == sig
+    if not same_edit:
+        import shutil as _rm
+
+        _rm.rmtree(kb, ignore_errors=True)
+    kb.mkdir(parents=True, exist_ok=True)
+    rec0["kb_sig"] = sig
+    rec0["need_continue"] = False
+    project["render"] = rec0
+    save_project(project)
+    if vercel and same_edit:
+        try:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_prefix(pid, "render/kb/")
+        except Exception:
+            pass
+    deadline = (_time.monotonic() + 200) if vercel else None
+    last_push = [0]
+
+    def _progress(done: int, total: int) -> None:
+        _note_edit_progress(project, done, total, pause=False)
+        if vercel and done - last_push[0] >= 4:
+            _push_kb_range(pid, kb, last_push[0], done)
+            last_push[0] = done
+
     try:
         _abort_if_cancelled(pid)
         try:
@@ -283,8 +358,12 @@ def assemble_and_render(
             fps=fps,
             crf=crf,
             preset=preset,
-            editorial=editorial,
+            editorial=True,
             look=str(edit.get("look") or "soft"),
+            clip_dir=kb,
+            deadline_mono=deadline,
+            on_progress=_progress,
+            abort=lambda: _abort_if_cancelled(pid),
         )
         _abort_if_cancelled(pid)
         if not mp4_is_complete(Path(result)):
@@ -300,10 +379,14 @@ def assemble_and_render(
             pass
         burned = False
         try:
-            from src.documentary.captions import burn_into_final
+            late = vercel and deadline is not None and _time.monotonic() > float(deadline) + 30
+            if late:
+                append_log(pid, "captions burn skip: no time left this round")
+            else:
+                from src.documentary.captions import burn_into_final
 
-            burn_into_final(project, width=width)
-            burned = True
+                burn_into_final(project, width=width)
+                burned = True
         except Exception as cap_err:
             append_log(pid, f"captions burn skip: {cap_err}")
         _abort_if_cancelled(pid)
@@ -330,6 +413,7 @@ def assemble_and_render(
                 "fps": fps,
                 "reuse": reuse,
                 "state": "done",
+                "need_continue": False,
                 "message": msg,
                 "error": "",
                 "finished_at": _utc_now(),
@@ -342,6 +426,12 @@ def assemble_and_render(
         append_log(pid, f"render ok → {result} {quality_label} captions={burned}")
         log_path.write_text(f"OK {result}\n", encoding="utf-8")
         return Path(result)
+    except EditorialPaused as pause:
+        _note_edit_progress(project, pause.done, pause.total, pause=True)
+        _push_kb_range(pid, kb, last_push[0], pause.done)
+        append_log(pid, f"render continue {pause.done}/{pause.total}")
+        log_path.write_text(f"CONTINUE {pause.done}/{pause.total}\n", encoding="utf-8")
+        return None
     except RenderCancelled:
         append_log(pid, "render stopped by user")
         raise
