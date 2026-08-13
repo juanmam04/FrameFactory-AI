@@ -107,8 +107,11 @@ function slotCard(v, projectId, previewSrc = "") {
           : `<div class="slot-placeholder">16:9</div>`}
       </div>
       <div class="slot-actions">
+        ${kind === "Google Flow"
+          ? `<button type="button" class="btn btn-soft" data-copy-slot="${n}">1) Copiar prompt ${id}</button>`
+          : ""}
         <label class="btn ${has ? "btn-soft" : "btn-primary"} slot-upload">
-          ${has ? "Cambiar esta" : "Subir esta imagen"}
+          ${has ? "Cambiar esta" : "2) Subir esta imagen"}
           <input type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" data-slot-file="${n}" hidden />
         </label>
         ${has ? `<button type="button" class="btn btn-danger" data-slot-delete="${n}">Eliminar esta</button>` : ""}
@@ -152,6 +155,18 @@ function bindSlotUploads(root, projectId) {
       img.remove();
       if (frame && !frame.querySelector(".slot-placeholder")) {
         frame.innerHTML = `<div class="slot-placeholder">16:9</div>`;
+      }
+    };
+  });
+  root.querySelectorAll("[data-copy-slot]").forEach((btn) => {
+    btn.onclick = async () => {
+      const n = Number(btn.dataset.copySlot);
+      try {
+        const data = await api(`/api/projects/${encodeURIComponent(projectId)}/visuals/${n}/prompt`);
+        await navigator.clipboard.writeText(data.prompt || "");
+        toast(`Prompt ${pad3(n)} copiado. Pegalo en Flow, generá UNA, y subila acá.`);
+      } catch (e) {
+        toast(e.message);
       }
     };
   });
@@ -953,12 +968,12 @@ async function paintFlow(ws, p) {
       <div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
         <h2 style="margin:0 0 0.5rem">Qué tenés que hacer acá (paso a paso)</h2>
         <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
-          <li><strong>Pedí las imágenes en Google Flow</strong> (abajo hay grupos listos para copiar).</li>
-          <li><strong>Descargalas</strong> a tu compu — el nombre que ponga Flow no importa.</li>
-          <li><strong>Subí cada una en su recuadro</strong> (botón “Subir esta imagen”). No hace falta renombrar.</li>
+          <li><strong>De a UNA.</strong> En el recuadro 007 tocá “Copiar prompt 007” → pegalo en Flow → generá esa sola.</li>
+          <li><strong>Subila en ESE recuadro</strong> (007). Flow mezcla el orden si pedís 10 juntas: no mires el nombre del archivo.</li>
+          <li>La escena del texto (elevador, hotel, storefront) es la pista. El número del recuadro es la verdad.</li>
         </ol>
         <p class="lead" style="margin-top:0.75rem;margin-bottom:0">
-          Abajo, en cada grupo, está el botón de cada still.
+          No uses el pedido de 10 a la vez si no vas a reconocer cada escena a ojo.
         </p>
       </div>
 
@@ -975,8 +990,8 @@ async function paintFlow(ws, p) {
       <p class="lead">Copiá el texto → Google Flow → descargá → <strong>subí acá</strong>. El nombre que ponga Flow no importa.</p>
       <div class="list" id="masters"></div>
 
-      <h2 style="margin-top:1.6rem">B) Grupos para pedir en Google Flow</h2>
-      <p class="lead">Cada grupo = ~10 imágenes. Copiá el texto → pegalo en Google Flow → descargá → subí cada still en su botón. Sin renombrar.</p>
+      <h2 style="margin-top:1.6rem">B) Still por still</h2>
+      <p class="lead">Cada recuadro tiene su número. Copiá ESE prompt, generá esa imagen, subila ahí. Flow no respeta el orden del lote.</p>
       <div class="list" id="batches"></div>
 
       <h2 style="margin-top:1.6rem">C) Cosas reales (no pedirle esto a la IA)</h2>
@@ -1017,7 +1032,7 @@ async function paintFlow(ws, p) {
         <div class="ff-episode-meta">Referencias a adjuntar en Flow: ${esc(refs)}</div>
         <div class="ff-episode-meta">Subidas: <strong>${done} / ${totalB}</strong></div>
         <div class="actions">
-          <button class="btn btn-primary" data-copy-batch="${bi}">Copiar pedido a Google Flow</button>
+          <button class="btn btn-ghost" data-copy-batch="${bi}">Copiar las 10 (Flow las desordena)</button>
           <button class="btn btn-ghost" data-expand-batch="${bi}">Editar textos</button>
         </div>
         <pre class="hidden" id="batch-prompt-${bi}" style="max-height:220px;overflow:auto;margin-top:0.6rem">${esc(b.prompt || "")}</pre>
@@ -1035,7 +1050,7 @@ async function paintFlow(ws, p) {
       if (pre) pre.classList.remove("hidden");
       if (b?.prompt) {
         navigator.clipboard.writeText(b.prompt);
-        toast("Pedido copiado. Pegalo en Google Flow y generá las imágenes.");
+        toast("Lote copiado. Flow NO las devuelve en orden — mejor copiá de a un recuadro.");
       }
     };
   });
@@ -1255,7 +1270,7 @@ async function paintImages(ws, p) {
       <div class="panel soft" style="border:2px solid var(--ink,#111);margin-bottom:1.2rem">
         <h2 style="margin-top:0">Una imagen, un botón</h2>
         <p class="lead">Progreso: <strong>${ready} de ${expected}</strong></p>
-        <p class="lead">Tocá <strong>Subir esta imagen</strong> en el recuadro que corresponda y elegí el archivo. El nombre no importa.</p>
+        <p class="lead">El número del recuadro es el still. Copiá ese prompt, generá UNA en Flow, subila acá. El nombre del archivo no importa: Flow desordena.</p>
         <div class="actions" style="margin-top:0.8rem">
           <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
         </div>

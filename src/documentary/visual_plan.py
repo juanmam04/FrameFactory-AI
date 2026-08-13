@@ -553,7 +553,7 @@ def format_batch_prompt(
     n = len(nums)
     lines = [
         f"Create {n} separate 16:9 cinematic documentary stills — a STORY SEQUENCE, not stock.",
-        "Each numbered item = ONE unique story beat with a named protagonist.",
+        "Each block is labeled STILL 007, STILL 008... That number is the SLOT, not 'image 1 of 10'.",
         "Do not create a collage. Do not repeat the same office/crowd.",
         "",
         "HARD RULES:",
@@ -566,9 +566,10 @@ def format_batch_prompt(
         f"STYLE: {_style_text(bible)[:320]}",
         "",
     ]
-    for idx, num in enumerate(nums, start=1):
+    for num in nums:
         v = by_num.get(num) or {}
-        lines.append(f"{idx}. {format_scene_line(v, masters, bible)}")
+        lines.append(f"=== STILL {num:03d}  (this is slot {num:03d}, not batch-position) ===")
+        lines.append(format_scene_line(v, masters, bible))
         lines.append("")
     lines.extend(
         [
