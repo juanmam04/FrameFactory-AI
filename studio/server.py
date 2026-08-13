@@ -124,9 +124,16 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
         m = _PROJECT_RE.match(path)
         pid = m.group(1) if m else None
 
-        # Pull once per cold instance (bootstrap). Do not hit Postgres on every click.
+        # Pull once per cold instance. Warm /tmp → skip Postgres.
         if request.method in {"GET", "HEAD"} and path == "/api/bootstrap":
-            _sync_safe(lambda: cloud_sync.pull_all(light=True))
+            from src.documentary.project import projects_root
+
+            root = projects_root()
+            has_local = root.is_dir() and any(
+                p.is_dir() and (p / "project.json").is_file() for p in root.iterdir()
+            )
+            if not has_local:
+                _sync_safe(lambda: cloud_sync.pull_all(light=True))
 
         response = await call_next(request)
 
@@ -135,8 +142,11 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
             and pid
             and path.startswith("/api/")
         ):
-            _sync_safe(lambda: cloud_sync.push_project(pid))
-            _sync_safe(cloud_sync.push_sessions)
+            if path.endswith("/step") or "/images/upload" in path:
+                if path.endswith("/step"):
+                    _sync_safe(lambda: cloud_sync.push_paths(pid, ["project.json"]))
+            else:
+                _sync_safe(lambda: cloud_sync.push_project(pid, include_images=False))
         return response
 
 
@@ -555,10 +565,23 @@ def create_app() -> FastAPI:
                 force_number=force_number,
             )
             sync = sync_ready_from_disk(project_id)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                rels = ["project.json"]
+                for n in report.get("imported_numbers") or []:
+                    try:
+                        rels.append(f"images/{int(n):03d}.png")
+                    except (TypeError, ValueError):
+                        continue
+                if force_number is not None:
+                    rels.append(f"images/{int(force_number):03d}.png")
+                if cloud_sync.configured():
+                    _sync_safe(lambda: cloud_sync.push_paths(project_id, rels))
             return {
+                "ok": True,
                 "report": report,
                 "sync": sync,
-                "project": _project_full(load_project(project_id)),
             }
         except Exception as e:
             raise HTTPException(400, _err(e)) from e

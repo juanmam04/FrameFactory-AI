@@ -89,7 +89,7 @@ function slotCard(v, projectId) {
       <strong>Imagen ${id}</strong>
       <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)}</div>
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
-      ${has ? `<img class="slot-thumb" src="/api/projects/${encodeURIComponent(projectId)}/images/${n}" alt="${id}" />` : ""}
+      ${has ? `<img class="slot-thumb" src="/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}" alt="${id}" />` : ""}
       <label class="btn ${has ? "btn-soft" : "btn-primary"} slot-upload">
         ${has ? "Cambiar esta" : "Subir esta imagen"}
         <input type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" data-slot-file="${n}" hidden />
@@ -110,18 +110,29 @@ function bindSlotUploads(root, projectId) {
       const fd = new FormData();
       fd.append("files", file, file.name);
       fd.append("force_number", String(n));
+      const card = inp.closest("[data-slot]");
+      const label = inp.closest("label");
+      if (label) label.childNodes[0].textContent = "Subiendo… ";
+      inp.disabled = true;
       try {
-        const data = await withBusy(`Subiendo ${pad3(n)}…`, () =>
-          api(`/api/projects/${encodeURIComponent(projectId)}/images/upload`, {
-            method: "POST",
-            body: fd,
-          })
+        await api(`/api/projects/${encodeURIComponent(projectId)}/images/upload`, {
+          method: "POST",
+          body: fd,
+        });
+        const desc = [...(card?.querySelectorAll(".ff-episode-meta") || [])][1]?.textContent || "";
+        const wrap = document.createElement("div");
+        wrap.innerHTML = slotCard(
+          { number: n, status: "READY", description: desc, visual_type: "FLOW_REENACTMENT" },
+          projectId
         );
-        state.project = data.project;
-        toast(`${pad3(n)} lista — no hace falta renombrar`);
-        renderProject();
+        const next = wrap.firstElementChild;
+        card.replaceWith(next);
+        bindSlotUploads(next, projectId);
+        toast(`${pad3(n)} lista`);
       } catch (e) {
         toast(e.message);
+        if (label) label.childNodes[0].textContent = "Subir esta imagen ";
+        inp.disabled = false;
       } finally {
         inp.value = "";
       }
@@ -492,17 +503,14 @@ function renderProject() {
   stage()
     .querySelectorAll("[data-step]")
     .forEach((btn) => {
-      btn.onclick = async () => {
-        try {
-          const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
-            method: "PATCH",
-            body: JSON.stringify({ step: btn.dataset.step }),
-          });
-          state.project = data.project;
-          renderProject();
-        } catch (e) {
-          toast(e.message);
-        }
+      btn.onclick = () => {
+        const next = btn.dataset.step;
+        state.project.ui_step = next;
+        renderProject();
+        api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+          method: "PATCH",
+          body: JSON.stringify({ step: next }),
+        }).catch((e) => toast(e.message));
       };
     });
   const ws = $("#ws");
@@ -857,13 +865,13 @@ async function paintFlow(ws, p) {
       <div class="list" id="nonflow"></div>
     </div>`;
 
-  const goImages = async () => {
-    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+  const goImages = () => {
+    state.project.ui_step = "images";
+    renderProject();
+    api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
       body: JSON.stringify({ step: "images" }),
-    });
-    state.project = data.project;
-    renderProject();
+    }).catch((e) => toast(e.message));
   };
   $("#rebuild").onclick = () => rebuildFlow();
   const toImagesBtn = $("#to-images");

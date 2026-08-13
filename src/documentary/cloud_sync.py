@@ -113,12 +113,7 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def push_project(project_id: str) -> dict[str, Any]:
-    ensure_schema()
-    root = projects_root() / project_id
-    if not root.is_dir():
-        raise FileNotFoundError(f"Proyecto no encontrado: {project_id}")
-    files = _iter_project_files(root)
+def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, int]:
     uploaded = 0
     skipped = 0
     with _connect() as conn:
@@ -148,6 +143,33 @@ def push_project(project_id: str) -> dict[str, Any]:
                 )
                 uploaded += 1
         conn.commit()
+    return uploaded, skipped
+
+
+def push_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
+    """Upload only the given relative files (e.g. project.json, images/007.png)."""
+    ensure_schema()
+    root = projects_root() / project_id
+    files = [root / rel for rel in rel_paths if (root / rel).is_file()]
+    uploaded, skipped = _upsert_files(project_id, files, root) if files else (0, 0)
+    return {
+        "project_id": project_id,
+        "uploaded": uploaded,
+        "unchanged": skipped,
+        "total_local": len(files),
+        "at": _utc_now(),
+    }
+
+
+def push_project(project_id: str, *, include_images: bool = False) -> dict[str, Any]:
+    ensure_schema()
+    root = projects_root() / project_id
+    if not root.is_dir():
+        raise FileNotFoundError(f"Proyecto no encontrado: {project_id}")
+    files = _iter_project_files(root)
+    if not include_images:
+        files = [p for p in files if "images" not in p.relative_to(root).parts]
+    uploaded, skipped = _upsert_files(project_id, files, root)
     return {
         "project_id": project_id,
         "uploaded": uploaded,
