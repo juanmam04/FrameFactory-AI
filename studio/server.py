@@ -50,6 +50,7 @@ from src.documentary.project import (
     PROJECTS_ROOT,
     create_project,
     derive_progress,
+    list_projects,
     list_projects_for_session,
     load_project,
     project_dir,
@@ -124,16 +125,8 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
         m = _PROJECT_RE.match(path)
         pid = m.group(1) if m else None
 
-        # Pull once per cold instance. Warm /tmp → skip Postgres.
         if request.method in {"GET", "HEAD"} and path == "/api/bootstrap":
-            from src.documentary.project import projects_root
-
-            root = projects_root()
-            has_local = root.is_dir() and any(
-                p.is_dir() and (p / "project.json").is_file() for p in root.iterdir()
-            )
-            if not has_local:
-                _sync_safe(lambda: cloud_sync.pull_all(light=True))
+            _sync_safe(lambda: cloud_sync.pull_all(light=True))
 
         response = await call_next(request)
 
@@ -182,11 +175,17 @@ def create_app() -> FastAPI:
             reload_env()
             sess, profile = _ensure_channel()
             goal = goal_count_from_profile(profile, 100)
-            stats = session_stats(str(sess.get("id") or ""), goal)
+            sid = str(sess.get("id") or "")
+            listed = list_projects_for_session(sid)
+            if not listed:
+                listed = list_projects()
+                stats = session_stats(None, goal)
+            else:
+                stats = session_stats(sid, goal)
             projects = [
                 _project_card(p)
                 for p in sorted(
-                    list_projects_for_session(str(sess.get("id") or "")),
+                    listed,
                     key=lambda x: int(x.get("episode_number") or 0),
                 )
             ]
@@ -273,7 +272,14 @@ def create_app() -> FastAPI:
         if not cloud_sync.configured():
             raise HTTPException(400, "Falta DATABASE_URL en .env.local (Supabase)")
         try:
+            if not list_projects():
+                raise HTTPException(
+                    400,
+                    "No hay episodios en este servidor para subir. Tocá «Bajar de la nube» primero.",
+                )
             return cloud_sync.push_all()
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
