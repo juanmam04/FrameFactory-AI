@@ -1,0 +1,13 @@
+venv
+.venv
+projects
+output
+docs
+tests
+*.mp4
+*.mp3
+.env
+.env.local
+env.local
+__pycache__
+backend/node_modules

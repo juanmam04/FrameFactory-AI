@@ -16,6 +16,8 @@ output/meta/
 *.wav
 *.png
 !output/.gitkeep
+!studio/static/logo.png
+!studio/static/logo.svg
 
 # Node backend
 backend/node_modules/

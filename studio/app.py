@@ -2,18 +2,29 @@
 from __future__ import annotations
 
 import os
+import re
 import traceback
 from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.config_loader import BASE
-from src.documentary.channel import (
+
+load_dotenv(BASE / ".env")
+load_dotenv(BASE / ".env.local", override=True)
+load_dotenv(BASE / "env.local", override=True)
+
+from src.documentary.runtime import configure_workspace, on_vercel  # noqa: E402
+
+configure_workspace()
+
+from src.documentary.channel import (  # noqa: E402
     business_documentary_profile,
     channel_display_name,
     duration_range_from_profile,
@@ -68,16 +79,65 @@ from src.saas_sessions import (
     set_active_session,
 )
 
-load_dotenv(BASE / ".env")
-load_dotenv(BASE / ".env.local", override=True)
-
 ROOT = Path(__file__).resolve().parent
 
 STEPS = ["topic", "research", "story", "script", "flow", "images", "voice", "render", "done"]
 
+_PROJECT_RE = re.compile(r"^/api/projects/([^/]+)")
+
+
+def _reject_heavy_on_vercel() -> None:
+    if on_vercel():
+        raise HTTPException(
+            400,
+            "Voice and render need FFmpeg on your Mac. Run `npm run dev` locally, then Push to Supabase.",
+        )
+
+
+def _sync_safe(fn) -> None:
+    try:
+        fn()
+    except Exception:
+        traceback.print_exc()
+
+
+class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        if path.startswith("/assets") or path in {"/health", "/"}:
+            return await call_next(request)
+        from src.documentary import cloud_sync
+
+        if not cloud_sync.configured():
+            return await call_next(request)
+
+        m = _PROJECT_RE.match(path)
+        pid = m.group(1) if m else None
+        if on_vercel() and request.method in {"GET", "HEAD"}:
+            if pid:
+                _sync_safe(lambda: cloud_sync.pull_project(pid))
+                _sync_safe(cloud_sync.pull_sessions)
+            elif path.startswith("/api/"):
+                _sync_safe(cloud_sync.pull_all)
+
+        response = await call_next(request)
+
+        if (
+            request.method in {"POST", "PUT", "PATCH", "DELETE"}
+            and path.startswith("/api/")
+            and path not in {"/api/sync/push", "/api/sync/pull"}
+        ):
+            if pid:
+                _sync_safe(lambda: cloud_sync.push_project(pid))
+                _sync_safe(cloud_sync.push_sessions)
+            else:
+                _sync_safe(cloud_sync.push_all)
+        return response
+
 
 def create_app() -> FastAPI:
     app = FastAPI(title="FrameFactory Studio", docs_url="/api/docs")
+    app.add_middleware(WorkspaceSyncMiddleware)
     app.mount("/assets", StaticFiles(directory=str(ROOT / "static")), name="assets")
 
     @app.get("/", response_class=HTMLResponse)
@@ -86,7 +146,7 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     def health():
-        return {"ok": True, "app": "documentary-studio"}
+        return {"ok": True, "app": "documentary-studio", "vercel": on_vercel()}
 
     # ── channel / home ──────────────────────────────────────────────
     @app.get("/api/bootstrap")
@@ -104,6 +164,10 @@ def create_app() -> FastAPI:
         ]
         creds = credential_report(live=False)
         return {
+            "runtime": {
+                "vercel": on_vercel(),
+                "voice_render": not on_vercel(),
+            },
             "channel": {
                 "name": channel_display_name(profile, str(sess.get("title") or "")),
                 "session_id": sess.get("id"),
@@ -435,6 +499,7 @@ def create_app() -> FastAPI:
 
     @app.post("/api/projects/{project_id}/voice")
     def voice_generate(project_id: str):
+        _reject_heavy_on_vercel()
         try:
             generate_project_voice(load_project(project_id))
             p = load_project(project_id)
@@ -446,6 +511,7 @@ def create_app() -> FastAPI:
 
     @app.post("/api/projects/{project_id}/render")
     def render_video(project_id: str):
+        _reject_heavy_on_vercel()
         try:
             assemble_and_render(load_project(project_id))
             p = load_project(project_id)

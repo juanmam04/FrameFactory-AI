@@ -1078,8 +1078,19 @@ async function paintImages(ws, p) {
   };
 }
 
+function onVercel() {
+  return !!state.bootstrap?.runtime?.vercel;
+}
+
 function paintVoice(ws, p) {
   const dur = p.voice?.duration_sec;
+  if (onVercel()) {
+    ws.innerHTML = `
+      <div class="panel workspace">
+        <p class="lead">Voice runs on your Mac (FFmpeg / TTS). Open Studio locally with <code>npm run dev</code>, generate voice, then Push to Supabase.</p>
+      </div>`;
+    return;
+  }
   ws.innerHTML = `
     <div class="panel workspace">
       <p class="lead">${dur ? `Voice ready · ${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, "0")}` : "Generate one continuous narration track."}</p>
@@ -1112,6 +1123,20 @@ function paintVoice(ws, p) {
 
 function paintRender(ws, p) {
   const done = p.checkpoints?.render_ready || p.ui_step === "done";
+  if (onVercel()) {
+    ws.innerHTML = `
+      <div class="panel workspace">
+        <p class="lead">Render runs on your Mac. <code>npm run dev</code> → Render video → Push to Supabase so the other PCs see the episode.</p>
+        <div class="actions">
+          <button class="btn btn-primary" id="home">Back to home</button>
+        </div>
+      </div>`;
+    $("#home").onclick = () => {
+      location.hash = "";
+      go("home");
+    };
+    return;
+  }
   ws.innerHTML = `
     <div class="panel workspace">
       <p class="lead">${done ? "Final render is ready in the project folder." : "Assemble images + voice into the final video."}</p>

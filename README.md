@@ -24,8 +24,10 @@ cp .env.example .env
 ### Frontend (navegador)
 
 ```bash
-streamlit run app.py
+npm run dev
 ```
+
+Studio: http://127.0.0.1:8787
 
 Se abre la app en el navegador. Podés:
 - **Desde un tema**: escribir el tema, duración y estilo → se genera guion + video.

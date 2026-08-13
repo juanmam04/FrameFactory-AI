@@ -2,8 +2,8 @@
 set -e
 cd "$(dirname "$0")"
 
-if [ -x "venv/bin/streamlit" ]; then
-  exec venv/bin/streamlit run app.py
+if [ -x "venv/bin/uvicorn" ]; then
+  exec venv/bin/uvicorn studio.app:app --reload --host 127.0.0.1 --port 8787
 fi
 
 if [ -d "venv" ]; then
@@ -11,4 +11,4 @@ if [ -d "venv" ]; then
   source venv/bin/activate
 fi
 
-exec streamlit run app.py
+exec uvicorn studio.app:app --reload --host 127.0.0.1 --port 8787
