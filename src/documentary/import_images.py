@@ -23,6 +23,27 @@ def still_file(images_dir: Path, number: int) -> Path | None:
     return None
 
 
+def ensure_still_thumb(images_dir: Path, number: int) -> Path | None:
+    """Small JPEG for the UI so we never ship 7MB PNGs to the browser."""
+    n = int(number)
+    thumb = images_dir / f"{n:03d}.thumb.jpg"
+    if thumb.is_file() and thumb.stat().st_size > 0:
+        return thumb
+    src = still_file(images_dir, n)
+    if src is None:
+        return None
+    try:
+        from PIL import Image
+
+        with Image.open(src) as im:
+            rgb = im.convert("RGB")
+            rgb.thumbnail((960, 540), Image.LANCZOS)
+            rgb.save(thumb, format="JPEG", quality=70)
+        return thumb
+    except Exception:
+        return src
+
+
 def write_compressed_still(dest_root: Path, num: int, data: bytes, filename: str = "") -> Path:
     """Store a YouTube-sized JPEG so uploads stay small and fast."""
     dest_root.mkdir(parents=True, exist_ok=True)
@@ -193,6 +214,9 @@ def import_uploaded_images(
         dest = write_compressed_still(dest_root, num, data, name)
         imported_nums.append(num)
         stored_rels.append(f"images/{dest.name}")
+        thumb = ensure_still_thumb(dest_root, num)
+        if thumb is not None and thumb.name != dest.name:
+            stored_rels.append(f"images/{thumb.name}")
 
     # Ready = existing files on disk after upload
     img_root = dest_root

@@ -84,7 +84,7 @@ function slotCard(v, projectId, previewSrc = "") {
   const has = String(v.status || "").toUpperCase() === "READY";
   const desc = v.description || v.action || v.acquisition_note || "";
   const kind = v.visual_type === "FLOW_REENACTMENT" ? "Google Flow" : "documento / foto real";
-  const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?t=${Date.now()}`;
+  const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}`;
   return `
     <article class="shot" data-slot="${n}">
       <strong>Imagen ${id}</strong>
@@ -92,7 +92,7 @@ function slotCard(v, projectId, previewSrc = "") {
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
       <div class="slot-frame">
         ${has
-          ? `<img class="slot-thumb" src="${esc(src)}" alt="${id}" />`
+          ? `<img class="slot-thumb" src="${esc(src)}" alt="${id}" loading="lazy" decoding="async" />`
           : `<div class="slot-placeholder">16:9</div>`}
       </div>
       <div class="slot-actions">

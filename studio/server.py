@@ -39,6 +39,7 @@ from src.documentary.flow_pack import export_flow_pack, load_shot_list
 from src.documentary.import_images import (
     delete_all_project_images,
     delete_project_image,
+    ensure_still_thumb,
     import_images,
     import_uploaded_images,
     still_file,
@@ -540,19 +541,33 @@ def create_app() -> FastAPI:
     @app.get("/api/projects/{project_id}/images/{number}")
     def image_file(project_id: str, number: int):
         root = project_dir(project_id) / "images"
-        path = still_file(root, number)
-        if path is None:
+        n = int(number)
+        thumb = root / f"{n:03d}.thumb.jpg"
+        path = still_file(root, n)
+        if path is None and not (thumb.is_file() and thumb.stat().st_size > 0):
             from src.documentary import cloud_sync
 
             if cloud_sync.configured():
-                n = int(number)
-                for name in (f"{n:03d}.jpg", f"{n:03d}.png", f"{n:03d}.webp", f"{n:03d}.jpeg"):
+                for name in (
+                    f"{n:03d}.thumb.jpg",
+                    f"{n:03d}.jpg",
+                    f"{n:03d}.png",
+                    f"{n:03d}.webp",
+                    f"{n:03d}.jpeg",
+                ):
                     if cloud_sync.pull_one(project_id, f"images/{name}"):
-                        path = still_file(root, number)
                         break
-        if path is not None:
-            return FileResponse(path)
-        raise HTTPException(404, f"No image {int(number):03d}")
+                path = still_file(root, n)
+        serve = ensure_still_thumb(root, n)
+        if serve is None and thumb.is_file() and thumb.stat().st_size > 0:
+            serve = thumb
+        if serve is not None:
+            return FileResponse(
+                serve,
+                media_type="image/jpeg" if serve.suffix.lower() in {".jpg", ".jpeg"} else None,
+                headers={"Cache-Control": "public, max-age=604800"},
+            )
+        raise HTTPException(404, f"No image {n:03d}")
 
     @app.post("/api/projects/{project_id}/images/import")
     def images_import(project_id: str, body: ImportBody):
