@@ -31,6 +31,48 @@ def verificar_ffmpeg() -> bool:
     return bool(ffmpeg_exe())
 
 
+def mp4_is_complete(path: Path | None) -> bool:
+    """True if the file looks like a finished MP4 (ftyp + moov), not a truncated render."""
+    if path is None or not path.is_file():
+        return False
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return False
+    if size < 64:
+        return False
+    chunk = min(size, 2_000_000)
+    try:
+        with path.open("rb") as fh:
+            head = fh.read(chunk)
+            tail = b""
+            if size > chunk:
+                fh.seek(max(0, size - chunk))
+                tail = fh.read(chunk)
+    except OSError:
+        return False
+    blob = head + tail
+    return b"ftyp" in head and b"moov" in blob
+
+
+def ffmpeg_error_text(stderr: str) -> str:
+    lines = [ln.strip() for ln in (stderr or "").splitlines() if ln.strip()]
+    useful = [
+        ln
+        for ln in lines
+        if any(
+            k in ln.lower()
+            for k in ("error", "invalid", "moov", "no such", "failed", "unknown", "not found")
+        )
+        and "enable-" not in ln.lower()
+        and "libav" not in ln.lower()
+        and "configuration:" not in ln.lower()
+    ]
+    if useful:
+        return " | ".join(useful[-4:])[:400]
+    return (stderr or "ffmpeg failed")[-400:]
+
+
 def montar_slideshow(
     lista_imagenes: list[Path],
     audio_narracion: Path,
@@ -117,8 +159,10 @@ def _slideshow_fades(
         ]
     )
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
-    if result.returncode != 0 or not output_path.is_file():
-        err = (result.stderr or result.stdout or "ffmpeg failed")[-900:]
+    if result.returncode != 0 or not mp4_is_complete(output_path):
+        if output_path.is_file() and not mp4_is_complete(output_path):
+            output_path.unlink(missing_ok=True)
+        err = ffmpeg_error_text(result.stderr or result.stdout or "ffmpeg failed")
         raise RuntimeError(err)
     return output_path
 
@@ -170,8 +214,10 @@ def _slideshow_concat(
     )
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
     list_file.unlink(missing_ok=True)
-    if result.returncode != 0 or not output_path.is_file():
-        err = (result.stderr or result.stdout or "ffmpeg failed")[-900:]
+    if result.returncode != 0 or not mp4_is_complete(output_path):
+        if output_path.is_file() and not mp4_is_complete(output_path):
+            output_path.unlink(missing_ok=True)
+        err = ffmpeg_error_text(result.stderr or result.stdout or "ffmpeg failed")
         raise RuntimeError(f"No se pudo armar el video: {err}")
     return output_path
 

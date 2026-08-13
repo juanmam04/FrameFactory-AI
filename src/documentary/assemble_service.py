@@ -8,7 +8,7 @@ from typing import Any
 from src.config_loader import get_background_music_path
 from src.documentary.import_images import ordered_images_for_render
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
-from src.video_assembler import montar_slideshow, montar_video, verificar_ffmpeg
+from src.video_assembler import montar_slideshow, montar_video, mp4_is_complete, verificar_ffmpeg
 
 
 def build_preview(project: dict[str, Any]) -> dict[str, Any]:
@@ -144,6 +144,9 @@ def assemble_and_render(
                 output_path=out,
                 music_volume=music_vol,
             )
+        if not mp4_is_complete(Path(result)):
+            Path(result).unlink(missing_ok=True)
+            raise RuntimeError("El render no terminó bien (video incompleto). Probá de nuevo.")
         set_checkpoint(project, "assembly_ready", True)
         set_checkpoint(project, "render_ready", True)
         set_checkpoint(project, "captions_ready", False)

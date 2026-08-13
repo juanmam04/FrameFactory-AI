@@ -303,11 +303,11 @@ def list_rel_paths(project_id: str, prefix: str = "") -> list[str]:
             return [str(r[0]) for r in cur.fetchall()]
 
 
-def pull_one(project_id: str, rel_path: str) -> bool:
+def pull_one(project_id: str, rel_path: str, *, force: bool = False) -> bool:
     """Download a single blob to disk. Used for still thumbnails."""
     ensure_schema()
     dest = projects_root() / project_id / rel_path
-    if dest.is_file() and dest.stat().st_size > 0:
+    if not force and dest.is_file() and dest.stat().st_size > 0:
         return True
     with _connect() as conn:
         with conn.cursor() as cur:

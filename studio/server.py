@@ -847,13 +847,17 @@ def create_app() -> FastAPI:
 
     @app.get("/api/projects/{project_id}/video")
     def video_file(project_id: str):
+        from src.video_assembler import mp4_is_complete
+
         path = project_dir(project_id) / "render" / "final.mp4"
-        if not path.is_file() or path.stat().st_size <= 0:
+        if not mp4_is_complete(path):
             from src.documentary import cloud_sync
 
+            if path.is_file():
+                path.unlink(missing_ok=True)
             if cloud_sync.configured():
-                cloud_sync.pull_one(project_id, "render/final.mp4")
-        if path.is_file() and path.stat().st_size > 0:
+                cloud_sync.pull_one(project_id, "render/final.mp4", force=True)
+        if mp4_is_complete(path):
             return FileResponse(path, media_type="video/mp4")
         raise HTTPException(404, "No hay video todavía")
 
