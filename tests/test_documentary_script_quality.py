@@ -136,3 +136,22 @@ def test_tema_has_no_working_title_label(tmp_projects):
     ctx = documentary_script_context(business_documentary_profile(), idea=p["idea"])
     assert "reddit_dark_storytime" in ctx  # listed as forbidden_legacy
     assert "business_documentary" in ctx
+
+
+def test_abrupt_ending_detected_without_ending_state():
+    from src.documentary.script_quality import ending_is_abrupt
+
+    cliff = (
+        "In 2019 the IPO was pulled.\n\n"
+        "SoftBank stepped in with a bailout.\n\n"
+        "The vibrant spaces now faced an uncertain future. "
+        "WeWork's struggle highlighted the vulnerabilities inherent in its business model."
+    )
+    landed = (
+        cliff
+        + "\n\nIn 2021 WeWork went public through a SPAC merger that valued the company at about $9 billion. "
+        "The $47 billion company had become a $9 billion listing."
+    )
+    state = "WeWork goes public via a SPAC merger in 2021, valuing the company at approximately $9 billion."
+    assert ending_is_abrupt(cliff, state)
+    assert not ending_is_abrupt(landed, state)

@@ -83,6 +83,120 @@ _ESSAY_TAIL_MARKERS = (
 )
 
 
+_ABRUPT_TAILS = (
+    "uncertain future",
+    "remains to be seen",
+    "time will tell",
+    "highlighted the",
+    "inherent in its business model",
+    "raising questions about",
+    "the future of",
+    "what would come next",
+    "only time",
+    "prompting a reevaluation",
+    "the tide began to turn",
+    "the dust settled",
+)
+
+
+def ending_is_abrupt(script: str, ending_state: str = "") -> bool:
+    """True when the draft stops mid-aftermath instead of landing ending_state."""
+    text = (script or "").strip()
+    if not text:
+        return True
+    paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    last = (paras[-1] if paras else text).lower()
+    if last.rstrip().endswith("?"):
+        return True
+    state = (ending_state or "").strip()
+    tail = " ".join(paras[-3:] if len(paras) >= 3 else paras).lower()
+    if state:
+        years = re.findall(r"\b(?:19|20)\d{2}\b", state)
+        money = re.findall(r"\$[\d,.]+|\b\d+(?:\.\d+)?\s*(?:billion|million)\b", state.lower())
+        keys = re.findall(r"\b(spac|merger|bankruptcy|acquired|listed|public|bailed|rescue)\b", state.lower())
+        hits = 0
+        for y in years:
+            if re.search(rf"\b{re.escape(y)}\b", tail):
+                hits += 1
+        for m in money:
+            compact = m.replace(" ", "").replace(",", "")
+            if m in tail or compact in tail.replace(" ", "").replace(",", ""):
+                hits += 1
+        for k in keys:
+            if re.search(rf"\b{re.escape(k)}\b", tail):
+                hits += 1
+        if hits >= 1:
+            return False
+        if years or money or keys:
+            return True
+    return any(m in last for m in _ABRUPT_TAILS)
+
+
+def close_script_ending(
+    script: str,
+    *,
+    ending_state: str,
+    hook: str = "",
+    research_notes: str = "",
+) -> str:
+    """Append 1–2 closing paragraphs from ending_state. Does not rewrite the body."""
+    text = (script or "").strip()
+    state = (ending_state or "").strip()
+    if not text or not state or not ending_is_abrupt(text, state):
+        return text
+    fallback = (
+        f"What happened next was already on the record: {state.rstrip('.')}. "
+        "That is where this story landed."
+    )
+    try:
+        require_openai_api_key("Script ending")
+        from openai import OpenAI
+
+        client = OpenAI(api_key=openai_api_key())
+        prompt = f"""The narration below STOPS too early. Write ONLY 1-2 final paragraphs to append.
+
+Rules:
+- Use ONLY these facts. Do not invent.
+- Paragraph 1: ENDING STATE as what happened next (year, number, names).
+- Paragraph 2: one image that answers the cold open. No lessons. No "in conclusion".
+- Third person. Spoken English. Return ONLY the new paragraphs — not the whole script.
+
+ENDING STATE:
+{state}
+
+COLD OPEN / HOOK:
+{(hook or "")[:500]}
+
+RESEARCH (optional extra facts, do not invent beyond this):
+{(research_notes or "")[-2500:]}
+
+CURRENT LAST PARAGRAPHS:
+{" ".join(text.split()[-180:])}
+"""
+        r = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            temperature=0.35,
+            max_tokens=420,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You close factual English documentaries. Events only. No morals.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+        )
+        add = (r.choices[0].message.content or "").strip()
+        add = re.sub(r"^```(?:\w+)?\s*|\s*```$", "", add).strip()
+        if add and len(add.split()) >= 20:
+            low = add.lower()
+            if any(m in low for m in ("in conclusion", "lesson", "underscores", "entrepreneurs can")):
+                add = fallback
+            return text + "\n\n" + add
+    except Exception:
+        pass
+    return text + "\n\n" + fallback
+
+
 def strip_essay_tail(script: str) -> str:
     """Drop trailing moral/essay paragraphs that pad after the story has ended.
 
@@ -173,6 +287,9 @@ def heuristic_script_quality(script: str, *, target_words: int = 2000) -> dict[s
     ):
         problems.append("Ending leans toward a forced business lesson — close the story instead.")
         scores["ending"] = 0.35
+    elif ending_is_abrupt(text):
+        problems.append("Ending is abrupt — story stops mid-aftermath instead of landing.")
+        scores["ending"] = 0.4
     else:
         scores["ending"] = 0.8
 
@@ -195,7 +312,7 @@ def heuristic_script_quality(script: str, *, target_words: int = 2000) -> dict[s
         revisions = [
             "Replace generalizations with concrete events, names, amounts, and decisions from the Story Plan beats.",
             "Cut repeated morals / identical conclusions.",
-            "End on story consequence or ending state — not lessons for entrepreneurs.",
+            "Land the Story Plan ending_state as events (year, number), then answer the cold open. Do not stop mid-aftermath.",
             "Keep spoken English; short paragraphs; causality (A enables B).",
         ]
     return {
@@ -237,7 +354,8 @@ Hard rules:
 - Prefer Story Plan beats + research only.
 - Target roughly {target_words} words (acceptable ~1800–2200). Do not pad with morals.
 - DELETE any closing essay about lessons, ambition, entrepreneurship, ecosystems, or "broader trends".
-- End on a concrete consequence or ending_state from the Story Plan.
+- The last two paragraphs MUST be the ending_state as what happened next, then a callback to the cold open.
+- Do not stop at "uncertain future" or a pandemic cliff.
 - Third person. English. Narration only. No markdown. Short paragraphs. Events > adjectives.
 
 STORY PLAN:
