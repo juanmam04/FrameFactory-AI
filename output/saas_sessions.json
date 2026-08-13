@@ -1,6 +1,5 @@
 {
   "version": 1,
-  "active_id": "20260812_134822_6c78dd6b",
   "sessions": [
     {
       "id": "20260812_134822_6c78dd6b",
@@ -1250,5 +1249,6 @@
         "narrator_preference": "male_sharp"
       }
     }
-  ]
+  ],
+  "active_id": "20260812_134822_6c78dd6b"
 }
