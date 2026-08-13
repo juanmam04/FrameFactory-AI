@@ -17,7 +17,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/studio.css?v=20260814t"/>
+  <link rel="stylesheet" href="/assets/studio.css?v=20260814u"/>
+  <!-- Critical: keep top nav centered even if CSS asset is cached/stale on Vercel -->
+  <style>
+    .top-inner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 2.75rem; }
+    .top-nav {
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      display: flex !important;
+      justify-content: center !important;
+      z-index: 2;
+    }
+    .top-status { margin-left: auto; }
+    @media (max-width: 860px) {
+      .top-inner { flex-wrap: wrap; }
+      .top-nav {
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        order: 3;
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
   <div id="app">

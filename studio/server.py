@@ -206,6 +206,18 @@ def create_app() -> FastAPI:
             headers={"Cache-Control": "no-store, max-age=0"},
         )
 
+    @app.get("/assets/studio.css")
+    def studio_css():
+        """Serve CSS with no-cache so top-bar layout fixes land in production."""
+        css_path = ROOT / "static" / "studio.css"
+        if not css_path.is_file():
+            raise HTTPException(404, "studio.css missing from deploy bundle")
+        return FileResponse(
+            css_path,
+            media_type="text/css; charset=utf-8",
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
+
     @app.get("/health")
     def health():
         return {"ok": True, "app": "documentary-studio", "vercel": on_vercel()}
