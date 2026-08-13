@@ -15,6 +15,13 @@ output/meta/
 *.mp3
 *.wav
 *.png
+*.jpg
+*.jpeg
+*.webp
+*.thumb.jpg
+projects/**/images/
+projects/**/audio/
+projects/**/render/
 !output/.gitkeep
 !studio/static/logo.png
 !studio/static/logo.svg
