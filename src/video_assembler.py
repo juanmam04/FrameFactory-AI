@@ -133,7 +133,8 @@ def montar_slideshow(
     vol = max(0.12, min(0.40, float(vol) * 2.8))
     looks = [look, "none"] if str(look or "soft") != "none" else ["none"]
     last = None
-    if editorial:
+    long_job = len(imgs) > 8
+    if editorial and not long_job:
         for lk in looks:
             try:
                 return _slideshow_editorial(
@@ -149,7 +150,7 @@ def montar_slideshow(
         try:
             return _slideshow_concat(
                 ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec,
-                fps=fps, crf=crf, preset=preset, look=lk,
+                fps=fps, crf=crf, preset=preset, look=lk, motion=motion, transition=transition,
             )
         except Exception as e:
             last = e
@@ -157,7 +158,7 @@ def montar_slideshow(
         raise last
     return _slideshow_concat(
         ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec,
-        fps=fps, crf=crf, preset=preset, look="none",
+        fps=fps, crf=crf, preset=preset, look="none", motion=motion, transition=transition,
     )
 
 
@@ -414,6 +415,62 @@ def _slideshow_fades(
     return output_path
 
 
+def _concat_edit_vf(
+    *,
+    n: int,
+    seg: float,
+    width: int,
+    height: int,
+    fps: int,
+    look: str,
+    motion: str,
+    transition: str,
+    total: float,
+) -> str:
+    """One-pass pan/drift + per-still fades. Cheap enough for a 10 min Vercel encode."""
+    fps = max(12, min(30, int(fps)))
+    pw = int(width * 1.08) // 2 * 2
+    ph = int(height * 1.08) // 2 * 2
+    p = f"min(mod(t\\,{seg:.3f})/{max(seg, 0.01):.3f}\\,1)"
+    m = str(motion or "mix").strip().lower()
+    if m == "pull":
+        x = f"(in_w-out_w)*(1-{p})"
+        y = f"(in_h-out_h)/2"
+    elif m == "pan":
+        x = f"(in_w-out_w)*{p}"
+        y = f"(in_h-out_h)/2"
+    elif m == "push":
+        x = f"(in_w-out_w)*{p}"
+        y = f"(in_h-out_h)*(0.25+0.5*{p})"
+    else:
+        x = f"(in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p})"
+        y = f"(in_h-out_h)*(0.35+0.30*sin(2*PI*{p}))"
+    fade = 0.28 if str(transition or "fade") == "fade" else 0.0
+    bits = [
+        f"scale={pw}:{ph}:force_original_aspect_ratio=increase",
+        f"crop={pw}:{ph}",
+        f"crop={width}:{height}:x='{x}':y='{y}'",
+        f"fps={fps}",
+        "format=yuv420p",
+    ]
+    vig = _vignette_vf(look)
+    if vig.startswith(","):
+        bits.append(vig[1:])
+    if fade:
+        s = max(seg, 0.8)
+        d = min(fade, s / 3)
+        bits.append(
+            "eq=brightness='if(lt(mod(t"
+            f"\\,{s:.3f}),{d:.2f}),-0.7*(1-mod(t\\,{s:.3f})/{d:.2f}),"
+            f"if(gt(mod(t\\,{s:.3f}),{s:.3f}-{d:.2f}),"
+            f"-0.7*(1-({s:.3f}-mod(t\\,{s:.3f}))/{d:.2f}),0))'"
+        )
+    fade_out_at = max(0.4, float(total) - 0.35)
+    bits.append("fade=t=in:st=0:d=0.28")
+    bits.append(f"fade=t=out:st={fade_out_at:.2f}:d=0.35")
+    return ",".join(bits)
+
+
 def _slideshow_concat(
     ff: str,
     imgs: list[Path],
@@ -429,6 +486,8 @@ def _slideshow_concat(
     crf: int = 17,
     preset: str = "veryfast",
     look: str = "soft",
+    motion: str = "mix",
+    transition: str = "fade",
 ) -> Path:
     list_file = output_path.with_suffix(".concat.txt")
     with list_file.open("w", encoding="utf-8") as fh:
@@ -442,12 +501,16 @@ def _slideshow_concat(
         "-i", str(audio),
     ]
     total = float(duration_sec or 0) or (seg * max(1, len(imgs)))
-    fade_out_at = max(0.4, total - 0.4)
-    vf = (
-        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
-        f"crop={width}:{height},fps={max(12, min(30, int(fps)))},format=yuv420p"
-        f"{_vignette_vf(look)},"
-        f"fade=t=in:st=0:d=0.35,fade=t=out:st={fade_out_at:.2f}:d=0.35"
+    vf = _concat_edit_vf(
+        n=len(imgs),
+        seg=seg,
+        width=width,
+        height=height,
+        fps=fps,
+        look=look,
+        motion=motion,
+        transition=transition,
+        total=total,
     )
     if music is not None:
         cmd.extend(["-stream_loop", "-1", "-i", str(music.resolve())])
@@ -472,7 +535,7 @@ def _slideshow_concat(
             str(output_path),
         ]
     )
-    limit = 45 if (duration_sec or 0) < 30 else 240
+    limit = 45 if (duration_sec or 0) < 30 else 250
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     list_file.unlink(missing_ok=True)
     if result.returncode != 0 or not mp4_is_complete(output_path):

@@ -1737,14 +1737,6 @@ function paintRender(ws, p) {
         const next = await api(`/api/projects/${id}/video/status`);
         paint(next);
         if (next.state === "running") {
-          if (next.need_continue && !paintRender._kicking) {
-            paintRender._kicking = true;
-            api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
-              .catch(() => {})
-              .finally(() => {
-                paintRender._kicking = false;
-              });
-          }
           paintRender._poll = setTimeout(tick, 3000);
         } else if (prev === "running" && (next.state === "done" || next.ready)) {
           toast("Video listo");

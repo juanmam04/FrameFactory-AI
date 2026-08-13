@@ -896,7 +896,7 @@ def create_app() -> FastAPI:
                 stamp = str(rec.get("updated_at") or started or "")
                 t0 = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
                 age = (datetime.now(timezone.utc) - t0).total_seconds()
-                if age > 480 and not need_continue:
+                if age > 360:
                     state = "error"
                     message = "Se cortó. Tocá Renderizar de nuevo."
                     if proj is not None:
@@ -974,7 +974,7 @@ def create_app() -> FastAPI:
         )
 
         p = load_project(project_id)
-        set_render_state(p, "running", message="Armando el video…")
+        set_render_state(p, "running", message="Armando el episodio (zoom, fundidos, música). Unos minutos.")
         if on_vercel():
             from src.documentary import cloud_sync
 
