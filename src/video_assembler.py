@@ -85,8 +85,10 @@ def montar_slideshow(
     music_volume: float = 0.08,
     fade_sec: float = 0.4,
     duration_sec: float | None = None,
+    motion: str = "mix",
+    transition: str = "fade",
 ) -> Path:
-    """Stills + narration + quiet bed. Concat on Vercel so it finishes before the platform kills the request."""
+    """Stills + narration + Ken Burns + fades. Falls back to concat if the editorial pass fails."""
     ff = ffmpeg_exe()
     if not ff:
         raise RuntimeError("No hay FFmpeg en este servidor.")
@@ -96,17 +98,165 @@ def montar_slideshow(
     if not audio_narracion.is_file() or audio_narracion.stat().st_size <= 0:
         raise RuntimeError("Falta la narración.")
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    seg = max(2.4, float(segundos_por_imagen))
+    seg = min(7.0, max(2.8, float(segundos_por_imagen)))
     fade = min(0.5, max(0.25, float(fade_sec)), seg / 3)
-    vol = max(0.0, min(0.25, float(music_volume)))
+    vol = max(0.0, min(0.22, float(music_volume)))
     music = musica_fondo if musica_fondo and musica_fondo.is_file() else None
+    try:
+        return _slideshow_editorial(
+            ff, imgs, audio_narracion, output_path, seg, width, height, music, vol,
+            duration_sec, motion, transition,
+        )
+    except Exception:
+        return _slideshow_concat(
+            ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec
+        )
 
-    # Per-still xfade with 70 inputs routinely exceeds Vercel's 5 min kill.
-    # Concat + a short fade on the whole piece finishes in time.
-    _ = fade
-    return _slideshow_concat(
-        ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec
+
+def _ken_burns(kind: str, index: int, frames: int, width: int, height: int) -> str:
+    styles = ("push", "pull", "pan")
+    k = kind if kind in styles else styles[index % 3]
+    d = max(8, int(frames))
+    if k == "pull":
+        z = "if(eq(on,1),1.14,max(1.0,zoom-0.0015))"
+        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps=15"
+    if k == "pan":
+        return (
+            f"zoompan=z=1.10:x='(iw-iw/zoom)*on/{max(1, d - 1)}':"
+            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps=15"
+        )
+    return (
+        f"zoompan=z='min(zoom+0.0015,1.14)':x='iw/2-(iw/zoom/2)':"
+        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps=15"
     )
+
+
+def _slideshow_editorial(
+    ff: str,
+    imgs: list[Path],
+    audio: Path,
+    output_path: Path,
+    seg: float,
+    width: int,
+    height: int,
+    music: Path | None,
+    vol: float,
+    duration_sec: float | None,
+    motion: str,
+    transition: str,
+) -> Path:
+    """Ken Burns + per-still fades, in batches so Vercel does not die on 70 inputs."""
+    import tempfile
+
+    fps = 15
+    frames = max(8, int(round(seg * fps)))
+    fade = 0.35 if transition == "fade" else 0.0
+    tmp = Path(tempfile.mkdtemp(prefix="ff-edit-"))
+    batches: list[Path] = []
+    chunk = 5
+    try:
+        for start in range(0, len(imgs), chunk):
+            part = imgs[start : start + chunk]
+            bout = tmp / f"b{start:03d}.mp4"
+            _encode_still_batch(ff, part, bout, seg, width, height, motion, fade, frames, start)
+            batches.append(bout)
+        video_only = tmp / "video.mp4"
+        if len(batches) == 1:
+            video_only = batches[0]
+        else:
+            lst = tmp / "batches.txt"
+            lst.write_text("".join(f"file '{b.resolve().as_posix()}'\n" for b in batches), encoding="utf-8")
+            cmd = [
+                ff, "-hide_banner", "-loglevel", "error", "-y",
+                "-f", "concat", "-safe", "0", "-i", str(lst),
+                "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
+                "-an", "-movflags", "+faststart", str(video_only),
+            ]
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+            if r.returncode != 0 or not mp4_is_complete(video_only):
+                raise RuntimeError(ffmpeg_error_text(r.stderr or "concat batches"))
+        _mix_voice_music(ff, video_only, audio, music, vol, output_path, duration_sec)
+        if not mp4_is_complete(output_path):
+            raise RuntimeError("editorial mix incomplete")
+        return output_path
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _encode_still_batch(
+    ff: str,
+    imgs: list[Path],
+    out: Path,
+    seg: float,
+    width: int,
+    height: int,
+    motion: str,
+    fade: float,
+    frames: int,
+    index0: int,
+) -> None:
+    parts: list[str] = []
+    for i in range(len(imgs)):
+        zp = _ken_burns(motion, index0 + i, frames, width, height)
+        fo = max(0.08, seg - fade) if fade else 0
+        fades = (
+            f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
+            if fade
+            else ""
+        )
+        parts.append(
+            f"[{i}:v]scale=3600:-1,{zp}{fades},format=yuv420p,setsar=1[v{i}]"
+        )
+    concat = "".join(f"[v{i}]" for i in range(len(imgs)))
+    fc = ";".join(parts) + f";{concat}concat=n={len(imgs)}:v=1:a=0[vout]"
+    cmd = [ff, "-hide_banner", "-loglevel", "error", "-y"]
+    for p in imgs:
+        cmd.extend(["-loop", "1", "-t", f"{seg:.3f}", "-i", str(p.resolve())])
+    cmd.extend(
+        [
+            "-filter_complex", fc, "-map", "[vout]",
+            "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage",
+            "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(out),
+        ]
+    )
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=80)
+    if r.returncode != 0 or not mp4_is_complete(out):
+        raise RuntimeError(ffmpeg_error_text(r.stderr or "still batch"))
+
+
+def _mix_voice_music(
+    ff: str,
+    video: Path,
+    audio: Path,
+    music: Path | None,
+    vol: float,
+    dest: Path,
+    duration_sec: float | None,
+) -> None:
+    cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(video), "-i", str(audio)]
+    if music is not None:
+        cmd.extend(["-stream_loop", "-1", "-i", str(music)])
+        cmd.extend(
+            [
+                "-filter_complex",
+                f"[1:a]volume=1[a1];[2:a]volume={vol:.3f}[a2];"
+                f"[a1][a2]amix=inputs=2:duration=first:dropout_transition=2[aout]",
+                "-map", "0:v", "-map", "[aout]",
+            ]
+        )
+    else:
+        cmd.extend(["-map", "0:v", "-map", "1:a"])
+    if duration_sec and float(duration_sec) > 0:
+        cmd.extend(["-t", f"{float(duration_sec):.3f}"])
+    cmd.extend(
+        [
+            "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
+            "-shortest", "-movflags", "+faststart", str(dest),
+        ]
+    )
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+    if r.returncode != 0 or not mp4_is_complete(dest):
+        raise RuntimeError(ffmpeg_error_text(r.stderr or "mix audio"))
 
 
 def _slideshow_fades(

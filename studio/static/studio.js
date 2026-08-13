@@ -1551,6 +1551,17 @@ function renderStatusView(st) {
     </div>`;
 }
 
+function grabEditFromDom() {
+  const sec = document.getElementById("edit-sec");
+  if (!sec) return null;
+  return {
+    seconds_per_image: Number(sec.value),
+    motion: document.getElementById("edit-motion")?.value || "mix",
+    transition: document.getElementById("edit-trans")?.value || "fade",
+    music_volume: Number(document.getElementById("edit-vol")?.value || 0.08),
+  };
+}
+
 function paintRender(ws, p) {
   const id = encodeURIComponent(p.id);
   if (paintRender._poll) {
@@ -1558,19 +1569,73 @@ function paintRender(ws, p) {
     paintRender._poll = null;
   }
   const paint = (st) => {
+    const fromDom = grabEditFromDom();
+    if (fromDom) paintRender._edit = fromDom;
+    const edit = paintRender._edit || (st.edit && Object.keys(st.edit).length ? st.edit : null) || (p.render && p.render.edit) || {
+      seconds_per_image: 6,
+      motion: "mix",
+      transition: "fade",
+      music_volume: 0.08,
+    };
+    paintRender._edit = edit;
     const kind = st.state || (st.ready ? "done" : "idle");
     paintRender._kind = kind;
     const done = kind === "done" || !!st.ready;
     const running = kind === "running";
     const captions = !!st.captions;
+    const hasPrev = !!(st.preview || paintRender._hasPreview);
+    if (st.preview) paintRender._hasPreview = true;
+    const opt = (v, cur) =>
+      String(v) === String(cur) || (!Number.isNaN(Number(v)) && Number(v) === Number(cur)) ? "selected" : "";
     ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Video</h2>
-      <p class="lead">Junta las imágenes con la narración y música bajita. El estado de acá te dice si está andando, si terminó o si falló.</p>
+      <p class="lead">Ninguna foto más de 7 segundos. Si hay pocas, se reciclan. Antes del episodio completo, probá el look.</p>
+
+      <div class="panel soft" style="margin:1rem 0 1.2rem">
+        <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
+        <p class="lead" style="margin:0 0 0.8rem">Zoom lento, transición entre fotos, música. Armá 20 segundos y mirá cómo queda.</p>
+        <div class="actions" style="flex-wrap:wrap;gap:0.7rem;align-items:end">
+          <label class="field" style="margin:0;min-width:8rem">Segundos por foto
+            <select id="edit-sec">
+              <option value="4" ${opt(4, edit.seconds_per_image)}>4s</option>
+              <option value="5" ${opt(5, edit.seconds_per_image)}>5s</option>
+              <option value="6" ${opt(6, edit.seconds_per_image)}>6s</option>
+              <option value="7" ${opt(7, edit.seconds_per_image)}>7s (máximo)</option>
+            </select>
+          </label>
+          <label class="field" style="margin:0;min-width:10rem">Movimiento
+            <select id="edit-motion">
+              <option value="mix" ${opt("mix", edit.motion)}>Mezcla (recomendado)</option>
+              <option value="push" ${opt("push", edit.motion)}>Zoom in lento</option>
+              <option value="pull" ${opt("pull", edit.motion)}>Zoom out lento</option>
+              <option value="pan" ${opt("pan", edit.motion)}>Paneo</option>
+            </select>
+          </label>
+          <label class="field" style="margin:0;min-width:9rem">Transición
+            <select id="edit-trans">
+              <option value="fade" ${opt("fade", edit.transition)}>Fundido</option>
+              <option value="cut" ${opt("cut", edit.transition)}>Corte seco</option>
+            </select>
+          </label>
+          <label class="field" style="margin:0;min-width:9rem">Música
+            <select id="edit-vol">
+              <option value="0.05" ${opt(0.05, edit.music_volume)}>Muy baja</option>
+              <option value="0.08" ${opt(0.08, edit.music_volume)}>Baja (doc)</option>
+              <option value="0.12" ${opt(0.12, edit.music_volume)}>Un poco más</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions" style="margin-top:0.8rem">
+          <button class="btn btn-soft" id="try-edit" ${running ? "disabled" : ""}>Probar 20 segundos</button>
+        </div>
+        ${hasPrev ? `<video controls src="/api/projects/${id}/video/preview?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.8rem 0 0"></video>` : ""}
+      </div>
+
       ${renderStatusView({ ...st, state: kind })}
       ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
       <div class="actions">
-        <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar video"}</button>
+        <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
         ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar video final</a>` : ""}
         ${captions ? `<a class="btn btn-ghost" href="/api/projects/${id}/video/captions?download=1" download="${esc(p.id)}-subs.mp4">Descargar con subtítulos</a>` : ""}
         <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
@@ -1586,7 +1651,32 @@ function paintRender(ws, p) {
       state.project = data.project;
       renderProject();
     };
+    $("#try-edit").onclick = async () => {
+      const body = grabEditFromDom() || paintRender._edit;
+      paintRender._edit = body;
+      try {
+        await api(`/api/projects/${id}/render/edit`, {
+          method: "PUT",
+          body: JSON.stringify(body),
+        });
+        await withBusy("Armando 20 segundos de prueba…", () =>
+          api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 90000 })
+        );
+        paintRender._hasPreview = true;
+        toast("Prueba lista — mirá el clip");
+        const nxt = await api(`/api/projects/${id}/video/status`);
+        paint({ ...nxt, preview: true });
+      } catch (e) {
+        toast(e.message);
+      }
+    };
     $("#render").onclick = async () => {
+      const body = grabEditFromDom() || paintRender._edit;
+      paintRender._edit = body;
+      api(`/api/projects/${id}/render/edit`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }).catch(() => {});
       paint({ state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions });
       api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 220000 }).catch(() => {});
       startPoll();

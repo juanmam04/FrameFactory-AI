@@ -170,6 +170,8 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
                 or "/masters/upload" in path
                 or path.endswith("/voice")
                 or path.endswith("/render")
+                or path.endswith("/render/preview")
+                or path.endswith("/render/edit")
                 or path.endswith("/captions")
                 or "/captions/" in path
                 or path.endswith("/youtube")
@@ -852,9 +854,11 @@ def create_app() -> FastAPI:
 
         local = project_dir(project_id) / "render" / "final.mp4"
         cap = captioned_video_path(project_id)
+        prev = project_dir(project_id) / "render" / "preview.mp4"
         ready = mp4_is_complete(local)
         captions = mp4_is_complete(cap)
-        if not ready or not captions:
+        preview = mp4_is_complete(prev)
+        if not ready or not captions or not preview:
             from src.documentary import cloud_sync
 
             if cloud_sync.configured():
@@ -864,6 +868,7 @@ def create_app() -> FastAPI:
                     rels = set()
                 ready = ready or "render/final.mp4" in rels
                 captions = captions or "render/final_captions.mp4" in rels
+                preview = preview or "render/preview.mp4" in rels
         rec: dict = {}
         proj = None
         try:
@@ -923,6 +928,8 @@ def create_app() -> FastAPI:
             "error": str(rec.get("error") or "") if state == "error" else "",
             "started_at": started,
             "updated_at": str(rec.get("updated_at") or ""),
+            "preview": bool(preview),
+            "edit": rec.get("edit") if isinstance(rec.get("edit"), dict) else {},
         }
 
     @app.get("/api/projects/{project_id}/video")
@@ -983,6 +990,63 @@ def create_app() -> FastAPI:
             except Exception:
                 pass
             raise HTTPException(400, _err(e)) from e
+
+    @app.put("/api/projects/{project_id}/render/edit")
+    def render_edit(project_id: str, body: RenderEditBody):
+        from src.documentary.assemble_service import save_edit_settings
+
+        try:
+            p = load_project(project_id)
+            edit = save_edit_settings(
+                p,
+                {
+                    "seconds_per_image": body.seconds_per_image,
+                    "motion": body.motion,
+                    "transition": body.transition,
+                    "music_volume": body.music_volume,
+                },
+            )
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
+            return {"ok": True, "edit": edit, "project": _project_full(load_project(project_id))}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/{project_id}/render/preview")
+    def render_preview(project_id: str):
+        from src.documentary.assemble_service import assemble_preview_clip
+
+        try:
+            assemble_preview_clip(load_project(project_id))
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(
+                        lambda: cloud_sync.push_paths(
+                            project_id, ["project.json", "render/preview.mp4"]
+                        )
+                    )
+            return {"ok": True, "preview": True, "project": _project_full(load_project(project_id))}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.get("/api/projects/{project_id}/video/preview")
+    def preview_video_file(project_id: str):
+        from src.video_assembler import mp4_is_complete
+
+        path = project_dir(project_id) / "render" / "preview.mp4"
+        if not mp4_is_complete(path):
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, "render/preview.mp4", force=True)
+        if mp4_is_complete(path):
+            return FileResponse(path, media_type="video/mp4")
+        raise HTTPException(404, "No hay prueba todavía")
 
     @app.get("/api/projects/{project_id}/video/captions")
     def captioned_video_file(project_id: str, download: int = 0):
@@ -1194,6 +1258,13 @@ class YoutubeBody(BaseModel):
 
 class CaptionsBody(BaseModel):
     srt: str = ""
+
+
+class RenderEditBody(BaseModel):
+    seconds_per_image: float | None = None
+    motion: str | None = None
+    transition: str | None = None
+    music_volume: float | None = None
 
 
 def _err(e: BaseException) -> str:
