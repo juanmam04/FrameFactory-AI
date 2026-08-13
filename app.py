@@ -13,7 +13,7 @@ try:
     from src.documentary.runtime import configure_workspace
 
     configure_workspace()
-    from studio.app import create_app
+    from studio.server import create_app
 
     app = create_app()
 except Exception as exc:  # noqa: BLE001
@@ -26,3 +26,10 @@ except Exception as exc:  # noqa: BLE001
     @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
     def _boot_failed(path: str = "") -> PlainTextResponse:
         return PlainTextResponse(_err, status_code=500)
+
+try:
+    from mangum import Mangum
+
+    handler = Mangum(app)
+except Exception:
+    handler = app

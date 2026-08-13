@@ -1,13 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/app.py" },
-    { "source": "/health", "destination": "/app.py" }
-  ],
   "functions": {
     "app.py": {
       "maxDuration": 60,
-      "includeFiles": "studio/**"
+      "includeFiles": "{studio/**,src/**,config/**}"
     }
   }
 }
