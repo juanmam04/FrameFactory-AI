@@ -1582,8 +1582,8 @@ function paintRender(ws, p) {
     paintRender._edit = edit;
     const kind = st.state || (st.ready ? "done" : "idle");
     paintRender._kind = kind;
-    const done = kind === "done" || !!st.ready;
     const running = kind === "running";
+    const done = !running && (kind === "done" || !!st.ready);
     const captions = !!st.captions;
     const hasPrev = !!(st.preview || paintRender._hasPreview);
     if (st.preview) paintRender._hasPreview = true;
@@ -1645,6 +1645,7 @@ function paintRender(ws, p) {
       ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
+        ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
         ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
         <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
@@ -1705,6 +1706,23 @@ function paintRender(ws, p) {
       api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 }).catch(() => {});
       startPoll();
     };
+    const stopBtn = $("#cancel-render");
+    if (stopBtn) {
+      stopBtn.onclick = async () => {
+        try {
+          await api(`/api/projects/${id}/render/cancel`, { method: "POST" });
+        } catch (e) {
+          toast(e.message);
+          return;
+        }
+        if (paintRender._poll) {
+          clearTimeout(paintRender._poll);
+          paintRender._poll = null;
+        }
+        toast("Frenado");
+        paint({ state: "idle", label: "Frenado", message: "Frenaste el render.", ready: false, captions: false });
+      };
+    }
     $("#home").onclick = () => {
       if (paintRender._poll) clearTimeout(paintRender._poll);
       location.hash = "";

@@ -172,6 +172,7 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
                 or path.endswith("/render")
                 or path.endswith("/render/preview")
                 or path.endswith("/render/edit")
+                or path.endswith("/render/cancel")
                 or path.endswith("/captions")
                 or "/captions/" in path
                 or path.endswith("/youtube")
@@ -907,11 +908,14 @@ def create_app() -> FastAPI:
                                 _sync_safe(lambda: _cs.push_paths(project_id, ["project.json"]))
             except Exception:
                 pass
-        if ready and state != "running":
+        if rec.get("cancelled") and state != "running":
+            state = "idle"
+            message = message or "Frenaste el render."
+        elif ready and state != "running":
             state = "done"
             message = message or "Terminado. Ya lo podés descargar."
         labels = {
-            "idle": "No iniciado",
+            "idle": "Frenado" if rec.get("cancelled") else "No iniciado",
             "running": "En curso",
             "done": "Terminado",
             "error": "Error",
@@ -957,7 +961,12 @@ def create_app() -> FastAPI:
 
     @app.post("/api/projects/{project_id}/render")
     def render_video(project_id: str):
-        from src.documentary.assemble_service import assemble_and_render, set_render_state
+        from src.documentary.assemble_service import (
+            RenderCancelled,
+            assemble_and_render,
+            render_was_cancelled,
+            set_render_state,
+        )
 
         p = load_project(project_id)
         set_render_state(p, "running", message="Armando el video…")
@@ -969,6 +978,8 @@ def create_app() -> FastAPI:
         try:
             assemble_and_render(load_project(project_id))
             p = load_project(project_id)
+            if render_was_cancelled(project_id) or bool((p.get("render") or {}).get("cancelled")):
+                return {"ok": True, "cancelled": True, "project": _project_full(p)}
             cap_ok = bool((p.get("captions") or {}).get("burned") or (p.get("checkpoints") or {}).get("captions_ready"))
             q = (p.get("render") or {}).get("height") if isinstance(p.get("render"), dict) else None
             q_label = "4K" if q and int(q) >= 2000 else "Full HD 1080p"
@@ -1000,7 +1011,17 @@ def create_app() -> FastAPI:
                         )
                     )
             return {"project": _project_full(p)}
+        except RenderCancelled:
+            p = load_project(project_id)
+            return {"ok": True, "cancelled": True, "project": _project_full(p)}
         except Exception as e:
+            try:
+                from src.documentary.assemble_service import render_was_cancelled as _was_stop
+
+                if _was_stop(project_id):
+                    return {"ok": True, "cancelled": True, "project": _project_full(load_project(project_id))}
+            except Exception:
+                pass
             try:
                 p = load_project(project_id)
                 set_render_state(p, "error", error=_err(e))
@@ -1012,6 +1033,23 @@ def create_app() -> FastAPI:
             except Exception:
                 pass
             raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/{project_id}/render/cancel")
+    def render_cancel(project_id: str):
+        from src.documentary.assemble_service import cancel_render
+
+        p = load_project(project_id)
+        cancel_render(p)
+        if on_vercel():
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                _sync_safe(
+                    lambda: cloud_sync.push_paths(
+                        project_id, ["project.json", "render/cancel.flag"]
+                    )
+                )
+        return {"ok": True, "cancelled": True, "project": _project_full(load_project(project_id))}
 
     @app.put("/api/projects/{project_id}/render/edit")
     def render_edit(project_id: str, body: RenderEditBody):

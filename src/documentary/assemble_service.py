@@ -9,7 +9,7 @@ from typing import Any
 from src.config_loader import get_background_music_path
 
 from src.documentary.import_images import ordered_images_for_render
-from src.documentary.project import _utc_now, append_log, project_dir, save_project, set_checkpoint
+from src.documentary.project import _utc_now, append_log, load_project, project_dir, save_project, set_checkpoint
 from src.video_assembler import montar_slideshow, mp4_is_complete, verificar_ffmpeg
 
 
@@ -28,8 +28,14 @@ def set_render_state(
         rec["started_at"] = now
         rec["finished_at"] = ""
         rec["error"] = ""
+        rec["cancelled"] = False
         rec["message"] = message or "Armando el video…"
         set_checkpoint(project, "render_ready", False)
+        try:
+            flag = project_dir(str(project.get("id") or "")) / "render" / "cancel.flag"
+            flag.unlink(missing_ok=True)
+        except Exception:
+            pass
     elif state == "done":
         rec["finished_at"] = now
         rec["error"] = ""
@@ -47,6 +53,55 @@ def set_render_state(
     project["render"] = rec
     save_project(project)
     return rec
+
+
+class RenderCancelled(Exception):
+    """User stopped the render."""
+
+
+def cancel_flag_path(project_id: str) -> Path:
+    return project_dir(project_id) / "render" / "cancel.flag"
+
+
+def cancel_render(project: dict[str, Any]) -> dict[str, Any]:
+    pid = str(project["id"])
+    flag = cancel_flag_path(pid)
+    flag.parent.mkdir(parents=True, exist_ok=True)
+    flag.write_text("1", encoding="utf-8")
+    rec = set_render_state(project, "idle", message="Frenaste el render.")
+    rec["cancelled"] = True
+    rec["state"] = "idle"
+    rec["message"] = "Frenaste el render."
+    project["render"] = rec
+    save_project(project)
+    append_log(pid, "render cancelled by user")
+    return rec
+
+
+def render_was_cancelled(project_id: str) -> bool:
+    flag = cancel_flag_path(project_id)
+    if flag.is_file():
+        return True
+    try:
+        from src.documentary import cloud_sync
+
+        if cloud_sync.configured():
+            cloud_sync.pull_one(project_id, "render/cancel.flag", force=True)
+            if flag.is_file():
+                return True
+            cloud_sync.pull_one(project_id, "project.json", force=True)
+        p = load_project(project_id)
+        rec = p.get("render") if isinstance(p.get("render"), dict) else {}
+        if rec.get("cancelled"):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _abort_if_cancelled(project_id: str) -> None:
+    if render_was_cancelled(project_id):
+        raise RenderCancelled("Frenaste el render.")
 
 
 MAX_STILL_SEC = 7.0
@@ -204,6 +259,7 @@ def assemble_and_render(
         editorial = True
         quality_label = "4K"
     try:
+        _abort_if_cancelled(pid)
         try:
             from src.documentary.captions import captions_srt_path, generate_captions
 
@@ -230,6 +286,7 @@ def assemble_and_render(
             editorial=editorial,
             look=str(edit.get("look") or "soft"),
         )
+        _abort_if_cancelled(pid)
         if not mp4_is_complete(Path(result)):
             Path(result).unlink(missing_ok=True)
             raise RuntimeError("El render no terminó bien (video incompleto). Probá de nuevo.")
@@ -249,6 +306,7 @@ def assemble_and_render(
             burned = True
         except Exception as cap_err:
             append_log(pid, f"captions burn skip: {cap_err}")
+        _abort_if_cancelled(pid)
         set_checkpoint(project, "assembly_ready", True)
         set_checkpoint(project, "render_ready", True)
         if burned:
@@ -284,6 +342,9 @@ def assemble_and_render(
         append_log(pid, f"render ok → {result} {quality_label} captions={burned}")
         log_path.write_text(f"OK {result}\n", encoding="utf-8")
         return Path(result)
+    except RenderCancelled:
+        append_log(pid, "render stopped by user")
+        raise
     except Exception as e:
         append_log(pid, f"render FAIL: {e}")
         log_path.write_text(f"FAIL {e}\n", encoding="utf-8")
