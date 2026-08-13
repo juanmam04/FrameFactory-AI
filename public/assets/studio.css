@@ -72,22 +72,19 @@ button { cursor: pointer; }
 }
 .top-brand {
   display: flex;
-  align-items: center;
-  gap: 0.7rem;
+  flex-direction: column;
+  justify-content: center;
   cursor: pointer;
   min-width: 180px;
+  line-height: 1.15;
 }
-.top-brand strong { display: block; font-size: 0.95rem; letter-spacing: -0.02em; }
-.top-brand small { display: block; color: var(--muted); font-size: 0.72rem; }
-.mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-  object-fit: cover;
+.top-brand strong {
   display: block;
-  box-shadow: 0 8px 18px rgba(15, 23, 32, 0.16);
-  background: #0B1220;
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
+.top-brand small { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.12rem; }
 .top-nav { display: flex; gap: 0.35rem; flex: 1; }
 .nav-link {
   border: 0;
