@@ -9,7 +9,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -508,6 +508,15 @@ def create_app() -> FastAPI:
             raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
+
+    @app.get("/api/projects/{project_id}/images/{number}")
+    def image_file(project_id: str, number: int):
+        root = project_dir(project_id) / "images"
+        for name in (f"{int(number):03d}.png", f"{int(number):03d}.jpg", f"{int(number):03d}.jpeg", f"{int(number):03d}.webp"):
+            path = root / name
+            if path.is_file():
+                return FileResponse(path)
+        raise HTTPException(404, f"No image {int(number):03d}")
 
     @app.post("/api/projects/{project_id}/images/import")
     def images_import(project_id: str, body: ImportBody):

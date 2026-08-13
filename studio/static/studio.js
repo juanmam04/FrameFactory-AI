@@ -74,6 +74,61 @@ function esc(s) {
     .replaceAll('"', "&quot;");
 }
 
+function pad3(n) {
+  return String(n).padStart(3, "0");
+}
+
+function slotCard(v, projectId) {
+  const n = Number(v.number);
+  const id = pad3(n);
+  const has = String(v.status || "").toUpperCase() === "READY";
+  const desc = v.description || v.action || v.acquisition_note || "";
+  const kind = v.visual_type === "FLOW_REENACTMENT" ? "Google Flow" : "documento / foto real";
+  return `
+    <article class="shot" data-slot="${n}">
+      <strong>Imagen ${id}</strong>
+      <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)}</div>
+      <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
+      ${has ? `<img class="slot-thumb" src="/api/projects/${encodeURIComponent(projectId)}/images/${n}" alt="${id}" />` : ""}
+      <label class="btn ${has ? "btn-soft" : "btn-primary"} slot-upload">
+        ${has ? "Cambiar esta" : "Subir esta imagen"}
+        <input type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" data-slot-file="${n}" hidden />
+      </label>
+    </article>`;
+}
+
+function bindSlotUploads(root, projectId) {
+  if (!root) return;
+  root.querySelectorAll(".slot-thumb").forEach((img) => {
+    img.onerror = () => img.remove();
+  });
+  root.querySelectorAll("[data-slot-file]").forEach((inp) => {
+    inp.onchange = async () => {
+      const n = Number(inp.dataset.slotFile);
+      const file = inp.files && inp.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append("files", file, file.name);
+      fd.append("force_number", String(n));
+      try {
+        const data = await withBusy(`Subiendo ${pad3(n)}…`, () =>
+          api(`/api/projects/${encodeURIComponent(projectId)}/images/upload`, {
+            method: "POST",
+            body: fd,
+          })
+        );
+        state.project = data.project;
+        toast(`${pad3(n)} lista — no hace falta renombrar`);
+        renderProject();
+      } catch (e) {
+        toast(e.message);
+      } finally {
+        inp.value = "";
+      }
+    };
+  });
+}
+
 function setNav(view) {
   document.querySelectorAll(".nav-link").forEach((b) => {
     b.classList.toggle("active", b.dataset.go === view || (view === "project" && b.dataset.go === "library"));
@@ -773,18 +828,11 @@ async function paintFlow(ws, p) {
         <h2 style="margin:0 0 0.5rem">Qué tenés que hacer acá (paso a paso)</h2>
         <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
           <li><strong>Pedí las imágenes en Google Flow</strong> (abajo hay grupos listos para copiar).</li>
-          <li><strong>Descargalas</strong> a tu compu.</li>
-          <li><strong>Renombrialas</strong> tipo <code>001.png</code>, <code>002.png</code>…</li>
-          <li><strong>Subilas acá</strong> — tocá el botón negro grande.</li>
+          <li><strong>Descargalas</strong> a tu compu — el nombre que ponga Flow no importa.</li>
+          <li><strong>Subí cada una en su recuadro</strong> (botón “Subir esta imagen”). No hace falta renombrar.</li>
         </ol>
-        <div class="actions" style="margin-top:1rem">
-          <button class="btn btn-primary" id="to-images" style="font-size:1.05rem;padding:0.85rem 1.4rem">
-            Ya las tengo → Subir imágenes
-          </button>
-        </div>
         <p class="lead" style="margin-top:0.75rem;margin-bottom:0">
-          Estás en el paso <strong>5 Pedir imgs</strong>. La subida está en el paso <strong>6 Subir imgs</strong>
-          (o usá el botón de arriba).
+          Abajo, en cada grupo, está el botón de cada still.
         </p>
       </div>
 
@@ -793,6 +841,7 @@ async function paintFlow(ws, p) {
       </p>
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
+        <button class="btn btn-ghost" id="to-images">Ver todas juntas</button>
       </div>
 
       <h2 style="margin-top:1.6rem">A) Caras / lugares que se repiten</h2>
@@ -800,16 +849,12 @@ async function paintFlow(ws, p) {
       <div class="list" id="masters"></div>
 
       <h2 style="margin-top:1.6rem">B) Grupos para pedir en Google Flow</h2>
-      <p class="lead">Cada grupo = ~10 imágenes. Copiá el texto → pegalo en Google Flow → generá → descargá.</p>
+      <p class="lead">Cada grupo = ~10 imágenes. Copiá el texto → pegalo en Google Flow → descargá → subí cada still en su botón. Sin renombrar.</p>
       <div class="list" id="batches"></div>
 
       <h2 style="margin-top:1.6rem">C) Cosas reales (no pedirle esto a la IA)</h2>
-      <p class="lead">Documentos, gráficos, etc. Los conseguís vos y los subís en el paso 6.</p>
+      <p class="lead">Documentos, gráficos, etc. Subilos en el recuadro de esa imagen.</p>
       <div class="list" id="nonflow"></div>
-
-      <div class="actions" style="margin-top:1.5rem">
-        <button class="btn btn-primary" id="to-images-2">Ir a subir imágenes</button>
-      </div>
     </div>`;
 
   const goImages = async () => {
@@ -821,8 +866,8 @@ async function paintFlow(ws, p) {
     renderProject();
   };
   $("#rebuild").onclick = () => rebuildFlow();
-  $("#to-images").onclick = goImages;
-  $("#to-images-2").onclick = goImages;
+  const toImagesBtn = $("#to-images");
+  if (toImagesBtn) toImagesBtn.onclick = goImages;
 
   $("#masters").innerHTML = masters.length
     ? masters
@@ -854,20 +899,22 @@ async function paintFlow(ws, p) {
           const refs = (b.references_needed || []).map((r) => r.name || r.id).join(", ") || "ninguna especial";
           const totalB = b.count || (b.visual_numbers || []).length;
           const done = b.imported || 0;
-          const nums = (b.visual_numbers || []).map((n) => String(n).padStart(3, "0")).join(", ");
+          const byNum = Object.fromEntries(visuals.map((v) => [Number(v.number), v]));
+          const slots = (b.visual_numbers || [])
+            .map((n) => slotCard(byNum[Number(n)] || { number: n, visual_type: "FLOW_REENACTMENT" }, p.id))
+            .join("");
           return `
       <article class="shot" id="batch-${bi}">
         <strong>Grupo ${bi + 1}</strong> — ${totalB} imágenes
-        <div class="ff-episode-meta">Números: ${esc(nums)}</div>
         <div class="ff-episode-meta">Referencias a adjuntar en Flow: ${esc(refs)}</div>
         <div class="ff-episode-meta">Subidas: <strong>${done} / ${totalB}</strong></div>
         <div class="actions">
-          <button class="btn btn-primary" data-copy-batch="${bi}">2) Copiar pedido a Google Flow</button>
-          <button class="btn btn-ghost" data-expand-batch="${bi}">Ver detalle</button>
-          <button class="btn btn-accent" data-go-upload="${bi}">3) Ya las bajé → subir</button>
+          <button class="btn btn-primary" data-copy-batch="${bi}">Copiar pedido a Google Flow</button>
+          <button class="btn btn-ghost" data-expand-batch="${bi}">Editar textos</button>
         </div>
         <pre class="hidden" id="batch-prompt-${bi}" style="max-height:220px;overflow:auto;margin-top:0.6rem">${esc(b.prompt || "")}</pre>
         <div class="hidden" id="batch-expand-${bi}" style="margin-top:0.6rem"></div>
+        <div class="list" style="margin-top:0.8rem">${slots}</div>
       </article>`;
         })
         .join("")
@@ -884,9 +931,7 @@ async function paintFlow(ws, p) {
       }
     };
   });
-  $("#batches").querySelectorAll("[data-go-upload]").forEach((btn) => {
-    btn.onclick = goImages;
-  });
+  bindSlotUploads($("#batches"), p.id);
 
   $("#batches").querySelectorAll("[data-expand-batch]").forEach((btn) => {
     btn.onclick = () => {
@@ -942,27 +987,9 @@ async function paintFlow(ws, p) {
   });
 
   $("#nonflow").innerHTML = nonFlow.length
-    ? nonFlow
-        .slice(0, 40)
-        .map(
-          (v) => `
-      <article class="shot">
-        <strong>Imagen ${String(v.number).padStart(3, "0")}</strong> — documento / gráfico real
-        <div class="ff-episode-meta">${esc(v.description || v.acquisition_note || "")}</div>
-        <div>${v.status === "READY" ? "✓ Ya la subiste" : "○ Todavía falta — subila en el paso 6"}</div>
-        <button class="btn btn-soft" data-upload-one="${v.number}">Subir esta imagen</button>
-      </article>`
-        )
-        .join("")
+    ? nonFlow.map((v) => slotCard(v, p.id)).join("")
     : `<div class="notice">En este episodio casi todo se pide a Google Flow.</div>`;
-
-  $("#nonflow").querySelectorAll("[data-upload-one]").forEach((btn) => {
-    btn.onclick = async () => {
-      await goImages();
-      // force_num will be filled if possible after paint — toast hint
-      toast(`En Subir imgs, poné el número ${String(btn.dataset.uploadOne).padStart(3, "0")} y subí el archivo`);
-    };
-  });
+  bindSlotUploads($("#nonflow"), p.id);
 }
 
 async function rebuildFlow() {
@@ -982,94 +1009,42 @@ async function rebuildFlow() {
 
 async function paintImages(ws, p) {
   let sync = { ready: 0, expected: 0, missing: [] };
+  let visuals = [];
   try {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/visual-plan`);
     sync = data.sync || sync;
+    visuals = (data.plan && data.plan.visuals) || [];
     if (data.project) state.project = data.project;
   } catch {
     /* pack may be missing */
   }
-  const missList = sync.missing || [];
-  const miss = missList.slice(0, 24).join(", ");
   const ready = sync.ready || 0;
   const expected = sync.expected || 0;
+  const readySet = new Set(sync.ready_ids || []);
+  visuals = visuals.map((v) => ({
+    ...v,
+    status: readySet.has(pad3(v.number)) || String(v.status || "").toUpperCase() === "READY" ? "READY" : "MISSING",
+  }));
 
   ws.innerHTML = `
     <div class="panel workspace">
       <div class="panel soft" style="border:2px solid var(--ink,#111);margin-bottom:1.2rem">
-        <h2 style="margin-top:0">Acá se suben las imágenes</h2>
-        <p class="lead">Progreso: <strong>${ready} de ${expected}</strong> listas</p>
-        ${miss ? `<p class="lead">Todavía faltan: <code>${esc(miss)}</code>${missList.length > 24 ? "…" : ""}</p>` : `<p class="lead">✓ No falta ninguna.</p>`}
+        <h2 style="margin-top:0">Una imagen, un botón</h2>
+        <p class="lead">Progreso: <strong>${ready} de ${expected}</strong></p>
+        <p class="lead">Tocá <strong>Subir esta imagen</strong> en el recuadro que corresponda y elegí el archivo. El nombre no importa.</p>
       </div>
-
-      <div class="panel soft" style="margin:1rem 0;background:rgba(0,128,128,0.08)">
-        <h2 style="margin-top:0">Subir varias de una</h2>
-        <ol style="padding-left:1.2rem;line-height:1.5">
-          <li>En Google Flow, descargá las imágenes.</li>
-          <li>Renombrialas: <code>001.png</code>, <code>003.png</code>, etc. (el número del plan).</li>
-          <li>Elegilas acá abajo y tocá <strong>Subir</strong>.</li>
-        </ol>
-        <input type="file" id="file-upload" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple style="margin:0.8rem 0;display:block" />
-        <div class="actions">
-          <button class="btn btn-primary" id="btn-upload" style="font-size:1.05rem;padding:0.85rem 1.4rem">Subir las que elegí</button>
-        </div>
-      </div>
-
-      <div class="panel soft" style="margin:1rem 0">
-        <h2 style="margin-top:0">Subir / reemplazar UNA sola</h2>
-        <p class="lead">Si una salió mal o falta solo la 023:</p>
-        <div class="field">
-          <label>Número de la imagen (ejemplo: 23)</label>
-          <input id="force-num" type="number" min="1" placeholder="23" style="max-width:8rem" />
-        </div>
-        <input type="file" id="file-one" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" style="margin:0.6rem 0;display:block" />
-        <div class="actions">
-          <button class="btn btn-accent" id="btn-replace">Subir esta</button>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-ghost" id="refresh-sync">Actualizar contador</button>
+      <div class="list" id="slots">${
+        visuals.length
+          ? visuals.map((v) => slotCard(v, p.id)).join("")
+          : `<div class="notice">Todavía no hay plan. Volvé a “Pedir imgs”.</div>`
+      }</div>
+      <div class="actions" style="margin-top:1.2rem">
         <button class="btn btn-ghost" id="back-flow">Volver a pedir imágenes</button>
         <button class="btn btn-primary" id="to-voice" ${ready < 1 ? "disabled" : ""}>Seguir a la voz</button>
       </div>
     </div>`;
 
-  const uploadFiles = async (fileList, forceNumber = null) => {
-    const files = [...(fileList || [])];
-    if (!files.length) return toast("Elegí al menos una imagen");
-    const fd = new FormData();
-    files.forEach((f) => fd.append("files", f, f.name));
-    if (forceNumber != null && forceNumber !== "") {
-      fd.append("force_number", String(Number(forceNumber)));
-    }
-    try {
-      const data = await withBusy(`Subiendo ${files.length}…`, () =>
-        api(`/api/projects/${encodeURIComponent(p.id)}/images/upload`, {
-          method: "POST",
-          body: fd,
-        })
-      );
-      state.project = data.project;
-      const r = data.report || {};
-      if (r.invalid_files?.length) {
-        toast(`Algunas no se entendieron (poneles tipo 001.png): ${r.invalid_files.slice(0, 3).join(", ")}`);
-      } else {
-        toast(`Listo: ${data.sync?.ready || 0} de ${data.sync?.expected || 0} imágenes`);
-      }
-      renderProject();
-    } catch (e) {
-      toast(e.message);
-    }
-  };
-
-  $("#btn-upload").onclick = () => uploadFiles($("#file-upload").files);
-  $("#btn-replace").onclick = () => {
-    const n = $("#force-num").value;
-    if (!n) return toast("Escribí el número (ej. 23)");
-    uploadFiles($("#file-one").files, n);
-  };
-  $("#refresh-sync").onclick = () => renderProject();
+  bindSlotUploads($("#slots"), p.id);
   $("#back-flow").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
