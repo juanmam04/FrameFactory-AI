@@ -146,6 +146,20 @@ def caption_font_path() -> Path | None:
     return None
 
 
+def srt_to_vtt(srt: str) -> str:
+    lines = ["WEBVTT", ""]
+    for cue in srt_to_cues(srt):
+        start = str(cue.get("start") or "0").replace(",", ".")
+        end = str(cue.get("end") or "0").replace(",", ".")
+        text = str(cue.get("text") or "").strip()
+        if not text:
+            continue
+        lines.append(f"{start} --> {end}")
+        lines.append(text)
+        lines.append("")
+    return "\n".join(lines).strip() + "\n"
+
+
 def apply_captions_file(
     src: Path,
     srt: Path,
@@ -155,7 +169,7 @@ def apply_captions_file(
     crf: int = 17,
     preset: str = "veryfast",
 ) -> Path:
-    """Burn English SRT onto an mp4. Prefers drawtext (works on Vercel), then libass, then PNG overlays."""
+    """Burn English captions onto an mp4. libass first (one filter), then PNG, then drawtext."""
     import subprocess
 
     ff = ffmpeg_exe()
@@ -171,11 +185,12 @@ def apply_captions_file(
     cues = srt_to_cues(srt.read_text(encoding="utf-8"))
     if not cues:
         raise RuntimeError("El SRT no tiene carteles.")
-    fontsize = 72 if width >= 3000 else 42 if width >= 1600 else 28
-    font = caption_font_path()
     last_err = ""
-    if font is not None:
-        vf = _drawtext_filter(cues, font, fontsize)
+    ass = srt.with_suffix(".ass")
+    fontsdir = _prepare_font_dir()
+    try:
+        ass.write_text(_ass_from_cues(cues, width=width), encoding="utf-8")
+        vf = _subtitles_filter(ass, fontsdir=fontsdir)
         cmd = [
             ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
             "-vf", vf,
@@ -185,29 +200,43 @@ def apply_captions_file(
             "-movflags", "+faststart",
             str(dest),
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
         if result.returncode == 0 and mp4_is_complete(dest):
             return dest
-        last_err = ffmpeg_error_text(result.stderr or result.stdout or "drawtext")
+        last_err = ffmpeg_error_text(result.stderr or result.stdout or "subtitles")
         dest.unlink(missing_ok=True)
-    cmd = [
-        ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
-        "-vf", _subtitles_filter(srt),
-        "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
-        "-pix_fmt", "yuv420p",
-        "-c:a", "copy",
-        "-movflags", "+faststart",
-        str(dest),
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-    if result.returncode == 0 and mp4_is_complete(dest):
-        return dest
-    last_err = ffmpeg_error_text(result.stderr or result.stdout or last_err or "subtitles")
-    dest.unlink(missing_ok=True)
-    _burn_with_overlays(ff, src, dest, cues, width=width, crf=crf, preset=preset)
-    if not mp4_is_complete(dest):
-        raise RuntimeError("No se pudieron quemar los subtítulos: " + last_err)
-    return dest
+    except Exception as e:
+        last_err = str(e)[:400]
+        dest.unlink(missing_ok=True)
+    try:
+        _burn_with_overlays(ff, src, dest, cues, width=width, crf=crf, preset=preset)
+        if mp4_is_complete(dest):
+            return dest
+    except Exception as e:
+        last_err = str(e)[:400] or last_err
+        dest.unlink(missing_ok=True)
+    font = caption_font_path()
+    if font is not None:
+        try:
+            vf = _drawtext_filter(_merge_cues(cues, max_n=36), font, 52 if width >= 1600 else 32)
+            cmd = [
+                ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
+                "-vf", vf,
+                "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+                "-pix_fmt", "yuv420p",
+                "-c:a", "copy",
+                "-movflags", "+faststart",
+                str(dest),
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=160)
+            if result.returncode == 0 and mp4_is_complete(dest):
+                return dest
+            last_err = ffmpeg_error_text(result.stderr or result.stdout or last_err or "drawtext")
+            dest.unlink(missing_ok=True)
+        except Exception as e:
+            last_err = str(e)[:400] or last_err
+            dest.unlink(missing_ok=True)
+    raise RuntimeError("No se pudieron quemar los subtítulos: " + (last_err or "ffmpeg failed"))
 
 
 def burn_into_final(project: dict[str, Any], *, width: int = 1920) -> Path:
@@ -299,10 +328,72 @@ def _fmt(seconds: float) -> str:
     return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
 
-def _subtitles_filter(srt: Path) -> str:
+def _prepare_font_dir() -> Path | None:
+    import shutil
+
+    src = caption_font_path()
+    if src is None:
+        return None
+    dest_dir = Path("/tmp/ff-fonts") if Path("/tmp").is_dir() else src.parent
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / src.name
+    try:
+        if not dest.is_file() or dest.stat().st_size != src.stat().st_size:
+            shutil.copy2(src, dest)
+    except Exception:
+        return src.parent
+    return dest_dir
+
+
+def _ass_clock(ts: str) -> str:
+    sec = _srt_sec(ts)
+    h = int(sec // 3600)
+    m = int((sec % 3600) // 60)
+    s = sec % 60
+    return f"{h}:{m:02d}:{s:05.2f}"
+
+
+def _ass_from_cues(cues: list[dict[str, Any]], *, width: int = 1920) -> str:
+    fs = 64 if width >= 3000 else 48 if width >= 1600 else 32
+    play_w = 3840 if width >= 3000 else 1920
+    play_h = 2160 if width >= 3000 else 1080
+    lines = [
+        "[Script Info]",
+        "ScriptType: v4.00+",
+        f"PlayResX: {play_w}",
+        f"PlayResY: {play_h}",
+        "WrapStyle: 0",
+        "ScaledBorderAndShadow: yes",
+        "",
+        "[V4+ Styles]",
+        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
+        f"Style: Default,Liberation Sans,{fs},&H00FFFFFF,&H000000FF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,4,0,2,70,70,78,1",
+        "",
+        "[Events]",
+        "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
+    ]
+    for cue in cues:
+        text = str(cue.get("text") or "").strip().replace("\n", r"\N")
+        text = text.replace("{", "(").replace("}", ")")
+        if not text:
+            continue
+        lines.append(
+            "Dialogue: 0,"
+            f"{_ass_clock(str(cue.get('start') or '0'))},"
+            f"{_ass_clock(str(cue.get('end') or '0'))},"
+            f"Default,,0,0,0,,{text}"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _subtitles_filter(srt: Path, fontsdir: Path | None = None) -> str:
     raw = srt.resolve().as_posix()
     escaped = raw.replace("\\", "/").replace(":", r"\:").replace("'", r"\'")
-    return f"subtitles='{escaped}':force_style='{_DOC_STYLE}'"
+    extra = ""
+    if fontsdir is not None and fontsdir.is_dir():
+        fd = fontsdir.resolve().as_posix().replace("\\", "/").replace(":", r"\:").replace("'", r"\'")
+        extra = f":fontsdir='{fd}'"
+    return f"subtitles='{escaped}'{extra}"
 
 
 def _fontfile_esc(path: Path) -> str:

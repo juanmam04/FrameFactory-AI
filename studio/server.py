@@ -10,7 +10,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -174,6 +174,7 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
                 or path.endswith("/render/edit")
                 or path.endswith("/render/cancel")
                 or path.endswith("/captions")
+                or path.endswith("/captions.vtt")
                 or "/captions/" in path
                 or path.endswith("/youtube")
             ):
@@ -1176,6 +1177,24 @@ def create_app() -> FastAPI:
         srt = path.read_text(encoding="utf-8") if path.is_file() else ""
         burned = bool((p.get("captions") or {}).get("burned"))
         return {"srt": srt, "cues": srt_to_cues(srt), "burned": burned}
+
+    @app.get("/api/projects/{project_id}/captions.vtt")
+    def captions_vtt(project_id: str):
+        from src.documentary.captions import captions_srt_path, srt_to_vtt
+
+        path = captions_srt_path(project_id)
+        if not path.is_file() or path.stat().st_size <= 0:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, "render/captions.srt")
+        if not path.is_file() or path.stat().st_size <= 0:
+            raise HTTPException(404, "No hay subtítulos todavía")
+        return Response(
+            srt_to_vtt(path.read_text(encoding="utf-8")),
+            media_type="text/vtt; charset=utf-8",
+            headers={"Cache-Control": "no-store"},
+        )
 
     @app.post("/api/projects/{project_id}/captions")
     def captions_generate(project_id: str):

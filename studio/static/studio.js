@@ -1804,10 +1804,12 @@ function paintRender(ws, p) {
 function paintSubs(ws, p) {
   const cap = p.captions || {};
   const burned = !!(cap.burned || p.checkpoints?.captions_ready);
+  const id = encodeURIComponent(p.id);
+  const vid = `/api/projects/${id}/video?t=${Date.now()}`;
   ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Subtítulos</h2>
-      <p class="lead">Inglés, abajo, ya van en el video que descargás. Acá podés corregir el texto y volver a quemarlos.</p>
+      <p class="lead">Inglés, abajo. En este player los ves ya. En el archivo de descarga van quemados cuando tocás Ponerlos en el video.</p>
       <div class="field">
         <label>Preview del texto (SRT)</label>
         <textarea id="srt-box" rows="12" style="font-family:ui-monospace,monospace;font-size:0.85rem" placeholder="Tocá Armar subtítulos…"></textarea>
@@ -1817,18 +1819,50 @@ function paintSubs(ws, p) {
         <button class="btn btn-ghost" id="save-subs">Guardar texto</button>
         <button class="btn btn-primary" id="burn-subs">Ponerlos en el video</button>
       </div>
-      ${burned ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : `<p class="lead">Si el render ya terminó, los subtítulos deberían estar en el archivo. Si no, tocá Ponerlos en el video.</p>`}
+      <div id="subs-wrap" style="position:relative;width:min(100%,720px);margin:0.5rem 0 1rem">
+        <video id="subs-player" controls playsinline style="width:100%;aspect-ratio:16/9;background:#111;border-radius:14px;display:block">
+          <source src="${vid}" type="video/mp4"/>
+        </video>
+        <div id="subs-overlay" style="position:absolute;left:8%;right:8%;bottom:14%;text-align:center;color:#fff;font:700 1.05rem/1.35 Plus Jakarta Sans,system-ui,sans-serif;text-shadow:0 0 4px #000,0 2px 8px #000;pointer-events:none"></div>
+      </div>
+      ${burned ? `<p class="lead">Ya están quemados en el archivo que descargás.</p>` : `<p class="lead">En el player se ven. Para YouTube tocá Ponerlos en el video y después descargá.</p>`}
       <div class="actions">
-        <a class="btn btn-primary" href="/api/projects/${encodeURIComponent(p.id)}/video?download=1" download="${esc(p.id)}.mp4">Descargar Full HD (con subtítulos)</a>
+        <a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar Full HD (con subtítulos)</a>
         <button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>
       </div>
     </div>`;
   const box = $("#srt-box");
+  const player = $("#subs-player");
+  const overlay = $("#subs-overlay");
+  const cueList = [];
+  const parseTs = (ts) => {
+    const p = String(ts || "0").replace(",", ".").split(":");
+    if (p.length !== 3) return 0;
+    return Number(p[0]) * 3600 + Number(p[1]) * 60 + Number(p[2]);
+  };
+  const paintCue = () => {
+    if (!player || !overlay) return;
+    const t = player.currentTime || 0;
+    const hit = cueList.find((c) => t >= c.start && t < c.end);
+    overlay.textContent = hit ? hit.text : "";
+  };
   api(`/api/projects/${encodeURIComponent(p.id)}/captions`)
     .then((data) => {
       if (box && data.srt) box.value = data.srt;
+      (data.cues || []).forEach((c) => {
+        cueList.push({
+          start: parseTs(c.start),
+          end: parseTs(c.end),
+          text: String(c.text || "").replace(/\n/g, " "),
+        });
+      });
+      paintCue();
     })
     .catch(() => {});
+  if (player) {
+    player.ontimeupdate = paintCue;
+    player.onseeked = paintCue;
+  }
   $("#gen-subs").onclick = async () => {
     try {
       const data = await withBusy("Armando subtítulos…", () =>
