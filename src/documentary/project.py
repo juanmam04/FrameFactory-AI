@@ -370,7 +370,7 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
         "research": has_research,
         "story": has_story_plan,
         "script": has_script and approved,
-        "flow": flow,
+        "flow": images_full or voice,
         "images": images_full or (images_partial and voice),
         "voice": voice,
         "music": voice,
@@ -390,9 +390,8 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
             if step == "script" and has_script and not approved:
                 current = "script"
                 break
-            if step == "images" and flow and not images_full:
-                current = "images"
-                break
+            if step == "images":
+                continue
             current = step
             break
     else:

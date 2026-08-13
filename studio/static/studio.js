@@ -752,21 +752,21 @@ function renderLibrary() {
 function renderProject() {
   const p = state.project;
   if (!p) return go("home");
-  const step = p.ui_step || "research";
-  const steps = ["topic", "research", "story", "script", "flow", "images", "voice", "music", "render", "subs", "publish"];
+  let step = p.ui_step || "research";
+  if (step === "images") step = "flow";
+  const steps = ["topic", "research", "story", "script", "flow", "voice", "music", "render", "subs", "publish"];
   const stepLabel = {
     topic: "1 Tema",
     research: "2 Info",
     story: "3 Historia",
     script: "4 Guion",
     flow: "5 Pedir imgs",
-    images: "6 Subir imgs",
-    voice: "7 Voz",
-    music: "8 Música",
-    render: "9 Video",
-    subs: "10 Subs",
-    publish: "11 YouTube",
-    done: "11 YouTube",
+    voice: "6 Voz",
+    music: "7 Música",
+    render: "8 Video",
+    subs: "9 Subs",
+    publish: "10 YouTube",
+    done: "10 YouTube",
   };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
@@ -801,8 +801,7 @@ function renderProject() {
   if (step === "research") return paintResearch(ws, p);
   if (step === "story") return paintStoryPlan(ws, p);
   if (step === "script") return paintScript(ws, p);
-  if (step === "flow") return paintFlow(ws, p);
-  if (step === "images") return paintImages(ws, p);
+  if (step === "flow" || step === "images") return paintFlow(ws, p);
   if (step === "voice") return paintVoice(ws, p);
   if (step === "music") return paintMusic(ws, p);
   if (step === "render") return paintRender(ws, p);
@@ -1135,8 +1134,8 @@ async function paintFlow(ws, p) {
       </p>
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
-        <button class="btn btn-ghost" id="to-images">Ver todas juntas</button>
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
+        <button class="btn btn-primary" id="to-voice">Seguir a la voz</button>
       </div>
 
       <h2 style="margin-top:1.6rem">A) Caras que se repiten</h2>
@@ -1152,17 +1151,19 @@ async function paintFlow(ws, p) {
       <div class="list" id="nonflow"></div>
     </div>`;
 
-  const goImages = () => {
-    state.project.ui_step = "images";
-    renderProject();
-    api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
-      method: "PATCH",
-      body: JSON.stringify({ step: "images" }),
-    }).catch((e) => toast(e.message));
-  };
   $("#rebuild").onclick = () => rebuildFlow();
-  const toImagesBtn = $("#to-images");
-  if (toImagesBtn) toImagesBtn.onclick = goImages;
+  $("#to-voice").onclick = async () => {
+    try {
+      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+        method: "PATCH",
+        body: JSON.stringify({ step: "voice" }),
+      });
+      state.project = data.project;
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
 
   $("#masters").innerHTML = masters.length
     ? masters.map((m) => masterCard(m, p.id)).join("")

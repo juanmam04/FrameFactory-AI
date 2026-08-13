@@ -418,6 +418,8 @@ def create_app() -> FastAPI:
         if body.step not in STEPS:
             raise HTTPException(400, "Invalid step")
         step = body.step
+        if step == "images":
+            step = "flow"
         # Cannot jump to Script without an approved Story Plan
         if step == "script" and not (p.get("story_plan_approved") or (p.get("story_plan") or {}).get("approved")):
             step = "story"
