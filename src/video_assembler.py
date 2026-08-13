@@ -158,16 +158,18 @@ def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps:
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     last = max(1, d - 1)
+    z_end = 1.07
+    inc = (z_end - 1.0) / last
     if k == "pull":
-        z = "if(eq(on,1),1.14,max(1.0,zoom-0.0024))"
+        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
         return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     if k == "pan":
         return (
-            f"zoompan=z=1.12:x='(iw-iw/zoom)*on/{last}':"
+            f"zoompan=z=1.05:x='(iw-iw/zoom)*on/{last}':"
             f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
         )
     return (
-        f"zoompan=z='min(zoom+0.0024,1.14)':x='iw/2-(iw/zoom/2)':"
+        f"zoompan=z='min(zoom+{inc:.6f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
         f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     )
 
@@ -195,7 +197,7 @@ def _slideshow_editorial(
 
     fps = max(12, min(30, int(fps)))
     frames = max(8, int(round(seg * fps)))
-    fade = 0.45 if transition == "fade" else 0.0
+    fade = 0.28 if transition == "fade" else 0.0
     tmp = Path(tempfile.mkdtemp(prefix="ff-edit-"))
     clips: list[Path] = []
     try:
