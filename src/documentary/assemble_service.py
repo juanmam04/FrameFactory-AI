@@ -119,7 +119,10 @@ def build_preview(project: dict[str, Any]) -> dict[str, Any]:
     _, sec_each = expand_stills_for_voice(images, duration, max_sec=float(edit["seconds_per_image"]))
     long_shots = []
     if duration and n and float(duration) / n > MAX_STILL_SEC:
-        long_shots.append(f"las fotos se reciclan para no pasar de {edit['seconds_per_image']:.0f}s cada una")
+        long_shots.append(
+            f"faltan fotos para cubrir la voz: la IA reutiliza las que encajan "
+            f"(máx {edit['seconds_per_image']:.0f}s cada una)"
+        )
     preview = {
         "image_count": n,
         "missing_images": missing,
@@ -127,9 +130,9 @@ def build_preview(project: dict[str, Any]) -> dict[str, Any]:
         "voice_duration_sec": duration,
         "seconds_per_image": sec_each,
         "warnings": long_shots
-        + ([f"missing {len(missing)} images"] if missing else [])
+        + ([f"faltan bloques {', '.join(missing[:8])}: se reutilizan fotos del relato"] if missing else [])
         + ([] if voice_ok else ["voice missing"]),
-        "ready_to_assemble": bool(n and voice_ok and not missing),
+        "ready_to_assemble": bool(n and voice_ok),
     }
     project["preview"] = preview
     save_project(project)
@@ -142,6 +145,7 @@ def _pull_render_assets(project_id: str) -> None:
     if not cloud_sync.configured():
         return
     cloud_sync.pull_one(project_id, "audio/narration.mp3")
+    cloud_sync.pull_one(project_id, "flow-pack/shot-list.json")
     cloud_sync.pull_prefix(project_id, "images/")
 
 
@@ -159,16 +163,9 @@ def assemble_and_render(
         raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
     pid = str(project["id"])
     preview = build_preview(project)
-    if preview["missing_images"] and not allow_missing:
-        miss = preview["missing_images"]
-        raise RuntimeError(
-            f"Falta el bloque de imágenes: " + ", ".join(miss[:40]) + ("…" if len(miss) > 40 else "")
-        )
     if not preview["voice_ok"]:
         raise RuntimeError("Voice is not ready yet. Generate voice before rendering.")
-
-    images, _missing = ordered_images_for_render(pid)
-    if not images:
+    if not preview["image_count"] and not allow_missing:
         raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
     audio = project_dir(pid) / "audio" / "narration.mp3"
@@ -176,7 +173,13 @@ def assemble_and_render(
     edit = edit_settings(project)
     music_vol = float(edit["music_volume"])
     duration = (project.get("voice") or {}).get("duration_sec")
-    images, sec = expand_stills_for_voice(images, duration, max_sec=float(edit["seconds_per_image"]))
+    from src.documentary.reuse_stills import plan_still_timeline
+
+    images, sec, reuse = plan_still_timeline(
+        project, duration, max_sec=float(edit["seconds_per_image"])
+    )
+    if not images:
+        raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
     out = project_dir(pid) / "render" / "final.mp4"
     # versioned backup if exists
@@ -250,6 +253,10 @@ def assemble_and_render(
             if burned
             else f"Terminado · {quality_label}. Los subtítulos no se pudieron quemar."
         )
+        filled = int((reuse or {}).get("filled") or 0)
+        if filled:
+            how = "IA" if (reuse or {}).get("method") == "ai" else "criterio"
+            msg += f" Reutilizó {filled} tomas con {how}."
         rec.update(
             {
                 "path": "render/final.mp4",
@@ -257,6 +264,7 @@ def assemble_and_render(
                 "width": width,
                 "height": height,
                 "fps": fps,
+                "reuse": reuse,
                 "state": "done",
                 "message": msg,
                 "error": "",

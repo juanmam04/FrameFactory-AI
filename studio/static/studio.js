@@ -1590,7 +1590,7 @@ function paintRender(ws, p) {
     ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Video</h2>
-      <p class="lead">Ninguna foto más de 7 segundos. El episodio se descarga en Full HD 1080p 24fps con subtítulos en inglés ya quemados. (Flow no da 4K; 4K se intenta en tu Mac.)</p>
+      <p class="lead">Ninguna foto más de 7 segundos. Si faltan para cubrir la voz, la IA reutiliza las que encajan con ese momento del relato — no recicla en orden. El archivo se descarga en Full HD 1080p con subtítulos en inglés ya quemados.</p>
 
       <div class="panel soft" style="margin:1rem 0 1.2rem">
         <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
