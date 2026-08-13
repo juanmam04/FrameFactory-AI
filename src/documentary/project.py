@@ -360,7 +360,7 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
     images_full = bool(cps.get("images_imported")) and (expected == 0 or ready >= expected)
     images_partial = bool(cps.get("images_imported"))
     voice = bool(cps.get("voice_ready"))
-    rendered = bool(cps.get("render_ready")) and (project_dir(str(project["id"])) / "render" / "final.mp4").exists()
+    rendered = bool(cps.get("render_ready"))
     captioned = bool(cps.get("captions_ready")) or (
         project_dir(str(project["id"])) / "render" / "final_captions.mp4"
     ).exists()

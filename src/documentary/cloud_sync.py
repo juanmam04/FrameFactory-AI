@@ -303,6 +303,31 @@ def list_rel_paths(project_id: str, prefix: str = "") -> list[str]:
             return [str(r[0]) for r in cur.fetchall()]
 
 
+def pull_prefix(project_id: str, prefix: str) -> int:
+    """Download every blob under prefix in one query (skips thumbs and files already on disk)."""
+    ensure_schema()
+    root = projects_root() / project_id
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT rel_path, content FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                (project_id, prefix + "%"),
+            )
+            rows = cur.fetchall()
+    written = 0
+    for rel, content in rows:
+        rel_s = str(rel)
+        if ".thumb." in rel_s:
+            continue
+        path = root / rel_s
+        if path.is_file() and path.stat().st_size > 0:
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(bytes(content))
+        written += 1
+    return written
+
+
 def pull_one(project_id: str, rel_path: str, *, force: bool = False) -> bool:
     """Download a single blob to disk. Used for still thumbnails."""
     ensure_schema()

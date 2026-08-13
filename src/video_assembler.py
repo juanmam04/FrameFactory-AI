@@ -84,8 +84,9 @@ def montar_slideshow(
     musica_fondo: Path | None = None,
     music_volume: float = 0.08,
     fade_sec: float = 0.4,
+    duration_sec: float | None = None,
 ) -> Path:
-    """Stills + narration + quiet bed + simple fades. Used on Vercel."""
+    """Stills + narration + quiet bed. Concat on Vercel so it finishes before the platform kills the request."""
     ff = ffmpeg_exe()
     if not ff:
         raise RuntimeError("No hay FFmpeg en este servidor.")
@@ -100,14 +101,12 @@ def montar_slideshow(
     vol = max(0.0, min(0.25, float(music_volume)))
     music = musica_fondo if musica_fondo and musica_fondo.is_file() else None
 
-    try:
-        return _slideshow_fades(
-            ff, imgs, audio_narracion, output_path, seg, width, height, fade, music, vol
-        )
-    except Exception:
-        return _slideshow_concat(
-            ff, imgs, audio_narracion, output_path, seg, width, height, music, vol
-        )
+    # Per-still xfade with 70 inputs routinely exceeds Vercel's 5 min kill.
+    # Concat + a short fade on the whole piece finishes in time.
+    _ = fade
+    return _slideshow_concat(
+        ff, imgs, audio_narracion, output_path, seg, width, height, music, vol, duration_sec
+    )
 
 
 def _slideshow_fades(
@@ -177,6 +176,7 @@ def _slideshow_concat(
     height: int,
     music: Path | None,
     vol: float,
+    duration_sec: float | None = None,
 ) -> Path:
     list_file = output_path.with_suffix(".concat.txt")
     with list_file.open("w", encoding="utf-8") as fh:
@@ -185,11 +185,17 @@ def _slideshow_concat(
             fh.write(f"duration {seg:.3f}\n")
         fh.write(f"file '{imgs[-1].resolve().as_posix()}'\n")
     cmd = [
-        ff, "-y",
+        ff, "-hide_banner", "-y",
         "-f", "concat", "-safe", "0", "-i", str(list_file),
         "-i", str(audio),
     ]
-    vf = f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},fps=24"
+    total = float(duration_sec or 0) or (seg * max(1, len(imgs)))
+    fade_out_at = max(0.4, total - 0.4)
+    vf = (
+        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+        f"crop={width}:{height},fps=15,format=yuv420p,"
+        f"fade=t=in:st=0:d=0.35,fade=t=out:st={fade_out_at:.2f}:d=0.35"
+    )
     if music is not None:
         cmd.extend(["-stream_loop", "-1", "-i", str(music.resolve())])
         cmd.extend(
@@ -205,14 +211,14 @@ def _slideshow_concat(
         cmd.extend(["-vf", vf, "-map", "0:v", "-map", "1:a"])
     cmd.extend(
         [
-            "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "28",
+            "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage", "-crf", "28",
             "-pix_fmt", "yuv420p",
             "-c:a", "aac", "-b:a", "128k",
-            "-shortest",
+            "-shortest", "-movflags", "+faststart",
             str(output_path),
         ]
     )
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=200)
     list_file.unlink(missing_ok=True)
     if result.returncode != 0 or not mp4_is_complete(output_path):
         if output_path.is_file() and not mp4_is_complete(output_path):

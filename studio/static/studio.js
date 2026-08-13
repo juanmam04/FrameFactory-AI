@@ -22,15 +22,26 @@ const $ = (sel, el = document) => el.querySelector(sel);
 const IMG_BOOT = Date.now();
 
 async function api(path, opts = {}) {
-  const headers = { ...(opts.headers || {}) };
+  const { timeoutMs, ...rest } = opts;
+  const headers = { ...(rest.headers || {}) };
   // Don't force JSON content-type for FormData uploads
-  if (!(opts.body instanceof FormData) && !headers["Content-Type"]) {
+  if (!(rest.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
-  const res = await fetch(path, {
-    ...opts,
-    headers,
-  });
+  let res;
+  try {
+    res = await fetch(path, {
+      ...rest,
+      headers,
+      signal: rest.signal || (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined),
+    });
+  } catch (e) {
+    const name = e && e.name;
+    if (name === "AbortError" || name === "TimeoutError") {
+      throw new Error("Se cortó la espera. Si el video quedó, va a aparecer para descargar.");
+    }
+    throw new Error(e?.message || "Failed to fetch");
+  }
   const raw = await res.text();
   let data = null;
   try {
@@ -1518,44 +1529,71 @@ function paintMusic(ws, p) {
 }
 
 function paintRender(ws, p) {
-  const done = p.checkpoints?.render_ready || p.ui_step === "done";
-  ws.innerHTML = `
+  const id = encodeURIComponent(p.id);
+  const paint = (done, captions) => {
+    ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Video</h2>
-      <p class="lead">${done ? "El episodio ya está armado." : "Junta las imágenes con la narración, música bajita y fundidos simples."}</p>
-      ${done ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
+      <p class="lead">${done ? "El episodio ya está armado. Descargalo acá." : "Junta las imágenes con la narración y música bajita. Tarda un par de minutos, no media hora."}</p>
+      ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="render">${done ? "Volver a renderizar" : "Renderizar video"}</button>
-        ${done ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video" download>Descargar MP4</a>` : ""}
+        ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar video final</a>` : ""}
+        ${captions ? `<a class="btn btn-ghost" href="/api/projects/${id}/video/captions?download=1" download="${esc(p.id)}-subs.mp4">Descargar con subtítulos</a>` : ""}
         <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
     </div>`;
-  $("#to-subs").onclick = async () => {
-    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
-      method: "PATCH",
-      body: JSON.stringify({ step: "subs" }),
-    });
-    state.project = data.project;
-    renderProject();
-  };
-  $("#render").onclick = async () => {
-    try {
-      const data = await withBusy("Armando el video… esto puede tardar un par de minutos", () =>
-        api(`/api/projects/${encodeURIComponent(p.id)}/render`, { method: "POST" })
-      );
+    $("#to-subs").onclick = async () => {
+      const data = await api(`/api/projects/${id}/step`, {
+        method: "PATCH",
+        body: JSON.stringify({ step: "subs" }),
+      });
       state.project = data.project;
-      toast("Video listo");
-      await refreshBootstrap();
       renderProject();
-    } catch (e) {
-      toast(e.message);
-    }
+    };
+    $("#render").onclick = async () => {
+      try {
+        overlay(true, "Armando el video… máximo unos 4 minutos");
+        let data = null;
+        try {
+          data = await api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 200000 });
+        } catch (e) {
+          overlay(true, "Buscando si el video igual quedó…");
+          for (let i = 0; i < 8; i += 1) {
+            await new Promise((r) => setTimeout(r, 4000));
+            const st = await api(`/api/projects/${id}/video/status`);
+            if (st.ready) {
+              const proj = await api(`/api/projects/${id}`);
+              data = { project: proj.project, recovered: true };
+              break;
+            }
+          }
+          if (!data) throw e;
+        }
+        if (data.project) state.project = data.project;
+        if (state.project.checkpoints) state.project.checkpoints.render_ready = true;
+        toast(data.recovered ? "El video sí había quedado. Descargalo." : "Video listo");
+        await refreshBootstrap();
+        renderProject();
+      } catch (e) {
+        toast(e.message === "Failed to fetch" ? "Se cortó la conexión. Tocá de nuevo: si quedó, aparece Descargar." : e.message);
+      } finally {
+        overlay(false);
+      }
+    };
+    $("#home").onclick = () => {
+      location.hash = "";
+      go("home");
+    };
   };
-  $("#home").onclick = () => {
-    location.hash = "";
-    go("home");
-  };
+  const localDone = !!(p.checkpoints?.render_ready || p.ui_step === "done");
+  paint(localDone, !!(p.checkpoints?.captions_ready));
+  api(`/api/projects/${id}/video/status`)
+    .then((st) => {
+      if (st.ready || st.captions) paint(!!st.ready || localDone, !!st.captions);
+    })
+    .catch(() => {});
 }
 
 function paintSubs(ws, p) {
@@ -1576,7 +1614,8 @@ function paintSubs(ws, p) {
       </div>
       ${burned ? `<video controls src="/api/projects/${encodeURIComponent(p.id)}/video/captions?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : `<p class="lead">Cuando los quemes, el preview del video aparece acá.</p>`}
       <div class="actions">
-        ${burned ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video/captions" download>Descargar con subtítulos</a>` : ""}
+        <a class="btn btn-primary" href="/api/projects/${encodeURIComponent(p.id)}/video?download=1" download="${esc(p.id)}.mp4">Descargar video final</a>
+        ${burned ? `<a class="btn btn-ghost" href="/api/projects/${encodeURIComponent(p.id)}/video/captions?download=1" download="${esc(p.id)}-subs.mp4">Descargar con subtítulos</a>` : ""}
         <button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>
       </div>
     </div>`;

@@ -42,24 +42,11 @@ def build_preview(project: dict[str, Any]) -> dict[str, Any]:
 
 def _pull_render_assets(project_id: str) -> None:
     from src.documentary import cloud_sync
-    from src.documentary.flow_pack import load_shot_list
-    from src.documentary.import_images import still_file
 
     if not cloud_sync.configured():
         return
     cloud_sync.pull_one(project_id, "audio/narration.mp3")
-    root = project_dir(project_id) / "images"
-    try:
-        shots = load_shot_list(project_id).get("shots") or []
-        nums = [int(s["number"]) for s in shots if s.get("number")]
-    except Exception:
-        nums = list(range(1, 80))
-    for n in nums:
-        if still_file(root, n) is not None:
-            continue
-        for name in (f"{n:03d}.jpg", f"{n:03d}.png", f"{n:03d}.webp", f"{n:03d}.jpeg"):
-            if cloud_sync.pull_one(project_id, f"images/{name}"):
-                break
+    cloud_sync.pull_prefix(project_id, "images/")
 
 
 def assemble_and_render(
@@ -131,6 +118,7 @@ def assemble_and_render(
                 height=720,
                 musica_fondo=music,
                 music_volume=music_vol,
+                duration_sec=float(duration or 0) or None,
             )
         else:
             result = montar_video(

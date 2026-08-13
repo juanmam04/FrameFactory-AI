@@ -845,8 +845,33 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
+    @app.get("/api/projects/{project_id}/video/status")
+    def video_status(project_id: str):
+        from src.documentary.captions import captioned_video_path
+        from src.video_assembler import mp4_is_complete
+
+        local = project_dir(project_id) / "render" / "final.mp4"
+        cap = captioned_video_path(project_id)
+        ready = mp4_is_complete(local)
+        captions = mp4_is_complete(cap)
+        if not ready or not captions:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                try:
+                    rels = set(cloud_sync.list_rel_paths(project_id, "render/"))
+                except Exception:
+                    rels = set()
+                ready = ready or "render/final.mp4" in rels
+                captions = captions or "render/final_captions.mp4" in rels
+        return {
+            "ready": bool(ready),
+            "bytes": local.stat().st_size if local.is_file() else 0,
+            "captions": bool(captions),
+        }
+
     @app.get("/api/projects/{project_id}/video")
-    def video_file(project_id: str):
+    def video_file(project_id: str, download: int = 0):
         from src.video_assembler import mp4_is_complete
 
         path = project_dir(project_id) / "render" / "final.mp4"
@@ -858,7 +883,10 @@ def create_app() -> FastAPI:
             if cloud_sync.configured():
                 cloud_sync.pull_one(project_id, "render/final.mp4", force=True)
         if mp4_is_complete(path):
-            return FileResponse(path, media_type="video/mp4")
+            kwargs = {"media_type": "video/mp4"}
+            if download:
+                kwargs["filename"] = f"{project_id}.mp4"
+            return FileResponse(path, **kwargs)
         raise HTTPException(404, "No hay video todavía")
 
     @app.post("/api/projects/{project_id}/render")
@@ -884,7 +912,7 @@ def create_app() -> FastAPI:
             raise HTTPException(400, _err(e)) from e
 
     @app.get("/api/projects/{project_id}/video/captions")
-    def captioned_video_file(project_id: str):
+    def captioned_video_file(project_id: str, download: int = 0):
         from src.documentary.captions import captioned_video_path
 
         path = captioned_video_path(project_id)
@@ -894,7 +922,10 @@ def create_app() -> FastAPI:
             if cloud_sync.configured():
                 cloud_sync.pull_one(project_id, "render/final_captions.mp4")
         if path.is_file() and path.stat().st_size > 0:
-            return FileResponse(path, media_type="video/mp4")
+            kwargs = {"media_type": "video/mp4"}
+            if download:
+                kwargs["filename"] = f"{project_id}-subs.mp4"
+            return FileResponse(path, **kwargs)
         raise HTTPException(404, "No hay video con subtítulos todavía")
 
     @app.get("/api/projects/{project_id}/captions")
