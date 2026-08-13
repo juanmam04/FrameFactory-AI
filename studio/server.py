@@ -99,10 +99,22 @@ def _sync_safe(fn) -> None:
         traceback.print_exc()
 
 
+_SKIP_SYNC = {
+    "/health",
+    "/",
+    "/api/ping",
+    "/api/ideas",
+    "/api/credentials/recheck",
+    "/api/sync/status",
+    "/api/sync/push",
+    "/api/sync/pull",
+}
+
+
 class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
-        if path.startswith("/assets") or path in {"/health", "/", "/api/ping"}:
+        if path.startswith("/assets") or path in _SKIP_SYNC:
             return await call_next(request)
         from src.documentary import cloud_sync
 
@@ -111,26 +123,20 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 
         m = _PROJECT_RE.match(path)
         pid = m.group(1) if m else None
-        if request.method in {"GET", "HEAD"}:
-            if path == "/api/bootstrap":
-                _sync_safe(lambda: cloud_sync.pull_all(light=True))
-            elif pid:
-                need_binaries = any(x in path for x in ("/images", "/visuals", "/flow"))
-                _sync_safe(lambda: cloud_sync.pull_project(pid, light=on_vercel() and not need_binaries))
-                _sync_safe(cloud_sync.pull_sessions)
+
+        # Pull once per cold instance (bootstrap). Do not hit Postgres on every click.
+        if request.method in {"GET", "HEAD"} and path == "/api/bootstrap":
+            _sync_safe(lambda: cloud_sync.pull_all(light=True))
 
         response = await call_next(request)
 
         if (
             request.method in {"POST", "PUT", "PATCH", "DELETE"}
+            and pid
             and path.startswith("/api/")
-            and path not in {"/api/sync/push", "/api/sync/pull"}
         ):
-            if pid:
-                _sync_safe(lambda: cloud_sync.push_project(pid))
-                _sync_safe(cloud_sync.push_sessions)
-            else:
-                _sync_safe(cloud_sync.push_all)
+            _sync_safe(lambda: cloud_sync.push_project(pid))
+            _sync_safe(cloud_sync.push_sessions)
         return response
 
 
@@ -318,6 +324,12 @@ def create_app() -> FastAPI:
                 language=language_from_profile(profile),
                 target_duration_min=duration_range_from_profile(profile),
             )
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(lambda: cloud_sync.push_project(str(data.get("id") or "")))
+                    _sync_safe(cloud_sync.push_sessions)
             return {"project": _project_full(data)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
@@ -327,6 +339,15 @@ def create_app() -> FastAPI:
         try:
             return {"project": _project_full(load_project(project_id))}
         except FileNotFoundError as e:
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(lambda: cloud_sync.pull_project(project_id, light=True))
+                    try:
+                        return {"project": _project_full(load_project(project_id))}
+                    except FileNotFoundError:
+                        pass
             raise HTTPException(404, str(e)) from e
 
     @app.patch("/api/projects/{project_id}/step")

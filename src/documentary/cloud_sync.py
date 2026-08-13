@@ -18,6 +18,7 @@ from src.saas_sessions import OUTPUT_DIR, SESSIONS_PATH
 _SKIP_DIR_NAMES = {".git", "__pycache__", ".DS_Store"}
 _SKIP_SUFFIXES = {".pyc", ".pyo"}
 _MAX_FILE_BYTES = 40 * 1024 * 1024  # 40 MB per file
+_schema_ok = False
 
 
 def _load_env() -> None:
@@ -53,11 +54,14 @@ def _connect():
     return psycopg.connect(
         _connect_url(url),
         prepare_threshold=None,
-        connect_timeout=20,
+        connect_timeout=8,
     )
 
 
 def ensure_schema() -> None:
+    global _schema_ok
+    if _schema_ok:
+        return
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -78,6 +82,7 @@ def ensure_schema() -> None:
                 """
             )
         conn.commit()
+    _schema_ok = True
 
 
 def _utc_now() -> str:

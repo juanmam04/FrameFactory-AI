@@ -1,9 +1,0 @@
-tema: POV: cocinás pasta y se prende fuego la cocina
-proyecto: POV_cocinás_pasta_y_se_prende_fuego_la_cocina
-palabras_guion: 265
-escenas: 19
-beats: 1
-framespecs: 1
-
-Primeros beats (texto):
-  - [1] Este eres tú, en una cocina pequeña y desordenada, con el aroma a tomate y albahaca llenando el aire.…
