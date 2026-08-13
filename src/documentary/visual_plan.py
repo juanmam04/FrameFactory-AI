@@ -46,15 +46,32 @@ CAMERA_VARIETY = (
 
 KEN_BURNS = ("slow_push", "slow_pull", "pan_left", "pan_right", "static")
 
-_NON_FLOW_CUES: list[tuple[str, tuple[str, ...]]] = [
-    ("DOCUMENT", ("s-1", "s1", "filing", "prospectus", "sec filing", "contract", "lease agreement")),
-    ("HEADLINE", ("headline", "newspaper", "wall street journal", "bloomberg", "new york times", "press report")),
-    ("SCREENSHOT", ("screenshot", "app screen", "website", "dashboard", "interface")),
-    ("LOGO", (" company logo", "logo of", "brand mark")),
-    ("CHART", ("chart", "graph", "valuation chart", "stock chart")),
-    ("MAP", ("map of", "across cities", "global expansion map")),
-    ("ARCHIVAL_PHOTO", ("photograph of", "archive photo", "historical photo")),
-    ("PRODUCT", ("product shot", "the product itself")),
+# Paper / screen props live IN the Flow still. Never ask the user for a real filing.
+_PAPER_PROPS: list[tuple[tuple[str, ...], str]] = [
+    (
+        ("s-1", "s1", "sec filing", "prospectus", "ipo filing", " filing"),
+        "Hands on a thick bound prospectus; pages dense; no readable SEC text.",
+    ),
+    (
+        ("contract", "lease agreement", "term sheet"),
+        "A contract packet on the table, signature page half-turned.",
+    ),
+    (
+        ("headline", "newspaper", "wall street journal", "bloomberg", "new york times", "press report"),
+        "A newspaper slapped on the desk, giant headline, letters not readable.",
+    ),
+    (
+        ("screenshot", "app screen", "website", "dashboard", "interface"),
+        "A laptop screen glowing; UI invented; no real brand interface.",
+    ),
+    (
+        ("chart", "graph", "valuation chart", "stock chart"),
+        "A printout of a rising-then-falling chart, numbers illegible.",
+    ),
+    (
+        ("map of", "global expansion map"),
+        "A paper map with pins, not a stock infographic.",
+    ),
 ]
 
 
@@ -161,10 +178,19 @@ def load_visual_plan(project_id: str) -> dict[str, Any]:
     return plan
 
 
+def _promote_all_to_flow(visuals: list[dict[str, Any]]) -> None:
+    """Every still is a Flow photograph. No scavenger-hunt 'upload the real S-1' slots."""
+    for v in visuals:
+        v["visual_type"] = "FLOW_REENACTMENT"
+        v["person_strategy"] = "FLOW_REENACTMENT"
+        v.pop("acquisition_note", None)
+
+
 def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
     """Rebuild Flow copy-paste prompts so old episodes pick up director rules."""
     visuals = plan.get("visuals") or []
     bible = plan.get("visual_bible") or {}
+    _promote_all_to_flow(visuals)
     _purge_stock_locations(bible)
     _tag_moments(visuals)
     used: dict[str, set[int]] = {}
@@ -194,13 +220,15 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
     for b in plan["flow_batches"]:
         b["prompt"] = format_batch_prompt(b, visuals, bible, masters)
         b["references_needed"] = batch_references(b, visuals, masters)
+    plan["stats"] = summarize_visuals(visuals, plan["flow_batches"], masters)
     return plan
 
 
 def group_flow_batches(visuals: list[dict[str, Any]], *, batch_size: int = 10) -> list[dict[str, Any]]:
     """One Flow pack per story MOMENT (rise/peak/crack/collapse/aftermath), not a timeline of 001→002."""
     size = max(1, int(batch_size))
-    flow = [v for v in visuals if str(v.get("visual_type") or "") == "FLOW_REENACTMENT"]
+    _promote_all_to_flow(visuals)
+    flow = list(visuals)
     _tag_moments(flow)
     order: list[str] = []
     buckets: dict[str, list[dict[str, Any]]] = {}
@@ -472,10 +500,19 @@ _BEAT_DETAILS = (
 )
 
 
+def _prop_from_narration(visual: dict[str, Any]) -> str:
+    text = " ".join(
+        str(visual.get(k) or "")
+        for k in ("narration_segment", "narration", "description", "action", "acquisition_note")
+    ).lower()
+    for cues, prop in _PAPER_PROPS:
+        if any(c in text for c in cues):
+            return prop
+    return ""
+
+
 def _tag_moments(visuals: list[dict[str, Any]]) -> None:
     for v in visuals:
-        if str(v.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
-            continue
         text = " ".join(
             str(v.get(k) or "")
             for k in ("narration_segment", "narration", "description", "action")
@@ -544,6 +581,9 @@ def _concretize_visual(
     stale = (not desc) or _is_vo(desc) or _STOCKY_DESC.search(desc) or _CANNED_STILL.search(desc)
     if stale:
         still, loc = _unique_beat(visual, bible, used)
+        prop = _prop_from_narration(visual)
+        if prop:
+            still = f"{still.rstrip('. ')}. {prop}"
         visual["description"] = still
         visual["action"] = still
         visual["location"] = loc
@@ -1069,15 +1109,10 @@ def plan_to_markdown(plan: dict[str, Any]) -> str:
 def _enrich_visual(i: int, shot: dict[str, Any], beats: list[dict]) -> dict[str, Any]:
     narr = str(shot.get("narration") or "").strip()
     action = str(shot.get("action") or "").strip()
-    vtype = classify_visual_type(narr + " " + action)
+    vtype = "FLOW_REENACTMENT"
     beat_id = map_story_beat(narr, beats, index=i)
     period = _guess_period(narr) or _guess_period(action)
-    if vtype in ("DOCUMENT", "HEADLINE", "SCREENSHOT", "LOGO", "CHART", "MAP"):
-        person_strategy = "NO_FACE"
-    elif vtype == "ARCHIVAL_PHOTO":
-        person_strategy = "ARCHIVAL_REAL"
-    else:
-        person_strategy = "FLOW_REENACTMENT"
+    person_strategy = "FLOW_REENACTMENT"
 
     desc = action or _description_from_narration(narr)
     visual = {
@@ -1101,20 +1136,10 @@ def _enrich_visual(i: int, shot: dict[str, Any], beats: list[dict]) -> dict[str,
         "status": "MISSING",
         "flow_prompt": "",
     }
-    if vtype != "FLOW_REENACTMENT":
-        visual["acquisition_note"] = (
-            f"Import a real {vtype.replace('_', ' ').lower()} asset. "
-            f"Do NOT ask Flow to fake authentic filings/headlines/logos. "
-            f"Hint: {(desc or narr)[:160]}"
-        )
     return visual
 
 
 def classify_visual_type(text: str) -> str:
-    low = (text or "").lower()
-    for vtype, cues in _NON_FLOW_CUES:
-        if any(c in low for c in cues):
-            return vtype
     return "FLOW_REENACTMENT"
 
 

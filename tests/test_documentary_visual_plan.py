@@ -76,7 +76,7 @@ def test_batches_group_by_moment_not_timeline():
     assert 2 in by_mood.get("rise", []) and 4 in by_mood.get("rise", [])
 
 
-def test_mixed_types_batches_only_flow():
+def test_mixed_types_all_go_to_flow():
     visuals = [
         {"number": 1, "visual_type": "FLOW_REENACTMENT"},
         {"number": 2, "visual_type": "FLOW_REENACTMENT"},
@@ -86,7 +86,8 @@ def test_mixed_types_batches_only_flow():
     ]
     batches = group_flow_batches(visuals, batch_size=10)
     assert len(batches) == 1
-    assert batches[0]["visual_numbers"] == [1, 2, 5]
+    assert batches[0]["visual_numbers"] == [1, 2, 3, 4, 5]
+    assert all(v["visual_type"] == "FLOW_REENACTMENT" for v in visuals)
 
 
 def test_number_preservation_mixed():
@@ -96,12 +97,12 @@ def test_number_preservation_mixed():
         {"number": 3, "visual_type": "FLOW_REENACTMENT"},
     ]
     batches = group_flow_batches(visuals, batch_size=10)
-    assert batches[0]["visual_numbers"] == [1, 3]
+    assert batches[0]["visual_numbers"] == [1, 2, 3]
     assert [v["number"] for v in visuals] == [1, 2, 3]
 
 
 def test_classify_document_vs_flow():
-    assert classify_visual_type("WeWork files its S-1 with the SEC") == "DOCUMENT"
+    assert classify_visual_type("WeWork files its S-1 with the SEC") == "FLOW_REENACTMENT"
     assert classify_visual_type("Neumann walks through a packed coworking floor") == "FLOW_REENACTMENT"
 
 

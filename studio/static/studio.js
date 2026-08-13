@@ -94,7 +94,7 @@ function slotCard(v, projectId, previewSrc = "") {
   const id = pad3(n);
   const has = String(v.status || "").toUpperCase() === "READY";
   const desc = v.description || v.action || v.acquisition_note || "";
-  const kind = v.visual_type === "FLOW_REENACTMENT" ? "Google Flow" : "documento / foto real";
+  const kind = "Google Flow";
   const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?v=${IMG_BOOT}`;
   const local = previewSrc ? ` data-local="1"` : "";
   return `
@@ -1110,10 +1110,7 @@ async function paintFlow(ws, p) {
   const masters = (plan && plan.master_references) || (shots && shots.master_references) || [];
   const batches = (plan && plan.flow_batches) || (shots && shots.flow_batches) || [];
   const visuals = (plan && plan.visuals) || (shots && shots.shots) || [];
-  const nonFlow = visuals.filter((v) => v.visual_type && v.visual_type !== "FLOW_REENACTMENT");
   const total = stats.total || visuals.length || 0;
-  const needAi = stats.flow || 0;
-  const needReal = stats.real_or_other || 0;
 
   ws.innerHTML = `
     <div class="panel workspace">
@@ -1129,9 +1126,7 @@ async function paintFlow(ws, p) {
         </p>
       </div>
 
-      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>:
-        ${needAi} las pedís a Google Flow · ${needReal} son documentos/fotos reales (no las inventa la IA).
-      </p>
+      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena.</p>
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
@@ -1146,9 +1141,6 @@ async function paintFlow(ws, p) {
       <p class="lead">Cada bloque es un clima del episodio. Diez ángulos del mismo momento. El orden adentro no importa.</p>
       <div class="list" id="batches"></div>
 
-      <h2 style="margin-top:1.6rem">C) Cosas reales (no pedirle esto a la IA)</h2>
-      <p class="lead">Documentos, gráficos, etc. Subilos en el recuadro de esa imagen.</p>
-      <div class="list" id="nonflow"></div>
     </div>`;
 
   $("#rebuild").onclick = () => rebuildFlow();
@@ -1269,11 +1261,6 @@ async function paintFlow(ws, p) {
       });
     };
   });
-
-  $("#nonflow").innerHTML = nonFlow.length
-    ? nonFlow.map((v) => slotCard(v, p.id)).join("")
-    : `<div class="notice">En este episodio casi todo se pide a Google Flow.</div>`;
-  bindSlotUploads($("#nonflow"), p.id);
 }
 
 function masterCard(m, projectId, previewSrc = "") {

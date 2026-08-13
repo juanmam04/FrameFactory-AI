@@ -484,11 +484,6 @@ def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
     img_root = project_dir(project_id) / "images"
     pools: dict[str, list[Path]] = {}
     for s in shots:
-        if str(s.get("visual_type") or "FLOW_REENACTMENT") not in ("FLOW_REENACTMENT", ""):
-            p = still_file(img_root, int(s["number"]))
-            if p is not None:
-                pools.setdefault("_real", []).append(p)
-            continue
         mid = str(s.get("moment_id") or "rise")
         p = still_file(img_root, int(s["number"]))
         if p is not None:
@@ -500,13 +495,6 @@ def ordered_images_for_render(project_id: str) -> tuple[list[Path], list[str]]:
     for s in shots:
         n = int(s["number"])
         own = still_file(img_root, n)
-        vt = str(s.get("visual_type") or "FLOW_REENACTMENT")
-        if vt not in ("FLOW_REENACTMENT", ""):
-            if own is not None:
-                paths.append(own)
-            else:
-                missing.append(f"{n:03d}")
-            continue
         mid = str(s.get("moment_id") or "rise")
         pool = pools.get(mid) or []
         if own is not None:
