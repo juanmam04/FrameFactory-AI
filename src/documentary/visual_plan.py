@@ -91,6 +91,7 @@ def build_visual_plan(
     beats = selected_beats(story) or (story.get("beats") or [])
     visuals = [_enrich_visual(i, shot, beats) for i, shot in enumerate(raw_shots, start=1)]
     bible = _upgrade_bible(bible_raw, visuals, story)
+    _purge_stock_locations(bible)
     _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm)
     visuals = _assign_camera_variety(visuals)
     visuals = _assign_durations(visuals)
@@ -160,13 +161,14 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
     """Rebuild Flow copy-paste prompts so old episodes pick up director rules."""
     visuals = plan.get("visuals") or []
     bible = plan.get("visual_bible") or {}
-    masters = plan.get("master_references") or []
+    _purge_stock_locations(bible)
     for v in visuals:
         _concretize_visual(v, bible)
         names = _cast_names(v, bible)
         if names:
             v["characters"] = names
             refs = [str(x) for x in (v.get("reference_ids") or v.get("references") or [])]
+            refs = [r for r in refs if not str(r).upper().startswith("LOC_")]
             for ent in bible.get("characters") or []:
                 if str(ent.get("name") or "") in names:
                     eid = str(ent.get("id") or "")
@@ -174,10 +176,15 @@ def refresh_flow_prompts(plan: dict[str, Any]) -> dict[str, Any]:
                         refs.append(eid)
             v["reference_ids"] = refs
             v["references"] = refs
+    masters = select_master_references(bible, visuals)
+    plan["master_references"] = masters
+    plan["visual_bible"] = bible
+    for v in visuals:
         if str(v.get("visual_type") or "") == "FLOW_REENACTMENT":
             v["flow_prompt"] = format_single_prompt(v, bible, masters)
     for b in plan.get("flow_batches") or []:
         b["prompt"] = format_batch_prompt(b, visuals, bible, masters)
+        b["references_needed"] = batch_references(b, visuals, masters)
     return plan
 
 
@@ -570,6 +577,27 @@ def batch_references(
     return out
 
 
+_STOCK_LOC = re.compile(
+    r"headquarters|cowork|open.?plan|open.?concept|glass walls|bustling|"
+    r"diverse professionals|filled with people|networking|locations worldwide|"
+    r"communal tables|lounge areas|corporate office|open-plan|professionals working",
+    re.I,
+)
+
+
+def _is_stock_location(ent: dict[str, Any]) -> bool:
+    blob = " ".join(
+        str(ent.get(k) or "")
+        for k in ("name", "description", "visual_description")
+    )
+    return bool(_STOCK_LOC.search(blob))
+
+
+def _purge_stock_locations(bible: dict[str, Any]) -> None:
+    locs = [e for e in (bible.get("locations") or []) if isinstance(e, dict) and not _is_stock_location(e)]
+    bible["locations"] = locs
+
+
 def select_master_references(bible: dict[str, Any], visuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
     flow_nums = {int(v["number"]) for v in visuals if v.get("visual_type") == "FLOW_REENACTMENT"}
     masters: list[dict[str, Any]] = []
@@ -578,17 +606,21 @@ def select_master_references(bible: dict[str, Any], visuals: list[dict[str, Any]
         apps = ent.get("appears_in_shots") or []
         return len([n for n in apps if int(n) in flow_nums])
 
-    for ent in bible.get("characters") or []:
+    chars = [e for e in (bible.get("characters") or []) if e.get("name")]
+    for i, ent in enumerate(chars):
         c = _count(ent)
-        if c < 3 and not ent.get("reference_required"):
+        # Always lock the first two faces — that's what Flow needs for continuity.
+        if i >= 2 and c < 3 and not ent.get("reference_required"):
             continue
-        masters.append(_master_entry(ent, "character", c))
+        masters.append(_master_entry(ent, "character", max(c, 1)))
 
     for ent in bible.get("locations") or []:
+        if _is_stock_location(ent):
+            continue
         c = _count(ent)
         if c < 4 and not ent.get("reference_required"):
             continue
-        if sum(1 for m in masters if m.get("kind") == "location") >= 2:
+        if sum(1 for m in masters if m.get("kind") == "location") >= 1:
             continue
         masters.append(_master_entry(ent, "location", c))
 
@@ -952,7 +984,7 @@ def _attach_from_visuals(bible: dict, visuals: list[dict]) -> None:
     for v in visuals:
         num = int(v.get("number") or 0)
         text = f"{v.get('narration_segment')} {v.get('description')} {v.get('location')}".lower()
-        for group in ("characters", "locations", "important_objects"):
+        for group in ("characters", "important_objects"):
             for ent in bible.get(group) or []:
                 name = str(ent.get("name") or "").lower()
                 if name and name in text:
@@ -964,6 +996,7 @@ def _attach_from_visuals(bible: dict, visuals: list[dict]) -> None:
                     eid = str(ent.get("id") or "")
                     if eid and eid not in refs and v.get("visual_type") == "FLOW_REENACTMENT":
                         refs.append(eid)
+                    refs = [r for r in refs if not str(r).upper().startswith("LOC_")]
                     v["reference_ids"] = refs
                     v["references"] = refs
                     if group == "characters":
@@ -984,6 +1017,29 @@ def _attach_from_visuals(bible: dict, visuals: list[dict]) -> None:
 
 def _master_entry(ent: dict, kind: str, used: int) -> dict[str, Any]:
     eid = str(ent.get("id") or "REF")
+    name = str(ent.get("name") or eid)
+    look = str(ent.get("visual_description") or ent.get("description") or "").strip()
+    if kind == "character":
+        prompt = (
+            f"Generate ONE master reference of {name} for FACE continuity in a true-story documentary.\n"
+            f"{look}\n"
+            "Close-up to chest. Face fully visible, distinctive hair, period-accurate wardrobe. "
+            "Plain or empty background. Photoreal 16:9.\n"
+            "ZERO other people. NO open-plan office, NO laptops, NO coworking, NO crowd.\n"
+            "Reconstruction reference — not an archival photo."
+        )
+    elif kind == "location":
+        prompt = (
+            f"Generate ONE empty location plate of {name}. Architecture and light only.\n"
+            f"{look}\n"
+            "Photoreal 16:9 documentary. ZERO people. Not a stock coworking photo."
+        )
+    else:
+        prompt = (
+            f"Generate ONE object still of {name}.\n"
+            f"{look}\n"
+            "Hands allowed, no crowd, no logos, photoreal 16:9."
+        )
     return {
         "id": eid,
         "name": ent.get("name"),
@@ -992,13 +1048,7 @@ def _master_entry(ent: dict, kind: str, used: int) -> dict[str, Any]:
         "appearance_strategy": ent.get("appearance_strategy") or "FLOW_REENACTMENT",
         "reference_required": True,
         "master_filename": ent.get("master_reference_filename") or f"{eid}.png",
-        "master_prompt": (
-            f"Generate ONE clear master reference image for continuity.\n"
-            f"Name: {ent.get('name')}\n"
-            f"{ent.get('visual_description') or ent.get('description')}\n"
-            f"Photorealistic documentary style, 16:9, neutral pose, clear identity cues. "
-            f"Reconstruction reference for later scenes — not a claim of an archival photo."
-        ),
+        "master_prompt": prompt,
         "used_in_flow": used,
         "notes": ent.get("notes") or "",
     }

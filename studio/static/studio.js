@@ -961,8 +961,8 @@ async function paintFlow(ws, p) {
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
       </div>
 
-      <h2 style="margin-top:1.6rem">A) Caras / lugares que se repiten</h2>
-      <p class="lead">Generá estas <strong>primero</strong> en Google Flow (1 imagen cada una) y después usalas como referencia cuando pidas los grupos.</p>
+      <h2 style="margin-top:1.6rem">A) Caras que se repiten</h2>
+      <p class="lead">Solo protagonistas. Generá estas <strong>primero</strong> en Google Flow (1 imagen cada una) y usalas como referencia de cara. No pidas oficinas genéricas.</p>
       <div class="list" id="masters"></div>
 
       <h2 style="margin-top:1.6rem">B) Grupos para pedir en Google Flow</h2>
