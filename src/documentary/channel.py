@@ -235,7 +235,10 @@ def business_documentary_profile() -> dict[str, Any]:
                 "Founder story",
             ],
             "title_style": "Highly clickable without being misleading; specific stakes or numbers when true.",
-            "thumbnail_style": "Cinematic faces / moments / contrast; readable emotion; no spammy arrows.",
+            "thumbnail_style": (
+                "YouTube CTR thumbnail: one named face filling half the frame, emotion readable on a phone, "
+                "one story object on the other side, high contrast. No crowded offices, no arrows, no stock."
+            ),
             "channel": {
                 "name": CHANNEL_TITLE,
                 "tagline": EDITORIAL_PRINCIPLE + " · " + CHANNEL_ONE_LINER,

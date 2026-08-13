@@ -1276,7 +1276,7 @@ function paintPublish(ws, p) {
   ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">YouTube</h2>
-      <p class="lead">Título, descripción y prompt de miniatura para subir el episodio.</p>
+      <p class="lead">Título y miniatura pensados para que alguien pare el scroll. No un still más del video.</p>
       <div class="actions" style="margin-bottom:1rem">
         <button class="btn btn-accent" id="gen-yt">Generar con IA</button>
         <button class="btn btn-ghost" id="save-yt">Guardar</button>
@@ -1296,12 +1296,13 @@ function paintPublish(ws, p) {
         <button class="btn btn-soft" id="copy-desc" style="margin-top:0.45rem">Copiar descripción</button>
       </div>
       <div class="field">
-        <label>Texto sobre la miniatura (2–4 palabras)</label>
+        <label>Texto overlay (2–4 palabras, se lee en el celular)</label>
         <input id="yt-thumb-text" value="${esc(y.thumbnail_text || "")}" />
+        <button class="btn btn-soft" id="copy-thumb-text" style="margin-top:0.45rem">Copiar overlay</button>
       </div>
       <div class="field">
-        <label>Prompt de miniatura (Google Flow)</label>
-        <textarea id="yt-thumb" rows="6">${esc(y.thumbnail_prompt || "")}</textarea>
+        <label>Prompt de miniatura — cara grande + un objeto de la historia (Google Flow)</label>
+        <textarea id="yt-thumb" rows="8">${esc(y.thumbnail_prompt || "")}</textarea>
         <button class="btn btn-soft" id="copy-thumb" style="margin-top:0.45rem">Copiar prompt</button>
       </div>
       <div class="actions">
@@ -1346,6 +1347,7 @@ function paintPublish(ws, p) {
   };
   $("#copy-title").onclick = () => copy("#yt-title", "Título");
   $("#copy-desc").onclick = () => copy("#yt-desc", "Descripción");
+  $("#copy-thumb-text").onclick = () => copy("#yt-thumb-text", "Overlay");
   $("#copy-thumb").onclick = () => copy("#yt-thumb", "Prompt");
   $("#back-video").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
