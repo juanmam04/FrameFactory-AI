@@ -68,19 +68,23 @@ button { cursor: pointer; }
   padding-top: max(1.15rem, env(safe-area-inset-top));
 }
 .top-inner {
+  position: relative;
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1.5rem;
+  min-height: 2.75rem;
 }
 .top-brand {
   display: flex;
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
-  min-width: 180px;
+  min-width: 0;
+  z-index: 1;
   line-height: 1.15;
 }
 .top-brand strong {
@@ -90,7 +94,16 @@ button { cursor: pointer; }
   letter-spacing: -0.04em;
 }
 .top-brand small { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.12rem; }
-.top-nav { display: flex; gap: 0.35rem; flex: 1; }
+.top-nav {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 0.35rem;
+  justify-content: center;
+  z-index: 2;
+}
 .nav-link {
   border: 0;
   background: transparent;
@@ -103,7 +116,14 @@ button { cursor: pointer; }
 }
 .nav-link:hover { color: var(--ink); background: rgba(15, 23, 32, 0.04); }
 .nav-link.active { color: var(--ink); background: var(--surface); box-shadow: var(--shadow-sm); }
-.top-status { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+.top-status {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+  z-index: 1;
+}
 .pill {
   font-size: 0.7rem;
   font-weight: 700;
@@ -304,7 +324,14 @@ code { word-break: break-all; }
   color: var(--ink);
 }
 
-.actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.25rem; max-width: 100%; }
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  max-width: 100%;
+}
+.actions.actions-center { justify-content: center; }
 .actions .btn { max-width: 100%; }
 .btn {
   border: 0;
@@ -620,11 +647,18 @@ label.field {
   .top-inner {
     flex-wrap: wrap;
     gap: 0.75rem 1rem;
+    padding-bottom: 0.15rem;
   }
   .top-brand { min-width: 0; }
+  .top-status { width: auto; }
   .top-nav {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
     order: 3;
     width: 100%;
+    justify-content: center;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -632,7 +666,6 @@ label.field {
   }
   .top-nav::-webkit-scrollbar { display: none; }
   .nav-link { white-space: nowrap; padding: 0.5rem 0.8rem; }
-  .top-status { width: 100%; justify-content: flex-start; }
   .stage {
     width: 100%;
     padding: 1rem 0.9rem 7rem;

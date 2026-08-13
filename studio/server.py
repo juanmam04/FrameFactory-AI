@@ -901,6 +901,12 @@ def create_app() -> FastAPI:
         message = str(rec.get("message") or "")
         started = str(rec.get("started_at") or "")
         need_continue = bool(rec.get("need_continue"))
+        # Old stuck "Se cortó" errors → resume instead of blocking the UI.
+        if state == "error" and "Se cortó" in (message or str(rec.get("error") or "")):
+            if not ready:
+                state = "running"
+                message = "Reanudando render (el servidor corta a los ~5 min)…"
+                need_continue = True
         if state == "running":
             try:
                 from datetime import datetime, timezone
@@ -908,18 +914,11 @@ def create_app() -> FastAPI:
                 stamp = str(rec.get("updated_at") or started or "")
                 t0 = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
                 age = (datetime.now(timezone.utc) - t0).total_seconds()
-                if age > 360:
-                    state = "error"
-                    message = "Se cortó. Tocá Renderizar de nuevo."
-                    if proj is not None:
-                        from src.documentary.assemble_service import set_render_state
-
-                        set_render_state(proj, "error", error=message)
-                        if on_vercel():
-                            from src.documentary import cloud_sync as _cs
-
-                            if _cs.configured():
-                                _sync_safe(lambda: _cs.push_paths(project_id, ["project.json"]))
+                # Vercel lambdas die ~300s. Don't flip to ERROR — tell the UI to resume.
+                if age > 200:
+                    state = "running"
+                    message = "Reanudando render (el servidor corta a los ~5 min)…"
+                    need_continue = True
             except Exception:
                 pass
         if rec.get("cancelled") and state != "running":

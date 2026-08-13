@@ -1703,7 +1703,16 @@ function paintRender(ws, p) {
         body: JSON.stringify(body),
       }).catch(() => {});
       paint({ state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions });
-      api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 }).catch(() => {});
+      const kickRender = () =>
+        api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
+          .then((r) => {
+            if (r && r.continue) {
+              paintRender._kickAgain = setTimeout(kickRender, 800);
+            }
+          })
+          .catch(() => {});
+      if (paintRender._kickAgain) clearTimeout(paintRender._kickAgain);
+      kickRender();
       startPoll();
     };
     const stopBtn = $("#cancel-render");
@@ -1736,13 +1745,37 @@ function paintRender(ws, p) {
         const prev = paintRender._kind;
         const next = await api(`/api/projects/${id}/video/status`);
         paint(next);
-        if (next.state === "running") {
+        if (next.need_continue && !paintRender._resuming) {
+          paintRender._resuming = true;
+          toast("Reanudando render…");
+          api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
+            .then((r) => {
+              paintRender._resuming = false;
+              if (r && r.continue) paintRender._resuming = false;
+            })
+            .catch(() => {
+              paintRender._resuming = false;
+            });
+        }
+        if (next.state === "running" || next.need_continue) {
           paintRender._poll = setTimeout(tick, 3000);
         } else if (prev === "running" && (next.state === "done" || next.ready)) {
           toast("Video listo");
           if (state.project?.checkpoints) state.project.checkpoints.render_ready = true;
         } else if (prev === "running" && next.state === "error") {
-          toast(next.message || "Falló el render");
+          const msg = String(next.message || next.error || "");
+          if (/Se cort|Reanudando|cort/i.test(msg)) {
+            paintRender._poll = setTimeout(tick, 2000);
+            if (!paintRender._resuming) {
+              paintRender._resuming = true;
+              api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
+                .finally(() => {
+                  paintRender._resuming = false;
+                });
+            }
+            return;
+          }
+          toast(msg || "Falló el render");
         }
       } catch {
         paintRender._poll = setTimeout(tick, 4000);

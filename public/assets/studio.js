@@ -1643,7 +1643,7 @@ function paintRender(ws, p) {
 
       ${renderStatusView({ ...st, state: kind })}
       ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
-      <div class="actions">
+      <div class="actions actions-center">
         <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
         ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
         ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
@@ -1703,7 +1703,16 @@ function paintRender(ws, p) {
         body: JSON.stringify(body),
       }).catch(() => {});
       paint({ state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions });
-      api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 }).catch(() => {});
+      const kickRender = () =>
+        api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
+          .then((r) => {
+            if (r && r.continue) {
+              paintRender._kickAgain = setTimeout(kickRender, 800);
+            }
+          })
+          .catch(() => {});
+      if (paintRender._kickAgain) clearTimeout(paintRender._kickAgain);
+      kickRender();
       startPoll();
     };
     const stopBtn = $("#cancel-render");
@@ -1736,13 +1745,37 @@ function paintRender(ws, p) {
         const prev = paintRender._kind;
         const next = await api(`/api/projects/${id}/video/status`);
         paint(next);
-        if (next.state === "running") {
+        if (next.need_continue && !paintRender._resuming) {
+          paintRender._resuming = true;
+          toast("Reanudando render…");
+          api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
+            .then((r) => {
+              paintRender._resuming = false;
+              if (r && r.continue) paintRender._resuming = false;
+            })
+            .catch(() => {
+              paintRender._resuming = false;
+            });
+        }
+        if (next.state === "running" || next.need_continue) {
           paintRender._poll = setTimeout(tick, 3000);
         } else if (prev === "running" && (next.state === "done" || next.ready)) {
           toast("Video listo");
           if (state.project?.checkpoints) state.project.checkpoints.render_ready = true;
         } else if (prev === "running" && next.state === "error") {
-          toast(next.message || "Falló el render");
+          const msg = String(next.message || next.error || "");
+          if (/Se cort|Reanudando|cort/i.test(msg)) {
+            paintRender._poll = setTimeout(tick, 2000);
+            if (!paintRender._resuming) {
+              paintRender._resuming = true;
+              api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
+                .finally(() => {
+                  paintRender._resuming = false;
+                });
+            }
+            return;
+          }
+          toast(msg || "Falló el render");
         }
       } catch {
         paintRender._poll = setTimeout(tick, 4000);
