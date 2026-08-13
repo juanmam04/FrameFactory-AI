@@ -314,7 +314,7 @@ function renderHome() {
         <p class="kicker">Channel</p>
         <h1 class="h1">${esc(b.channel.name)}</h1>
         <p class="lead">${esc(b.channel.tagline)} One true story a day. Research → script → Flow → voice → render.</p>
-        <p class="lead" style="font-size:0.9rem;opacity:.85">
+        <p class="lead ws-line" style="font-size:0.9rem;opacity:.85">
           Datos: <code>${esc((b.workspace && b.workspace.projects_dir) || "projects/")}</code>
           ${b.workspace && b.workspace.supabase
             ? " · Supabase listo (Subir / Bajar entre PCs)"
