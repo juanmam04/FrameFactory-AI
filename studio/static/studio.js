@@ -1596,7 +1596,7 @@ function paintRender(ws, p) {
 
       <div class="panel soft" style="margin:1rem 0 1.2rem">
         <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
-        <p class="lead" style="margin:0 0 0.8rem">Zoom, fundido, viñeta en los bordes, música. Armá 20 segundos y mirá cómo queda.</p>
+        <p class="lead" style="margin:0 0 0.8rem">Zoom, fundido, viñeta, música y subtítulos en inglés. Armá 20 segundos y mirá cómo queda.</p>
         <div class="edit-picks">
           <label class="field">Segundos por foto
             <select id="edit-sec">

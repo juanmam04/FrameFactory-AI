@@ -1111,7 +1111,12 @@ def create_app() -> FastAPI:
                 if cloud_sync.configured():
                     _sync_safe(
                         lambda: cloud_sync.push_paths(
-                            project_id, ["project.json", "render/preview.mp4"]
+                            project_id,
+                            [
+                                "project.json",
+                                "render/preview.mp4",
+                                "render/captions.srt",
+                            ],
                         )
                     )
             return {"ok": True, "preview": True, "project": _project_full(load_project(project_id))}

@@ -500,12 +500,33 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     )
     if not mp4_is_complete(out):
         raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
+    # Burn English captions into the 20s test so the edit preview matches final.
+    try:
+        from src.documentary.captions import (
+            apply_captions_file,
+            captions_srt_path,
+            generate_captions,
+        )
+
+        srt = captions_srt_path(pid)
+        if not srt.is_file() or srt.stat().st_size <= 0:
+            generate_captions(project)
+            srt = captions_srt_path(pid)
+        if srt.is_file() and srt.stat().st_size > 0:
+            tmp = out.with_name("preview_captions.mp4")
+            apply_captions_file(out, srt, tmp, width=1280, crf=22, preset="ultrafast")
+            if mp4_is_complete(tmp):
+                tmp.replace(out)
+            else:
+                tmp.unlink(missing_ok=True)
+    except Exception as e:
+        append_log(pid, f"preview captions skip: {e}")
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
     rec["preview"] = "render/preview.mp4"
     rec["edit"] = edit
     project["render"] = rec
     save_project(project)
-    append_log(pid, f"render preview ok {dur:.0f}s")
+    append_log(pid, f"render preview ok {dur:.0f}s (captions)")
     return out
 
 
