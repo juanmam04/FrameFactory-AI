@@ -6,6 +6,11 @@ from pathlib import Path
 from typing import Any
 
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
+from src.documentary.voice_script_sync import (
+    save_narration_script,
+    script_hash,
+    word_overlap,
+)
 from src.voice_generator import OUTPUT_AUDIO, generar_voz
 
 
@@ -40,6 +45,8 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     speed = max(0.8, min(1.5, speed))
     # Generate into global OUTPUT_AUDIO then copy into project workspace (stem unique)
     stem = f"doc_{project['id']}_narration".replace("/", "_")
+    # Unique stem per script so a failed/partial run never reuses another take's mp3.
+    stem = f"{stem}_{script_hash(script)}"
     path = generar_voz(script, nombre_archivo=stem, formato="mp3", velocidad=speed)
     if not path.exists() or path.stat().st_size <= 0:
         raise RuntimeError("Voice generation returned empty file")
@@ -47,11 +54,22 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     dest = project_dir(str(project["id"])) / "audio" / "narration.mp3"
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(path, dest)
+    save_narration_script(str(project["id"]), script)
 
-    # cleanup global copy optional — keep for debugging
+    # Prove the take speaks THIS script (catches stale/wrong audio early).
+    _assert_voice_follows_script(str(project["id"]), dest, script)
+
     duration = _probe_duration(dest)
     project["voice_speed"] = speed
-    project["voice"] = {"path": "audio/narration.mp3", "duration_sec": duration, "speed": speed}
+    project["voice"] = {
+        "path": "audio/narration.mp3",
+        "duration_sec": duration,
+        "speed": speed,
+        "script_hash": script_hash(script),
+        "script_words": len(script.split()),
+        "stale": False,
+        "stale_reason": "",
+    }
     # Old captions were timed guesses / stale Whisper — wipe so the next burn re-aligns to this take.
     try:
         from src.documentary.captions import captions_srt_path, clear_burned_captions
@@ -71,8 +89,73 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     set_checkpoint(project, "assembly_ready", False)
     set_checkpoint(project, "render_ready", False)
     save_project(project)
-    append_log(str(project["id"]), f"voice ready duration={duration}")
+    append_log(str(project["id"]), f"voice ready duration={duration} script_hash={script_hash(script)}")
     return dest
+
+
+def _assert_voice_follows_script(project_id: str, audio: Path, script: str) -> None:
+    """Whisper the opening of the take; refuse if it doesn't track the script."""
+    import subprocess
+
+    try:
+        from src.documentary.captions import whisper_srt_from_audio
+        from src.video_assembler import ffmpeg_exe
+    except Exception:
+        return
+
+    ff = ffmpeg_exe()
+    head = project_dir(project_id) / "audio" / "narration_verify_head.mp3"
+    try:
+        if ff:
+            subprocess.run(
+                [
+                    ff,
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-y",
+                    "-i",
+                    str(audio),
+                    "-t",
+                    "25",
+                    "-c:a",
+                    "libmp3lame",
+                    "-q:a",
+                    "4",
+                    str(head),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+        src = head if head.is_file() and head.stat().st_size > 0 else audio
+        srt = whisper_srt_from_audio(src, language="en")
+        spoken = " ".join(
+            line
+            for block in srt.strip().split("\n\n")
+            for i, line in enumerate(block.splitlines())
+            if i >= 2
+        )
+        score = word_overlap(script[:1200], spoken, limit=90)
+        append_log(project_id, f"voice verify overlap={score:.2f}")
+        if score < 0.42:
+            audio.unlink(missing_ok=True)
+            raise RuntimeError(
+                "La narración generada NO sigue el guion actual "
+                f"(coincide ~{int(score * 100)}% al inicio). "
+                "Volvé a generar la voz. Si sigue fallando, revisá que OpenAI/ElevenLabs "
+                "esté leyendo el texto y no un MP3 viejo en caché."
+            )
+    except RuntimeError:
+        raise
+    except Exception as e:
+        append_log(project_id, f"voice verify skipped: {e}")
+    finally:
+        try:
+            if head.is_file():
+                head.unlink(missing_ok=True)
+        except Exception:
+            pass
 
 
 def _probe_duration(path: Path) -> float | None:

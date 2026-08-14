@@ -1485,13 +1485,22 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "script_warnings": p.get("script_warnings") or [],
         "script_quality": p.get("script_quality") or {},
         "target_words": p.get("target_words") or 2000,
-        "voice": p.get("voice") or {},
+        "voice": _voice_of(p),
         "render": p.get("render") if isinstance(p.get("render"), dict) else {},
         "captions": p.get("captions") or {},
         "youtube": _youtube_of(p),
         "checkpoints": p.get("checkpoints") or {},
         "flow_pack_path": str(project_dir(str(p["id"])) / "flow-pack") if p.get("id") else "",
     }
+
+
+def _voice_of(p: dict) -> dict:
+    from src.documentary.voice_script_sync import script_hash, voice_matches_script
+
+    voice = dict(p.get("voice") or {}) if isinstance(p.get("voice"), dict) else {}
+    voice["matches_script"] = voice_matches_script(p)
+    voice["current_script_hash"] = script_hash(str(p.get("script") or ""))
+    return voice
 
 
 def _ensure_channel() -> tuple[dict[str, Any], dict[str, Any]]:

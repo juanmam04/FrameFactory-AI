@@ -310,6 +310,9 @@ def assemble_and_render(
         _pull_render_assets(str(project["id"]))
     if not verificar_ffmpeg():
         raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
+    from src.documentary.voice_script_sync import require_voice_matches_script
+
+    require_voice_matches_script(project)
     pid = str(project["id"])
     preview = build_preview(project)
     if not preview["voice_ok"]:
@@ -569,8 +572,10 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
 
     from src.documentary.runtime import on_vercel
     from src.documentary.reuse_stills import plan_still_timeline
+    from src.documentary.voice_script_sync import require_voice_matches_script
 
     pid = str(project["id"])
+    require_voice_matches_script(project)
     vercel = on_vercel()
     if vercel:
         _pull_render_assets(pid)

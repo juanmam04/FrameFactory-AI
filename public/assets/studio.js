@@ -1507,34 +1507,44 @@ function onVercel() {
 function paintVoice(ws, p) {
   const dur = p.voice?.duration_sec;
   const ready = !!(p.voice?.path || p.checkpoints?.voice_ready);
+  const matches = p.voice?.matches_script === true;
+  const stale = ready && !matches;
   const clock = dur
     ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, "0")}`
     : "";
   ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Voz</h2>
-      <p class="lead">${ready
-        ? `Narración lista${clock ? ` · ${clock}` : ""} · x1.20.`
-        : "Generá la narración acá (OpenAI / ElevenLabs). Sale un poco más rápida (x1.20)."}</p>
+      <p class="lead">${
+        stale
+          ? "Esta narración <strong>no es del guion actual</strong> (toma vieja o el texto cambió). Regenerala o el video va a decir otra cosa que los subtítulos."
+          : ready
+            ? `Narración lista${clock ? ` · ${clock}` : ""} · x1.20 · atada al guion aprobado.`
+            : "Generá la narración acá (OpenAI / ElevenLabs). Sale un poco más rápida (x1.20). Tiene que leer el guion tal cual."
+      }</p>
       ${ready ? `<audio controls src="/api/projects/${encodeURIComponent(p.id)}/audio?t=${Date.now()}" style="width:min(100%,640px);margin:0.4rem 0 1rem;display:block"></audio>` : ""}
       <div class="actions">
-        <button class="btn btn-accent" id="gen-voice">${ready ? "Volver a generar voz" : "Generar voz"}</button>
-        <button class="btn btn-primary" id="to-music">Seguir a la música</button>
+        <button class="btn btn-accent" id="gen-voice">${stale ? "Regenerar voz (obligatorio)" : ready ? "Volver a generar voz" : "Generar voz"}</button>
+        <button class="btn btn-primary" id="to-music" ${stale || !ready ? "disabled" : ""}>Seguir a la música</button>
       </div>
     </div>`;
   $("#gen-voice").onclick = async () => {
     try {
-      const data = await withBusy("Generando narración…", () =>
-        api(`/api/projects/${encodeURIComponent(p.id)}/voice`, { method: "POST" })
+      const data = await withBusy("Generando narración del guion…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/voice`, { method: "POST", timeoutMs: 600000 })
       );
       state.project = data.project;
-      toast("Voz lista");
+      toast("Voz lista — coincide con el guion");
       renderProject();
     } catch (e) {
       toast(e.message);
     }
   };
   $("#to-music").onclick = async () => {
+    if (stale || !ready) {
+      toast("Regenerá la voz primero — no coincide con el guion");
+      return;
+    }
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
       body: JSON.stringify({ step: "music" }),
@@ -1670,6 +1680,7 @@ function defaultEdit(p, st) {
 function paintPreview(ws, p) {
   const id = encodeURIComponent(p.id);
   stopVideoPolls();
+  const voiceOk = p.voice?.matches_script === true;
   const opt = (v, cur) =>
     String(v) === String(cur) || (!Number.isNaN(Number(v)) && Number(v) === Number(cur)) ? "selected" : "";
 
@@ -1684,7 +1695,7 @@ function paintPreview(ws, p) {
     if (keepPlayer) {
       const btn = document.getElementById("try-edit");
       if (btn) {
-        btn.disabled = waiting;
+        btn.disabled = waiting || !voiceOk;
         btn.textContent = waiting ? "Armando prueba real…" : "Probar 20 segundos";
       }
       return;
@@ -1699,10 +1710,17 @@ function paintPreview(ws, p) {
         <span class="ff-block-tag">Prueba</span>
         <h2>Prueba de edición · 20 segundos</h2>
       </div>
-      <p class="lead">
+      ${
+        voiceOk
+          ? `<p class="lead">
         Pantalla solo de la prueba. Acá validás edición y subtítulos quemados antes del render largo.
-        El episodio completo está en el paso <strong>9 Video</strong> — no se mezcla con esta pantalla.
-      </p>
+        El episodio completo está en el paso <strong>9 Video</strong>.
+      </p>`
+          : `<p class="lead" style="color:#9a3412">
+        La voz <strong>no coincide con el guion</strong> (toma vieja). Andá a <strong>6 Voz → Regenerar voz</strong>
+        antes de probar: si no, el audio va a decir otra cosa que el texto.
+      </p>`
+      }
       <div class="edit-picks">
         <label class="field">Segundos por foto
           <select id="edit-sec">
@@ -1742,8 +1760,10 @@ function paintPreview(ws, p) {
         </label>
       </div>
       <div class="actions" style="margin-top:0.9rem">
-        <button class="btn btn-soft" id="try-edit" ${waiting ? "disabled" : ""}>${waiting ? "Armando prueba real…" : "Probar 20 segundos"}</button>
-        <button class="btn btn-primary" id="to-full">Ir al episodio completo</button>
+        <button class="btn btn-soft" id="try-edit" ${waiting || !voiceOk ? "disabled" : ""}>${
+          !voiceOk ? "Regenerá la voz primero" : waiting ? "Armando prueba real…" : "Probar 20 segundos"
+        }</button>
+        <button class="btn btn-primary" id="to-full" ${voiceOk ? "" : "disabled"}>Ir al episodio completo</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
       ${
@@ -1759,6 +1779,10 @@ function paintPreview(ws, p) {
     paintPreview._uiReady = true;
 
     $("#try-edit").onclick = async () => {
+      if (!voiceOk) {
+        toast("Regenerá la voz — no coincide con el guion");
+        return;
+      }
       const body = grabEditFromDom() || paintRender._edit;
       paintRender._edit = body;
       try {
@@ -1800,6 +1824,10 @@ function paintPreview(ws, p) {
     };
 
     $("#to-full").onclick = async () => {
+      if (!voiceOk) {
+        toast("Regenerá la voz primero");
+        return;
+      }
       stopVideoPolls();
       const body = grabEditFromDom() || paintRender._edit;
       if (body) {

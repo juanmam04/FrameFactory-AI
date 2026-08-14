@@ -205,6 +205,10 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
     set_checkpoint(project, "script_ready", True)
     set_checkpoint(project, "flow_pack_ready", False)
 
+    from src.documentary.voice_script_sync import invalidate_voice_for_script_change
+
+    invalidate_voice_for_script_change(project, reason="script regenerated")
+
     root = project_dir(str(project["id"]))
     (root / "script" / "script.txt").write_text(script, encoding="utf-8")
     (root / "script" / "script_meta.json").write_text(
@@ -256,6 +260,9 @@ def save_edited_script(project: dict[str, Any], script: str) -> dict[str, Any]:
     project["script_warnings"] = []  # no peach banners for soft filler
     set_checkpoint(project, "script_ready", True)
     set_checkpoint(project, "flow_pack_ready", False)
+    from src.documentary.voice_script_sync import invalidate_voice_for_script_change
+
+    invalidate_voice_for_script_change(project, reason="script edited")
     root = project_dir(str(project["id"]))
     (root / "script" / "script.txt").write_text(script, encoding="utf-8")
     save_project(project)
