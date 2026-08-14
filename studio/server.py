@@ -220,11 +220,26 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     def health():
-        return {"ok": True, "app": "documentary-studio", "vercel": on_vercel()}
+        import os
+
+        return {
+            "ok": True,
+            "app": "documentary-studio",
+            "vercel": on_vercel(),
+            "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
+            "build": "20260815-voice-nopreflight",
+        }
 
     @app.get("/api/ping")
     def ping():
-        return {"ok": True, "vercel": on_vercel()}
+        import os
+
+        return {
+            "ok": True,
+            "vercel": on_vercel(),
+            "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
+            "build": "20260815-voice-nopreflight",
+        }
 
     # ── channel / home ──────────────────────────────────────────────
     @app.get("/api/bootstrap")
