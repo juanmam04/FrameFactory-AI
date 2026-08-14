@@ -172,66 +172,52 @@ def _vignette_vf(look: str) -> str:
     return ",vignette=angle=PI/2.8"
 
 
-def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
+def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 30) -> str:
+    """Buttery Ken Burns: upscale → zoompan (subpixel) → output size.
+
+    Plain crop/scale at output resolution steps by whole pixels and looks stuck.
+    A 3–4× internal buffer is what makes zoompan glide frame-to-frame.
+    """
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     last = max(1, d - 1)
-    # Continuous zoom ~12% — small increments + high-res internal buffer stay fluid.
-    z_end = 1.12
+    fps = max(24, min(30, int(fps)))
+    z_end = 1.20
     inc = (z_end - 1.0) / last
-    if k == "pull":
-        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.8f}))"
-        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
-    if k == "pan":
-        return (
-            f"zoompan=z=1.08:x='(iw-iw/zoom)*on/{last}':"
-            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
-        )
-    return (
-        f"zoompan=z='min(zoom+{inc:.8f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
-        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    # High-res working buffer (even dims). Caps keep Vercel encodes under the clock.
+    src_w = min(4800, max(int(width) * 3, 2880)) // 2 * 2
+    src_h = max(int(round(src_w * height / max(1, width))) // 2 * 2, height)
+    pre = (
+        f"scale={src_w}:{src_h}:force_original_aspect_ratio=increase:flags=lanczos,"
+        f"crop={src_w}:{src_h}"
     )
+    if k == "pull":
+        z = f"if(lte(on,1),{z_end:.8f},max(1.0,zoom-{inc:.12f}))"
+        zp = (
+            f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
+            f"d={d}:s={width}x{height}:fps={fps}"
+        )
+    elif k == "pan":
+        zp = (
+            f"zoompan=z={z_end:.6f}:x='(iw-iw/zoom)*on/{last}':y='(ih-ih/zoom)/2':"
+            f"d={d}:s={width}x{height}:fps={fps}"
+        )
+    else:
+        # push: accumulate zoom every frame (not t-based — avoids freeze at the end)
+        z = f"min(zoom+{inc:.12f},{z_end:.8f})"
+        zp = (
+            f"zoompan=z='{z}':"
+            f"x='iw/2-(iw/zoom/2)+(iw/zoom/2)*0.08*on/{last}':"
+            f"y='ih/2-(ih/zoom/2)+(ih/zoom/2)*0.04*on/{last}':"
+            f"d={d}:s={width}x{height}:fps={fps}"
+        )
+    return f"{pre},{zp}"
 
 
-def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
-    """Fluid Ken Burns: overscan + continuous crop (no even-pixel trunc stepping)."""
-    styles = ("push", "pull", "pan")
-    k = kind if kind in styles else styles[index % 3]
-    # ~14% travel so every frame moves ≥1–2 px at 1080p (avoids "frozen then jump").
-    z = 0.14
-    dur = max(0.8, float(seg))
-    p = f"min(t/{dur:.4f}\\,1)"
-    # Extra headroom so crop can glide without hitting edges early.
-    over = 1.0 + z + 0.04
-    ow = max(width + 2, int(round(width * over)) // 2 * 2)
-    oh = max(height + 2, int(round(height * over)) // 2 * 2)
-    fill = (
-        f"scale={ow}:{oh}:force_original_aspect_ratio=increase:flags=lanczos,"
-        f"crop={ow}:{oh}"
-    )
-    # Dynamic crop size then lanczos down — float x/y keep subpixel motion smooth.
-    if k == "pull":
-        # Start tight, ease out to wider frame.
-        return (
-            f"{fill},"
-            f"crop=w='iw/({1 + z:.4f}-{z:.4f}*{p})':h='ih/({1 + z:.4f}-{z:.4f}*{p})':"
-            f"x='(iw-ow)/2':y='(ih-oh)/2',"
-            f"scale={width}:{height}:flags=lanczos"
-        )
-    if k == "pan":
-        return (
-            f"{fill},"
-            f"crop={width}:{height}:x='(iw-ow)*{p}':y='(ih-oh)/2',"
-            f"scale={width}:{height}:flags=bicubic"
-        )
-    # push — zoom in, slight diagonal for documentary feel
-    return (
-        f"{fill},"
-        f"crop=w='iw/(1+{z:.4f}*{p})':h='ih/(1+{z:.4f}*{p})':"
-        f"x='(iw-ow)/2+(iw-ow)*0.12*{p}':y='(ih-oh)/2+(ih-oh)*0.06*{p}',"
-        f"scale={width}:{height}:flags=lanczos"
-    )
+def _motion_vf(kind: str, index: int, seg: float, width: int, height: int, *, frames: int, fps: int) -> str:
+    """Delegate to hi-res zoompan — the only path that stays fully fluid on stills."""
+    return _ken_burns(kind, index, frames, width, height, fps=fps)
 
 
 def _slideshow_editorial(
@@ -260,7 +246,7 @@ def _slideshow_editorial(
     """Ken Burns + per-still fades. Unique stills are encoded once and reused."""
     import tempfile
 
-    fps = max(12, min(30, int(fps)))
+    fps = max(24, min(30, int(fps)))
     frames = max(8, int(round(seg * fps)))
     fade = 0.28 if transition == "fade" else 0.0
     owned = clip_dir is None
@@ -337,14 +323,14 @@ def _encode_one_still(
     fade: float,
     frames: int,
     index: int,
-    fps: int = 24,
+    fps: int = 30,
     crf: int = 17,
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    # Lock still input fps to the encode fps — default 25fps made t finish early → frozen tail.
-    fps = max(12, min(30, int(fps)))
-    mv = _motion_vf(motion, index, seg, width, height)
+    fps = max(24, min(30, int(fps)))
+    frames = max(8, int(frames))
+    mv = _motion_vf(motion, index, seg, width, height, frames=frames, fps=fps)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
         f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
@@ -352,17 +338,18 @@ def _encode_one_still(
         else ""
     )
     vig = _vignette_vf(look)
-    vf = f"{mv}{fades}{vig},fps={fps},format=yuv420p,setsar=1"
+    # zoompan already emits `frames` at `fps`; fade/vignette after, then lock format.
+    vf = f"{mv}{fades}{vig},format=yuv420p,setsar=1"
     part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
         "-framerate", str(fps), "-loop", "1", "-i", str(img.resolve()),
-        "-vf", vf, "-r", str(fps), "-frames:v", str(frames), "-t", f"{seg:.3f}",
-        # No -tune stillimage: it fights continuous Ken Burns and looks stepped.
+        "-vf", vf, "-r", str(fps), "-frames:v", str(frames),
         "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    limit = 18 if width <= 1280 else 32
+    # Hi-res zoompan is heavier than crop; give the encoder room.
+    limit = 45 if width <= 1280 else 90
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(part):
         part.unlink(missing_ok=True)
@@ -486,16 +473,16 @@ def _concat_edit_vf(
     transition: str,
     total: float,
 ) -> str:
-    """One-pass fluid Ken Burns + per-still fades (Vercel path)."""
-    fps = max(12, min(30, int(fps)))
-    z = 0.14
-    over = 1.0 + z + 0.04
+    """Fallback one-pass path: hi-res buffer + continuous crop window (no pixel trunc)."""
+    fps = max(24, min(30, int(fps)))
+    z = 0.20
+    over = 1.0 + z + 0.08
     pw = max(width + 2, int(round(width * over)) // 2 * 2)
     ph = max(height + 2, int(round(height * over)) // 2 * 2)
     s = max(seg, 0.8)
+    # Frame-smooth progress inside each still window
     p = f"min(mod(t\\,{s:.4f})/{s:.4f}\\,1)"
     m = str(motion or "mix").strip().lower()
-    # Alternate push / pull / pan in mix so motion never feels static.
     if m == "pull":
         crop_wh = (
             f"crop=w='iw/({1 + z:.4f}-{z:.4f}*{p})':h='ih/({1 + z:.4f}-{z:.4f}*{p})':"
@@ -506,14 +493,13 @@ def _concat_edit_vf(
     elif m == "push":
         crop_wh = (
             f"crop=w='iw/(1+{z:.4f}*{p})':h='ih/(1+{z:.4f}*{p})':"
-            f"x='(iw-ow)/2+(iw-ow)*0.12*{p}':y='(ih-oh)/2+(ih-oh)*0.06*{p}'"
+            f"x='(iw-ow)/2+(iw-ow)*0.1*{p}':y='(ih-oh)/2+(ih-oh)*0.05*{p}'"
         )
     else:
-        # mix: even stills push-in, odd stills pull-out (continuous, no sine shake)
         crop_wh = (
             f"crop=w='iw/(1+{z:.4f}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,{p}\\,1-{p}))':"
             f"h='ih/(1+{z:.4f}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,{p}\\,1-{p}))':"
-            f"x='(iw-ow)/2+(iw-ow)*0.1*{p}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,1\\,-1)':"
+            f"x='(iw-ow)/2+(iw-ow)*0.12*{p}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,1\\,-1)':"
             f"y='(ih-oh)/2'"
         )
     fade = 0.28 if str(transition or "fade") == "fade" else 0.0
