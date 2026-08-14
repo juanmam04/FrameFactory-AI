@@ -439,13 +439,26 @@ function go(view, payload = null) {
 }
 
 async function boot() {
+  const status = document.getElementById("boot-status");
+  const tips = [
+    "Cargando canal y proyectos",
+    "Sincronizando episodios",
+    "Preparando el Studio",
+  ];
+  let tip = 0;
+  const tipTimer = setInterval(() => {
+    tip = (tip + 1) % tips.length;
+    if (status) status.textContent = tips[tip];
+  }, 1600);
   try {
+    if (status) status.textContent = tips[0];
     state.bootstrap = await api("/api/bootstrap");
     renderCreds(state.bootstrap.credentials);
     recheckKeys().catch((e) => toast(e.message));
     const hash = location.hash.replace("#", "");
     if (hash.startsWith("project/")) {
       const id = decodeURIComponent(hash.slice("project/".length));
+      if (status) status.textContent = "Abriendo episodio…";
       await openProject(id);
       return;
     }
@@ -454,6 +467,8 @@ async function boot() {
     go("home");
   } catch (e) {
     stage().innerHTML = `<div class="panel"><p class="notice bad">${esc(e.message)}</p></div>`;
+  } finally {
+    clearInterval(tipTimer);
   }
 }
 
