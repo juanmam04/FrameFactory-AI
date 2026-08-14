@@ -654,13 +654,14 @@
     "path": "flow-pack/visual-plan.json"
   },
   "render": {
-    "state": "running",
-    "updated_at": "2026-08-14T18:48:07Z",
-    "message": "Prueba de 20s lista (inicio del episodio real + subtítulos).",
+    "state": "idle",
+    "updated_at": "2026-08-14T19:56:00Z",
+    "message": "Prueba lista. Tocá Renderizar episodio para el video completo.",
     "stage": "preview_done",
-    "kb_done": 4,
-    "kb_total": 4,
-    "percent": 100,
+    "kb_done": 0,
+    "kb_total": 0,
+    "percent": 0,
+    "need_continue": false,
     "preview": "render/preview.mp4",
     "edit": {
       "seconds_per_image": 6.0,
