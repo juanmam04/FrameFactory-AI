@@ -18,6 +18,11 @@ const state = {
 };
 
 const stage = () => document.getElementById("stage");
+const setStageMode = (mode) => {
+  const el = stage();
+  if (!el) return;
+  el.classList.toggle("stage-project", mode === "project");
+};
 const $ = (sel, el = document) => el.querySelector(sel);
 const IMG_BOOT = Date.now();
 
@@ -506,6 +511,7 @@ function render() {
 }
 
 function renderHome() {
+  setStageMode("home");
   const b = state.bootstrap;
   const s = b.stats;
   const goal = Math.max(1, s.goal || 100);
@@ -651,6 +657,7 @@ function renderHome() {
 }
 
 async function renderIdeas() {
+  setStageMode("home");
   stage().innerHTML = `
     <p class="kicker">New episode</p>
     <h1 class="h1">Pick a story engine</h1>
@@ -754,6 +761,7 @@ function paintIdeas() {
 }
 
 function renderLibrary() {
+  setStageMode("home");
   const projects = state.bootstrap?.projects || [];
   stage().innerHTML = `
     <p class="kicker">Library</p>
@@ -795,6 +803,7 @@ function renderLibrary() {
 function renderProject() {
   const p = state.project;
   if (!p) return go("home");
+  setStageMode("project");
   stopVideoPolls();
   let step = p.ui_step || "research";
   if (step === "images") step = "flow";
