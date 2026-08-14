@@ -1729,6 +1729,10 @@ function paintPreview(ws, p) {
           : `<p class="lead" style="color:#9a3412">
         La voz <strong>no coincide con el guion</strong> (toma vieja). Andá a <strong>6 Voz → Regenerar voz</strong>
         antes de probar: si no, el audio va a decir otra cosa que el texto.
+      </p>
+      <p class="lead" style="font-size:0.9rem;color:#9a3412">
+        Recargar la página <strong>no regenera el guion</strong>. Si escuchás otra cosa, regenerá la voz
+        con el guion aprobado y volvé a armar la prueba.
       </p>`
       }
       <div class="edit-picks">

@@ -584,7 +584,7 @@ def _encode_profile(*, vercel: bool) -> tuple[int, int, int, int, str, tuple[int
 
 
 def assemble_preview_clip(project: dict[str, Any]) -> Path:
-    """First ~20s test clip. Fast stills planning; captions always Whisper-aligned to voice."""
+    """First ~20s test clip. On Vercel: fast path (no episode AI reuse, no Whisper)."""
     import math
 
     from src.documentary.import_images import list_project_images
@@ -683,70 +683,67 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         Path(result).unlink(missing_ok=True)
         raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
 
-    from src.documentary.captions import apply_captions_file, captions_for_window
+    from src.documentary.captions import apply_captions_file, build_srt, captions_for_window
 
-    # Subtitles MUST follow the actual voice (Whisper on the first ~20s of narration).
-    # Script-estimate captions were saying different words than the take — never again for preview.
+    # Align captions to the spoken take (Whisper on the first ~20s only — not the full episode).
     touch_render_progress(
         project,
         message="Prueba 20s · alineando subtítulos con la voz…",
-        stage="preview_captions",
+        stage="preview_burn",
         done=len(images),
         total=len(images),
-        percent=80,
+        percent=85,
         push=True,
         preview=True,
     )
     srt_path = project_dir(pid) / "render" / "captions_preview.srt"
+    captions_ok = False
     try:
-        srt_path = captions_for_window(project, preview_dur)
+        got = captions_for_window(project, preview_dur)
+        if got.is_file() and got.stat().st_size > 0:
+            if got.resolve() != srt_path.resolve():
+                srt_path.write_text(got.read_text(encoding="utf-8"), encoding="utf-8")
+            captions_ok = True
     except Exception as e:
-        append_log(pid, f"preview captions whisper failed: {e}")
-        srt_path = project_dir(pid) / "render" / "captions_preview.srt"
-        srt_path.write_text("", encoding="utf-8")
-
-    touch_render_progress(
-        project,
-        message="Prueba 20s · quemando subtítulos…",
-        stage="preview_burn",
-        done=len(images),
-        total=len(images),
-        percent=88,
-        push=True,
-        preview=True,
-    )
+        append_log(pid, f"preview whisper captions: {e}")
+    if not captions_ok:
+        # Last resort only — may drift from speech; prefer regenerating voice if this hits often.
+        script = str(project.get("script") or "").strip()
+        words = script.split()
+        take = max(12, int(preview_dur * 2.6))
+        window_script = " ".join(words[:take]) if words else script[:400]
+        srt_path.write_text(build_srt(window_script or "…", preview_dur), encoding="utf-8")
+        append_log(pid, "preview captions fell back to script estimate")
 
     burned = False
     burn_w = int(width)
     burn_h = int(height)
     tmp = project_dir(pid) / "render" / "preview_burn.mp4"
-    if srt_path.is_file() and srt_path.stat().st_size > 0:
-        try:
-            apply_captions_file(
-                Path(result),
-                srt_path,
-                tmp,
-                width=burn_w,
-                crf=20 if vercel else 17,
-                preset="ultrafast" if vercel else "veryfast",
-                prefer_overlays=True,
-                max_seconds=preview_dur,
-            )
-            if mp4_is_complete(tmp):
-                if out.exists():
-                    out.unlink(missing_ok=True)
-                tmp.replace(out)
-                burned = True
-        except Exception as e:
-            append_log(pid, f"preview burn skipped: {e}")
+    try:
+        apply_captions_file(
+            Path(result),
+            srt_path,
+            tmp,
+            width=burn_w,
+            crf=20 if vercel else 17,
+            preset="ultrafast" if vercel else "veryfast",
+            prefer_overlays=True,
+            max_seconds=preview_dur,
+        )
+        if mp4_is_complete(tmp):
+            if out.exists():
+                out.unlink(missing_ok=True)
+            tmp.replace(out)
+            burned = True
+    except Exception as e:
+        append_log(pid, f"preview burn skipped: {e}")
     if not burned:
-        # Prefer no captions over wrong captions.
+        # Ship the clip anyway — a mute-caption failure must not block the test.
         if tmp.exists():
             tmp.unlink(missing_ok=True)
         if out.exists():
             out.unlink(missing_ok=True)
         Path(result).replace(out)
-        append_log(pid, "preview shipped without captions (whisper/burn unavailable)")
 
     if not mp4_is_complete(out):
         raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
