@@ -168,6 +168,8 @@ def apply_captions_file(
     width: int = 1920,
     crf: int = 17,
     preset: str = "veryfast",
+    prefer_overlays: bool = False,
+    max_seconds: float | None = None,
 ) -> Path:
     """Burn English captions onto an mp4. libass first (one filter), then PNG, then drawtext."""
     import subprocess
@@ -183,42 +185,70 @@ def apply_captions_file(
     if dest.exists():
         dest.unlink(missing_ok=True)
     cues = srt_to_cues(srt.read_text(encoding="utf-8"))
+    if max_seconds is not None and max_seconds > 0:
+        limit = float(max_seconds) + 0.35
+        cues = [c for c in cues if _srt_sec(str(c.get("start") or "0")) < limit]
     if not cues:
         raise RuntimeError("El SRT no tiene carteles.")
     last_err = ""
-    ass = srt.with_suffix(".ass")
-    fontsdir = _prepare_font_dir()
-    try:
-        ass.write_text(_ass_from_cues(cues, width=width), encoding="utf-8")
-        vf = _subtitles_filter(ass, fontsdir=fontsdir)
-        cmd = [
-            ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
-            "-vf", vf,
-            "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
-            "-pix_fmt", "yuv420p",
-            "-c:a", "copy",
-            "-movflags", "+faststart",
-            str(dest),
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
-        if result.returncode == 0 and mp4_is_complete(dest):
-            return dest
-        last_err = ffmpeg_error_text(result.stderr or result.stdout or "subtitles")
-        dest.unlink(missing_ok=True)
-    except Exception as e:
-        last_err = str(e)[:400]
-        dest.unlink(missing_ok=True)
-    try:
-        _burn_with_overlays(ff, src, dest, cues, width=width, crf=crf, preset=preset)
-        if mp4_is_complete(dest):
-            return dest
-    except Exception as e:
-        last_err = str(e)[:400] or last_err
-        dest.unlink(missing_ok=True)
-    font = caption_font_path()
-    if font is not None:
+
+    def _try_overlays() -> Path | None:
+        nonlocal last_err
         try:
-            vf = _drawtext_filter(_merge_cues(cues, max_n=36), font, 52 if width >= 1600 else 32)
+            _burn_with_overlays(
+                ff,
+                src,
+                dest,
+                cues,
+                width=width,
+                crf=crf,
+                preset=preset,
+                big=True,
+            )
+            if mp4_is_complete(dest):
+                return dest
+        except Exception as e:
+            last_err = str(e)[:400] or last_err
+            dest.unlink(missing_ok=True)
+        return None
+
+    def _try_ass() -> Path | None:
+        nonlocal last_err
+        ass = srt.with_suffix(".ass")
+        fontsdir = _prepare_font_dir()
+        try:
+            ass.write_text(_ass_from_cues(cues, width=width), encoding="utf-8")
+            vf = _subtitles_filter(ass, fontsdir=fontsdir)
+            cmd = [
+                ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
+                "-vf", vf,
+                "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+                "-pix_fmt", "yuv420p",
+                "-c:a", "copy",
+                "-movflags", "+faststart",
+                str(dest),
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            if result.returncode == 0 and mp4_is_complete(dest):
+                return dest
+            last_err = ffmpeg_error_text(result.stderr or result.stdout or "subtitles")
+            dest.unlink(missing_ok=True)
+        except Exception as e:
+            last_err = str(e)[:400]
+            dest.unlink(missing_ok=True)
+        return None
+
+    def _try_drawtext() -> Path | None:
+        nonlocal last_err
+        font = caption_font_path()
+        if font is None:
+            return None
+        try:
+            vf = _drawtext_filter(
+                _merge_cues(cues, max_n=36),
+                font,
+                56 if width >= 1600 else 36,
+            )
             cmd = [
                 ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
                 "-vf", vf,
@@ -236,6 +266,13 @@ def apply_captions_file(
         except Exception as e:
             last_err = str(e)[:400] or last_err
             dest.unlink(missing_ok=True)
+        return None
+
+    order = (_try_overlays, _try_ass, _try_drawtext) if prefer_overlays else (_try_ass, _try_overlays, _try_drawtext)
+    for fn in order:
+        got = fn()
+        if got is not None:
+            return got
     raise RuntimeError("No se pudieron quemar los subtítulos: " + (last_err or "ffmpeg failed"))
 
 
@@ -448,12 +485,15 @@ def _caption_font(size: int):
         return ImageFont.load_default()
 
 
-def _cue_png(text: str, dest: Path, width: int = 1920, height: int = 160) -> None:
+def _cue_png(text: str, dest: Path, width: int = 1920, height: int = 160, *, big: bool = False) -> None:
     from PIL import Image, ImageDraw
 
     im = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(im)
-    font_size = 42 if width >= 1600 else 28
+    # Soft dark bar so white text always reads on bright stills.
+    bar = Image.new("RGBA", (width, height), (0, 0, 0, 140))
+    im.alpha_composite(bar)
+    font_size = (52 if width >= 1600 else 34) if big else (42 if width >= 1600 else 28)
     font = _caption_font(font_size)
     lines = [ln.strip() for ln in str(text or "").splitlines() if ln.strip()] or [""]
     line_h = int(font_size * 1.25)
@@ -467,8 +507,8 @@ def _cue_png(text: str, dest: Path, width: int = 1920, height: int = 160) -> Non
             tw = len(line) * 14
         x = max(16, (width - tw) // 2)
         y = y0 + i * line_h
-        for dx, dy in ((-2, 0), (2, 0), (0, -2), (0, 2), (-1, -1), (1, 1)):
-            draw.text((x + dx, y + dy), line, font=font, fill=(0, 0, 0, 220))
+        for dx, dy in ((-3, 0), (3, 0), (0, -3), (0, 3), (-2, -2), (2, 2)):
+            draw.text((x + dx, y + dy), line, font=font, fill=(0, 0, 0, 255))
         draw.text((x, y), line, font=font, fill=(255, 255, 255, 255))
     dest.parent.mkdir(parents=True, exist_ok=True)
     im.save(dest, "PNG")
@@ -501,16 +541,17 @@ def _burn_with_overlays(
     width: int = 1920,
     crf: int = 17,
     preset: str = "veryfast",
+    big: bool = False,
 ) -> Path:
     """Burn captions without libass: overlay PIL PNGs (works with imageio-ffmpeg on Vercel)."""
     import shutil
     import subprocess
     import tempfile
 
-    cues = _merge_cues(cues)
+    cues = _merge_cues(cues, max_n=28 if big else 48)
     if not cues:
         raise RuntimeError("No hay carteles para quemar.")
-    bar_h = 180 if width >= 1600 else 140
+    bar_h = (220 if width >= 1600 else 160) if big else (180 if width >= 1600 else 140)
     tmp = Path(tempfile.mkdtemp(prefix="ff-subs-"))
     try:
         cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src)]
@@ -518,13 +559,13 @@ def _burn_with_overlays(
         last = "0:v"
         for i, cue in enumerate(cues):
             png = tmp / f"c{i:03d}.png"
-            _cue_png(cue.get("text") or "", png, width=width, height=bar_h)
+            _cue_png(cue.get("text") or "", png, width=width, height=bar_h, big=big)
             cmd.extend(["-i", str(png)])
             start = _srt_sec(str(cue.get("start") or "0"))
             end = _srt_sec(str(cue.get("end") or "0"))
             out = f"v{i}"
             parts.append(
-                f"[{last}][{i + 1}:v]overlay=0:H-h-48:enable='between(t,{start:.3f},{end:.3f})'[{out}]"
+                f"[{last}][{i + 1}:v]overlay=0:H-h-36:enable='between(t,{start:.3f},{end:.3f})'[{out}]"
             )
             last = out
         cmd.extend(

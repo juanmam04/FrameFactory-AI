@@ -1711,8 +1711,10 @@ function paintRender(ws, p) {
         </div>
         ${hasPrev ? `
           <div class="ff-player-wrap">
-            <p class="ff-player-label">Player de la prueba (con subtítulos)</p>
-            <video controls src="/api/projects/${id}/video/preview?t=${Date.now()}" class="ff-player"></video>
+            <p class="ff-player-label">Player de la prueba — subtítulos quemados abajo (también CC del player)</p>
+            <video id="preview-player" controls crossorigin="anonymous" src="/api/projects/${id}/video/preview?t=${Date.now()}" class="ff-player">
+              <track kind="subtitles" srclang="en" label="English" default src="/api/projects/${id}/captions.vtt?t=${Date.now()}" />
+            </video>
           </div>
         ` : `<p class="lead" style="margin-top:0.9rem;font-size:0.92rem">Todavía no hay prueba. Tocá el botón de arriba.</p>`}
       </section>

@@ -688,9 +688,21 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         raise RuntimeError("No hay subtítulos para la prueba. Generá el guion/voz primero.")
     burn_w = int((scale_to or (width, height))[0])
     tmp = project_dir(pid) / "render" / "preview_burn.mp4"
-    apply_captions_file(Path(result), srt, tmp, width=burn_w, crf=17 if not vercel else 20, preset="veryfast")
+    # Prefer PNG overlays: libass often "succeeds" on Vercel with invisible fonts.
+    apply_captions_file(
+        Path(result),
+        srt,
+        tmp,
+        width=burn_w,
+        crf=17 if not vercel else 20,
+        preset="veryfast",
+        prefer_overlays=True,
+        max_seconds=preview_dur,
+    )
     if not mp4_is_complete(tmp):
         raise RuntimeError("No se pudieron quemar los subtítulos en la prueba.")
+    if out.exists():
+        out.unlink(missing_ok=True)
     tmp.replace(out)
 
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
