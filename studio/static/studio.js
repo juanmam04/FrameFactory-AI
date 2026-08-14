@@ -807,8 +807,9 @@ function renderProject() {
   stopVideoPolls();
   let step = p.ui_step || "research";
   if (step === "images") step = "flow";
-  // Episodios viejos en "render" siguen en Video; la prueba es un paso aparte.
-  const steps = ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render", "subs", "publish"];
+  // Subs are burned into the episode during render — no separate step.
+  if (step === "subs") step = "render";
+  const steps = ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render"];
   const stepLabel = {
     topic: "1 Tema",
     research: "2 Info",
@@ -819,9 +820,7 @@ function renderProject() {
     music: "7 Música",
     preview: "8 Prueba",
     render: "9 Video",
-    subs: "10 Subs",
-    publish: "11 YouTube",
-    done: "11 YouTube",
+    done: "9 Video",
   };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
@@ -861,7 +860,8 @@ function renderProject() {
   if (step === "music") return paintMusic(ws, p);
   if (step === "preview") return paintPreview(ws, p);
   if (step === "render") return paintRender(ws, p);
-  if (step === "subs") return paintSubs(ws, p);
+  if (step === "subs") return paintRender(ws, p);
+  if (step === "publish" || step === "done") return paintRender(ws, p);
   if (step === "publish" || step === "done") return paintPublish(ws, p);
   paintResearch(ws, p);
 }
@@ -1914,15 +1914,6 @@ function paintRender(ws, p) {
   const bindActions = (st, kind, captions) => {
     const running = kind === "running";
     const done = !running && (kind === "done" || !!st.ready);
-    $("#to-subs").onclick = async () => {
-      stopVideoPolls();
-      const data = await api(`/api/projects/${id}/step`, {
-        method: "PATCH",
-        body: JSON.stringify({ step: "subs" }),
-      });
-      state.project = data.project;
-      renderProject();
-    };
     $("#to-preview").onclick = async () => {
       stopVideoPolls();
       const data = await api(`/api/projects/${id}/step`, {
@@ -2005,17 +1996,18 @@ function paintRender(ws, p) {
     <section class="ff-block ff-block-full ff-screen-solo">
       <div class="ff-block-head">
         <span class="ff-block-tag ff-block-tag-dark">Episodio</span>
-        <h2>Video completo</h2>
+        <h2>Video completo · último paso</h2>
       </div>
       <p class="lead">
-        Pantalla solo del episodio. La prueba de 20s está en el paso <strong>8 Prueba</strong> — no se recarga acá.
+        Acá se arma el episodio largo: edición + <strong>subtítulos quemados</strong>.
+        La prueba de 20s está en el paso <strong>8 Prueba</strong>. Cuando termine, descargá el MP4.
       </p>
       <div id="render-status-host">${renderStatusView({ ...st, state: kind })}</div>
       ${
         done
           ? `
         <div class="ff-player-wrap">
-          <p class="ff-player-label">Player del episodio</p>
+          <p class="ff-player-label">Player del episodio${captions ? " (con subtítulos)" : ""}</p>
           <video id="full-player" controls playsinline src="/api/projects/${id}/video?t=${bust}" class="ff-player"></video>
         </div>`
           : ""
@@ -2023,9 +2015,12 @@ function paintRender(ws, p) {
       <div class="actions actions-center">
         <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
         ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
-        ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
+        ${
+          done
+            ? `<a class="btn btn-primary" id="download-final" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar video${captions ? " (con subtítulos)" : ""}</a>`
+            : ""
+        }
         <button class="btn btn-soft" id="to-preview">Ver prueba 20s</button>
-        <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
     </section>`;

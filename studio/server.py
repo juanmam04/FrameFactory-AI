@@ -227,7 +227,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-subs-follow-voice",
+            "build": "20260815-video-last",
         }
 
     @app.get("/api/ping")
@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-subs-follow-voice",
+            "build": "20260815-video-last",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -462,6 +462,8 @@ def create_app() -> FastAPI:
         step = body.step
         if step == "images":
             step = "flow"
+        if step == "subs":
+            step = "render"
         # Cannot jump to Script without an approved Story Plan
         if step == "script" and not (p.get("story_plan_approved") or (p.get("story_plan") or {}).get("approved")):
             step = "story"
@@ -1122,21 +1124,41 @@ def create_app() -> FastAPI:
 
     @app.get("/api/projects/{project_id}/video")
     def video_file(project_id: str, download: int = 0):
+        from src.documentary.captions import captioned_video_path
         from src.video_assembler import mp4_is_complete
 
-        path = project_dir(project_id) / "render" / "final.mp4"
-        if not mp4_is_complete(path):
+        # Prefer the finished episode (captions already burned into final.mp4 during render).
+        candidates = [
+            project_dir(project_id) / "render" / "final.mp4",
+            captioned_video_path(project_id),
+        ]
+        path = None
+        for cand in candidates:
+            if mp4_is_complete(cand):
+                path = cand
+                break
+        if path is None:
             from src.documentary import cloud_sync
 
-            if path.is_file():
-                path.unlink(missing_ok=True)
             if cloud_sync.configured():
-                cloud_sync.pull_one(project_id, "render/final.mp4", force=True)
-        if mp4_is_complete(path):
+                for rel in ("render/final.mp4", "render/final_captions.mp4"):
+                    try:
+                        cloud_sync.pull_one(project_id, rel, force=True)
+                    except Exception:
+                        pass
+            for cand in candidates:
+                if mp4_is_complete(cand):
+                    path = cand
+                    break
+        if path is not None and mp4_is_complete(path):
             kwargs = {"media_type": "video/mp4"}
             if download:
                 kwargs["filename"] = f"{project_id}.mp4"
-            return FileResponse(path, **kwargs)
+            return FileResponse(
+                path,
+                **kwargs,
+                headers={"Cache-Control": "no-store, max-age=0"},
+            )
         raise HTTPException(404, "No hay video todavía")
 
     @app.post("/api/projects/{project_id}/render")
