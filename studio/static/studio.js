@@ -1641,13 +1641,15 @@ function paintRender(ws, p) {
     const opt = (v, cur) =>
       String(v) === String(cur) || (!Number.isNaN(Number(v)) && Number(v) === Number(cur)) ? "selected" : "";
     ws.innerHTML = `
-    <div class="panel workspace">
-      <div class="panel soft" style="margin:0 0 1.25rem">
-        <p class="kicker">Apartado 1 · prueba</p>
-        <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
-        <p class="lead" style="margin:0 0 0.8rem">
-          Mismos ajustes, mismo motor y mismos subtítulos quemados que el episodio largo —
-          solo los primeros 20 segundos. Si acá no se ve bien, el largo tampoco.
+    <div class="ff-video-split">
+      <section class="ff-block ff-block-test">
+        <div class="ff-block-head">
+          <span class="ff-block-tag">Prueba</span>
+          <h2>Prueba de edición · 20 segundos</h2>
+        </div>
+        <p class="lead">
+          Es el <strong>inicio del episodio real</strong>: mismo plan de fotos, mismos ajustes,
+          mismo encode y subtítulos quemados. Solo corta a ~20s. Acá validás antes de gastar el render largo.
         </p>
         <div class="edit-picks">
           <label class="field">Segundos por foto
@@ -1687,23 +1689,34 @@ function paintRender(ws, p) {
             </select>
           </label>
         </div>
-        <div class="actions" style="margin-top:0.8rem">
-          <button class="btn btn-soft" id="try-edit" ${running || paintRender._previewWait ? "disabled" : ""}>${paintRender._previewWait ? "Armando prueba real…" : "Probar 20 segundos (igual al largo)"}</button>
+        <div class="actions" style="margin-top:0.9rem">
+          <button class="btn btn-soft" id="try-edit" ${running || paintRender._previewWait ? "disabled" : ""}>${paintRender._previewWait ? "Armando prueba real…" : "Probar 20 segundos"}</button>
         </div>
         ${hasPrev ? `
-          <p class="lead" style="margin:0.9rem 0 0.35rem;font-size:0.9rem">Preview con subtítulos quemados (mismo estilo que el episodio)</p>
-          <video controls src="/api/projects/${id}/video/preview?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px"></video>
-        ` : ""}
-      </div>
+          <div class="ff-player-wrap">
+            <p class="ff-player-label">Player de la prueba (con subtítulos)</p>
+            <video controls src="/api/projects/${id}/video/preview?t=${Date.now()}" class="ff-player"></video>
+          </div>
+        ` : `<p class="lead" style="margin-top:0.9rem;font-size:0.92rem">Todavía no hay prueba. Tocá el botón de arriba.</p>`}
+      </section>
 
-      <div class="panel soft" style="margin:0 0 1.25rem">
-        <p class="kicker">Apartado 2 · episodio</p>
-        <h2 style="margin:0 0 0.4rem">Video completo</h2>
-        <p class="lead" style="margin:0 0 0.8rem">
-          Usa exactamente la misma edición que elegiste arriba. Full HD 1080p con subtítulos en inglés ya quemados.
+      <div class="ff-split-rule" aria-hidden="true"><span>Episodio completo</span></div>
+
+      <section class="ff-block ff-block-full">
+        <div class="ff-block-head">
+          <span class="ff-block-tag ff-block-tag-dark">Episodio</span>
+          <h2>Video completo</h2>
+        </div>
+        <p class="lead">
+          Misma edición que elegiste arriba, pero el episodio entero. Full HD 1080p con subtítulos quemados.
         </p>
         ${renderStatusView({ ...st, state: kind })}
-        ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
+        ${done ? `
+          <div class="ff-player-wrap">
+            <p class="ff-player-label">Player del episodio</p>
+            <video controls src="/api/projects/${id}/video?t=${Date.now()}" class="ff-player"></video>
+          </div>
+        ` : ""}
         <div class="actions actions-center">
           <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
           ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
@@ -1711,7 +1724,7 @@ function paintRender(ws, p) {
           <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
           <button class="btn btn-ghost" id="home">Volver al inicio</button>
         </div>
-      </div>
+      </section>
     </div>`;
     $("#to-subs").onclick = async () => {
       if (paintRender._poll) clearTimeout(paintRender._poll);
