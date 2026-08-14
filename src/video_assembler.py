@@ -173,53 +173,37 @@ def _vignette_vf(look: str) -> str:
 
 
 def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
-    """Same documentary zoom (~7%) as before — only smoother sampling."""
+    """Stable documentary drift — fixed-size crop pan (no zoompan = no frame shake)."""
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     last = max(1, d - 1)
-    z_end = 1.07
-    inc = (z_end - 1.0) / last
-    if k == "pull":
-        z = f"if(lte(on,1),{z_end:.6f},max(1.0,zoom-{inc:.10f}))"
-        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
-    if k == "pan":
-        return (
-            f"zoompan=z=1.05:x='(iw-iw/zoom)*on/{last}':"
-            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
-        )
-    return (
-        f"zoompan=z='min(zoom+{inc:.10f},{z_end:.6f})':x='iw/2-(iw/zoom/2)':"
-        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    fps = max(12, min(30, int(fps)))
+    # Fixed crop window on a slightly larger canvas = glide with integer pixels only.
+    pre_w = int(width * 1.08) // 2 * 2
+    pre_h = int(height * 1.08) // 2 * 2
+    base = (
+        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
+        f"crop={pre_w}:{pre_h}"
     )
+    # `n` = frame index (integer). trunc() kills subpixel dither that looked like trembling.
+    if k == "pull":
+        x = f"trunc((in_w-out_w)*(1-n/{last}))"
+        y = f"trunc((in_h-out_h)/2)"
+    elif k == "pan":
+        x = f"trunc((in_w-out_w)*n/{last})"
+        y = f"trunc((in_h-out_h)/2)"
+    else:
+        # push: slow drift toward a focal point
+        x = f"trunc((in_w-out_w)*n/{last})"
+        y = f"trunc((in_h-out_h)*n/{last}*0.45)"
+    return f"{base},crop={width}:{height}:x='{x}':y='{y}',fps={fps}"
 
 
 def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
-    """Slow Ken Burns via scale/crop (faster than zoompan, same documentary feel)."""
-    styles = ("push", "pull", "pan")
-    k = kind if kind in styles else styles[index % 3]
-    z = 0.07
-    dur = max(0.8, float(seg))
-    fill = (
-        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
-        f"crop={width}:{height}"
-    )
-    if k == "pull":
-        return (
-            f"{fill},scale=w='2*trunc(iw*(1+{z}*(1-min(t/{dur:.3f}\\,1)))/2)':h=-2:eval=frame,"
-            f"crop={width}:{height}"
-        )
-    if k == "pan":
-        pw = int(width * 1.08) // 2 * 2
-        ph = int(height * 1.08) // 2 * 2
-        return (
-            f"scale={pw}:{ph}:force_original_aspect_ratio=increase,crop={pw}:{ph},"
-            f"crop={width}:{height}:x='(in_w-out_w)*min(t/{dur:.3f}\\,1)':y='(in_h-out_h)/2'"
-        )
-    return (
-        f"{fill},scale=w='2*trunc(iw*(1+{z}*min(t/{dur:.3f}\\,1))/2)':h=-2:eval=frame,"
-        f"crop={width}:{height}"
-    )
+    """Same stable pan path used by the still encoder."""
+    frames = max(8, int(round(max(0.8, float(seg)) * 24)))
+    return _ken_burns(kind, index, frames, width, height, fps=24)
 
 
 def _slideshow_editorial(
@@ -332,10 +316,7 @@ def _encode_one_still(
 ) -> None:
     fps = max(12, min(30, int(fps)))
     frames = max(8, int(frames))
-    # Same ~7% Ken Burns; a bit more overscan so zoompan has subpixel room (was 1.14).
-    pre_w = int(width * 1.45) // 2 * 2
-    pre_h = int(height * 1.45) // 2 * 2
-    zp = _ken_burns(motion, index, frames, width, height, fps=fps)
+    mv = _ken_burns(motion, index, frames, width, height, fps=fps)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
         f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
@@ -343,21 +324,16 @@ def _encode_one_still(
         else ""
     )
     vig = _vignette_vf(look)
-    vf = (
-        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase:flags=bilinear,"
-        f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
-    )
+    vf = f"{mv}{fades}{vig},format=yuv420p,setsar=1"
     part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
-        # Match still input fps to encode fps — default 25fps froze the last part of the move.
         "-framerate", str(fps), "-loop", "1", "-i", str(img.resolve()),
         "-vf", vf, "-r", str(fps), "-frames:v", str(frames), "-t", f"{seg:.3f}",
-        # Keep film look of the old path; drop stillimage tune (it steps moving crops).
         "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    limit = 18 if width <= 1280 else 28
+    limit = 14 if width <= 1280 else 24
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(part):
         part.unlink(missing_ok=True)
@@ -488,17 +464,18 @@ def _concat_edit_vf(
     p = f"min(mod(t\\,{seg:.3f})/{max(seg, 0.01):.3f}\\,1)"
     m = str(motion or "mix").strip().lower()
     if m == "pull":
-        x = f"(in_w-out_w)*(1-{p})"
-        y = f"(in_h-out_h)/2"
+        x = f"trunc((in_w-out_w)*(1-{p}))"
+        y = f"trunc((in_h-out_h)/2)"
     elif m == "pan":
-        x = f"(in_w-out_w)*{p}"
-        y = f"(in_h-out_h)/2"
+        x = f"trunc((in_w-out_w)*{p})"
+        y = f"trunc((in_h-out_h)/2)"
     elif m == "push":
-        x = f"(in_w-out_w)*{p}"
-        y = f"(in_h-out_h)*(0.25+0.5*{p})"
+        x = f"trunc((in_w-out_w)*{p})"
+        y = f"trunc((in_h-out_h)*{p}*0.45)"
     else:
-        x = f"(in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p})"
-        y = f"(in_h-out_h)*(0.35+0.30*sin(2*PI*{p}))"
+        # No vertical sine — that read as the whole frame trembling.
+        x = f"trunc((in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p}))"
+        y = f"trunc((in_h-out_h)/2)"
     fade = 0.28 if str(transition or "fade") == "fade" else 0.0
     bits = [
         f"scale={pw}:{ph}:force_original_aspect_ratio=increase",

@@ -576,9 +576,8 @@ def _pull_preview_assets(project_id: str) -> None:
 def _encode_profile(*, vercel: bool) -> tuple[int, int, int, int, str, tuple[int, int] | None, str]:
     """Same encode profile for preview and full episode."""
     if vercel:
-        # 30fps = same ~7% travel, more in-between frames → smoother without changing the move.
-        return 1280, 720, 30, 20, "ultrafast", (1920, 1080), "Full HD 1080p"
-    return 3840, 2160, 30, 16, "medium", None, "4K"
+        return 1280, 720, 24, 20, "ultrafast", (1920, 1080), "Full HD 1080p"
+    return 3840, 2160, 24, 16, "medium", None, "4K"
 
 
 def assemble_preview_clip(project: dict[str, Any]) -> Path:
