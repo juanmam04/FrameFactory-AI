@@ -149,7 +149,7 @@ def narration_audio_path(project_id: str) -> Path:
 
 
 def captions_for_window(project: dict[str, Any], window_sec: float) -> Path:
-    """SRT that matches the opening of the narration (for the 20s preview burn)."""
+    """SRT that matches the opening of the narration (Whisper only — never script estimate)."""
     import subprocess
 
     pid = str(project["id"])
@@ -159,15 +159,24 @@ def captions_for_window(project: dict[str, Any], window_sec: float) -> Path:
     prev = project.get("captions") if isinstance(project.get("captions"), dict) else {}
     full = captions_srt_path(pid)
     voice_fp = f"{float((project.get('voice') or {}).get('duration_sec') or 0):.2f}:{audio.stat().st_size if audio.is_file() else 0}"
+    limit = max(8.0, float(window_sec or 20) + 1.5)
+
+    def _write_window(srt_text: str) -> Path:
+        cropped = _crop_srt_window(srt_text, limit)
+        if not cropped.strip():
+            raise RuntimeError("Whisper no devolvió cues para la ventana de prueba.")
+        dest.write_text(cropped, encoding="utf-8")
+        return dest
+
     if (
         str(prev.get("source") or "") == "whisper"
         and str(prev.get("voice_fp") or "") == voice_fp
         and full.is_file()
         and full.stat().st_size > 0
     ):
-        return full
+        append_log(pid, f"preview captions reuse full whisper cropped to {limit:.0f}s")
+        return _write_window(full.read_text(encoding="utf-8"))
 
-    limit = max(8.0, float(window_sec or 20) + 1.5)
     if audio.is_file() and audio.stat().st_size > 0:
         try:
             from src.video_assembler import ffmpeg_exe
@@ -200,15 +209,48 @@ def captions_for_window(project: dict[str, Any], window_sec: float) -> Path:
             else:
                 src = audio
             srt = whisper_srt_from_audio(src, language="en")
-            dest.write_text(srt, encoding="utf-8")
             append_log(pid, f"preview captions whisper window={limit:.0f}s cues={len(srt_to_cues(srt))}")
-            return dest
+            return _write_window(srt)
         except Exception as e:
             append_log(pid, f"preview captions whisper window failed: {e}")
+            raise
 
-    # Fallback: regenerate estimate and use the full SRT (still better than stale junk).
-    generate_captions(project, force=True)
-    return captions_srt_path(pid)
+    raise RuntimeError("No hay narración para alinear subtítulos de la prueba.")
+
+
+def _crop_srt_window(srt: str, window_sec: float) -> str:
+    """Keep only cues that start inside the preview window."""
+    cues = srt_to_cues(srt)
+    if not cues:
+        return ""
+    lines: list[str] = []
+    n = 0
+    for cue in cues:
+        start = _ts_to_sec(str(cue.get("start") or "0"))
+        if start >= float(window_sec):
+            break
+        end = min(_ts_to_sec(str(cue.get("end") or "0")), float(window_sec))
+        if end <= start:
+            continue
+        n += 1
+        lines.append(str(n))
+        lines.append(f"{_fmt(start)} --> {_fmt(end)}")
+        lines.append(str(cue.get("text") or "").strip())
+        lines.append("")
+    return "\n".join(lines).strip() + ("\n" if lines else "")
+
+
+def _ts_to_sec(ts: str) -> float:
+    raw = (ts or "0").replace(",", ".")
+    parts = raw.split(":")
+    try:
+        if len(parts) == 3:
+            return float(parts[0]) * 3600 + float(parts[1]) * 60 + float(parts[2])
+        if len(parts) == 2:
+            return float(parts[0]) * 60 + float(parts[1])
+        return float(parts[0])
+    except Exception:
+        return 0.0
 
 
 def generate_captions(project: dict[str, Any], *, force: bool = False) -> dict[str, Any]:
