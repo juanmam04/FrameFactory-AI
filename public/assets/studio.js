@@ -1541,12 +1541,48 @@ function renderStatusView(st) {
       error: "Falló el render.",
     }[state] ||
     "";
+  const done = Number(st.kb_done || 0);
+  const total = Number(st.kb_total || 0);
+  let pct = Number(st.percent || 0);
+  if ((!pct || pct < 1) && total > 0) pct = Math.round((100 * done) / total);
+  pct = Math.max(0, Math.min(100, pct || 0));
+  const elapsed = Number(st.elapsed_sec || 0);
+  const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
+  const ss = String(elapsed % 60).padStart(2, "0");
+  const detailBits = [];
+  if (state === "running" && total > 0) detailBits.push(`Foto ${done} / ${total}`);
+  if (state === "running" && elapsed > 0) detailBits.push(`Lleva ${mm}:${ss}`);
+  if (state === "running" && st.stage) {
+    const stageMap = {
+      plan: "Planificando",
+      captions_prep: "Subtítulos",
+      encode: "Clips + zoom",
+      captions_burn: "Quemando subtítulos",
+      preview_encode: "Prueba · clips",
+      preview_burn: "Prueba · subtítulos",
+      preview_captions: "Prueba · subtítulos",
+    };
+    detailBits.push(stageMap[st.stage] || st.stage);
+  }
+  const bar =
+    state === "running"
+      ? `<div style="margin-top:0.75rem">
+          <div style="display:flex;justify-content:space-between;gap:0.75rem;font-size:0.82rem;color:var(--muted);margin-bottom:0.35rem">
+            <span>${esc(detailBits.join(" · ") || "Trabajando…")}</span>
+            <strong style="color:var(--ink)">${pct}%</strong>
+          </div>
+          <div style="height:10px;border-radius:999px;background:rgba(15,23,32,0.08);overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#0f766e,#14b8a6);transition:width 400ms ease"></div>
+          </div>
+        </div>`
+      : "";
   return `
     <div style="display:flex;align-items:flex-start;gap:0.85rem;margin:1rem 0 1.2rem;padding:1rem 1.15rem;border-radius:16px;border:1px solid var(--line,#d8dee6);background:var(--soft,#f4f6f8)">
       <span class="pill ${cls}">${esc(label)}</span>
-      <div>
+      <div style="flex:1;min-width:0">
         <strong>${esc(label)}</strong>
         <p class="lead" style="margin:0.25rem 0 0">${esc(msg)}</p>
+        ${bar}
       </div>
     </div>`;
 }

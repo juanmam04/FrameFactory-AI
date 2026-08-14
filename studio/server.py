@@ -918,7 +918,12 @@ def create_app() -> FastAPI:
                 # Vercel lambdas die ~300s. Don't flip to ERROR — tell the UI to resume.
                 if age > 200:
                     state = "running"
-                    message = "Reanudando render (el servidor corta a los ~5 min)…"
+                    done = int(rec.get("kb_done") or 0)
+                    total = int(rec.get("kb_total") or 0)
+                    if done and total:
+                        message = f"Reanudando desde foto {done}/{total} (el servidor corta a los ~5 min)…"
+                    else:
+                        message = "Reanudando render (el servidor corta a los ~5 min)…"
                     need_continue = True
             except Exception:
                 pass
@@ -934,6 +939,25 @@ def create_app() -> FastAPI:
             "done": "Terminado",
             "error": "Error",
         }
+        kb_done = int(rec.get("kb_done") or 0)
+        kb_total = int(rec.get("kb_total") or 0)
+        percent = rec.get("percent")
+        try:
+            percent = int(percent) if percent is not None else None
+        except Exception:
+            percent = None
+        if percent is None and kb_total > 0:
+            percent = max(0, min(100, int(round(100 * kb_done / kb_total))))
+        elapsed = 0
+        try:
+            from datetime import datetime, timezone
+
+            stamp = str(rec.get("started_at") or "")
+            if stamp and state == "running":
+                t0 = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                elapsed = max(0, int((datetime.now(timezone.utc) - t0).total_seconds()))
+        except Exception:
+            elapsed = 0
         return {
             "ready": bool(ready),
             "bytes": local.stat().st_size if local.is_file() else 0,
@@ -952,9 +976,12 @@ def create_app() -> FastAPI:
             "updated_at": str(rec.get("updated_at") or ""),
             "preview": bool(preview),
             "edit": rec.get("edit") if isinstance(rec.get("edit"), dict) else {},
-            "need_continue": bool(rec.get("need_continue")) and state == "running",
-            "kb_done": rec.get("kb_done") or 0,
-            "kb_total": rec.get("kb_total") or 0,
+            "need_continue": bool(need_continue) and state == "running",
+            "kb_done": kb_done,
+            "kb_total": kb_total,
+            "percent": percent if percent is not None else 0,
+            "stage": str(rec.get("stage") or ""),
+            "elapsed_sec": elapsed,
         }
 
     @app.get("/api/projects/{project_id}/video")

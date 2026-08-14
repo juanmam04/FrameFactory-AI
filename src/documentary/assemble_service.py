@@ -31,6 +31,10 @@ def set_render_state(
         rec["cancelled"] = False
         rec["need_continue"] = False
         rec["message"] = message or "Armando el video…"
+        rec["stage"] = "start"
+        rec["kb_done"] = 0
+        rec["kb_total"] = 0
+        rec["percent"] = 0
         set_checkpoint(project, "render_ready", False)
         try:
             flag = project_dir(str(project.get("id") or "")) / "render" / "cancel.flag"
@@ -41,18 +45,67 @@ def set_render_state(
         rec["finished_at"] = now
         rec["error"] = ""
         rec["message"] = message or "Terminado. Ya lo podés descargar."
+        rec["stage"] = "done"
+        rec["percent"] = 100
         set_checkpoint(project, "render_ready", True)
     elif state == "error":
         rec["finished_at"] = now
         rec["error"] = (error or message or "Falló el render.")[:400]
         rec["message"] = rec["error"]
+        rec["stage"] = "error"
         set_checkpoint(project, "render_ready", False)
     else:
         rec["state"] = "idle"
         rec["message"] = message or "Todavía no se armó el video."
         rec["error"] = ""
+        rec["stage"] = "idle"
     project["render"] = rec
     save_project(project)
+    return rec
+
+
+def touch_render_progress(
+    project: dict[str, Any],
+    *,
+    message: str,
+    stage: str = "",
+    done: int | None = None,
+    total: int | None = None,
+    percent: int | None = None,
+    push: bool = False,
+) -> dict[str, Any]:
+    """Heartbeat so the UI can show what the render is doing (without resetting started_at)."""
+    rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+    rec["state"] = "running"
+    rec["updated_at"] = _utc_now()
+    rec["message"] = (message or "")[:240]
+    if stage:
+        rec["stage"] = stage
+    if done is not None:
+        rec["kb_done"] = int(done)
+    if total is not None:
+        rec["kb_total"] = int(total)
+    if percent is not None:
+        rec["percent"] = max(0, min(100, int(percent)))
+    elif rec.get("kb_total"):
+        try:
+            rec["percent"] = max(
+                0,
+                min(100, int(round(100 * float(rec.get("kb_done") or 0) / float(rec["kb_total"])))),
+            )
+        except Exception:
+            pass
+    project["render"] = rec
+    save_project(project)
+    if push:
+        try:
+            from src.documentary.runtime import on_vercel
+            from src.documentary import cloud_sync
+
+            if on_vercel() and cloud_sync.configured():
+                cloud_sync.push_paths(str(project.get("id") or ""), ["project.json"])
+        except Exception:
+            pass
     return rec
 
 
@@ -293,12 +346,25 @@ def assemble_and_render(
         quality_label = "4K"
     rec0 = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
     rec0["need_continue"] = False
-    rec0["message"] = "Armando el episodio (zoom, fundidos, música)…"
+    rec0["message"] = "1/4 Planificando fotos y duración…"
+    rec0["stage"] = "plan"
+    rec0["kb_done"] = 0
+    rec0["kb_total"] = len(images)
+    rec0["percent"] = 2
     rec0["updated_at"] = _utc_now()
     project["render"] = rec0
     save_project(project)
     try:
         _abort_if_cancelled(pid)
+        touch_render_progress(
+            project,
+            message="2/4 Preparando subtítulos…",
+            stage="captions_prep",
+            done=0,
+            total=len(images),
+            percent=5,
+            push=True,
+        )
         try:
             from src.documentary.captions import captions_srt_path, generate_captions
 
@@ -307,6 +373,37 @@ def assemble_and_render(
                 generate_captions(project)
         except Exception as e:
             append_log(pid, f"captions srt skip: {e}")
+
+        import time as _time
+
+        _last_push = [0.0]
+
+        def _on_clip_progress(done: int, total: int) -> None:
+            _abort_if_cancelled(pid)
+            pct = 8 + int(70 * (done / max(1, total)))
+            now = _time.monotonic()
+            should_push = done == 1 or done >= total or (now - _last_push[0]) >= 10.0
+            if should_push:
+                _last_push[0] = now
+            touch_render_progress(
+                project,
+                message=f"3/4 Armando clips con zoom/fundido — foto {done} de {total}",
+                stage="encode",
+                done=done,
+                total=total,
+                percent=pct,
+                push=should_push,
+            )
+
+        touch_render_progress(
+            project,
+            message=f"3/4 Armando clips con zoom/fundido — 0 de {len(images)}",
+            stage="encode",
+            done=0,
+            total=len(images),
+            percent=8,
+            push=True,
+        )
         result = montar_slideshow(
             images,
             audio,
@@ -325,6 +422,8 @@ def assemble_and_render(
             editorial=True,
             look=str(edit.get("look") or "soft"),
             scale_to=scale_to,
+            on_progress=_on_clip_progress,
+            abort=lambda: _abort_if_cancelled(pid),
         )
         _abort_if_cancelled(pid)
         if not mp4_is_complete(Path(result)):
@@ -339,6 +438,15 @@ def assemble_and_render(
         except Exception:
             pass
         burned = False
+        touch_render_progress(
+            project,
+            message="4/4 Quemando subtítulos en inglés…",
+            stage="captions_burn",
+            done=len(images),
+            total=len(images),
+            percent=88,
+            push=True,
+        )
         try:
             from src.documentary.captions import burn_into_final
 
@@ -373,6 +481,10 @@ def assemble_and_render(
                 "need_continue": False,
                 "message": msg,
                 "error": "",
+                "stage": "done",
+                "percent": 100,
+                "kb_done": len(images),
+                "kb_total": len(images),
                 "finished_at": _utc_now(),
             }
         )
@@ -495,11 +607,40 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     try:
         from src.documentary.captions import captions_srt_path, generate_captions
 
+        touch_render_progress(
+            project,
+            message="Prueba 20s · preparando subtítulos…",
+            stage="preview_captions",
+            done=0,
+            total=len(images),
+            percent=10,
+            push=True,
+        )
         srt = captions_srt_path(pid)
         if not srt.is_file() or srt.stat().st_size <= 0:
             generate_captions(project)
     except Exception as e:
         append_log(pid, f"preview captions srt: {e}")
+
+    import time as _time
+
+    _last_push = [0.0]
+
+    def _on_preview_progress(done: int, total: int) -> None:
+        pct = 15 + int(60 * (done / max(1, total)))
+        now = _time.monotonic()
+        should_push = done == 1 or done >= total or (now - _last_push[0]) >= 8.0
+        if should_push:
+            _last_push[0] = now
+        touch_render_progress(
+            project,
+            message=f"Prueba 20s · clip {done}/{total} (mismo motor que el largo)",
+            stage="preview_encode",
+            done=done,
+            total=total,
+            percent=pct,
+            push=should_push,
+        )
 
     master = project_dir(pid) / "render" / "preview_master.mp4"
     if master.exists():
@@ -522,6 +663,7 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         editorial=True,
         look=str(edit.get("look") or "soft"),
         scale_to=scale_to,
+        on_progress=_on_preview_progress,
     )
     if not mp4_is_complete(Path(result)):
         Path(result).unlink(missing_ok=True)
@@ -530,6 +672,15 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     # Captions are mandatory in the test — same burn path as the full episode.
     from src.documentary.captions import apply_captions_file, captions_srt_path, generate_captions
 
+    touch_render_progress(
+        project,
+        message="Prueba 20s · quemando subtítulos…",
+        stage="preview_burn",
+        done=len(images),
+        total=len(images),
+        percent=85,
+        push=True,
+    )
     srt = captions_srt_path(pid)
     if not srt.is_file() or srt.stat().st_size <= 0:
         generate_captions(project)
@@ -544,6 +695,13 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     tmp.replace(out)
 
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+    # Don't overwrite a running full-episode render state with preview leftovers.
+    if str(rec.get("state") or "") != "running" or str(rec.get("stage") or "").startswith("preview"):
+        rec["state"] = rec.get("state") if rec.get("state") == "running" else (rec.get("state") or "idle")
+        if str(rec.get("stage") or "").startswith("preview") or not rec.get("stage"):
+            rec["message"] = "Prueba de 20s lista (mismo motor + subtítulos)."
+            rec["stage"] = "preview_done"
+            rec["percent"] = 100
     rec["preview"] = "render/preview.mp4"
     rec["edit"] = edit
     rec["preview_meta"] = {
