@@ -19,23 +19,25 @@ def set_render_state(
     *,
     message: str = "",
     error: str = "",
+    reset_progress: bool = True,
 ) -> dict[str, Any]:
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
     now = _utc_now()
     rec["state"] = state
     rec["updated_at"] = now
     if state == "running":
-        rec["started_at"] = now
         rec["finished_at"] = ""
         rec["error"] = ""
         rec["cancelled"] = False
         rec["need_continue"] = False
         rec["message"] = message or "Armando el video…"
-        rec["stage"] = "start"
-        rec["kb_done"] = 0
-        rec["kb_total"] = 0
-        rec["percent"] = 0
-        set_checkpoint(project, "render_ready", False)
+        if reset_progress or not rec.get("started_at"):
+            rec["started_at"] = now
+            rec["stage"] = "start"
+            rec["kb_done"] = 0
+            rec["kb_total"] = 0
+            rec["percent"] = 0
+            set_checkpoint(project, "render_ready", False)
         try:
             flag = project_dir(str(project.get("id") or "")) / "render" / "cancel.flag"
             flag.unlink(missing_ok=True)
@@ -289,7 +291,13 @@ def _probe_audio_sec(path: Path) -> float:
         return 0.0
 
 
-def _wipe_old_render(project_id: str) -> None:
+def _clip_dir(project_id: str) -> Path:
+    path = project_dir(project_id) / "render" / "clips"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _wipe_old_render(project_id: str, *, wipe_clips: bool = True) -> None:
     """Drop the previous final so a new render cannot serve the first-test file."""
     rnd = project_dir(project_id) / "render"
     for name in ("final.mp4", "final_master.mp4", "final_captions.mp4", "final_burn.mp4"):
@@ -297,6 +305,10 @@ def _wipe_old_render(project_id: str) -> None:
             (rnd / name).unlink(missing_ok=True)
         except OSError:
             pass
+    if wipe_clips:
+        import shutil as _sh
+
+        _sh.rmtree(rnd / "clips", ignore_errors=True)
     try:
         from src.documentary import cloud_sync
 
@@ -314,17 +326,38 @@ def _wipe_old_render(project_id: str) -> None:
         pass
 
 
+def _push_clip_dir(project_id: str) -> None:
+    from src.documentary import cloud_sync
+
+    if not cloud_sync.configured():
+        return
+    root = _clip_dir(project_id)
+    rels = [f"render/clips/{p.name}" for p in root.glob("*.mp4") if p.is_file()]
+    if not rels:
+        return
+    cloud_sync.push_paths(project_id, rels)
+
+
 def assemble_and_render(
     project: dict[str, Any],
     *,
     allow_missing: bool = False,
     transiciones_suaves: bool = True,
+    resume: bool = False,
 ) -> Path | None:
     from src.documentary.runtime import on_vercel
 
     vercel = on_vercel()
     if vercel:
         _pull_render_assets_safe(str(project["id"]), project)
+        if resume:
+            try:
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    cloud_sync.pull_prefix(str(project["id"]), "render/clips/")
+            except Exception:
+                pass
     if not verificar_ffmpeg():
         raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
     from src.documentary.voice_script_sync import require_voice_matches_script
@@ -352,8 +385,10 @@ def assemble_and_render(
     if not images:
         raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
-    _wipe_old_render(pid)
+    if not resume:
+        _wipe_old_render(pid, wipe_clips=True)
     out = project_dir(pid) / "render" / "final.mp4"
+    clip_dir = _clip_dir(pid)
     log_path = project_dir(pid) / "logs" / "render.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     scale_to = None
@@ -362,9 +397,10 @@ def assemble_and_render(
     rec0["need_continue"] = False
     rec0["message"] = "1/4 Planificando fotos y duración…"
     rec0["stage"] = "plan"
-    rec0["kb_done"] = 0
     rec0["kb_total"] = len(images)
-    rec0["percent"] = 2
+    if not resume:
+        rec0["kb_done"] = 0
+        rec0["percent"] = 2
     rec0["updated_at"] = _utc_now()
     project["render"] = rec0
     save_project(project)
@@ -372,17 +408,18 @@ def assemble_and_render(
         _abort_if_cancelled(pid)
         touch_render_progress(
             project,
-            message="2/4 Preparando subtítulos…",
+            message="2/4 Preparando subtítulos…" if not resume else "Reanudando — subtítulos listos, sigo con los clips…",
             stage="captions_prep",
-            done=0,
+            done=int(rec0.get("kb_done") or 0),
             total=len(images),
-            percent=5,
+            percent=5 if not resume else None,
             push=True,
         )
         try:
             from src.documentary.captions import captions_srt_path, generate_captions
 
-            generate_captions(project, force=True)
+            # Don't re-run Whisper on every resume — that's what froze long episodes at 2–5%.
+            generate_captions(project, force=False)
             srt = captions_srt_path(pid)
             if not srt.is_file() or srt.stat().st_size <= 0:
                 raise RuntimeError("empty srt")
@@ -393,12 +430,13 @@ def assemble_and_render(
         import time as _time
 
         _last_push = [0.0]
+        deadline = (_time.monotonic() + 230.0) if vercel else None
 
         def _on_clip_progress(done: int, total: int) -> None:
             _abort_if_cancelled(pid)
             pct = 8 + int(70 * (done / max(1, total)))
             now = _time.monotonic()
-            should_push = done == 1 or done >= total or (now - _last_push[0]) >= 10.0
+            should_push = done == 1 or done >= total or (now - _last_push[0]) >= 8.0
             if should_push:
                 _last_push[0] = now
             touch_render_progress(
@@ -411,13 +449,14 @@ def assemble_and_render(
                 push=should_push,
             )
 
+        already = int(rec0.get("kb_done") or 0) if resume else 0
         touch_render_progress(
             project,
-            message=f"3/4 Armando clips con zoom/fundido — 0 de {len(images)}",
+            message=f"3/4 Armando clips con zoom/fundido — {already} de {len(images)}",
             stage="encode",
-            done=0,
+            done=already,
             total=len(images),
-            percent=8,
+            percent=8 + int(70 * (already / max(1, len(images)))),
             push=True,
         )
         result = montar_slideshow(
@@ -438,6 +477,8 @@ def assemble_and_render(
             editorial=True,
             look=str(edit.get("look") or "soft"),
             scale_to=scale_to,
+            clip_dir=clip_dir,
+            deadline_mono=deadline,
             on_progress=_on_clip_progress,
             abort=lambda: _abort_if_cancelled(pid),
         )
@@ -511,8 +552,37 @@ def assemble_and_render(
         append_log(pid, f"render ok → {result} {quality_label} captions={burned}")
         log_path.write_text(f"OK {result}\n", encoding="utf-8")
         return Path(result)
-    except EditorialPaused:
-        raise RuntimeError("El render se cortó a mitad. Tocá renderizar de nuevo.")
+    except EditorialPaused as paused:
+        done = int(getattr(paused, "done", 0) or 0)
+        total = int(getattr(paused, "total", 0) or len(images))
+        pct = 8 + int(70 * (done / max(1, total)))
+        rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+        rec.update(
+            {
+                "state": "running",
+                "need_continue": True,
+                "message": f"Sigue en segundo plano — foto {done} de {total}. Podés salir.",
+                "stage": "encode",
+                "kb_done": done,
+                "kb_total": total,
+                "percent": pct,
+                "error": "",
+                "updated_at": _utc_now(),
+            }
+        )
+        project["render"] = rec
+        save_project(project)
+        append_log(pid, f"render paused {done}/{total}")
+        if vercel:
+            try:
+                _push_clip_dir(pid)
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    cloud_sync.push_paths(pid, ["project.json"])
+            except Exception:
+                pass
+        return None
     except RenderCancelled:
         append_log(pid, "render stopped by user")
         raise

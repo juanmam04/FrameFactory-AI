@@ -167,6 +167,301 @@ function esc(s) {
     .replaceAll('"', "&quot;");
 }
 
+const DL = {
+  jobs: new Map(),
+  db: null,
+  async open() {
+    if (this.db) return this.db;
+    this.db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open("ff-dl-v1", 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains("meta")) db.createObjectStore("meta");
+        if (!db.objectStoreNames.contains("chunks")) db.createObjectStore("chunks");
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error("IndexedDB"));
+    });
+    return this.db;
+  },
+  tx(store, mode, fn) {
+    return this.open().then(
+      (db) =>
+        new Promise((resolve, reject) => {
+          const t = db.transaction(store, mode);
+          const s = t.objectStore(store);
+          const req = fn(s);
+          t.oncomplete = () => resolve(req?.result);
+          t.onerror = () => reject(t.error);
+          if (req && req !== s) {
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+          }
+        })
+    );
+  },
+  getMeta(id) {
+    return this.tx("meta", "readonly", (s) => s.get(id));
+  },
+  setMeta(id, val) {
+    return this.tx("meta", "readwrite", (s) => s.put(val, id));
+  },
+  delMeta(id) {
+    return this.tx("meta", "readwrite", (s) => s.delete(id));
+  },
+  putChunk(id, idx, buf) {
+    return this.tx("chunks", "readwrite", (s) => s.put(buf, `${id}:${idx}`));
+  },
+  getChunk(id, idx) {
+    return this.tx("chunks", "readonly", (s) => s.get(`${id}:${idx}`));
+  },
+  async clearChunks(id, n) {
+    const db = await this.open();
+    await new Promise((resolve, reject) => {
+      const t = db.transaction("chunks", "readwrite");
+      const s = t.objectStore("chunks");
+      for (let i = 0; i < n; i++) s.delete(`${id}:${i}`);
+      t.oncomplete = () => resolve();
+      t.onerror = () => reject(t.error);
+    });
+  },
+  paint() {
+    const host = document.getElementById("dl-dock");
+    if (!host) return;
+    const rows = [...this.jobs.values()].filter((j) => j.status === "active" || j.status === "error");
+    if (!rows.length) {
+      host.classList.add("hidden");
+      host.innerHTML = "";
+      return;
+    }
+    host.classList.remove("hidden");
+    host.innerHTML = rows
+      .map((j) => {
+        const pct = j.total ? Math.min(100, Math.round((100 * j.received) / j.total)) : 0;
+        const mb = (n) => `${(n / 1048576).toFixed(1)} MB`;
+        const msg =
+          j.status === "error"
+            ? j.error || "Se cortó. Tocá para retomar."
+            : `Podés salir: al volver sigue desde acá · ${mb(j.received)}${j.total ? ` / ${mb(j.total)}` : ""}`;
+        return `<div class="dl-row" data-dl-job="${esc(j.id)}">
+          <div class="dl-row-top">
+            <strong>${esc(j.filename || "video.mp4")}</strong>
+            <span>${j.status === "error" ? "Pausada" : `${pct}%`}</span>
+          </div>
+          <div class="dl-bar"><i style="width:${pct}%"></i></div>
+          <p>${esc(msg)}</p>
+          <div class="dl-actions">
+            ${j.status === "error" ? `<button type="button" class="btn btn-accent" data-dl-resume="${esc(j.id)}">Retomar</button>` : ""}
+            <button type="button" class="btn btn-ghost" data-dl-stop="${esc(j.id)}">Cancelar</button>
+          </div>
+        </div>`;
+      })
+      .join("");
+    host.querySelectorAll("[data-dl-stop]").forEach((btn) => {
+      btn.onclick = () => this.cancel(btn.getAttribute("data-dl-stop"));
+    });
+    host.querySelectorAll("[data-dl-resume]").forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-dl-resume");
+        const j = this.jobs.get(id);
+        if (j) this.run(j);
+      };
+    });
+  },
+  async saveBlob(filename, blob) {
+    const file = new File([blob], filename, { type: "video/mp4" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: filename });
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 40000);
+  },
+  async start({ id, url, filename }) {
+    const existing = this.jobs.get(id);
+    if (existing && existing.status === "active") {
+      toast("Esa descarga ya está en curso");
+      this.paint();
+      return;
+    }
+    const saved = (await this.getMeta(id).catch(() => null)) || {};
+    const job = {
+      id,
+      url,
+      filename: filename || saved.filename || `${id}.mp4`,
+      received: Number(saved.received || 0) || 0,
+      total: Number(saved.total || 0) || 0,
+      chunks: Number(saved.chunks || 0) || 0,
+      status: "active",
+      abort: false,
+      error: "",
+    };
+    this.jobs.set(id, job);
+    this.paint();
+    toast("Descarga en segundo plano. Si salís, al volver sigue.");
+    await this.run(job);
+  },
+  async run(job) {
+    job.abort = false;
+    job.status = "active";
+    job.error = "";
+    this.jobs.set(job.id, job);
+    this.paint();
+    const piece = 2 * 1024 * 1024;
+    try {
+      if (!job.total) {
+        const head = await fetch(job.url, { method: "HEAD" });
+        const len = Number(head.headers.get("content-length") || 0);
+        if (len > 0) job.total = len;
+      }
+      if (!job.total) {
+        const probe = await fetch(job.url, { headers: { Range: "bytes=0-0" } });
+        const cr = probe.headers.get("content-range") || "";
+        const m = /\/(\d+)$/.exec(cr);
+        if (m) job.total = Number(m[1]);
+        else job.total = Number(probe.headers.get("content-length") || 0);
+        await probe.arrayBuffer();
+      }
+      if (!job.total) throw new Error("No pude medir el tamaño del video");
+      await this.setMeta(job.id, {
+        url: job.url,
+        filename: job.filename,
+        received: job.received,
+        total: job.total,
+        chunks: job.chunks,
+        status: "active",
+      });
+      while (job.received < job.total && !job.abort) {
+        const end = Math.min(job.total - 1, job.received + piece - 1);
+        const res = await fetch(job.url, { headers: { Range: `bytes=${job.received}-${end}` } });
+        if (!(res.ok || res.status === 206)) {
+          throw new Error("Se cortó la descarga");
+        }
+        const buf = await res.arrayBuffer();
+        if (!buf.byteLength) break;
+        if (res.status === 200 && job.received > 0 && buf.byteLength > piece * 2) {
+          job.received = 0;
+          job.chunks = 0;
+        }
+        await this.putChunk(job.id, job.chunks, buf);
+        job.received += buf.byteLength;
+        job.chunks += 1;
+        await this.setMeta(job.id, {
+          url: job.url,
+          filename: job.filename,
+          received: job.received,
+          total: job.total,
+          chunks: job.chunks,
+          status: "active",
+        });
+        this.paint();
+      }
+      if (job.abort) {
+        job.status = "error";
+        job.error = "Pausada";
+        this.paint();
+        return;
+      }
+      const parts = [];
+      for (let i = 0; i < job.chunks; i++) {
+        const chunk = await this.getChunk(job.id, i);
+        if (chunk) parts.push(chunk);
+      }
+      const blob = new Blob(parts, { type: "video/mp4" });
+      await this.saveBlob(job.filename, blob);
+      await this.clearChunks(job.id, job.chunks);
+      await this.delMeta(job.id);
+      this.jobs.delete(job.id);
+      this.paint();
+      toast("Video guardado");
+    } catch (e) {
+      job.status = "error";
+      job.error = e.message || "Se cortó. Tocá Retomar.";
+      await this.setMeta(job.id, {
+        url: job.url,
+        filename: job.filename,
+        received: job.received,
+        total: job.total,
+        chunks: job.chunks,
+        status: "paused",
+      }).catch(() => {});
+      this.paint();
+    }
+  },
+  async cancel(id) {
+    const job = this.jobs.get(id);
+    if (job) job.abort = true;
+    const meta = await this.getMeta(id).catch(() => null);
+    const n = Number(job?.chunks || meta?.chunks || 0);
+    await this.clearChunks(id, n).catch(() => {});
+    await this.delMeta(id).catch(() => {});
+    this.jobs.delete(id);
+    this.paint();
+  },
+  async resumeAll() {
+    try {
+      const db = await this.open();
+      const keys = await new Promise((resolve, reject) => {
+        const t = db.transaction("meta", "readonly");
+        const req = t.objectStore("meta").getAllKeys();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+      for (const id of keys) {
+        const meta = await this.getMeta(id);
+        if (!meta || meta.status === "done") continue;
+        if (this.jobs.get(id)?.status === "active") continue;
+        const job = {
+          id,
+          url: meta.url,
+          filename: meta.filename,
+          received: Number(meta.received || 0) || 0,
+          total: Number(meta.total || 0) || 0,
+          chunks: Number(meta.chunks || 0) || 0,
+          status: "active",
+          abort: false,
+          error: "",
+        };
+        this.jobs.set(id, job);
+        this.run(job);
+      }
+      this.paint();
+    } catch {
+      /* IndexedDB blocked */
+    }
+  },
+};
+
+function downloadVideoButton(projectId, label) {
+  const url = `/api/projects/${encodeURIComponent(projectId)}/video?download=1`;
+  const name = `${projectId}.mp4`;
+  return `<button type="button" class="btn btn-primary" data-dl-url="${esc(url)}" data-dl-name="${esc(name)}" data-dl-id="${esc(projectId)}">${esc(label)}</button>`;
+}
+
+function wireDownloads(root = document) {
+  root.querySelectorAll("[data-dl-url]").forEach((btn) => {
+    if (btn.dataset.dlBound === "1") return;
+    btn.dataset.dlBound = "1";
+    btn.addEventListener("click", () => {
+      DL.start({
+        id: btn.getAttribute("data-dl-id"),
+        url: btn.getAttribute("data-dl-url"),
+        filename: btn.getAttribute("data-dl-name"),
+      });
+    });
+  });
+}
+
 function pad3(n) {
   return String(n).padStart(3, "0");
 }
@@ -529,6 +824,7 @@ async function boot() {
     const note = state.bootstrap?.workspace?.sync_note;
     if (note) toast(note, 5000);
     recheckKeys().catch((e) => toast(e.message));
+    DL.resumeAll();
     const hash = location.hash.replace("#", "");
     if (hash.startsWith("project/")) {
       const id = decodeURIComponent(hash.slice("project/".length));
@@ -1653,7 +1949,7 @@ function renderStatusView(st) {
     st.message ||
     {
       idle: "Todavía no se armó el video.",
-      running: "Armando el video… unos minutos. Esta pantalla se actualiza sola.",
+      running: "Armando el video… podés salir: al volver sigue desde la última foto.",
       done: "Terminado. Ya lo podés descargar.",
       error: "Falló el render.",
     }[state] ||
@@ -1996,16 +2292,16 @@ function paintRender(ws, p) {
         { state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions },
         { force: true }
       );
-      const kickRender = () =>
-        api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
+      const kickRender = (resume = false) =>
+        api(`/api/projects/${id}/render${resume ? "?resume=1" : ""}`, { method: "POST", timeoutMs: 280000 })
           .then((r) => {
             if (r && r.continue) {
-              paintRender._kickAgain = setTimeout(kickRender, 800);
+              paintRender._kickAgain = setTimeout(() => kickRender(true), 800);
             }
           })
           .catch(() => {});
       if (paintRender._kickAgain) clearTimeout(paintRender._kickAgain);
-      kickRender();
+      kickRender(false);
       startPoll();
     };
     const stopBtn = $("#cancel-render");
@@ -2058,7 +2354,9 @@ function paintRender(ws, p) {
     }
 
     const needPlayerRemount = force || !paintRender._fullSrcBust || (done && prevKind === "running");
-    const bust = needPlayerRemount ? Date.now() : paintRender._fullSrcBust;
+    const bust = needPlayerRemount
+      ? encodeURIComponent(String(st.updated_at || st.finished_at || p.render?.finished_at || p.render?.updated_at || Date.now()))
+      : paintRender._fullSrcBust;
     if (done) paintRender._fullSrcBust = bust;
 
     ws.innerHTML = `
@@ -2084,18 +2382,14 @@ function paintRender(ws, p) {
       <div class="actions actions-center">
         <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
         ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
-        ${
-          done
-            ? `<button type="button" class="btn btn-primary" id="download-final">Descargar video${captions ? " (con subtítulos)" : ""}</button>
-        <p class="lead" style="margin:0.35rem 0 0;font-size:0.88rem;opacity:0.85">En el celular la descarga sigue en segundo plano — podés salir de la app.</p>`
-            : ""
-        }
+        ${done ? downloadVideoButton(p.id, captions ? "Descargar video (con subtítulos)" : "Descargar video") : ""}
         <button class="btn btn-soft" id="to-preview">Ver prueba 20s</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
     </section>`;
     paintRender._uiReady = true;
     bindActions(st, kind, captions);
+    wireDownloads(ws);
   };
 
   const startPoll = () => {
@@ -2108,10 +2402,15 @@ function paintRender(ws, p) {
         paint(next);
         if (next.need_continue && !paintRender._resuming) {
           paintRender._resuming = true;
-          toast("Reanudando render…");
-          api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
-            .then(() => {
+          toast("Sigue en segundo plano…");
+          api(`/api/projects/${id}/render?resume=1`, { method: "POST", timeoutMs: 280000 })
+            .then((r) => {
               paintRender._resuming = false;
+              if (r && r.continue && state.project?.ui_step === "render") {
+                paintRender._kickAgain = setTimeout(() => {
+                  api(`/api/projects/${id}/render?resume=1`, { method: "POST", timeoutMs: 280000 }).catch(() => {});
+                }, 800);
+              }
             })
             .catch(() => {
               paintRender._resuming = false;
@@ -2128,7 +2427,7 @@ function paintRender(ws, p) {
             paintRender._poll = setTimeout(tick, 2000);
             if (!paintRender._resuming) {
               paintRender._resuming = true;
-              api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 }).finally(() => {
+              api(`/api/projects/${id}/render?resume=1`, { method: "POST", timeoutMs: 280000 }).finally(() => {
                 paintRender._resuming = false;
               });
             }
@@ -2183,7 +2482,8 @@ function paintSubs(ws, p) {
   const cap = p.captions || {};
   const burned = !!(cap.burned || p.checkpoints?.captions_ready);
   const id = encodeURIComponent(p.id);
-  const vid = `/api/projects/${id}/video?t=${Date.now()}`;
+  const vidBust = encodeURIComponent(String(p.render?.finished_at || p.render?.updated_at || "1"));
+  const vid = `/api/projects/${id}/video?t=${vidBust}`;
   ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">Subtítulos</h2>
@@ -2205,10 +2505,11 @@ function paintSubs(ws, p) {
       </div>
       ${burned ? `<p class="lead">Ya están quemados en el archivo que descargás.</p>` : `<p class="lead">En el player se ven. Para YouTube tocá Ponerlos en el video y después descargá.</p>`}
       <div class="actions">
-        <a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar Full HD (con subtítulos)</a>
+        ${downloadVideoButton(p.id, "Descargar Full HD (con subtítulos)")}
         <button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>
       </div>
     </div>`;
+  wireDownloads(ws);
   const box = $("#srt-box");
   const player = $("#subs-player");
   const overlay = $("#subs-overlay");
@@ -2415,3 +2716,8 @@ window.addEventListener("hashchange", () => {
 });
 
 boot();
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") DL.resumeAll();
+});
+window.addEventListener("pageshow", () => DL.resumeAll());

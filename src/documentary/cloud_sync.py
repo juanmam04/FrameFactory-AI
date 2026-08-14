@@ -17,7 +17,8 @@ from src.saas_sessions import OUTPUT_DIR, SESSIONS_PATH
 # Skip huge / regenerable artifacts by default.
 _SKIP_DIR_NAMES = {".git", "__pycache__", ".DS_Store"}
 _SKIP_SUFFIXES = {".pyc", ".pyo"}
-_MAX_FILE_BYTES = 200 * 1024 * 1024  # 200 MB (1080p master)
+_MAX_FILE_BYTES = 200 * 1024 * 1024  # 200 MB (stills / audio)
+_MAX_VIDEO_BYTES = 512 * 1024 * 1024  # 512 MB (long 1080p episode)
 _schema_ok = False
 
 
@@ -101,7 +102,8 @@ def _iter_project_files(root: Path) -> list[Path]:
         if path.suffix.lower() in _SKIP_SUFFIXES:
             continue
         try:
-            if path.stat().st_size > _MAX_FILE_BYTES:
+            limit = _MAX_VIDEO_BYTES if path.suffix.lower() == ".mp4" else _MAX_FILE_BYTES
+            if path.stat().st_size > limit:
                 continue
         except OSError:
             continue
@@ -326,6 +328,67 @@ def pull_prefix(project_id: str, prefix: str) -> int:
         path.write_bytes(bytes(content))
         written += 1
     return written
+
+
+def blob_size(project_id: str, rel_path: str) -> int:
+    """Byte length of a remote blob without downloading it."""
+    ensure_schema()
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT octet_length(content) FROM ff_blobs
+                WHERE project_id = %s AND rel_path = %s
+                """,
+                (project_id, rel_path),
+            )
+            row = cur.fetchone()
+    if not row or row[0] is None:
+        return 0
+    try:
+        return int(row[0])
+    except (TypeError, ValueError):
+        return 0
+
+
+def iter_blob(
+    project_id: str,
+    rel_path: str,
+    *,
+    start: int = 0,
+    length: int | None = None,
+    chunk: int = 1024 * 1024,
+) -> Any:
+    """Yield BYTEA slices so a download can start immediately and resume with Range."""
+    ensure_schema()
+    start = max(0, int(start))
+    remaining = None if length is None else max(0, int(length))
+    step = max(64 * 1024, int(chunk))
+    with _connect() as conn:
+        while remaining is None or remaining > 0:
+            take = step if remaining is None else min(step, remaining)
+            with conn.cursor() as cur:
+                # substring is 1-indexed in Postgres.
+                cur.execute(
+                    """
+                    SELECT substring(content FROM %s FOR %s) FROM ff_blobs
+                    WHERE project_id = %s AND rel_path = %s
+                    """,
+                    (start + 1, take, project_id, rel_path),
+                )
+                row = cur.fetchone()
+            if not row or row[0] is None:
+                break
+            data = bytes(row[0])
+            if not data:
+                break
+            yield data
+            n = len(data)
+            start += n
+            if remaining is not None:
+                remaining -= n
+            if n < take:
+                break
 
 
 def pull_one(project_id: str, rel_path: str, *, force: bool = False) -> bool:

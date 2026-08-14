@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import sys
 import time
+import hashlib
 from pathlib import Path
 
 from .config_loader import BASE, get_duracion_por_imagen
@@ -264,13 +265,17 @@ def _slideshow_editorial(
             key = (str(img.resolve()), style)
             clip = cache.get(key)
             if clip is None or not mp4_is_complete(clip):
-                if deadline_mono is not None and time.monotonic() >= float(deadline_mono):
-                    raise EditorialPaused(len(cache), len(imgs))
-                clip = tmp / f"u{len(cache):03d}.mp4"
-                _encode_one_still(
-                    ff, img, clip, seg, width, height, style, fade, frames, i,
-                    fps=fps, crf=crf, preset=preset, look=look,
+                clip = tmp / _still_clip_name(
+                    img, style=style, seg=seg, width=width, height=height,
+                    fps=fps, crf=crf, look=look, fade=fade,
                 )
+                if not mp4_is_complete(clip):
+                    if deadline_mono is not None and time.monotonic() >= float(deadline_mono):
+                        raise EditorialPaused(i, len(imgs))
+                    _encode_one_still(
+                        ff, img, clip, seg, width, height, style, fade, frames, i,
+                        fps=fps, crf=crf, preset=preset, look=look,
+                    )
                 cache[key] = clip
             clips.append(clip)
             if callable(on_progress):
@@ -311,6 +316,33 @@ def _slideshow_editorial(
     finally:
         if owned:
             shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _still_clip_name(
+    img: Path,
+    *,
+    style: str,
+    seg: float,
+    width: int,
+    height: int,
+    fps: int,
+    crf: int,
+    look: str,
+    fade: float,
+) -> str:
+    """Stable clip filename so a paused render can reuse stills already encoded."""
+    try:
+        stamp = int(img.stat().st_mtime_ns)
+        size = int(img.stat().st_size)
+    except OSError:
+        stamp = 0
+        size = 0
+    raw = (
+        f"{img.name}|{size}|{stamp}|{style}|{seg:.2f}|"
+        f"{width}x{height}|{fps}|{crf}|{look}|{fade:.2f}"
+    )
+    digest = hashlib.sha1(raw.encode("utf-8")).hexdigest()[:20]
+    return f"{digest}.mp4"
 
 
 def _encode_one_still(

@@ -242,7 +242,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-bg-download",
+            "build": "20260815-dlresume",
         }
 
     @app.get("/api/ping")
@@ -253,7 +253,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-bg-download",
+            "build": "20260815-dlresume",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -1137,55 +1137,21 @@ def create_app() -> FastAPI:
             "preview_meta": rec.get("preview_meta") if isinstance(rec.get("preview_meta"), dict) else {},
         }
 
-    @app.get("/api/projects/{project_id}/video")
-    def video_file(project_id: str, download: int = 0):
-        from src.documentary.captions import captioned_video_path
-        from src.video_assembler import mp4_is_complete
+    @app.api_route("/api/projects/{project_id}/video", methods=["GET", "HEAD"])
+    def video_file(project_id: str, request: Request, download: int = 0):
+        from src.documentary.media_serve import serve_project_mp4
 
-        # Prefer the finished episode (captions already burned into final.mp4 during render).
-        candidates = [
-            project_dir(project_id) / "render" / "final.mp4",
-            captioned_video_path(project_id),
-        ]
-        path = None
-        for cand in candidates:
-            if mp4_is_complete(cand):
-                path = cand
-                break
-        if path is None:
-            from src.documentary import cloud_sync
-
-            if cloud_sync.configured():
-                for rel in ("render/final.mp4", "render/final_captions.mp4"):
-                    try:
-                        cloud_sync.pull_one(project_id, rel, force=True)
-                    except Exception:
-                        pass
-            for cand in candidates:
-                if mp4_is_complete(cand):
-                    path = cand
-                    break
-        if path is not None and mp4_is_complete(path):
-            size = path.stat().st_size
-            headers = {
-                "Cache-Control": "no-store, max-age=0",
-                "Accept-Ranges": "bytes",
-            }
-            if download:
-                # Force OS download manager (Android) instead of in-tab blob fetch.
-                safe_name = f"{project_id}.mp4".replace('"', "")
-                headers["Content-Disposition"] = f'attachment; filename="{safe_name}"'
-                headers["Content-Length"] = str(size)
-            return FileResponse(
-                path,
-                media_type="video/mp4",
-                filename=f"{project_id}.mp4" if download else None,
-                headers=headers,
-            )
-        raise HTTPException(404, "No hay video todavía")
+        return serve_project_mp4(
+            request,
+            project_id=project_id,
+            rel_path="render/final.mp4",
+            download=bool(download),
+            filename=f"{project_id}.mp4",
+            fallback_rel="render/final_captions.mp4",
+        )
 
     @app.post("/api/projects/{project_id}/render")
-    def render_video(project_id: str):
+    def render_video(project_id: str, resume: int = 0):
         from src.documentary.assemble_service import (
             RenderCancelled,
             assemble_and_render,
@@ -1194,14 +1160,35 @@ def create_app() -> FastAPI:
         )
 
         p = load_project(project_id)
-        set_render_state(p, "running", message="Armando el episodio (zoom, fundidos, música). Unos minutos.")
+        rec = p.get("render") if isinstance(p.get("render"), dict) else {}
+        resuming = bool(resume)
+        if resuming:
+            try:
+                from datetime import datetime, timezone
+
+                stamp = str(rec.get("updated_at") or rec.get("started_at") or "")
+                t0 = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                age = (datetime.now(timezone.utc) - t0).total_seconds()
+            except Exception:
+                age = 9999.0
+            # Another lambda/request is still encoding — don't reset and start over.
+            if str(rec.get("state") or "") == "running" and age < 80 and not rec.get("need_continue"):
+                return {"ok": True, "already": True, "project": _project_full(p)}
+            set_render_state(
+                p,
+                "running",
+                message="Reanudando el episodio desde donde quedó.",
+                reset_progress=False,
+            )
+        else:
+            set_render_state(p, "running", message="Armando el episodio (zoom, fundidos, música). Unos minutos.")
         if on_vercel():
             from src.documentary import cloud_sync
 
             if cloud_sync.configured():
                 _sync_safe(lambda: cloud_sync.push_paths(project_id, ["project.json"]))
         try:
-            assembled = assemble_and_render(load_project(project_id))
+            assembled = assemble_and_render(load_project(project_id), resume=resuming)
             p = load_project(project_id)
             if assembled is None or bool((p.get("render") or {}).get("need_continue")):
                 if on_vercel():
@@ -1336,64 +1323,30 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
-    @app.get("/api/projects/{project_id}/video/preview")
-    def preview_video_file(project_id: str):
-        from src.documentary.voice_script_sync import ensure_voice_binding
-        from src.video_assembler import mp4_is_complete
+    @app.api_route("/api/projects/{project_id}/video/preview", methods=["GET", "HEAD"])
+    def preview_video_file(project_id: str, request: Request):
+        from src.documentary.media_serve import serve_project_mp4
 
-        path = project_dir(project_id) / "render" / "preview.mp4"
-        try:
-            proj = ensure_voice_binding(load_project(project_id))
-        except Exception:
-            proj = None
-            from src.documentary import cloud_sync
-
-            if cloud_sync.configured():
-                try:
-                    cloud_sync.pull_one(project_id, "project.json", force=False)
-                    proj = ensure_voice_binding(load_project(project_id))
-                except Exception:
-                    proj = None
-        if not mp4_is_complete(path):
-            from src.documentary import cloud_sync
-
-            if cloud_sync.configured():
-                try:
-                    cloud_sync.pull_one(project_id, "render/preview.mp4", force=True)
-                except Exception:
-                    pass
-        if not mp4_is_complete(path):
-            raise HTTPException(404, "No hay prueba todavía")
-        return FileResponse(
-            path,
-            media_type="video/mp4",
-            headers={"Cache-Control": "no-store, max-age=0"},
+        return serve_project_mp4(
+            request,
+            project_id=project_id,
+            rel_path="render/preview.mp4",
+            download=False,
+            filename=f"{project_id}-preview.mp4",
         )
 
-    @app.get("/api/projects/{project_id}/video/captions")
-    def captioned_video_file(project_id: str, download: int = 0):
-        from src.documentary.captions import captioned_video_path
+    @app.api_route("/api/projects/{project_id}/video/captions", methods=["GET", "HEAD"])
+    def captioned_video_file(project_id: str, request: Request, download: int = 0):
+        from src.documentary.media_serve import serve_project_mp4
 
-        path = captioned_video_path(project_id)
-        if not path.is_file() or path.stat().st_size <= 0:
-            from src.documentary import cloud_sync
-
-            if cloud_sync.configured():
-                cloud_sync.pull_one(project_id, "render/final_captions.mp4")
-        if path.is_file() and path.stat().st_size > 0:
-            kwargs = {"media_type": "video/mp4"}
-            if download:
-                kwargs["filename"] = f"{project_id}-subs.mp4"
-            return FileResponse(path, **kwargs)
-        final = project_dir(project_id) / "render" / "final.mp4"
-        p = load_project(project_id)
-        burned = bool((p.get("captions") or {}).get("burned") or (p.get("checkpoints") or {}).get("captions_ready"))
-        if burned and final.is_file() and final.stat().st_size > 0:
-            kwargs = {"media_type": "video/mp4"}
-            if download:
-                kwargs["filename"] = f"{project_id}-subs.mp4"
-            return FileResponse(final, **kwargs)
-        raise HTTPException(404, "No hay video con subtítulos todavía")
+        return serve_project_mp4(
+            request,
+            project_id=project_id,
+            rel_path="render/final_captions.mp4",
+            download=bool(download),
+            filename=f"{project_id}-subs.mp4",
+            fallback_rel="render/final.mp4",
+        )
 
     @app.get("/api/projects/{project_id}/captions")
     def captions_get(project_id: str):
