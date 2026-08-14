@@ -133,6 +133,7 @@ def _sync_safe(fn) -> None:
 _SKIP_SYNC = {
     "/health",
     "/",
+    "/sw.js",
     "/api/ping",
     "/api/bootstrap",  # must stay instant — never block Home on Supabase pull
     "/api/ideas",
@@ -206,6 +207,20 @@ def create_app() -> FastAPI:
             headers={"Cache-Control": "no-store, max-age=0"},
         )
 
+    @app.get("/sw.js")
+    def service_worker():
+        path = ROOT / "static" / "sw.js"
+        if not path.is_file():
+            raise HTTPException(404, "sw.js missing")
+        return FileResponse(
+            path,
+            media_type="application/javascript; charset=utf-8",
+            headers={
+                "Cache-Control": "no-store, max-age=0",
+                "Service-Worker-Allowed": "/",
+            },
+        )
+
     @app.get("/assets/studio.css")
     def studio_css():
         """Serve CSS with no-cache so top-bar layout fixes land in production."""
@@ -227,7 +242,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-video-last",
+            "build": "20260815-bg-download",
         }
 
     @app.get("/api/ping")
@@ -238,7 +253,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-video-last",
+            "build": "20260815-bg-download",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -1151,13 +1166,21 @@ def create_app() -> FastAPI:
                     path = cand
                     break
         if path is not None and mp4_is_complete(path):
-            kwargs = {"media_type": "video/mp4"}
+            size = path.stat().st_size
+            headers = {
+                "Cache-Control": "no-store, max-age=0",
+                "Accept-Ranges": "bytes",
+            }
             if download:
-                kwargs["filename"] = f"{project_id}.mp4"
+                # Force OS download manager (Android) instead of in-tab blob fetch.
+                safe_name = f"{project_id}.mp4".replace('"', "")
+                headers["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+                headers["Content-Length"] = str(size)
             return FileResponse(
                 path,
-                **kwargs,
-                headers={"Cache-Control": "no-store, max-age=0"},
+                media_type="video/mp4",
+                filename=f"{project_id}.mp4" if download else None,
+                headers=headers,
             )
         raise HTTPException(404, "No hay video todavía")
 

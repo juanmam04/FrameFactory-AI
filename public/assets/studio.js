@@ -26,6 +26,68 @@ const setStageMode = (mode) => {
 const $ = (sel, el = document) => el.querySelector(sel);
 const IMG_BOOT = Date.now();
 
+function isMobileDevice() {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+}
+
+async function ensureServiceWorker() {
+  if (!("serviceWorker" in navigator)) return null;
+  try {
+    const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    await navigator.serviceWorker.ready;
+    return reg;
+  } catch {
+    return null;
+  }
+}
+
+/** Hand off the episode to the OS / Background Fetch so leaving the app doesn't kill it. */
+async function startEpisodeDownload(projectId, filename = `${projectId}.mp4`) {
+  const url = `/api/projects/${encodeURIComponent(projectId)}/video?download=1&t=${Date.now()}`;
+  const reg = await ensureServiceWorker();
+
+  // Chrome Android: true background download via Background Fetch.
+  if (reg && "backgroundFetch" in reg) {
+    try {
+      if (Notification && Notification.permission === "default") {
+        try {
+          await Notification.requestPermission();
+        } catch {}
+      }
+      const id = `ff-${String(projectId).slice(0, 40)}-${Date.now()}`;
+      await reg.backgroundFetch.fetch(id, [new Request(url, { credentials: "same-origin" })], {
+        title: filename,
+        icons: [{ src: "/assets/logo.png", sizes: "1024x1024", type: "image/png" }],
+      });
+      toast("Descarga en segundo plano — podés salir de la app");
+      return;
+    } catch (e) {
+      console.warn("backgroundFetch failed", e);
+    }
+  }
+
+  // Fallback: attachment response → system Download Manager (Android).
+  // Avoid HTML `download` attr on mobile — that forces an in-tab fetch that dies if you leave.
+  const a = document.createElement("a");
+  a.href = url;
+  a.rel = "noopener";
+  if (!isMobileDevice()) {
+    a.setAttribute("download", filename);
+  } else {
+    a.target = "_blank";
+  }
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  toast(
+    isMobileDevice()
+      ? "Descarga iniciada — podés salir; sigue en Descargas del celular"
+      : "Descarga iniciada"
+  );
+}
+
+ensureServiceWorker().catch(() => {});
+
 async function api(path, opts = {}) {
   const { timeoutMs, ...rest } = opts;
   const headers = { ...(rest.headers || {}) };
@@ -1965,6 +2027,13 @@ function paintRender(ws, p) {
       location.hash = "";
       go("home");
     };
+    const dl = $("#download-final");
+    if (dl) {
+      dl.onclick = (ev) => {
+        ev.preventDefault();
+        startEpisodeDownload(p.id, `${p.id}.mp4`);
+      };
+    }
   };
 
   const paint = (st, { force = false } = {}) => {
@@ -2017,7 +2086,8 @@ function paintRender(ws, p) {
         ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
         ${
           done
-            ? `<a class="btn btn-primary" id="download-final" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">Descargar video${captions ? " (con subtítulos)" : ""}</a>`
+            ? `<button type="button" class="btn btn-primary" id="download-final">Descargar video${captions ? " (con subtítulos)" : ""}</button>
+        <p class="lead" style="margin:0.35rem 0 0;font-size:0.88rem;opacity:0.85">En el celular la descarga sigue en segundo plano — podés salir de la app.</p>`
             : ""
         }
         <button class="btn btn-soft" id="to-preview">Ver prueba 20s</button>
