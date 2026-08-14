@@ -38,7 +38,11 @@ async function api(path, opts = {}) {
   } catch (e) {
     const name = e && e.name;
     if (name === "AbortError" || name === "TimeoutError") {
-      throw new Error("Se cortó la espera. Si el video quedó, va a aparecer para descargar.");
+      throw new Error(
+        path.includes("/api/bootstrap")
+          ? "Tardó demasiado en abrir. Tocá Reintentar."
+          : "Se cortó la espera. Si el video quedó, va a aparecer para descargar."
+      );
     }
     throw new Error("No se pudo conectar. Probá de nuevo.");
   }
@@ -442,18 +446,21 @@ async function boot() {
   const status = document.getElementById("boot-status");
   const tips = [
     "Cargando canal y proyectos",
-    "Sincronizando episodios",
+    "Sincronizando índice (rápido)",
     "Preparando el Studio",
   ];
   let tip = 0;
   const tipTimer = setInterval(() => {
     tip = (tip + 1) % tips.length;
     if (status) status.textContent = tips[tip];
-  }, 1600);
+  }, 1200);
   try {
     if (status) status.textContent = tips[0];
-    state.bootstrap = await api("/api/bootstrap");
+    // Hard cap — never leave the user staring at skeletons for minutes.
+    state.bootstrap = await api("/api/bootstrap", { timeoutMs: 12000 });
     renderCreds(state.bootstrap.credentials);
+    const note = state.bootstrap?.workspace?.sync_note;
+    if (note) toast(note, 5000);
     recheckKeys().catch((e) => toast(e.message));
     const hash = location.hash.replace("#", "");
     if (hash.startsWith("project/")) {
@@ -466,7 +473,17 @@ async function boot() {
     if (hash === "library") return go("library");
     go("home");
   } catch (e) {
-    stage().innerHTML = `<div class="panel"><p class="notice bad">${esc(e.message)}</p></div>`;
+    const msg = String(e.message || e);
+    stage().innerHTML = `
+      <div class="panel">
+        <p class="kicker">No pudo cargar</p>
+        <h2 style="margin:0 0 0.5rem">El Studio tardó demasiado</h2>
+        <p class="lead">${esc(msg)}</p>
+        <div class="actions" style="margin-top:1rem">
+          <button class="btn btn-accent" id="boot-retry">Reintentar</button>
+        </div>
+      </div>`;
+    $("#boot-retry").onclick = () => location.reload();
   } finally {
     clearInterval(tipTimer);
   }

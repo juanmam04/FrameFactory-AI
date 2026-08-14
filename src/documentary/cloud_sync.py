@@ -392,6 +392,56 @@ def push_all() -> dict[str, Any]:
     }
 
 
+def pull_home_index(*, timeout_sec: float = 6.0) -> dict[str, Any]:
+    """Fast Home bootstrap: sessions + each project.json only. Never pull full blobs here."""
+    import threading
+
+    result: dict[str, Any] = {"ok": False, "projects": [], "sessions": False, "error": ""}
+
+    def _run() -> None:
+        try:
+            ensure_schema()
+            pull_sessions()
+            result["sessions"] = True
+            remote = list_remote_projects()
+            written = []
+            with _connect() as conn:
+                with conn.cursor() as cur:
+                    for pid in remote:
+                        cur.execute(
+                            """
+                            SELECT sha256, content FROM ff_blobs
+                            WHERE project_id = %s AND rel_path = 'project.json'
+                            """,
+                            (pid,),
+                        )
+                        row = cur.fetchone()
+                        if not row:
+                            continue
+                        digest, content = row
+                        root = projects_root() / pid
+                        root.mkdir(parents=True, exist_ok=True)
+                        path = root / "project.json"
+                        data = bytes(content)
+                        if path.is_file() and _sha256(path.read_bytes()) == digest:
+                            written.append(pid)
+                            continue
+                        path.write_bytes(data)
+                        written.append(pid)
+            result["projects"] = written
+            result["ok"] = True
+        except Exception as exc:  # noqa: BLE001
+            result["error"] = str(exc)[:240]
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout=max(2.0, float(timeout_sec)))
+    if t.is_alive():
+        result["error"] = result["error"] or "Sync lento: abrimos con lo local."
+        result["ok"] = False
+    return result
+
+
 def pull_all(*, light: bool = False) -> dict[str, Any]:
     ensure_schema()
     remote = list_remote_projects()

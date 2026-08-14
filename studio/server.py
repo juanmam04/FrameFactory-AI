@@ -133,6 +133,7 @@ _SKIP_SYNC = {
     "/health",
     "/",
     "/api/ping",
+    "/api/bootstrap",  # must stay instant — never block Home on Supabase pull
     "/api/ideas",
     "/api/credentials/recheck",
     "/api/sync/status",
@@ -153,9 +154,6 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 
         m = _PROJECT_RE.match(path)
         pid = m.group(1) if m else None
-
-        if request.method in {"GET", "HEAD"} and path == "/api/bootstrap":
-            _sync_safe(lambda: cloud_sync.pull_all(light=True))
 
         response = await call_next(request)
 
@@ -232,6 +230,17 @@ def create_app() -> FastAPI:
     def bootstrap():
         try:
             reload_env()
+            # Optional fast index sync (project.json only). Never block Home for minutes.
+            sync_note = ""
+            try:
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    idx = cloud_sync.pull_home_index(timeout_sec=5.0)
+                    if not idx.get("ok") and idx.get("error"):
+                        sync_note = str(idx.get("error") or "")
+            except Exception as sync_exc:
+                sync_note = str(sync_exc)[:160]
             sess, profile = _ensure_channel()
             goal = goal_count_from_profile(profile, 100)
             sid = str(sess.get("id") or "")
@@ -272,6 +281,7 @@ def create_app() -> FastAPI:
                         ).strip()
                     ),
                     "supabase": bool((os.getenv("DATABASE_URL") or "").strip()),
+                    "sync_note": sync_note,
                 },
                 "stats": stats,
                 "projects": projects,
