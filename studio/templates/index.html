@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/studio.css?v=20260814y"/>
+  <link rel="stylesheet" href="/assets/studio.css?v=20260814z"/>
   <!-- Critical: keep top nav + render actions centered (Vercel serves public/) -->
   <style>
     .top-inner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 2.75rem; }
@@ -43,6 +43,91 @@
         width: 100%;
       }
     }
+    /* Boot shell — visible before JS/CSS finish so the page never looks empty */
+    .boot-shell { animation: bootRise 420ms ease both; }
+    .boot-shell .boot-hero {
+      display: grid;
+      grid-template-columns: 1.35fr 0.85fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 860px) {
+      .boot-shell .boot-hero { grid-template-columns: 1fr; }
+    }
+    .boot-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 32, 0.08);
+      border-radius: 22px;
+      box-shadow: 0 8px 24px rgba(15, 23, 32, 0.06);
+      padding: 1.4rem 1.5rem;
+    }
+    .boot-kicker {
+      margin: 0 0 0.55rem;
+      color: #0f766e;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .boot-title {
+      margin: 0 0 0.55rem;
+      font-size: clamp(1.55rem, 5vw, 2.4rem);
+      line-height: 1.12;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+      color: #0f1720;
+    }
+    .boot-lead {
+      margin: 0 0 1rem;
+      color: #5b6775;
+      font-size: 1.02rem;
+      line-height: 1.55;
+      max-width: 34rem;
+    }
+    .boot-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.35rem;
+    }
+    .boot-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #0f766e;
+      box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.45);
+      animation: bootPulse 1.2s infinite;
+      flex: 0 0 auto;
+    }
+    .boot-meta {
+      margin: 0;
+      font-weight: 700;
+      color: #0f1720;
+      font-size: 0.95rem;
+    }
+    .boot-skel {
+      border-radius: 12px;
+      background: linear-gradient(90deg, #eef2f6 0%, #f7f9fb 45%, #eef2f6 100%);
+      background-size: 200% 100%;
+      animation: bootShimmer 1.35s linear infinite;
+    }
+    .boot-skel.line { height: 12px; margin: 0.65rem 0; }
+    .boot-skel.line.w60 { width: 60%; }
+    .boot-skel.line.w80 { width: 80%; }
+    .boot-skel.block { height: 118px; margin-top: 0.85rem; }
+    .boot-list .boot-skel.line { margin: 0.9rem 0; }
+    @keyframes bootPulse {
+      70% { box-shadow: 0 0 0 12px rgba(15, 118, 110, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0); }
+    }
+    @keyframes bootShimmer {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+    @keyframes bootRise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body>
@@ -62,7 +147,34 @@
       </div>
     </header>
 
-    <main id="stage" class="stage"></main>
+    <main id="stage" class="stage">
+      <section class="boot-shell" aria-busy="true" aria-live="polite">
+        <div class="boot-hero">
+          <div class="boot-card">
+            <p class="boot-kicker">100 Days Studio</p>
+            <h1 class="boot-title">FrameFactory</h1>
+            <p class="boot-lead">Preparando tu espacio de episodios…</p>
+            <div class="boot-row">
+              <span class="boot-dot" aria-hidden="true"></span>
+              <p class="boot-meta" id="boot-status">Cargando canal y proyectos</p>
+            </div>
+            <div class="boot-skel line w80" aria-hidden="true"></div>
+            <div class="boot-skel line w60" aria-hidden="true"></div>
+          </div>
+          <div class="boot-card">
+            <p class="boot-kicker">Progreso</p>
+            <div class="boot-skel block" aria-hidden="true"></div>
+            <div class="boot-skel line w60" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="boot-card boot-list">
+          <p class="boot-kicker">Episodios recientes</p>
+          <div class="boot-skel line" aria-hidden="true"></div>
+          <div class="boot-skel line w80" aria-hidden="true"></div>
+          <div class="boot-skel line w60" aria-hidden="true"></div>
+        </div>
+      </section>
+    </main>
 
     <div id="toast" class="toast hidden"></div>
     <div id="overlay" class="overlay hidden">
@@ -72,6 +184,6 @@
       </div>
     </div>
   </div>
-  <script src="/assets/studio.js?v=20260814y" type="module"></script>
+  <script src="/assets/studio.js?v=20260814z" type="module"></script>
 </body>
 </html>
