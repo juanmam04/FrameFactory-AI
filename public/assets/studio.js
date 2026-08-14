@@ -1591,12 +1591,13 @@ function paintRender(ws, p) {
       String(v) === String(cur) || (!Number.isNaN(Number(v)) && Number(v) === Number(cur)) ? "selected" : "";
     ws.innerHTML = `
     <div class="panel workspace">
-      <h2 style="margin-top:0">Video</h2>
-      <p class="lead">Ninguna foto más de 7 segundos. Si faltan para cubrir la voz, la IA reutiliza las que encajan con ese momento del relato — no recicla en orden. El episodio largo lleva el mismo zoom, fundido y música que la prueba. Se descarga en Full HD 1080p con subtítulos en inglés ya quemados.</p>
-
-      <div class="panel soft" style="margin:1rem 0 1.2rem">
+      <div class="panel soft" style="margin:0 0 1.25rem">
+        <p class="kicker">Apartado 1 · prueba</p>
         <h2 style="margin:0 0 0.4rem">Prueba de edición</h2>
-        <p class="lead" style="margin:0 0 0.8rem">Zoom, fundido, viñeta, música y subtítulos en inglés. Armá 20 segundos y mirá cómo queda.</p>
+        <p class="lead" style="margin:0 0 0.8rem">
+          Mismos ajustes, mismo motor y mismos subtítulos quemados que el episodio largo —
+          solo los primeros 20 segundos. Si acá no se ve bien, el largo tampoco.
+        </p>
         <div class="edit-picks">
           <label class="field">Segundos por foto
             <select id="edit-sec">
@@ -1636,19 +1637,29 @@ function paintRender(ws, p) {
           </label>
         </div>
         <div class="actions" style="margin-top:0.8rem">
-          <button class="btn btn-soft" id="try-edit" ${running || paintRender._previewWait ? "disabled" : ""}>${paintRender._previewWait ? "Armando prueba…" : "Probar 20 segundos"}</button>
+          <button class="btn btn-soft" id="try-edit" ${running || paintRender._previewWait ? "disabled" : ""}>${paintRender._previewWait ? "Armando prueba real…" : "Probar 20 segundos (igual al largo)"}</button>
         </div>
-        ${hasPrev ? `<video controls src="/api/projects/${id}/video/preview?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.8rem 0 0"></video>` : ""}
+        ${hasPrev ? `
+          <p class="lead" style="margin:0.9rem 0 0.35rem;font-size:0.9rem">Preview con subtítulos quemados (mismo estilo que el episodio)</p>
+          <video controls src="/api/projects/${id}/video/preview?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px"></video>
+        ` : ""}
       </div>
 
-      ${renderStatusView({ ...st, state: kind })}
-      ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
-      <div class="actions actions-center">
-        <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
-        ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
-        ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
-        <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
-        <button class="btn btn-ghost" id="home">Volver al inicio</button>
+      <div class="panel soft" style="margin:0 0 1.25rem">
+        <p class="kicker">Apartado 2 · episodio</p>
+        <h2 style="margin:0 0 0.4rem">Video completo</h2>
+        <p class="lead" style="margin:0 0 0.8rem">
+          Usa exactamente la misma edición que elegiste arriba. Full HD 1080p con subtítulos en inglés ya quemados.
+        </p>
+        ${renderStatusView({ ...st, state: kind })}
+        ${done ? `<video controls src="/api/projects/${id}/video?t=${Date.now()}" style="width:min(100%,720px);aspect-ratio:16/9;background:#111;border-radius:14px;margin:0.5rem 0 1rem"></video>` : ""}
+        <div class="actions actions-center">
+          <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
+          ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
+          ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
+          <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
+          <button class="btn btn-ghost" id="home">Volver al inicio</button>
+        </div>
       </div>
     </div>`;
     $("#to-subs").onclick = async () => {
@@ -1671,8 +1682,14 @@ function paintRender(ws, p) {
       } catch {}
       paintRender._previewWait = true;
       paint({ ...st, preview: hasPrev });
-      toast("Armando 20 segundos…");
-      api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 50000 }).catch(() => {});
+      toast("Armando prueba real (mismo motor + subtítulos)…");
+      api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 180000 })
+        .then(() => {})
+        .catch((e) => {
+          paintRender._previewWait = false;
+          toast(String(e.message || e || "Falló la prueba"));
+          paint(st);
+        });
       const t0 = Date.now();
       const tickPrev = async () => {
         try {
@@ -1680,20 +1697,20 @@ function paintRender(ws, p) {
           if (nxt.preview) {
             paintRender._previewWait = false;
             paintRender._hasPreview = true;
-            toast("Prueba lista — mirá el clip");
+            toast("Prueba lista — mirá subtítulos y edición");
             paint({ ...nxt, preview: true });
             return;
           }
         } catch {}
-        if (Date.now() - t0 > 50000) {
+        if (Date.now() - t0 > 180000) {
           paintRender._previewWait = false;
           toast("La prueba no terminó. Probá de nuevo.");
           paint(st);
           return;
         }
-        setTimeout(tickPrev, 2000);
+        setTimeout(tickPrev, 2500);
       };
-      setTimeout(tickPrev, 2000);
+      setTimeout(tickPrev, 2500);
     };
     $("#render").onclick = async () => {
       const body = grabEditFromDom() || paintRender._edit;

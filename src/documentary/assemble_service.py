@@ -449,84 +449,118 @@ def _pull_preview_assets(project_id: str) -> None:
 
 
 def assemble_preview_clip(project: dict[str, Any]) -> Path:
-    """~20s editorial test: few stills, Ken Burns, vignette, music, first seconds of VO."""
+    """First ~20s with the SAME engine as the full episode (timeline, motion, music, captions)."""
     from src.documentary.runtime import on_vercel
+    from src.documentary.reuse_stills import plan_still_timeline
 
     pid = str(project["id"])
-    if on_vercel():
-        _pull_preview_assets(pid)
+    vercel = on_vercel()
+    if vercel:
+        # Same asset pull as the long render — otherwise the test lies.
+        _pull_render_assets(pid)
     if not verificar_ffmpeg():
         raise RuntimeError("No hay FFmpeg en este servidor.")
-    images, _missing = ordered_images_for_render(pid)
-    if not images:
-        raise RuntimeError("Subí imágenes antes de probar el render.")
     audio = project_dir(pid) / "audio" / "narration.mp3"
     if not audio.is_file() or audio.stat().st_size <= 0:
         raise RuntimeError("Generá la voz antes de probar el video.")
-    seen: set[str] = set()
-    uniq: list[Path] = []
-    for p in images:
-        key = str(p.resolve())
-        if key in seen:
-            continue
-        seen.add(key)
-        uniq.append(p)
-        if len(uniq) >= 4:
-            break
-    while len(uniq) < 3:
-        uniq.append(images[len(uniq) % len(images)])
     edit = edit_settings(project)
-    sec = min(5.0, float(edit["seconds_per_image"]))
-    dur = min(20.0, sec * len(uniq))
+    music = _resolve_music(project)
+    music_vol = float(edit["music_volume"])
+    full_dur = float((project.get("voice") or {}).get("duration_sec") or 0)
+    if full_dur <= 0:
+        full_dur = _probe_audio_sec(audio)
+    preview_dur = min(20.0, full_dur if full_dur > 0 else 20.0)
+    if preview_dur < 8:
+        preview_dur = 20.0
+
+    images, sec, reuse = plan_still_timeline(
+        project, preview_dur, max_sec=float(edit["seconds_per_image"])
+    )
+    if not images:
+        raise RuntimeError("Subí imágenes antes de probar el render.")
+
+    # Identical encode profile to assemble_and_render (Vercel → 1080p, local → 4K).
+    scale_to = None
+    if vercel:
+        width, height, fps, crf, preset = 1280, 720, 24, 20, "ultrafast"
+        scale_to = (1920, 1080)
+    else:
+        width, height, fps, crf, preset = 3840, 2160, 24, 16, "medium"
+
     out = project_dir(pid) / "render" / "preview.mp4"
     out.parent.mkdir(parents=True, exist_ok=True)
-    montar_slideshow(
-        uniq,
-        audio,
-        out,
-        segundos_por_imagen=sec,
-        width=1280,
-        height=720,
-        musica_fondo=_resolve_music(project),
-        music_volume=max(0.08, float(edit["music_volume"])),
-        duration_sec=dur,
-        motion=str(edit["motion"]),
-        transition=str(edit["transition"]),
-        fps=24,
-        crf=20,
-        preset="veryfast",
-        editorial=True,
-        look=str(edit.get("look") or "soft"),
-    )
-    if not mp4_is_complete(out):
-        raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
-    # Burn English captions into the 20s test so the edit preview matches final.
+    if out.exists():
+        out.unlink(missing_ok=True)
+
     try:
-        from src.documentary.captions import (
-            apply_captions_file,
-            captions_srt_path,
-            generate_captions,
-        )
+        from src.documentary.captions import captions_srt_path, generate_captions
 
         srt = captions_srt_path(pid)
         if not srt.is_file() or srt.stat().st_size <= 0:
             generate_captions(project)
-            srt = captions_srt_path(pid)
-        if srt.is_file() and srt.stat().st_size > 0:
-            tmp = out.with_name("preview_captions.mp4")
-            apply_captions_file(out, srt, tmp, width=1280, crf=22, preset="ultrafast")
-            if mp4_is_complete(tmp):
-                tmp.replace(out)
-            else:
-                tmp.unlink(missing_ok=True)
     except Exception as e:
-        append_log(pid, f"preview captions skip: {e}")
+        append_log(pid, f"preview captions srt: {e}")
+
+    master = project_dir(pid) / "render" / "preview_master.mp4"
+    if master.exists():
+        master.unlink(missing_ok=True)
+    result = montar_slideshow(
+        images,
+        audio,
+        master,
+        segundos_por_imagen=sec,
+        width=width,
+        height=height,
+        musica_fondo=music,
+        music_volume=music_vol,
+        duration_sec=preview_dur,
+        motion=str(edit["motion"]),
+        transition=str(edit["transition"]),
+        fps=fps,
+        crf=crf,
+        preset=preset,
+        editorial=True,
+        look=str(edit.get("look") or "soft"),
+        scale_to=scale_to,
+    )
+    if not mp4_is_complete(Path(result)):
+        Path(result).unlink(missing_ok=True)
+        raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
+
+    # Captions are mandatory in the test — same burn path as the full episode.
+    from src.documentary.captions import apply_captions_file, captions_srt_path, generate_captions
+
+    srt = captions_srt_path(pid)
+    if not srt.is_file() or srt.stat().st_size <= 0:
+        generate_captions(project)
+        srt = captions_srt_path(pid)
+    if not srt.is_file() or srt.stat().st_size <= 0:
+        raise RuntimeError("No hay subtítulos para la prueba. Generá el guion/voz primero.")
+    burn_w = int((scale_to or (width, height))[0])
+    tmp = project_dir(pid) / "render" / "preview_burn.mp4"
+    apply_captions_file(Path(result), srt, tmp, width=burn_w, crf=17 if not vercel else 20, preset="veryfast")
+    if not mp4_is_complete(tmp):
+        raise RuntimeError("No se pudieron quemar los subtítulos en la prueba.")
+    tmp.replace(out)
+
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
     rec["preview"] = "render/preview.mp4"
     rec["edit"] = edit
+    rec["preview_meta"] = {
+        "duration_sec": preview_dur,
+        "seconds_per_image": sec,
+        "width": burn_w,
+        "height": int((scale_to or (width, height))[1]),
+        "reuse": reuse,
+        "captions": True,
+        "same_engine_as_final": True,
+    }
     project["render"] = rec
     save_project(project)
-    append_log(pid, f"render preview ok {dur:.0f}s (captions)")
+    append_log(
+        pid,
+        f"render preview ok {preview_dur:.0f}s same-engine captions=1 reuse={reuse.get('method')}",
+    )
     return out
 
 
