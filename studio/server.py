@@ -227,7 +227,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-shotlist-pull",
+            "build": "20260815-preview-fast",
         }
 
     @app.get("/api/ping")
@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-shotlist-pull",
+            "build": "20260815-preview-fast",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -1104,6 +1104,11 @@ def create_app() -> FastAPI:
             "updated_at": str(rec.get("updated_at") or ""),
             "preview": bool(preview),
             "preview_matches_voice": bool(preview_ok),
+            "preview_busy": bool(
+                str(rec.get("stage") or "").startswith("preview_")
+                and str(rec.get("stage") or "") != "preview_done"
+                and not preview
+            ),
             "voice_matches_script": bool(voice_ok),
             "edit": rec.get("edit") if isinstance(rec.get("edit"), dict) else {},
             "need_continue": bool(need_continue) and state == "running",

@@ -1836,6 +1836,12 @@ function paintPreview(ws, p) {
             finishPreview(nxt);
             return;
           }
+          if (nxt.preview_busy) {
+            const host = document.getElementById("try-edit");
+            if (host) host.textContent = "Armando prueba…";
+            const lead = document.querySelector(".ff-block-test .lead");
+            if (lead && nxt.message) lead.textContent = String(nxt.message);
+          }
           if (nxt.error && nxt.state === "error") {
             paintPreview._previewWait = false;
             toast(String(nxt.error || nxt.message || "Falló la prueba"));
@@ -1843,16 +1849,16 @@ function paintPreview(ws, p) {
             return;
           }
         } catch {}
-        if (Date.now() - t0 > 280000) {
+        if (Date.now() - t0 > 240000) {
           if (previewDone) return;
           paintPreview._previewWait = false;
-          toast("La prueba no terminó. Probá de nuevo.");
+          toast("La prueba no terminó a tiempo. Probá de nuevo.");
           paint(st);
           return;
         }
-        paintPreview._poll = setTimeout(tickPrev, 2500);
+        paintPreview._poll = setTimeout(tickPrev, 2000);
       };
-      paintPreview._poll = setTimeout(tickPrev, 2500);
+      paintPreview._poll = setTimeout(tickPrev, 1500);
     };
 
     $("#to-full").onclick = async () => {

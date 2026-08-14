@@ -584,17 +584,16 @@ def _encode_profile(*, vercel: bool) -> tuple[int, int, int, int, str, tuple[int
 
 
 def assemble_preview_clip(project: dict[str, Any]) -> Path:
-    """First ~20s of the SAME timeline/engine as the full episode (not a toy path)."""
+    """First ~20s test clip. On Vercel: fast path (no episode AI reuse, no Whisper)."""
     import math
 
+    from src.documentary.import_images import list_project_images
     from src.documentary.runtime import on_vercel
-    from src.documentary.reuse_stills import plan_still_timeline
     from src.documentary.voice_script_sync import require_voice_matches_script
 
     pid = str(project["id"])
     require_voice_matches_script(project)
     vercel = on_vercel()
-    # Pull stills if needed, but NEVER overwrite a local narration that matches this script.
     if vercel:
         _pull_preview_assets_safe(pid, project)
     if not verificar_ffmpeg():
@@ -611,65 +610,49 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     edit = edit_settings(project)
     music = _resolve_music(project)
     music_vol = float(edit["music_volume"])
-    full_dur = float((project.get("voice") or {}).get("duration_sec") or 0)
-    if full_dur <= 0:
-        full_dur = _probe_audio_sec(audio)
-    if full_dur <= 0:
-        full_dur = 20.0
 
-    # Plan the FULL episode timeline, then take only the opening ~20s.
-    # That way the test matches the start of the real long render.
-    images_full, sec, reuse = plan_still_timeline(
-        project, full_dur, max_sec=float(edit["seconds_per_image"])
-    )
-    if not images_full:
+    # CRITICAL: only plan ~20s from uploads on disk. Never AI-fill the full episode
+    # (that was calling OpenAI for 60+ gaps and killing the Vercel lambda).
+    available = [p for p in list_project_images(pid) if p.is_file() and p.stat().st_size > 0]
+    if len(available) < 1:
         raise RuntimeError("Subí imágenes antes de probar el render.")
-    n = max(1, int(math.ceil(20.0 / max(2.8, float(sec)))))
-    images = images_full[:n]
+    sec = min(7.0, max(2.8, float(edit["seconds_per_image"])))
+    n = max(1, min(5, int(math.ceil(20.0 / sec))))
+    images = [available[i % len(available)] for i in range(n)]
     preview_dur = min(20.0, float(sec) * len(images))
+    reuse = {"method": "own_preview", "available": len(available), "used": len(images)}
 
     width, height, fps, crf, preset, scale_to, _quality = _encode_profile(vercel=vercel)
+    # Preview stays at encode size — no second 1080p pass (that burned the time budget).
+    if vercel:
+        scale_to = None
 
     out = project_dir(pid) / "render" / "preview.mp4"
     out.parent.mkdir(parents=True, exist_ok=True)
     if out.exists():
         out.unlink(missing_ok=True)
 
-    try:
-        from src.documentary.captions import captions_for_window
-
-        touch_render_progress(
-            project,
-            message="Prueba 20s · alineando subtítulos con la voz…",
-            stage="preview_captions",
-            done=0,
-            total=len(images),
-            percent=10,
-            push=True,
-            preview=True,
-        )
-        captions_for_window(project, preview_dur)
-    except Exception as e:
-        append_log(pid, f"preview captions srt: {e}")
-
-    import time as _time
-
-    _last_push = [0.0]
+    touch_render_progress(
+        project,
+        message="Prueba 20s · armando clips…",
+        stage="preview_encode",
+        done=0,
+        total=len(images),
+        percent=15,
+        push=True,
+        preview=True,
+    )
 
     def _on_preview_progress(done: int, total: int) -> None:
         pct = 15 + int(60 * (done / max(1, total)))
-        now = _time.monotonic()
-        should_push = done == 1 or done >= total or (now - _last_push[0]) >= 8.0
-        if should_push:
-            _last_push[0] = now
         touch_render_progress(
             project,
-            message=f"Prueba 20s · clip {done}/{total} (inicio del episodio real)",
+            message=f"Prueba 20s · clip {done}/{total}",
             stage="preview_encode",
             done=done,
             total=total,
             percent=pct,
-            push=should_push,
+            push=done >= total,
             preview=True,
         )
 
@@ -700,8 +683,9 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         Path(result).unlink(missing_ok=True)
         raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
 
-    from src.documentary.captions import apply_captions_file, captions_for_window
+    from src.documentary.captions import apply_captions_file, build_srt
 
+    # Fast captions: estimate from script for the 20s window — no Whisper on preview.
     touch_render_progress(
         project,
         message="Prueba 20s · quemando subtítulos…",
@@ -712,36 +696,53 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         push=True,
         preview=True,
     )
-    srt = captions_for_window(project, preview_dur)
-    if not srt.is_file() or srt.stat().st_size <= 0:
-        raise RuntimeError("No hay subtítulos para la prueba. Generá el guion/voz primero.")
-    burn_w = int((scale_to or (width, height))[0])
+    script = str(project.get("script") or "").strip()
+    words = script.split()
+    take = max(12, int(preview_dur * 2.6))
+    window_script = " ".join(words[:take]) if words else script[:400]
+    srt_path = project_dir(pid) / "render" / "captions_preview.srt"
+    srt_path.write_text(build_srt(window_script or "…", preview_dur), encoding="utf-8")
+
+    burned = False
+    burn_w = int(width)
+    burn_h = int(height)
     tmp = project_dir(pid) / "render" / "preview_burn.mp4"
-    # Prefer PNG overlays: libass often "succeeds" on Vercel with invisible fonts.
-    apply_captions_file(
-        Path(result),
-        srt,
-        tmp,
-        width=burn_w,
-        crf=17 if not vercel else 20,
-        preset="veryfast",
-        prefer_overlays=True,
-        max_seconds=preview_dur,
-    )
-    if not mp4_is_complete(tmp):
-        raise RuntimeError("No se pudieron quemar los subtítulos en la prueba.")
-    if out.exists():
-        out.unlink(missing_ok=True)
-    tmp.replace(out)
+    try:
+        apply_captions_file(
+            Path(result),
+            srt_path,
+            tmp,
+            width=burn_w,
+            crf=20 if vercel else 17,
+            preset="ultrafast" if vercel else "veryfast",
+            prefer_overlays=True,
+            max_seconds=preview_dur,
+        )
+        if mp4_is_complete(tmp):
+            if out.exists():
+                out.unlink(missing_ok=True)
+            tmp.replace(out)
+            burned = True
+    except Exception as e:
+        append_log(pid, f"preview burn skipped: {e}")
+    if not burned:
+        # Ship the clip anyway — a mute-caption failure must not block the test.
+        if tmp.exists():
+            tmp.unlink(missing_ok=True)
+        if out.exists():
+            out.unlink(missing_ok=True)
+        Path(result).replace(out)
+
+    if not mp4_is_complete(out):
+        raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
 
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-    # Always release the full-episode lock after a preview — never leave state=running.
     rec["message"] = "Prueba de 20s lista. Tocá Renderizar episodio para el video completo."
     rec["stage"] = "preview_done"
     rec["state"] = "idle"
     rec["need_continue"] = False
     rec["cancelled"] = False
-    rec["percent"] = 0  # preview % must not look like full-episode 100%
+    rec["percent"] = 0
     rec["kb_done"] = 0
     rec["kb_total"] = 0
     rec["preview"] = "render/preview.mp4"
@@ -751,13 +752,13 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         "duration_sec": preview_dur,
         "seconds_per_image": sec,
         "width": burn_w,
-        "height": int((scale_to or (width, height))[1]),
+        "height": burn_h,
         "reuse": reuse,
-        "captions": True,
+        "captions": burned,
         "same_engine_as_final": True,
-        "full_timeline_planned": True,
+        "fast_preview": True,
         "stills_from_episode_start": len(images),
-        "full_timeline_stills": len(images_full),
+        "available_stills": len(available),
         "voice_script_hash": str(voice.get("script_hash") or ""),
         "audio_sha": str(voice.get("audio_sha") or fp.get("audio_sha") or ""),
         "audio_bytes": int(voice.get("audio_bytes") or fp.get("audio_bytes") or 0),
@@ -766,9 +767,8 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     save_project(project)
     append_log(
         pid,
-        f"render preview ok {preview_dur:.0f}s same-engine start-of-episode captions=1 "
-        f"stills={len(images)}/{len(images_full)} reuse={reuse.get('method')} "
-        f"audio_sha={(rec['preview_meta'].get('audio_sha') or '')[:8]}",
+        f"render preview ok {preview_dur:.0f}s fast={int(bool(vercel))} captions={int(burned)} "
+        f"stills={len(images)}/{len(available)} audio_sha={(rec['preview_meta'].get('audio_sha') or '')[:8]}",
     )
     return out
 
