@@ -70,27 +70,208 @@ def build_srt(script: str, duration_sec: float) -> str:
     return "\n".join(lines).strip() + "\n"
 
 
-def generate_captions(project: dict[str, Any]) -> dict[str, Any]:
+def whisper_srt_from_audio(audio: Path, *, language: str = "en") -> str:
+    """Build SRT from what was actually spoken (Whisper segments)."""
+    from openai import OpenAI
+
+    from src.documentary.openai_key import require_openai_api_key
+
+    if not audio.is_file() or audio.stat().st_size <= 0:
+        raise RuntimeError("No hay audio de narración para alinear subtítulos.")
+    client = OpenAI(api_key=require_openai_api_key("Caption alignment"))
+    with audio.open("rb") as f:
+        result = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=f,
+            language=language,
+            response_format="verbose_json",
+            timestamp_granularities=["segment"],
+        )
+    segments = list(getattr(result, "segments", None) or [])
+    if not segments and getattr(result, "text", None):
+        # Fallback single block — better than silence, timing still weak.
+        text = str(result.text or "").strip()
+        if not text:
+            raise RuntimeError("Whisper no devolvió texto.")
+        return build_srt(text, _probe_audio_duration(audio) or 60.0)
+    if not segments:
+        raise RuntimeError("Whisper no devolvió segmentos con tiempos.")
+    lines: list[str] = []
+    n = 0
+    for seg in segments:
+        if isinstance(seg, dict):
+            start = float(seg.get("start") or 0)
+            end = float(seg.get("end") or start + 1.2)
+            text = str(seg.get("text") or "").strip()
+        else:
+            start = float(getattr(seg, "start", 0) or 0)
+            end = float(getattr(seg, "end", start + 1.2) or start + 1.2)
+            text = str(getattr(seg, "text", "") or "").strip()
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            continue
+        if end <= start:
+            end = start + 1.2
+        # Split long Whisper segments into short documentary cues, keep wall-clock span.
+        parts = _wrap_cue(text, width=48, max_lines=2)
+        if not parts:
+            continue
+        span = max(0.4, end - start)
+        weights = [max(1, len(p.split())) for p in parts]
+        wtot = sum(weights) or 1
+        t = start
+        for i, (piece, w) in enumerate(zip(parts, weights)):
+            te = end if i == len(parts) - 1 else min(end, t + span * (w / wtot))
+            if te <= t:
+                te = min(end, t + 0.35)
+            n += 1
+            lines.append(str(n))
+            lines.append(f"{_fmt(t)} --> {_fmt(te)}")
+            lines.append(piece)
+            lines.append("")
+            t = te
+    if not lines:
+        raise RuntimeError("Whisper no produjo carteles útiles.")
+    return "\n".join(lines).strip() + "\n"
+
+
+def _probe_audio_duration(path: Path) -> float | None:
+    try:
+        from src.documentary.voice_service import _probe_duration
+
+        return float(_probe_duration(path) or 0) or None
+    except Exception:
+        return None
+
+
+def narration_audio_path(project_id: str) -> Path:
+    return project_dir(project_id) / "audio" / "narration.mp3"
+
+
+def captions_for_window(project: dict[str, Any], window_sec: float) -> Path:
+    """SRT that matches the opening of the narration (for the 20s preview burn)."""
+    import subprocess
+
+    pid = str(project["id"])
+    dest = project_dir(pid) / "render" / "captions_preview.srt"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    audio = narration_audio_path(pid)
+    prev = project.get("captions") if isinstance(project.get("captions"), dict) else {}
+    full = captions_srt_path(pid)
+    voice_fp = f"{float((project.get('voice') or {}).get('duration_sec') or 0):.2f}:{audio.stat().st_size if audio.is_file() else 0}"
+    if (
+        str(prev.get("source") or "") == "whisper"
+        and str(prev.get("voice_fp") or "") == voice_fp
+        and full.is_file()
+        and full.stat().st_size > 0
+    ):
+        return full
+
+    limit = max(8.0, float(window_sec or 20) + 1.5)
+    if audio.is_file() and audio.stat().st_size > 0:
+        try:
+            from src.video_assembler import ffmpeg_exe
+
+            ff = ffmpeg_exe()
+            head = project_dir(pid) / "render" / "narration_head.mp3"
+            if ff:
+                subprocess.run(
+                    [
+                        ff,
+                        "-hide_banner",
+                        "-loglevel",
+                        "error",
+                        "-y",
+                        "-i",
+                        str(audio),
+                        "-t",
+                        f"{limit:.2f}",
+                        "-c:a",
+                        "libmp3lame",
+                        "-q:a",
+                        "4",
+                        str(head),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                )
+                src = head if head.is_file() and head.stat().st_size > 0 else audio
+            else:
+                src = audio
+            srt = whisper_srt_from_audio(src, language="en")
+            dest.write_text(srt, encoding="utf-8")
+            append_log(pid, f"preview captions whisper window={limit:.0f}s cues={len(srt_to_cues(srt))}")
+            return dest
+        except Exception as e:
+            append_log(pid, f"preview captions whisper window failed: {e}")
+
+    # Fallback: regenerate estimate and use the full SRT (still better than stale junk).
+    generate_captions(project, force=True)
+    return captions_srt_path(pid)
+
+
+def generate_captions(project: dict[str, Any], *, force: bool = False) -> dict[str, Any]:
     pid = str(project["id"])
     script = str(project.get("script") or "").strip()
     if not script:
         raise ValueError("No hay guion para subtitular.")
     duration = float((project.get("voice") or {}).get("duration_sec") or 0)
+    audio = narration_audio_path(pid)
+    if duration <= 0 and audio.is_file():
+        duration = float(_probe_audio_duration(audio) or 0)
     if duration <= 0:
         duration = max(60.0, len(script.split()) / 2.4)
-    srt = build_srt(script, duration)
+
     dest = captions_srt_path(pid)
+    prev = project.get("captions") if isinstance(project.get("captions"), dict) else {}
+    voice_fp = f"{duration:.2f}:{audio.stat().st_size if audio.is_file() else 0}"
+    if (
+        not force
+        and dest.is_file()
+        and dest.stat().st_size > 0
+        and str(prev.get("source") or "") == "whisper"
+        and str(prev.get("voice_fp") or "") == voice_fp
+    ):
+        text = dest.read_text(encoding="utf-8")
+        return {
+            "srt": text,
+            "cues": srt_to_cues(text),
+            "burned": bool(prev.get("burned")),
+            "source": "whisper",
+        }
+
+    source = "estimate"
+    srt = ""
+    err = ""
+    if audio.is_file() and audio.stat().st_size > 0:
+        try:
+            srt = whisper_srt_from_audio(audio, language="en")
+            source = "whisper"
+            append_log(pid, f"captions aligned via whisper cues={len(srt_to_cues(srt))}")
+        except Exception as e:
+            err = str(e)[:240]
+            append_log(pid, f"captions whisper failed → estimate: {err}")
+    if not srt.strip():
+        srt = build_srt(script, duration)
+        source = "estimate"
+        if err:
+            append_log(pid, f"captions estimate fallback after: {err}")
+
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(srt, encoding="utf-8")
     project["captions"] = {
         "path": "render/captions.srt",
         "cues": len(srt_to_cues(srt)),
         "burned": False,
+        "source": source,
+        "voice_fp": voice_fp,
+        "voice_duration_sec": duration,
     }
     set_checkpoint(project, "captions_ready", False)
     save_project(project)
-    append_log(pid, f"captions srt cues={project['captions']['cues']}")
-    return {"srt": srt, "cues": srt_to_cues(srt), "burned": False}
+    append_log(pid, f"captions srt cues={project['captions']['cues']} source={source}")
+    return {"srt": srt, "cues": srt_to_cues(srt), "burned": False, "source": source}
 
 
 def save_captions(project: dict[str, Any], srt: str) -> dict[str, Any]:
@@ -108,10 +289,12 @@ def save_captions(project: dict[str, Any], srt: str) -> dict[str, Any]:
         "path": "render/captions.srt",
         "cues": len(srt_to_cues(text)),
         "burned": False,
+        "source": "manual",
     }
     set_checkpoint(project, "captions_ready", False)
     save_project(project)
     return {"srt": text, "cues": srt_to_cues(text), "burned": False}
+
 
 
 def ensure_final_mp4(project_id: str) -> Path:
@@ -187,7 +370,16 @@ def apply_captions_file(
     cues = srt_to_cues(srt.read_text(encoding="utf-8"))
     if max_seconds is not None and max_seconds > 0:
         limit = float(max_seconds) + 0.35
-        cues = [c for c in cues if _srt_sec(str(c.get("start") or "0")) < limit]
+        clipped: list[dict[str, Any]] = []
+        for c in cues:
+            start = _srt_sec(str(c.get("start") or "0"))
+            if start >= limit:
+                continue
+            end = _srt_sec(str(c.get("end") or "0"))
+            if end > limit:
+                c = {**c, "end": _fmt(limit)}
+            clipped.append(c)
+        cues = clipped
     if not cues:
         raise RuntimeError("El SRT no tiene carteles.")
     last_err = ""
@@ -204,6 +396,8 @@ def apply_captions_file(
                 crf=crf,
                 preset=preset,
                 big=True,
+                # Never mash cues together — that makes captions disagree with the voice.
+                merge_max=999,
             )
             if mp4_is_complete(dest):
                 return dest
@@ -295,9 +489,8 @@ def burn_into_final(project: dict[str, Any], *, width: int = 1920) -> Path:
         master.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, master)
     srt = captions_srt_path(pid)
-    if not srt.is_file() or srt.stat().st_size <= 0:
-        generate_captions(project)
-        srt = captions_srt_path(pid)
+    generate_captions(project, force=True)
+    srt = captions_srt_path(pid)
     tmp = project_dir(pid) / "render" / "final_burn.mp4"
     apply_captions_file(master, srt, tmp, width=width, crf=17, preset="veryfast")
     cap = captioned_video_path(pid)
@@ -569,15 +762,19 @@ def _burn_with_overlays(
     crf: int = 17,
     preset: str = "veryfast",
     big: bool = False,
+    merge_max: int = 48,
 ) -> Path:
     """Burn captions without libass: overlay PIL PNGs (works with imageio-ffmpeg on Vercel)."""
     import shutil
     import subprocess
     import tempfile
 
-    cues = _merge_cues(cues, max_n=28 if big else 48)
+    cues = _merge_cues(cues, max_n=merge_max)
     if not cues:
         raise RuntimeError("No hay carteles para quemar.")
+    # Cap overlays so ffmpeg filter graphs stay manageable on short clips.
+    if len(cues) > 36:
+        cues = cues[:36]
     bar_h = (140 if width >= 1600 else 110) if big else (120 if width >= 1600 else 96)
     tmp = Path(tempfile.mkdtemp(prefix="ff-subs-"))
     try:

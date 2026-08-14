@@ -1239,7 +1239,7 @@ def create_app() -> FastAPI:
         try:
             from src.documentary.captions import generate_captions
 
-            data = generate_captions(load_project(project_id))
+            data = generate_captions(load_project(project_id), force=True)
             p = load_project(project_id)
             p["ui_step"] = "subs"
             save_project(p)

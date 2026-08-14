@@ -362,9 +362,11 @@ def assemble_and_render(
         try:
             from src.documentary.captions import captions_srt_path, generate_captions
 
+            generate_captions(project, force=True)
             srt = captions_srt_path(pid)
             if not srt.is_file() or srt.stat().st_size <= 0:
-                generate_captions(project)
+                raise RuntimeError("empty srt")
+            append_log(pid, f"captions srt ready source={(project.get('captions') or {}).get('source')}")
         except Exception as e:
             append_log(pid, f"captions srt skip: {e}")
 
@@ -605,20 +607,18 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         out.unlink(missing_ok=True)
 
     try:
-        from src.documentary.captions import captions_srt_path, generate_captions
+        from src.documentary.captions import captions_for_window
 
         touch_render_progress(
             project,
-            message="Prueba 20s · preparando subtítulos…",
+            message="Prueba 20s · alineando subtítulos con la voz…",
             stage="preview_captions",
             done=0,
             total=len(images),
             percent=10,
             push=True,
         )
-        srt = captions_srt_path(pid)
-        if not srt.is_file() or srt.stat().st_size <= 0:
-            generate_captions(project)
+        captions_for_window(project, preview_dur)
     except Exception as e:
         append_log(pid, f"preview captions srt: {e}")
 
@@ -669,7 +669,7 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         Path(result).unlink(missing_ok=True)
         raise RuntimeError("La prueba no se pudo armar. Probá de nuevo.")
 
-    from src.documentary.captions import apply_captions_file, captions_srt_path, generate_captions
+    from src.documentary.captions import apply_captions_file, captions_for_window
 
     touch_render_progress(
         project,
@@ -680,10 +680,7 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         percent=85,
         push=True,
     )
-    srt = captions_srt_path(pid)
-    if not srt.is_file() or srt.stat().st_size <= 0:
-        generate_captions(project)
-        srt = captions_srt_path(pid)
+    srt = captions_for_window(project, preview_dur)
     if not srt.is_file() or srt.stat().st_size <= 0:
         raise RuntimeError("No hay subtítulos para la prueba. Generá el guion/voz primero.")
     burn_w = int((scale_to or (width, height))[0])

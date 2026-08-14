@@ -52,6 +52,21 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     duration = _probe_duration(dest)
     project["voice_speed"] = speed
     project["voice"] = {"path": "audio/narration.mp3", "duration_sec": duration, "speed": speed}
+    # Old captions were timed guesses / stale Whisper — wipe so the next burn re-aligns to this take.
+    try:
+        from src.documentary.captions import captions_srt_path, clear_burned_captions
+
+        srt = captions_srt_path(str(project["id"]))
+        if srt.is_file():
+            srt.unlink(missing_ok=True)
+        preview_srt = project_dir(str(project["id"])) / "render" / "captions_preview.srt"
+        if preview_srt.is_file():
+            preview_srt.unlink(missing_ok=True)
+        clear_burned_captions(str(project["id"]))
+    except Exception:
+        pass
+    project["captions"] = {"burned": False, "source": "", "voice_fp": ""}
+    set_checkpoint(project, "captions_ready", False)
     set_checkpoint(project, "voice_ready", True)
     set_checkpoint(project, "assembly_ready", False)
     set_checkpoint(project, "render_ready", False)
