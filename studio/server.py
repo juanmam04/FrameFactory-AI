@@ -227,7 +227,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-voice-nopreflight",
+            "build": "20260815-voice-cascade",
         }
 
     @app.get("/api/ping")
@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-voice-nopreflight",
+            "build": "20260815-voice-cascade",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -880,7 +880,12 @@ def create_app() -> FastAPI:
                 if cloud_sync.configured():
                     _sync_safe(
                         lambda: cloud_sync.push_paths(
-                            project_id, ["project.json", "audio/narration.mp3"]
+                            project_id,
+                            [
+                                "project.json",
+                                "audio/narration.mp3",
+                                "audio/narration_script.txt",
+                            ],
                         )
                     )
             return {"project": _project_full(p)}
@@ -898,17 +903,6 @@ def create_app() -> FastAPI:
         ready = mp4_is_complete(local)
         captions = mp4_is_complete(cap)
         preview = mp4_is_complete(prev)
-        if not ready or not captions or not preview:
-            from src.documentary import cloud_sync
-
-            if cloud_sync.configured():
-                try:
-                    rels = set(cloud_sync.list_rel_paths(project_id, "render/"))
-                except Exception:
-                    rels = set()
-                ready = ready or "render/final.mp4" in rels
-                captions = captions or "render/final_captions.mp4" in rels
-                preview = preview or "render/preview.mp4" in rels
         rec: dict = {}
         proj = None
         try:
@@ -920,10 +914,42 @@ def create_app() -> FastAPI:
             rec = proj.get("render") if isinstance(proj.get("render"), dict) else {}
         except Exception:
             rec = {}
+            try:
+                proj = load_project(project_id)
+            except Exception:
+                proj = None
+
+        from src.documentary.pipeline_invalidate import preview_matches_voice
+        from src.documentary.voice_script_sync import voice_matches_script
+
+        voice_ok = bool(proj and voice_matches_script(proj))
+        # Never treat a cloud/local preview as valid if it wasn't built from THIS voice.
+        if preview and proj is not None and not preview_matches_voice(proj):
+            try:
+                prev.unlink(missing_ok=True)
+            except OSError:
+                pass
+            preview = False
+            if isinstance(rec, dict):
+                rec.pop("preview", None)
+                rec.pop("preview_meta", None)
+
+        if not ready or not captions:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured() and voice_ok:
+                try:
+                    rels = set(cloud_sync.list_rel_paths(project_id, "render/"))
+                except Exception:
+                    rels = set()
+                ready = ready or "render/final.mp4" in rels
+                captions = captions or "render/final_captions.mp4" in rels
         if proj is not None:
             captions = captions or bool((proj.get("captions") or {}).get("burned")) or bool(
                 (proj.get("checkpoints") or {}).get("captions_ready")
             )
+            if ready and not voice_ok:
+                ready = False
         state = str(rec.get("state") or "").strip() or ("done" if ready else "idle")
         message = str(rec.get("message") or "")
         started = str(rec.get("started_at") or "")
@@ -1001,6 +1027,8 @@ def create_app() -> FastAPI:
             "started_at": started,
             "updated_at": str(rec.get("updated_at") or ""),
             "preview": bool(preview),
+            "preview_matches_voice": bool(proj and preview_matches_voice(proj)),
+            "voice_matches_script": bool(voice_ok),
             "edit": rec.get("edit") if isinstance(rec.get("edit"), dict) else {},
             "need_continue": bool(need_continue) and state == "running",
             "kb_done": kb_done,
@@ -1008,6 +1036,7 @@ def create_app() -> FastAPI:
             "percent": percent if percent is not None else 0,
             "stage": str(rec.get("stage") or ""),
             "elapsed_sec": elapsed,
+            "preview_meta": rec.get("preview_meta") if isinstance(rec.get("preview_meta"), dict) else {},
         }
 
     @app.get("/api/projects/{project_id}/video")
@@ -1179,17 +1208,24 @@ def create_app() -> FastAPI:
 
     @app.get("/api/projects/{project_id}/video/preview")
     def preview_video_file(project_id: str):
+        from src.documentary.pipeline_invalidate import preview_matches_voice
         from src.video_assembler import mp4_is_complete
 
         path = project_dir(project_id) / "render" / "preview.mp4"
+        try:
+            proj = load_project(project_id)
+        except Exception:
+            proj = None
+        # Never serve / resurrect a preview that doesn't match the current voice.
+        if proj is not None and path.is_file() and not preview_matches_voice(proj):
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                pass
+            raise HTTPException(404, "La prueba es de una voz vieja. Volvé a generar la prueba.")
         if not mp4_is_complete(path):
-            from src.documentary import cloud_sync
-
-            if cloud_sync.configured():
-                cloud_sync.pull_one(project_id, "render/preview.mp4", force=True)
-        if mp4_is_complete(path):
-            return FileResponse(path, media_type="video/mp4")
-        raise HTTPException(404, "No hay prueba todavía")
+            raise HTTPException(404, "No hay prueba todavía")
+        return FileResponse(path, media_type="video/mp4")
 
     @app.get("/api/projects/{project_id}/video/captions")
     def captioned_video_file(project_id: str, download: int = 0):

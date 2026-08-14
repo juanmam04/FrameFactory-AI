@@ -263,6 +263,20 @@ def _pull_render_assets(project_id: str) -> None:
     cloud_sync.pull_prefix(project_id, "images/")
 
 
+def _pull_render_assets_safe(project_id: str, project: dict[str, Any]) -> None:
+    """Like _pull_render_assets but never clobber a narration that matches the script."""
+    from src.documentary import cloud_sync
+    from src.documentary.voice_script_sync import voice_matches_script
+
+    if not cloud_sync.configured():
+        return
+    audio = project_dir(project_id) / "audio" / "narration.mp3"
+    if not (audio.is_file() and audio.stat().st_size > 0 and voice_matches_script(project)):
+        cloud_sync.pull_one(project_id, "audio/narration.mp3")
+    cloud_sync.pull_one(project_id, "flow-pack/shot-list.json")
+    cloud_sync.pull_prefix(project_id, "images/")
+
+
 def _probe_audio_sec(path: Path) -> float:
     from src.documentary.voice_service import _probe_duration
 
@@ -307,7 +321,7 @@ def assemble_and_render(
 
     vercel = on_vercel()
     if vercel:
-        _pull_render_assets(str(project["id"]))
+        _pull_render_assets_safe(str(project["id"]), project)
     if not verificar_ffmpeg():
         raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
     from src.documentary.voice_script_sync import require_voice_matches_script
@@ -577,13 +591,20 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     pid = str(project["id"])
     require_voice_matches_script(project)
     vercel = on_vercel()
+    # Pull stills if needed, but NEVER overwrite a local narration that matches this script.
     if vercel:
-        _pull_render_assets(pid)
+        _pull_preview_assets_safe(pid, project)
     if not verificar_ffmpeg():
         raise RuntimeError("No hay FFmpeg en este servidor.")
     audio = project_dir(pid) / "audio" / "narration.mp3"
     if not audio.is_file() or audio.stat().st_size <= 0:
         raise RuntimeError("Generá la voz antes de probar el video.")
+    from src.documentary.pipeline_invalidate import narration_fingerprint, stamp_voice_fingerprint
+
+    stamp_voice_fingerprint(project)
+    fp = narration_fingerprint(pid)
+    if not fp.get("audio_sha"):
+        raise RuntimeError("Narración vacía o ilegible.")
     edit = edit_settings(project)
     music = _resolve_music(project)
     music_vol = float(edit["music_volume"])
@@ -717,6 +738,7 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
                 rec["state"] = rec.get("state") or "idle"
     rec["preview"] = "render/preview.mp4"
     rec["edit"] = edit
+    voice = project.get("voice") if isinstance(project.get("voice"), dict) else {}
     rec["preview_meta"] = {
         "duration_sec": preview_dur,
         "seconds_per_image": sec,
@@ -728,15 +750,50 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         "full_timeline_planned": True,
         "stills_from_episode_start": len(images),
         "full_timeline_stills": len(images_full),
+        "voice_script_hash": str(voice.get("script_hash") or ""),
+        "audio_sha": str(voice.get("audio_sha") or fp.get("audio_sha") or ""),
+        "audio_bytes": int(voice.get("audio_bytes") or fp.get("audio_bytes") or 0),
     }
     project["render"] = rec
     save_project(project)
     append_log(
         pid,
         f"render preview ok {preview_dur:.0f}s same-engine start-of-episode captions=1 "
-        f"stills={len(images)}/{len(images_full)} reuse={reuse.get('method')}",
+        f"stills={len(images)}/{len(images_full)} reuse={reuse.get('method')} "
+        f"audio_sha={(rec['preview_meta'].get('audio_sha') or '')[:8]}",
     )
     return out
+
+
+def _pull_preview_assets_safe(project_id: str, project: dict[str, Any]) -> None:
+    """Pull images for preview without clobbering a narration that already matches the script."""
+    from src.documentary import cloud_sync
+    from src.documentary.import_images import list_project_images
+    from src.documentary.voice_script_sync import voice_matches_script
+
+    if not cloud_sync.configured():
+        return
+    audio = project_dir(project_id) / "audio" / "narration.mp3"
+    # Only pull narration if missing. Never replace a good local take with a cloud antique.
+    if not (audio.is_file() and audio.stat().st_size > 0 and voice_matches_script(project)):
+        cloud_sync.pull_one(project_id, "audio/narration.mp3")
+    if len(list_project_images(project_id)) >= 3:
+        return
+    try:
+        rels = cloud_sync.list_rel_paths(project_id, "images/")
+    except Exception:
+        rels = []
+    n = 0
+    for rel in sorted(rels):
+        low = rel.lower()
+        if ".thumb." in low:
+            continue
+        if not low.endswith((".jpg", ".jpeg", ".png", ".webp")):
+            continue
+        cloud_sync.pull_one(project_id, rel)
+        n += 1
+        if n >= 6:
+            break
 
 
 def _ts() -> str:

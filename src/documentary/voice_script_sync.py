@@ -45,6 +45,12 @@ def invalidate_voice_for_script_change(project: dict[str, Any], *, reason: str =
     set_checkpoint(project, "assembly_ready", False)
     set_checkpoint(project, "render_ready", False)
     set_checkpoint(project, "captions_ready", False)
+    try:
+        from src.documentary.pipeline_invalidate import wipe_voice_derived
+
+        wipe_voice_derived(project, reason=reason)
+    except Exception:
+        pass
     return project
 
 

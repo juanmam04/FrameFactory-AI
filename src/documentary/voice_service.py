@@ -46,6 +46,11 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     # Prove the take speaks THIS script (catches stale/wrong audio early).
     _assert_voice_follows_script(str(project["id"]), dest, script)
 
+    from src.documentary.pipeline_invalidate import stamp_voice_fingerprint, wipe_voice_derived
+
+    # New voice ⇒ wipe preview/final/captions locally + in the cloud. No stale take survives.
+    wipe_voice_derived(project, reason="new narration")
+
     duration = _probe_duration(dest)
     project["voice_speed"] = speed
     project["voice"] = {
@@ -57,20 +62,7 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
         "stale": False,
         "stale_reason": "",
     }
-    # Old captions were timed guesses / stale Whisper — wipe so the next burn re-aligns to this take.
-    try:
-        from src.documentary.captions import captions_srt_path, clear_burned_captions
-
-        srt = captions_srt_path(str(project["id"]))
-        if srt.is_file():
-            srt.unlink(missing_ok=True)
-        preview_srt = project_dir(str(project["id"])) / "render" / "captions_preview.srt"
-        if preview_srt.is_file():
-            preview_srt.unlink(missing_ok=True)
-        clear_burned_captions(str(project["id"]))
-    except Exception:
-        pass
-    project["captions"] = {"burned": False, "source": "", "voice_fp": ""}
+    stamp_voice_fingerprint(project)
     set_checkpoint(project, "captions_ready", False)
     set_checkpoint(project, "voice_ready", True)
     set_checkpoint(project, "assembly_ready", False)

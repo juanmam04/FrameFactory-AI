@@ -1686,8 +1686,9 @@ function paintPreview(ws, p) {
 
   const paint = (st, { remountPlayer = false } = {}) => {
     const edit = defaultEdit(p, st);
-    const hasPrev = !!(st.preview || paintPreview._hasPreview);
-    if (st.preview) paintPreview._hasPreview = true;
+    const hasPrev = !!(st.preview && st.preview_matches_voice !== false) || (!!paintPreview._hasPreview && voiceOk);
+    if (st.preview && st.preview_matches_voice === false) paintPreview._hasPreview = false;
+    if (st.preview && st.preview_matches_voice !== false) paintPreview._hasPreview = true;
     const waiting = !!paintPreview._previewWait;
     const existing = document.getElementById("preview-player");
     const keepPlayer = hasPrev && existing && !remountPlayer && paintPreview._uiReady;
