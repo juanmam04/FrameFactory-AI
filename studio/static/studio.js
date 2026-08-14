@@ -795,9 +795,11 @@ function renderLibrary() {
 function renderProject() {
   const p = state.project;
   if (!p) return go("home");
+  stopVideoPolls();
   let step = p.ui_step || "research";
   if (step === "images") step = "flow";
-  const steps = ["topic", "research", "story", "script", "flow", "voice", "music", "render", "subs", "publish"];
+  // Episodios viejos en "render" siguen en Video; la prueba es un paso aparte.
+  const steps = ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render", "subs", "publish"];
   const stepLabel = {
     topic: "1 Tema",
     research: "2 Info",
@@ -806,10 +808,11 @@ function renderProject() {
     flow: "5 Pedir imgs",
     voice: "6 Voz",
     music: "7 Música",
-    render: "8 Video",
-    subs: "9 Subs",
-    publish: "10 YouTube",
-    done: "10 YouTube",
+    preview: "8 Prueba",
+    render: "9 Video",
+    subs: "10 Subs",
+    publish: "11 YouTube",
+    done: "11 YouTube",
   };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
@@ -847,6 +850,7 @@ function renderProject() {
   if (step === "flow" || step === "images") return paintFlow(ws, p);
   if (step === "voice") return paintVoice(ws, p);
   if (step === "music") return paintMusic(ws, p);
+  if (step === "preview") return paintPreview(ws, p);
   if (step === "render") return paintRender(ws, p);
   if (step === "subs") return paintSubs(ws, p);
   if (step === "publish" || step === "done") return paintPublish(ws, p);
@@ -1547,13 +1551,13 @@ function paintMusic(ws, p) {
       <p class="lead">La misma cama en todos los episodios. En el video va muy bajita. Escuchala acá.</p>
       <audio id="music-bed" controls loop src="/api/music?v=20260813v" style="width:min(100%,640px);margin:0.4rem 0 1rem;display:block"></audio>
       <div class="actions">
-        <button class="btn btn-primary" id="to-render">Seguir al video</button>
+        <button class="btn btn-primary" id="to-preview">Seguir a la prueba</button>
       </div>
     </div>`;
-  $("#to-render").onclick = async () => {
+  $("#to-preview").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
-      body: JSON.stringify({ step: "render" }),
+      body: JSON.stringify({ step: "preview" }),
     });
     state.project = data.project;
     renderProject();
@@ -1631,129 +1635,131 @@ function grabEditFromDom() {
   };
 }
 
-function paintRender(ws, p) {
-  const id = encodeURIComponent(p.id);
+function stopVideoPolls() {
   if (paintRender._poll) {
     clearTimeout(paintRender._poll);
     paintRender._poll = null;
   }
-  const paint = (st) => {
-    const fromDom = grabEditFromDom();
-    if (fromDom) paintRender._edit = fromDom;
-    const edit = paintRender._edit || (st.edit && Object.keys(st.edit).length ? st.edit : null) || (p.render && p.render.edit) || {
+  if (paintPreview._poll) {
+    clearTimeout(paintPreview._poll);
+    paintPreview._poll = null;
+  }
+  if (paintRender._kickAgain) {
+    clearTimeout(paintRender._kickAgain);
+    paintRender._kickAgain = null;
+  }
+}
+
+function defaultEdit(p, st) {
+  const fromDom = grabEditFromDom();
+  if (fromDom) paintRender._edit = fromDom;
+  const edit =
+    paintRender._edit ||
+    (st?.edit && Object.keys(st.edit).length ? st.edit : null) ||
+    (p.render && p.render.edit) || {
       seconds_per_image: 6,
       motion: "mix",
       transition: "fade",
       music_volume: 0.08,
       look: "soft",
     };
-    paintRender._edit = edit;
-    const kind = st.state || (st.ready ? "done" : "idle");
-    paintRender._kind = kind;
-    const running = kind === "running";
-    const done = !running && (kind === "done" || !!st.ready);
-    const captions = !!st.captions;
-    const hasPrev = !!(st.preview || paintRender._hasPreview);
-    if (st.preview) paintRender._hasPreview = true;
-    const opt = (v, cur) =>
-      String(v) === String(cur) || (!Number.isNaN(Number(v)) && Number(v) === Number(cur)) ? "selected" : "";
+  paintRender._edit = edit;
+  return edit;
+}
+
+function paintPreview(ws, p) {
+  const id = encodeURIComponent(p.id);
+  stopVideoPolls();
+  const opt = (v, cur) =>
+    String(v) === String(cur) || (!Number.isNaN(Number(v)) && Number(v) === Number(cur)) ? "selected" : "";
+
+  const paint = (st, { remountPlayer = false } = {}) => {
+    const edit = defaultEdit(p, st);
+    const hasPrev = !!(st.preview || paintPreview._hasPreview);
+    if (st.preview) paintPreview._hasPreview = true;
+    const waiting = !!paintPreview._previewWait;
+    const existing = document.getElementById("preview-player");
+    const keepPlayer = hasPrev && existing && !remountPlayer && paintPreview._uiReady;
+
+    if (keepPlayer) {
+      const btn = document.getElementById("try-edit");
+      if (btn) {
+        btn.disabled = waiting;
+        btn.textContent = waiting ? "Armando prueba real…" : "Probar 20 segundos";
+      }
+      return;
+    }
+
+    const bust = remountPlayer || !paintPreview._srcBust ? Date.now() : paintPreview._srcBust;
+    if (hasPrev) paintPreview._srcBust = bust;
+
     ws.innerHTML = `
-    <div class="ff-video-split">
-      <section class="ff-block ff-block-test">
-        <div class="ff-block-head">
-          <span class="ff-block-tag">Prueba</span>
-          <h2>Prueba de edición · 20 segundos</h2>
-        </div>
-        <p class="lead">
-          Es el <strong>inicio del episodio real</strong>: mismo plan de fotos, mismos ajustes,
-          mismo encode y subtítulos quemados. Solo corta a ~20s. Acá validás antes de gastar el render largo.
-        </p>
-        <div class="edit-picks">
-          <label class="field">Segundos por foto
-            <select id="edit-sec">
-              <option value="4" ${opt(4, edit.seconds_per_image)}>4s</option>
-              <option value="5" ${opt(5, edit.seconds_per_image)}>5s</option>
-              <option value="6" ${opt(6, edit.seconds_per_image)}>6s</option>
-              <option value="7" ${opt(7, edit.seconds_per_image)}>7s (máximo)</option>
-            </select>
-          </label>
-          <label class="field">Movimiento
-            <select id="edit-motion">
-              <option value="mix" ${opt("mix", edit.motion)}>Mezcla (recomendado)</option>
-              <option value="push" ${opt("push", edit.motion)}>Zoom in lento</option>
-              <option value="pull" ${opt("pull", edit.motion)}>Zoom out lento</option>
-              <option value="pan" ${opt("pan", edit.motion)}>Paneo</option>
-            </select>
-          </label>
-          <label class="field">Transición
-            <select id="edit-trans">
-              <option value="fade" ${opt("fade", edit.transition)}>Fundido</option>
-              <option value="cut" ${opt("cut", edit.transition)}>Corte seco</option>
-            </select>
-          </label>
-          <label class="field">Música
-            <select id="edit-vol">
-              <option value="0.05" ${opt(0.05, edit.music_volume)}>Muy baja</option>
-              <option value="0.08" ${opt(0.08, edit.music_volume)}>Baja (doc)</option>
-              <option value="0.12" ${opt(0.12, edit.music_volume)}>Un poco más</option>
-            </select>
-          </label>
-          <label class="field">Bordes
-            <select id="edit-look">
-              <option value="none" ${opt("none", edit.look)}>Sin viñeta</option>
-              <option value="soft" ${opt("soft", edit.look || "soft")}>Oscurecer bordes</option>
-              <option value="film" ${opt("film", edit.look)}>Cine (más marcado)</option>
-            </select>
-          </label>
-        </div>
-        <div class="actions" style="margin-top:0.9rem">
-          <button class="btn btn-soft" id="try-edit" ${running || paintRender._previewWait ? "disabled" : ""}>${paintRender._previewWait ? "Armando prueba real…" : "Probar 20 segundos"}</button>
-        </div>
-        ${hasPrev ? `
-          <div class="ff-player-wrap">
-            <p class="ff-player-label">Player de la prueba — subtítulos quemados abajo (también CC del player)</p>
-            <video id="preview-player" controls crossorigin="anonymous" src="/api/projects/${id}/video/preview?t=${Date.now()}" class="ff-player">
-              <track kind="subtitles" srclang="en" label="English" default src="/api/projects/${id}/captions.vtt?t=${Date.now()}" />
-            </video>
-          </div>
-        ` : `<p class="lead" style="margin-top:0.9rem;font-size:0.92rem">Todavía no hay prueba. Tocá el botón de arriba.</p>`}
-      </section>
+    <section class="ff-block ff-block-test ff-screen-solo">
+      <div class="ff-block-head">
+        <span class="ff-block-tag">Prueba</span>
+        <h2>Prueba de edición · 20 segundos</h2>
+      </div>
+      <p class="lead">
+        Pantalla solo de la prueba. Acá validás edición y subtítulos quemados antes del render largo.
+        El episodio completo está en el paso <strong>9 Video</strong> — no se mezcla con esta pantalla.
+      </p>
+      <div class="edit-picks">
+        <label class="field">Segundos por foto
+          <select id="edit-sec">
+            <option value="4" ${opt(4, edit.seconds_per_image)}>4s</option>
+            <option value="5" ${opt(5, edit.seconds_per_image)}>5s</option>
+            <option value="6" ${opt(6, edit.seconds_per_image)}>6s</option>
+            <option value="7" ${opt(7, edit.seconds_per_image)}>7s (máximo)</option>
+          </select>
+        </label>
+        <label class="field">Movimiento
+          <select id="edit-motion">
+            <option value="mix" ${opt("mix", edit.motion)}>Mezcla (recomendado)</option>
+            <option value="push" ${opt("push", edit.motion)}>Zoom in lento</option>
+            <option value="pull" ${opt("pull", edit.motion)}>Zoom out lento</option>
+            <option value="pan" ${opt("pan", edit.motion)}>Paneo</option>
+          </select>
+        </label>
+        <label class="field">Transición
+          <select id="edit-trans">
+            <option value="fade" ${opt("fade", edit.transition)}>Fundido</option>
+            <option value="cut" ${opt("cut", edit.transition)}>Corte seco</option>
+          </select>
+        </label>
+        <label class="field">Música
+          <select id="edit-vol">
+            <option value="0.05" ${opt(0.05, edit.music_volume)}>Muy baja</option>
+            <option value="0.08" ${opt(0.08, edit.music_volume)}>Baja (doc)</option>
+            <option value="0.12" ${opt(0.12, edit.music_volume)}>Un poco más</option>
+          </select>
+        </label>
+        <label class="field">Bordes
+          <select id="edit-look">
+            <option value="none" ${opt("none", edit.look)}>Sin viñeta</option>
+            <option value="soft" ${opt("soft", edit.look || "soft")}>Oscurecer bordes</option>
+            <option value="film" ${opt("film", edit.look)}>Cine (más marcado)</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions" style="margin-top:0.9rem">
+        <button class="btn btn-soft" id="try-edit" ${waiting ? "disabled" : ""}>${waiting ? "Armando prueba real…" : "Probar 20 segundos"}</button>
+        <button class="btn btn-primary" id="to-full">Ir al episodio completo</button>
+        <button class="btn btn-ghost" id="home">Volver al inicio</button>
+      </div>
+      ${
+        hasPrev
+          ? `
+        <div class="ff-player-wrap">
+          <p class="ff-player-label">Player de la prueba (subtítulos quemados)</p>
+          <video id="preview-player" controls playsinline crossorigin="anonymous" src="/api/projects/${id}/video/preview?t=${bust}" class="ff-player">
+            <track kind="subtitles" srclang="en" label="English" default src="/api/projects/${id}/captions.vtt?t=${bust}" />
+          </video>
+        </div>`
+          : `<p class="lead" style="margin-top:0.9rem;font-size:0.92rem">Todavía no hay prueba. Tocá el botón de arriba.</p>`
+      }
+    </section>`;
+    paintPreview._uiReady = true;
 
-      <div class="ff-split-rule" aria-hidden="true"><span>Episodio completo</span></div>
-
-      <section class="ff-block ff-block-full">
-        <div class="ff-block-head">
-          <span class="ff-block-tag ff-block-tag-dark">Episodio</span>
-          <h2>Video completo</h2>
-        </div>
-        <p class="lead">
-          Misma edición que elegiste arriba, pero el episodio entero. Full HD 1080p con subtítulos quemados.
-        </p>
-        ${renderStatusView({ ...st, state: kind })}
-        ${done ? `
-          <div class="ff-player-wrap">
-            <p class="ff-player-label">Player del episodio</p>
-            <video controls src="/api/projects/${id}/video?t=${Date.now()}" class="ff-player"></video>
-          </div>
-        ` : ""}
-        <div class="actions actions-center">
-          <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
-          ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
-          ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
-          <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
-          <button class="btn btn-ghost" id="home">Volver al inicio</button>
-        </div>
-      </section>
-    </div>`;
-    $("#to-subs").onclick = async () => {
-      if (paintRender._poll) clearTimeout(paintRender._poll);
-      const data = await api(`/api/projects/${id}/step`, {
-        method: "PATCH",
-        body: JSON.stringify({ step: "subs" }),
-      });
-      state.project = data.project;
-      renderProject();
-    };
     $("#try-edit").onclick = async () => {
       const body = grabEditFromDom() || paintRender._edit;
       paintRender._edit = body;
@@ -1763,46 +1769,112 @@ function paintRender(ws, p) {
           body: JSON.stringify(body),
         });
       } catch {}
-      paintRender._previewWait = true;
-      paint({ ...st, preview: hasPrev });
+      paintPreview._previewWait = true;
+      paint(st);
       toast("Armando prueba real (mismo motor + subtítulos)…");
-      api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 180000 })
-        .then(() => {})
-        .catch((e) => {
-          paintRender._previewWait = false;
-          toast(String(e.message || e || "Falló la prueba"));
-          paint(st);
-        });
+      api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 180000 }).catch((e) => {
+        paintPreview._previewWait = false;
+        toast(String(e.message || e || "Falló la prueba"));
+        paint(st, { remountPlayer: false });
+      });
       const t0 = Date.now();
       const tickPrev = async () => {
+        if (state.project?.ui_step !== "preview") return;
         try {
           const nxt = await api(`/api/projects/${id}/video/status`);
           if (nxt.preview) {
-            paintRender._previewWait = false;
-            paintRender._hasPreview = true;
-            toast("Prueba lista — mirá subtítulos y edición");
-            paint({ ...nxt, preview: true });
+            paintPreview._previewWait = false;
+            paintPreview._hasPreview = true;
+            toast("Prueba lista");
+            paint({ ...nxt, preview: true }, { remountPlayer: true });
             return;
           }
         } catch {}
         if (Date.now() - t0 > 180000) {
-          paintRender._previewWait = false;
+          paintPreview._previewWait = false;
           toast("La prueba no terminó. Probá de nuevo.");
           paint(st);
           return;
         }
-        setTimeout(tickPrev, 2500);
+        paintPreview._poll = setTimeout(tickPrev, 2500);
       };
-      setTimeout(tickPrev, 2500);
+      paintPreview._poll = setTimeout(tickPrev, 2500);
+    };
+
+    $("#to-full").onclick = async () => {
+      stopVideoPolls();
+      const body = grabEditFromDom() || paintRender._edit;
+      if (body) {
+        paintRender._edit = body;
+        api(`/api/projects/${id}/render/edit`, {
+          method: "PUT",
+          body: JSON.stringify(body),
+        }).catch(() => {});
+      }
+      const data = await api(`/api/projects/${id}/step`, {
+        method: "PATCH",
+        body: JSON.stringify({ step: "render" }),
+      });
+      state.project = data.project;
+      renderProject();
+    };
+    $("#home").onclick = () => {
+      stopVideoPolls();
+      location.hash = "";
+      go("home");
+    };
+  };
+
+  paintPreview._uiReady = false;
+  api(`/api/projects/${id}/video/status`)
+    .then((st) => {
+      if (state.project?.ui_step !== "preview") return;
+      if (st.preview) paintPreview._hasPreview = true;
+      paint(st, { remountPlayer: !!st.preview });
+    })
+    .catch(() => {
+      if (state.project?.ui_step !== "preview") return;
+      paint({ preview: !!paintPreview._hasPreview }, { remountPlayer: !!paintPreview._hasPreview });
+    });
+}
+
+function paintRender(ws, p) {
+  const id = encodeURIComponent(p.id);
+  stopVideoPolls();
+  paintRender._uiReady = false;
+
+  const bindActions = (st, kind, captions) => {
+    const running = kind === "running";
+    const done = !running && (kind === "done" || !!st.ready);
+    $("#to-subs").onclick = async () => {
+      stopVideoPolls();
+      const data = await api(`/api/projects/${id}/step`, {
+        method: "PATCH",
+        body: JSON.stringify({ step: "subs" }),
+      });
+      state.project = data.project;
+      renderProject();
+    };
+    $("#to-preview").onclick = async () => {
+      stopVideoPolls();
+      const data = await api(`/api/projects/${id}/step`, {
+        method: "PATCH",
+        body: JSON.stringify({ step: "preview" }),
+      });
+      state.project = data.project;
+      renderProject();
     };
     $("#render").onclick = async () => {
-      const body = grabEditFromDom() || paintRender._edit;
+      const body = paintRender._edit || defaultEdit(p, st);
       paintRender._edit = body;
       api(`/api/projects/${id}/render/edit`, {
         method: "PUT",
         body: JSON.stringify(body),
       }).catch(() => {});
-      paint({ state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions });
+      paint(
+        { state: "running", label: "En curso", message: "Arrancó. El estado se actualiza solo.", ready: false, captions },
+        { force: true }
+      );
       const kickRender = () =>
         api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
           .then((r) => {
@@ -1824,23 +1896,79 @@ function paintRender(ws, p) {
           toast(e.message);
           return;
         }
-        if (paintRender._poll) {
-          clearTimeout(paintRender._poll);
-          paintRender._poll = null;
-        }
+        stopVideoPolls();
         toast("Frenado");
-        paint({ state: "idle", label: "Frenado", message: "Frenaste el render.", ready: false, captions: false });
+        paint({ state: "idle", label: "Frenado", message: "Frenaste el render.", ready: false, captions: false }, { force: true });
       };
     }
     $("#home").onclick = () => {
-      if (paintRender._poll) clearTimeout(paintRender._poll);
+      stopVideoPolls();
       location.hash = "";
       go("home");
     };
   };
+
+  const paint = (st, { force = false } = {}) => {
+    defaultEdit(p, st);
+    const kind = st.state || (st.ready ? "done" : "idle");
+    const prevKind = paintRender._kind;
+    paintRender._kind = kind;
+    const running = kind === "running";
+    const done = !running && (kind === "done" || !!st.ready);
+    const captions = !!st.captions;
+
+    // Durante el render: solo actualizar barra/estado — nunca tocar players ni remount.
+    if (!force && paintRender._uiReady && running && prevKind === "running") {
+      const host = document.getElementById("render-status-host");
+      if (host) host.innerHTML = renderStatusView({ ...st, state: kind });
+      const btn = document.getElementById("render");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Armando…";
+      }
+      return;
+    }
+
+    const needPlayerRemount = force || !paintRender._fullSrcBust || (done && prevKind === "running");
+    const bust = needPlayerRemount ? Date.now() : paintRender._fullSrcBust;
+    if (done) paintRender._fullSrcBust = bust;
+
+    ws.innerHTML = `
+    <section class="ff-block ff-block-full ff-screen-solo">
+      <div class="ff-block-head">
+        <span class="ff-block-tag ff-block-tag-dark">Episodio</span>
+        <h2>Video completo</h2>
+      </div>
+      <p class="lead">
+        Pantalla solo del episodio. La prueba de 20s está en el paso <strong>8 Prueba</strong> — no se recarga acá.
+      </p>
+      <div id="render-status-host">${renderStatusView({ ...st, state: kind })}</div>
+      ${
+        done
+          ? `
+        <div class="ff-player-wrap">
+          <p class="ff-player-label">Player del episodio</p>
+          <video id="full-player" controls playsinline src="/api/projects/${id}/video?t=${bust}" class="ff-player"></video>
+        </div>`
+          : ""
+      }
+      <div class="actions actions-center">
+        <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
+        ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
+        ${done ? `<a class="btn btn-primary" href="/api/projects/${id}/video?download=1" download="${esc(p.id)}.mp4">${captions ? "Descargar Full HD (con subtítulos)" : "Descargar video final"}</a>` : ""}
+        <button class="btn btn-soft" id="to-preview">Ver prueba 20s</button>
+        <button class="btn btn-primary" id="to-subs">Seguir a subtítulos</button>
+        <button class="btn btn-ghost" id="home">Volver al inicio</button>
+      </div>
+    </section>`;
+    paintRender._uiReady = true;
+    bindActions(st, kind, captions);
+  };
+
   const startPoll = () => {
     if (paintRender._poll) clearTimeout(paintRender._poll);
     const tick = async () => {
+      if (state.project?.ui_step !== "render") return;
       try {
         const prev = paintRender._kind;
         const next = await api(`/api/projects/${id}/video/status`);
@@ -1849,9 +1977,8 @@ function paintRender(ws, p) {
           paintRender._resuming = true;
           toast("Reanudando render…");
           api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
-            .then((r) => {
+            .then(() => {
               paintRender._resuming = false;
-              if (r && r.continue) paintRender._resuming = false;
             })
             .catch(() => {
               paintRender._resuming = false;
@@ -1868,10 +1995,9 @@ function paintRender(ws, p) {
             paintRender._poll = setTimeout(tick, 2000);
             if (!paintRender._resuming) {
               paintRender._resuming = true;
-              api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 })
-                .finally(() => {
-                  paintRender._resuming = false;
-                });
+              api(`/api/projects/${id}/render`, { method: "POST", timeoutMs: 280000 }).finally(() => {
+                paintRender._resuming = false;
+              });
             }
             return;
           }
@@ -1883,19 +2009,28 @@ function paintRender(ws, p) {
     };
     paintRender._poll = setTimeout(tick, 1500);
   };
+
   const rec = p.render || {};
   const first = {
     state: rec.state || (p.checkpoints?.render_ready ? "done" : "idle"),
-    label: rec.state === "done" || p.checkpoints?.render_ready ? "Terminado" : rec.state === "running" ? "En curso" : rec.state === "error" ? "Error" : "No iniciado",
+    label:
+      rec.state === "done" || p.checkpoints?.render_ready
+        ? "Terminado"
+        : rec.state === "running"
+          ? "En curso"
+          : rec.state === "error"
+            ? "Error"
+            : "No iniciado",
     message: rec.message || "",
     ready: !!p.checkpoints?.render_ready,
     captions: !!p.checkpoints?.captions_ready,
     error: rec.error || "",
   };
-  paint(first);
+  paint(first, { force: true });
   api(`/api/projects/${id}/video/status`)
     .then((st) => {
-      paint(st);
+      if (state.project?.ui_step !== "render") return;
+      paint(st, { force: true });
       if (st.state === "running") startPoll();
     })
     .catch(() => {});

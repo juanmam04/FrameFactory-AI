@@ -105,6 +105,7 @@ STEPS = [
     "images",
     "voice",
     "music",
+    "preview",
     "render",
     "subs",
     "publish",

@@ -534,6 +534,13 @@ code { word-break: break-all; }
   border-radius: 14px;
   display: block;
 }
+.ff-screen-solo {
+  max-width: 820px;
+}
+.ff-screen-solo .ff-player {
+  width: 100%;
+  max-width: 780px;
+}
 .field label {
   display: block;
   margin: 0 0 0.4rem;
