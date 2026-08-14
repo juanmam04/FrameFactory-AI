@@ -177,14 +177,15 @@ def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps:
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     last = max(1, d - 1)
-    z_end = 1.07
+    # Subtle documentary drift — stronger zoom reads as a shake on stills.
+    z_end = 1.03
     inc = (z_end - 1.0) / last
     if k == "pull":
         z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
         return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     if k == "pan":
         return (
-            f"zoompan=z=1.05:x='(iw-iw/zoom)*on/{last}':"
+            f"zoompan=z=1.02:x='(iw-iw/zoom)*on/{last}':"
             f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
         )
     return (
@@ -194,10 +195,10 @@ def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps:
 
 
 def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
-    """Slow Ken Burns via scale/crop (faster than zoompan, same documentary feel)."""
+    """Slow Ken Burns via scale/crop (smoother than zoompan — less frame jitter)."""
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
-    z = 0.07
+    z = 0.03  # ~3% over the still — readable motion, not a shake
     dur = max(0.8, float(seg))
     fill = (
         f"scale={width}:{height}:force_original_aspect_ratio=increase,"
@@ -209,8 +210,8 @@ def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> st
             f"crop={width}:{height}"
         )
     if k == "pan":
-        pw = int(width * 1.08) // 2 * 2
-        ph = int(height * 1.08) // 2 * 2
+        pw = int(width * 1.04) // 2 * 2
+        ph = int(height * 1.04) // 2 * 2
         return (
             f"scale={pw}:{ph}:force_original_aspect_ratio=increase,crop={pw}:{ph},"
             f"crop={width}:{height}:x='(in_w-out_w)*min(t/{dur:.3f}\\,1)':y='(in_h-out_h)/2'"
@@ -329,9 +330,10 @@ def _encode_one_still(
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    pre_w = int(width * 1.14) // 2 * 2
-    pre_h = int(height * 1.14) // 2 * 2
-    zp = _ken_burns(motion, index, frames, width, height, fps=fps)
+    pre_w = int(width * 1.06) // 2 * 2
+    pre_h = int(height * 1.06) // 2 * 2
+    # scale/crop drift instead of zoompan — zoompan subpixel steps look like a shake.
+    mv = _motion_vf(motion, index, seg, width, height)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
         f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
@@ -339,10 +341,7 @@ def _encode_one_still(
         else ""
     )
     vig = _vignette_vf(look)
-    vf = (
-        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
-        f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
-    )
+    vf = f"{mv}{fades}{vig},format=yuv420p,setsar=1"
     part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
@@ -477,8 +476,8 @@ def _concat_edit_vf(
 ) -> str:
     """One-pass pan/drift + per-still fades. Cheap enough for a 10 min Vercel encode."""
     fps = max(12, min(30, int(fps)))
-    pw = int(width * 1.08) // 2 * 2
-    ph = int(height * 1.08) // 2 * 2
+    pw = int(width * 1.04) // 2 * 2
+    ph = int(height * 1.04) // 2 * 2
     p = f"min(mod(t\\,{seg:.3f})/{max(seg, 0.01):.3f}\\,1)"
     m = str(motion or "mix").strip().lower()
     if m == "pull":
@@ -488,11 +487,12 @@ def _concat_edit_vf(
         x = f"(in_w-out_w)*{p}"
         y = f"(in_h-out_h)/2"
     elif m == "push":
-        x = f"(in_w-out_w)*{p}"
-        y = f"(in_h-out_h)*(0.25+0.5*{p})"
+        x = f"(in_w-out_w)*{p}*0.55"
+        y = f"(in_h-out_h)*(0.42+0.16*{p})"
     else:
+        # Gentle left/right only — no vertical sine (that read as a tremble).
         x = f"(in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p})"
-        y = f"(in_h-out_h)*(0.35+0.30*sin(2*PI*{p}))"
+        y = f"(in_h-out_h)/2"
     fade = 0.28 if str(transition or "fade") == "fade" else 0.0
     bits = [
         f"scale={pw}:{ph}:force_original_aspect_ratio=increase",
@@ -606,7 +606,7 @@ def _montar_video_con_zoom_y_transiciones(
     height: int,
     video_solo: Path,
     fade_segundos: float = 0.25,
-    zoom_final: float = 1.06,
+    zoom_final: float = 1.03,
 ) -> None:
     """
     Genera el video de imágenes con zoom suave (Ken Burns) y fundidos cortos entre escenas.
