@@ -173,20 +173,19 @@ def _vignette_vf(look: str) -> str:
 
 
 def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
-    """Stable documentary drift — fixed-size crop pan (no zoompan = no frame shake)."""
+    """Visible documentary drift — fixed-size integer crop (no zoompan = no shake)."""
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     last = max(1, d - 1)
     fps = max(12, min(30, int(fps)))
-    # Fixed crop window on a slightly larger canvas = glide with integer pixels only.
-    pre_w = int(width * 1.08) // 2 * 2
-    pre_h = int(height * 1.08) // 2 * 2
+    # ~20% travel so the move is obvious; trunc keeps it from trembling.
+    pre_w = int(width * 1.20) // 2 * 2
+    pre_h = int(height * 1.20) // 2 * 2
     base = (
         f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
         f"crop={pre_w}:{pre_h}"
     )
-    # `n` = frame index (integer). trunc() kills subpixel dither that looked like trembling.
     if k == "pull":
         x = f"trunc((in_w-out_w)*(1-n/{last}))"
         y = f"trunc((in_h-out_h)/2)"
@@ -194,9 +193,9 @@ def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps:
         x = f"trunc((in_w-out_w)*n/{last})"
         y = f"trunc((in_h-out_h)/2)"
     else:
-        # push: slow drift toward a focal point
+        # push: diagonal drift — readable camera move without live zoom
         x = f"trunc((in_w-out_w)*n/{last})"
-        y = f"trunc((in_h-out_h)*n/{last}*0.45)"
+        y = f"trunc((in_h-out_h)*n/{last})"
     return f"{base},crop={width}:{height}:x='{x}':y='{y}',fps={fps}"
 
 
@@ -459,8 +458,8 @@ def _concat_edit_vf(
 ) -> str:
     """One-pass pan/drift + per-still fades. Cheap enough for a 10 min Vercel encode."""
     fps = max(12, min(30, int(fps)))
-    pw = int(width * 1.08) // 2 * 2
-    ph = int(height * 1.08) // 2 * 2
+    pw = int(width * 1.20) // 2 * 2
+    ph = int(height * 1.20) // 2 * 2
     p = f"min(mod(t\\,{seg:.3f})/{max(seg, 0.01):.3f}\\,1)"
     m = str(motion or "mix").strip().lower()
     if m == "pull":
@@ -471,7 +470,7 @@ def _concat_edit_vf(
         y = f"trunc((in_h-out_h)/2)"
     elif m == "push":
         x = f"trunc((in_w-out_w)*{p})"
-        y = f"trunc((in_h-out_h)*{p}*0.45)"
+        y = f"trunc((in_h-out_h)*{p})"
     else:
         # No vertical sine — that read as the whole frame trembling.
         x = f"trunc((in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p}))"
