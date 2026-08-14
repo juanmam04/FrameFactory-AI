@@ -141,7 +141,16 @@ def update_shot_status(project_id: str, shot_number: int, status: str) -> dict[s
 
 def load_shot_list(project_id: str) -> dict[str, Any]:
     path = project_dir(project_id) / "flow-pack" / "shot-list.json"
-    if not path.exists():
+    if not path.is_file() or path.stat().st_size <= 0:
+        # Vercel lambdas start empty — restore from cloud before failing.
+        try:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.pull_one(project_id, "flow-pack/shot-list.json", force=True)
+        except Exception:
+            pass
+    if not path.is_file() or path.stat().st_size <= 0:
         raise FileNotFoundError("shot-list.json missing — export Flow Pack first")
     return json.loads(path.read_text(encoding="utf-8"))
 

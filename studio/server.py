@@ -227,7 +227,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-zoom-original",
+            "build": "20260815-shotlist-pull",
         }
 
     @app.get("/api/ping")
@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-zoom-original",
+            "build": "20260815-shotlist-pull",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -1497,6 +1497,14 @@ def create_app() -> FastAPI:
 
 
 def _flow_payload(project_id: str, p: dict[str, Any]) -> dict[str, Any]:
+    try:
+        from src.documentary import cloud_sync
+
+        if cloud_sync.configured():
+            cloud_sync.pull_one(project_id, "flow-pack/shot-list.json", force=False)
+            cloud_sync.pull_one(project_id, "flow-pack/visual-plan.json", force=False)
+    except Exception:
+        pass
     shots = load_shot_list(project_id)
     plan = None
     md = ""
