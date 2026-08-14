@@ -73,10 +73,13 @@ def touch_render_progress(
     total: int | None = None,
     percent: int | None = None,
     push: bool = False,
+    preview: bool = False,
 ) -> dict[str, Any]:
     """Heartbeat so the UI can show what the render is doing (without resetting started_at)."""
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-    rec["state"] = "running"
+    # Preview must NEVER mark the full episode as "running" — that stuck step 9 on "Armando…".
+    if not preview:
+        rec["state"] = "running"
     rec["updated_at"] = _utc_now()
     rec["message"] = (message or "")[:240]
     if stage:
@@ -643,6 +646,7 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
             total=len(images),
             percent=10,
             push=True,
+            preview=True,
         )
         captions_for_window(project, preview_dur)
     except Exception as e:
@@ -666,6 +670,7 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
             total=total,
             percent=pct,
             push=should_push,
+            preview=True,
         )
 
     master = project_dir(pid) / "render" / "preview_master.mp4"
@@ -705,6 +710,7 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
         total=len(images),
         percent=85,
         push=True,
+        preview=True,
     )
     srt = captions_for_window(project, preview_dur)
     if not srt.is_file() or srt.stat().st_size <= 0:
@@ -729,13 +735,15 @@ def assemble_preview_clip(project: dict[str, Any]) -> Path:
     tmp.replace(out)
 
     rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-    if str(rec.get("state") or "") != "running" or str(rec.get("stage") or "").startswith("preview"):
-        if str(rec.get("stage") or "").startswith("preview") or not rec.get("stage"):
-            rec["message"] = "Prueba de 20s lista (inicio del episodio real + subtítulos)."
-            rec["stage"] = "preview_done"
-            rec["percent"] = 100
-            if rec.get("state") != "running":
-                rec["state"] = rec.get("state") or "idle"
+    # Always release the full-episode lock after a preview — never leave state=running.
+    rec["message"] = "Prueba de 20s lista. Tocá Renderizar episodio para el video completo."
+    rec["stage"] = "preview_done"
+    rec["state"] = "idle"
+    rec["need_continue"] = False
+    rec["cancelled"] = False
+    rec["percent"] = 0  # preview % must not look like full-episode 100%
+    rec["kb_done"] = 0
+    rec["kb_total"] = 0
     rec["preview"] = "render/preview.mp4"
     rec["edit"] = edit
     voice = project.get("voice") if isinstance(project.get("voice"), dict) else {}

@@ -227,7 +227,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-pan-visible",
+            "build": "20260815-unstick-render",
         }
 
     @app.get("/api/ping")
@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-pan-visible",
+            "build": "20260815-unstick-render",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -995,6 +995,40 @@ def create_app() -> FastAPI:
         message = str(rec.get("message") or "")
         started = str(rec.get("started_at") or "")
         need_continue = bool(rec.get("need_continue"))
+        stage_now = str(rec.get("stage") or "")
+        # Preview leftovers used to leave state=running forever → step 9 stuck on "Armando…".
+        if state == "running" and (
+            stage_now == "preview_done" or stage_now.startswith("preview_")
+        ):
+            state = "idle"
+            need_continue = False
+            if stage_now == "preview_done":
+                message = message or "Prueba lista. Tocá Renderizar episodio para el video completo."
+            if proj is not None and str(rec.get("state") or "") == "running":
+                try:
+                    from src.documentary.project import _utc_now, save_project
+
+                    rec["state"] = "idle"
+                    rec["need_continue"] = False
+                    rec["kb_done"] = 0
+                    rec["kb_total"] = 0
+                    rec["percent"] = 0
+                    rec["updated_at"] = _utc_now()
+                    rec["message"] = (
+                        message
+                        or "Prueba lista. Tocá Renderizar episodio para el video completo."
+                    )
+                    proj["render"] = rec
+                    save_project(proj)
+                    from src.documentary import cloud_sync
+
+                    if cloud_sync.configured():
+                        try:
+                            cloud_sync.push_paths(project_id, ["project.json"])
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
         # Old stuck "Se cortó" errors → resume instead of blocking the UI.
         if state == "error" and "Se cortó" in (message or str(rec.get("error") or "")):
             if not ready:
@@ -1009,7 +1043,8 @@ def create_app() -> FastAPI:
                 t0 = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
                 age = (datetime.now(timezone.utc) - t0).total_seconds()
                 # Vercel lambdas die ~300s. Don't flip to ERROR — tell the UI to resume.
-                if age > 200:
+                # Never auto-resume a preview stage.
+                if age > 200 and not stage_now.startswith("preview"):
                     state = "running"
                     done = int(rec.get("kb_done") or 0)
                     total = int(rec.get("kb_total") or 0)

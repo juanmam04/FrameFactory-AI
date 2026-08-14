@@ -2069,20 +2069,30 @@ function paintRender(ws, p) {
   };
 
   const rec = p.render || {};
+  const previewStuck =
+    rec.stage === "preview_done" || String(rec.stage || "").startsWith("preview_");
+  const firstState =
+    previewStuck && rec.state === "running"
+      ? "idle"
+      : rec.state || (p.checkpoints?.render_ready ? "done" : "idle");
   const first = {
-    state: rec.state || (p.checkpoints?.render_ready ? "done" : "idle"),
+    state: firstState,
     label:
-      rec.state === "done" || p.checkpoints?.render_ready
+      firstState === "done" || p.checkpoints?.render_ready
         ? "Terminado"
-        : rec.state === "running"
+        : firstState === "running"
           ? "En curso"
-          : rec.state === "error"
+          : firstState === "error"
             ? "Error"
             : "No iniciado",
-    message: rec.message || "",
+    message: previewStuck
+      ? rec.message || "Prueba lista. Tocá Renderizar episodio para el video completo."
+      : rec.message || "",
     ready: !!p.checkpoints?.render_ready,
     captions: !!p.checkpoints?.captions_ready,
     error: rec.error || "",
+    stage: rec.stage || "",
+    percent: previewStuck ? 0 : rec.percent,
   };
   paint(first, { force: true });
   api(`/api/projects/${id}/video/status`)
