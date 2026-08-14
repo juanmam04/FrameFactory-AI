@@ -23,16 +23,19 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     if not project.get("script_approved"):
         raise ValueError("Approve the script before generating voice.")
 
+    # live=False → present keys are "unchecked", not "ok". Still usable for TTS.
     oa = check_openai(live=False)
     el = check_elevenlabs(live=False)
-    if oa.status != "ok" and el.status != "ok":
+    oa_ready = oa.status in ("ok", "unchecked")
+    el_ready = el.status in ("ok", "unchecked")
+    if not oa_ready and not el_ready:
         details = []
-        if oa.status != "ok":
+        if not oa_ready:
             details.append(f"OpenAI: {oa.detail}")
-        if el.status not in ("ok", "missing"):
-            details.append(f"ElevenLabs: {el.detail}")
-        elif el.status == "missing":
+        if el.status == "missing":
             details.append("ElevenLabs: not configured")
+        else:
+            details.append(f"ElevenLabs: {el.detail}")
         raise RuntimeError(
             "Voice blocked — no working TTS provider.\n" + "\n".join(details)
         )

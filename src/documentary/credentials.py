@@ -126,8 +126,8 @@ def credential_report(*, live: bool = True) -> dict:
     files = []
     for p in env_candidate_paths():
         files.append({"path": str(p), "exists": p.is_file()})
-    ready_research = oa.status == "ok"
-    ready_voice = oa.status == "ok" or el.status == "ok"
+    ready_research = oa.status in ("ok", "unchecked")
+    ready_voice = oa.status in ("ok", "unchecked") or el.status in ("ok", "unchecked")
     return {
         "openai": oa,
         "elevenlabs": el,
