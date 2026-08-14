@@ -173,6 +173,7 @@ def _vignette_vf(look: str) -> str:
 
 
 def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
+    """Same documentary zoom (~7%) as before — only smoother sampling."""
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
@@ -180,7 +181,7 @@ def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps:
     z_end = 1.07
     inc = (z_end - 1.0) / last
     if k == "pull":
-        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
+        z = f"if(lte(on,1),{z_end:.6f},max(1.0,zoom-{inc:.10f}))"
         return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     if k == "pan":
         return (
@@ -188,7 +189,7 @@ def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps:
             f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
         )
     return (
-        f"zoompan=z='min(zoom+{inc:.6f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
+        f"zoompan=z='min(zoom+{inc:.10f},{z_end:.6f})':x='iw/2-(iw/zoom/2)':"
         f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     )
 
@@ -329,8 +330,11 @@ def _encode_one_still(
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    pre_w = int(width * 1.14) // 2 * 2
-    pre_h = int(height * 1.14) // 2 * 2
+    fps = max(12, min(30, int(fps)))
+    frames = max(8, int(frames))
+    # Same ~7% Ken Burns; a bit more overscan so zoompan has subpixel room (was 1.14).
+    pre_w = int(width * 1.45) // 2 * 2
+    pre_h = int(height * 1.45) // 2 * 2
     zp = _ken_burns(motion, index, frames, width, height, fps=fps)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
@@ -340,18 +344,20 @@ def _encode_one_still(
     )
     vig = _vignette_vf(look)
     vf = (
-        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
+        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase:flags=bilinear,"
         f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
     )
     part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
-        "-loop", "1", "-i", str(img.resolve()),
-        "-vf", vf, "-frames:v", str(frames), "-t", f"{seg:.3f}",
-        "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
+        # Match still input fps to encode fps — default 25fps froze the last part of the move.
+        "-framerate", str(fps), "-loop", "1", "-i", str(img.resolve()),
+        "-vf", vf, "-r", str(fps), "-frames:v", str(frames), "-t", f"{seg:.3f}",
+        # Keep film look of the old path; drop stillimage tune (it steps moving crops).
+        "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    limit = 12 if width <= 1280 else 22
+    limit = 18 if width <= 1280 else 28
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(part):
         part.unlink(missing_ok=True)
