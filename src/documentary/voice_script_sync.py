@@ -54,7 +54,39 @@ def invalidate_voice_for_script_change(project: dict[str, Any], *, reason: str =
     return project
 
 
+def ensure_voice_binding(project: dict[str, Any]) -> dict[str, Any]:
+    """Bind an existing narration to the current script when hash metadata is missing."""
+    from src.documentary.pipeline_invalidate import stamp_voice_fingerprint
+    from src.documentary.project import save_project
+
+    script = str(project.get("script") or "").strip()
+    pid = str(project.get("id") or "")
+    audio = project_dir(pid) / "audio" / "narration.mp3"
+    if not script or not audio.is_file() or audio.stat().st_size <= 0:
+        return project
+    voice = dict(project.get("voice") or {})
+    # Never auto-bind a take that was explicitly marked stale (script changed).
+    if voice.get("stale"):
+        return project
+    if voice.get("script_hash"):
+        if not voice.get("audio_sha"):
+            stamp_voice_fingerprint(project)
+            save_project(project)
+        return project
+    # Legacy take without hash: bind once so preview/render aren't blocked forever.
+    voice["script_hash"] = script_hash(script)
+    voice["stale"] = False
+    voice["stale_reason"] = ""
+    voice["path"] = voice.get("path") or "audio/narration.mp3"
+    project["voice"] = voice
+    set_checkpoint(project, "voice_ready", True)
+    stamp_voice_fingerprint(project)
+    save_project(project)
+    return project
+
+
 def require_voice_matches_script(project: dict[str, Any]) -> None:
+    ensure_voice_binding(project)
     if not voice_matches_script(project):
         raise RuntimeError(
             "La voz no es de este guion (quedó de una toma vieja o el texto cambió). "

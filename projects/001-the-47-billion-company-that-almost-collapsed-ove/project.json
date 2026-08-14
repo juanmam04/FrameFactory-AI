@@ -487,13 +487,15 @@
     "images_imported": false,
     "voice_ready": true,
     "assembly_ready": false,
-    "render_ready": false
+    "render_ready": false,
+    "captions_ready": false
   },
   "import_report": {},
+  "youtube": {},
   "preview": {},
   "errors": [],
   "created_at": "2026-08-12T16:49:00Z",
-  "updated_at": "2026-08-13T03:15:46Z",
+  "updated_at": "2026-08-14T18:48:30Z",
   "research_ai_generated": true,
   "story_architecture": {
     "story_engine": "The dramatic fall of WeWork from a $47 billion valuation to a failed IPO reveals the fragility of startup success and the consequences of unchecked ambition.",
@@ -629,7 +631,11 @@
   "voice": {
     "path": "audio/narration.mp3",
     "duration_sec": 437.006667,
-    "speed": 1.0
+    "speed": 1.0,
+    "script_hash": "e6be15a39062fe43bc28",
+    "stale": false,
+    "audio_sha": "cca211a4c96f0cdafa02f048",
+    "audio_bytes": 10489982
   },
   "visual_plan": {
     "stats": {
@@ -646,5 +652,48 @@
     },
     "batch_count": 3,
     "path": "flow-pack/visual-plan.json"
+  },
+  "render": {
+    "state": "running",
+    "updated_at": "2026-08-14T18:48:07Z",
+    "message": "Prueba de 20s lista (inicio del episodio real + subtítulos).",
+    "stage": "preview_done",
+    "kb_done": 4,
+    "kb_total": 4,
+    "percent": 100,
+    "preview": "render/preview.mp4",
+    "edit": {
+      "seconds_per_image": 6.0,
+      "motion": "mix",
+      "transition": "fade",
+      "music_volume": 0.08,
+      "look": "soft"
+    },
+    "preview_meta": {
+      "duration_sec": 20.0,
+      "seconds_per_image": 5.986392698630137,
+      "width": 3840,
+      "height": 2160,
+      "reuse": {
+        "available": 8,
+        "needed": 73,
+        "gaps": 65,
+        "method": "ai",
+        "filled": 65
+      },
+      "captions": true,
+      "same_engine_as_final": true,
+      "full_timeline_planned": true,
+      "stills_from_episode_start": 4,
+      "full_timeline_stills": 73,
+      "voice_script_hash": "e6be15a39062fe43bc28",
+      "audio_sha": "cca211a4c96f0cdafa02f048",
+      "audio_bytes": 10489982
+    }
+  },
+  "captions": {
+    "burned": false,
+    "source": "",
+    "voice_fp": ""
   }
 }

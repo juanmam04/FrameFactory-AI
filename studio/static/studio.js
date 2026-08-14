@@ -1804,25 +1804,47 @@ function paintPreview(ws, p) {
       paintPreview._previewWait = true;
       paint(st);
       toast("Armando prueba real (mismo motor + subtítulos)…");
-      api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 180000 }).catch((e) => {
+      let previewDone = false;
+      const finishPreview = (nxt) => {
+        if (previewDone) return;
+        previewDone = true;
         paintPreview._previewWait = false;
-        toast(String(e.message || e || "Falló la prueba"));
-        paint(st, { remountPlayer: false });
-      });
+        paintPreview._hasPreview = true;
+        if (nxt?.project) state.project = nxt.project;
+        toast("Prueba lista");
+        paint({ ...(nxt || {}), preview: true, preview_matches_voice: true }, { remountPlayer: true });
+      };
+      api(`/api/projects/${id}/render/preview`, { method: "POST", timeoutMs: 280000 })
+        .then((res) => {
+          if (res?.ok || res?.preview) {
+            finishPreview(res);
+            return;
+          }
+        })
+        .catch((e) => {
+          if (previewDone) return;
+          paintPreview._previewWait = false;
+          toast(String(e.message || e || "Falló la prueba"));
+          paint(st, { remountPlayer: false });
+        });
       const t0 = Date.now();
       const tickPrev = async () => {
-        if (state.project?.ui_step !== "preview") return;
+        if (previewDone || state.project?.ui_step !== "preview") return;
         try {
           const nxt = await api(`/api/projects/${id}/video/status`);
           if (nxt.preview) {
+            finishPreview(nxt);
+            return;
+          }
+          if (nxt.error && nxt.state === "error") {
             paintPreview._previewWait = false;
-            paintPreview._hasPreview = true;
-            toast("Prueba lista");
-            paint({ ...nxt, preview: true }, { remountPlayer: true });
+            toast(String(nxt.error || nxt.message || "Falló la prueba"));
+            paint(nxt);
             return;
           }
         } catch {}
-        if (Date.now() - t0 > 180000) {
+        if (Date.now() - t0 > 280000) {
+          if (previewDone) return;
           paintPreview._previewWait = false;
           toast("La prueba no terminó. Probá de nuevo.");
           paint(st);

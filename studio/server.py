@@ -227,7 +227,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-voice-cascade",
+            "build": "20260815-fluid-zoom",
         }
 
     @app.get("/api/ping")
@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-voice-cascade",
+            "build": "20260815-fluid-zoom",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -895,6 +895,8 @@ def create_app() -> FastAPI:
     @app.get("/api/projects/{project_id}/video/status")
     def video_status(project_id: str):
         from src.documentary.captions import captioned_video_path
+        from src.documentary.pipeline_invalidate import preview_matches_voice
+        from src.documentary.voice_script_sync import ensure_voice_binding, voice_matches_script
         from src.video_assembler import mp4_is_complete
 
         local = project_dir(project_id) / "render" / "final.mp4"
@@ -903,36 +905,64 @@ def create_app() -> FastAPI:
         ready = mp4_is_complete(local)
         captions = mp4_is_complete(cap)
         preview = mp4_is_complete(prev)
-        rec: dict = {}
-        proj = None
+        # Prefer local project.json. Soft-pull only when missing (Vercel cold start).
         try:
-            from src.documentary import cloud_sync as _cs0
-
-            if _cs0.configured():
-                _cs0.pull_one(project_id, "project.json", force=True)
             proj = load_project(project_id)
-            rec = proj.get("render") if isinstance(proj.get("render"), dict) else {}
         except Exception:
-            rec = {}
-            try:
-                proj = load_project(project_id)
-            except Exception:
-                proj = None
+            proj = None
+            from src.documentary import cloud_sync
 
-        from src.documentary.pipeline_invalidate import preview_matches_voice
-        from src.documentary.voice_script_sync import voice_matches_script
+            if cloud_sync.configured():
+                try:
+                    cloud_sync.pull_one(project_id, "project.json", force=False)
+                    proj = load_project(project_id)
+                except Exception:
+                    proj = None
+        if proj is not None:
+            try:
+                proj = ensure_voice_binding(proj)
+            except Exception:
+                pass
+        rec = proj.get("render") if isinstance((proj or {}).get("render"), dict) else {}
+
+        # On Vercel each request is a new FS: pull the preview mp4 if cloud has it.
+        if not preview:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                want = str(rec.get("preview") or "") == "render/preview.mp4" or str(rec.get("stage") or "").startswith(
+                    "preview"
+                )
+                if not want:
+                    # Cold instance may lack local project.json meta — check the bucket.
+                    try:
+                        want = "render/preview.mp4" in set(cloud_sync.list_rel_paths(project_id, "render/"))
+                    except Exception:
+                        want = False
+                if want:
+                    try:
+                        if not proj:
+                            cloud_sync.pull_one(project_id, "project.json", force=False)
+                            try:
+                                proj = ensure_voice_binding(load_project(project_id))
+                                rec = proj.get("render") if isinstance(proj.get("render"), dict) else {}
+                            except Exception:
+                                pass
+                        cloud_sync.pull_one(project_id, "render/preview.mp4", force=False)
+                    except Exception:
+                        pass
+                    preview = mp4_is_complete(prev)
 
         voice_ok = bool(proj and voice_matches_script(proj))
-        # Never treat a cloud/local preview as valid if it wasn't built from THIS voice.
-        if preview and proj is not None and not preview_matches_voice(proj):
-            try:
-                prev.unlink(missing_ok=True)
-            except OSError:
-                pass
-            preview = False
-            if isinstance(rec, dict):
-                rec.pop("preview", None)
-                rec.pop("preview_meta", None)
+        preview_ok = bool(preview and proj and preview_matches_voice(proj))
+        # Stale preview vs current voice: hide it in the UI, but do NOT delete here.
+        # Deletion belongs to wipe_voice_derived() when the narration actually changes.
+        if preview and not preview_ok:
+            # If meta is missing but file exists and voice is ok, still show (legacy takes).
+            if voice_ok and preview and not ((rec.get("preview_meta") or {}).get("audio_sha")):
+                preview_ok = True
+            else:
+                preview = False
 
         if not ready or not captions:
             from src.documentary import cloud_sync
@@ -944,6 +974,17 @@ def create_app() -> FastAPI:
                     rels = set()
                 ready = ready or "render/final.mp4" in rels
                 captions = captions or "render/final_captions.mp4" in rels
+                if not preview and "render/preview.mp4" in rels:
+                    try:
+                        cloud_sync.pull_one(project_id, "render/preview.mp4", force=False)
+                    except Exception:
+                        pass
+                    preview = mp4_is_complete(prev)
+                    preview_ok = bool(preview and proj and preview_matches_voice(proj))
+                    if preview and not preview_ok and voice_ok and not ((rec.get("preview_meta") or {}).get("audio_sha")):
+                        preview_ok = True
+                    elif preview and not preview_ok:
+                        preview = False
         if proj is not None:
             captions = captions or bool((proj.get("captions") or {}).get("burned")) or bool(
                 (proj.get("checkpoints") or {}).get("captions_ready")
@@ -1027,7 +1068,7 @@ def create_app() -> FastAPI:
             "started_at": started,
             "updated_at": str(rec.get("updated_at") or ""),
             "preview": bool(preview),
-            "preview_matches_voice": bool(proj and preview_matches_voice(proj)),
+            "preview_matches_voice": bool(preview_ok),
             "voice_matches_script": bool(voice_ok),
             "edit": rec.get("edit") if isinstance(rec.get("edit"), dict) else {},
             "need_continue": bool(need_continue) and state == "running",
@@ -1192,40 +1233,57 @@ def create_app() -> FastAPI:
                 from src.documentary import cloud_sync
 
                 if cloud_sync.configured():
-                    _sync_safe(
-                        lambda: cloud_sync.push_paths(
+                    # Push must finish before the client polls status, or the UI never sees the take.
+                    try:
+                        cloud_sync.push_paths(
                             project_id,
                             [
                                 "project.json",
                                 "render/preview.mp4",
                                 "render/captions.srt",
+                                "render/captions_preview.srt",
                             ],
                         )
-                    )
+                    except Exception as sync_err:
+                        # Preview file is local-ready; don't fail the request solely on sync.
+                        print(f"[preview] cloud push: {sync_err}")
             return {"ok": True, "preview": True, "project": _project_full(load_project(project_id))}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
     @app.get("/api/projects/{project_id}/video/preview")
     def preview_video_file(project_id: str):
-        from src.documentary.pipeline_invalidate import preview_matches_voice
+        from src.documentary.voice_script_sync import ensure_voice_binding
         from src.video_assembler import mp4_is_complete
 
         path = project_dir(project_id) / "render" / "preview.mp4"
         try:
-            proj = load_project(project_id)
+            proj = ensure_voice_binding(load_project(project_id))
         except Exception:
             proj = None
-        # Never serve / resurrect a preview that doesn't match the current voice.
-        if proj is not None and path.is_file() and not preview_matches_voice(proj):
-            try:
-                path.unlink(missing_ok=True)
-            except OSError:
-                pass
-            raise HTTPException(404, "La prueba es de una voz vieja. Volvé a generar la prueba.")
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                try:
+                    cloud_sync.pull_one(project_id, "project.json", force=False)
+                    proj = ensure_voice_binding(load_project(project_id))
+                except Exception:
+                    proj = None
+        if not mp4_is_complete(path):
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                try:
+                    cloud_sync.pull_one(project_id, "render/preview.mp4", force=True)
+                except Exception:
+                    pass
         if not mp4_is_complete(path):
             raise HTTPException(404, "No hay prueba todavía")
-        return FileResponse(path, media_type="video/mp4")
+        return FileResponse(
+            path,
+            media_type="video/mp4",
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
 
     @app.get("/api/projects/{project_id}/video/captions")
     def captioned_video_file(project_id: str, download: int = 0):
@@ -1546,8 +1604,12 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
 
 
 def _voice_of(p: dict) -> dict:
-    from src.documentary.voice_script_sync import script_hash, voice_matches_script
+    from src.documentary.voice_script_sync import ensure_voice_binding, script_hash, voice_matches_script
 
+    try:
+        ensure_voice_binding(p)
+    except Exception:
+        pass
     voice = dict(p.get("voice") or {}) if isinstance(p.get("voice"), dict) else {}
     voice["matches_script"] = voice_matches_script(p)
     voice["current_script_hash"] = script_hash(str(p.get("script") or ""))

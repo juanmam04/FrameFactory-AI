@@ -57,3 +57,8 @@
 2026-08-12T21:30:49Z visual analysis shots=31
 2026-08-12T21:30:49Z visual_plan visuals=31 flow=28 batches=3
 2026-08-12T21:30:49Z flow pack exported visuals=31 flow=28 batches=3
+2026-08-14T18:45:39Z invalidated voice-derived (console proof) removed=0
+2026-08-14T18:45:52Z still reuse method=ai gaps=65 filled=65 needed=73
+2026-08-14T18:45:55Z preview captions whisper window=22s cues=4
+2026-08-14T18:48:09Z preview captions whisper window=22s cues=4
+2026-08-14T18:48:30Z render preview ok 20s same-engine start-of-episode captions=1 stills=4/73 reuse=ai audio_sha=cca211a4

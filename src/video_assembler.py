@@ -177,48 +177,60 @@ def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps:
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     last = max(1, d - 1)
-    # Subtle documentary drift — stronger zoom reads as a shake on stills.
-    z_end = 1.03
+    # Continuous zoom ~12% — small increments + high-res internal buffer stay fluid.
+    z_end = 1.12
     inc = (z_end - 1.0) / last
     if k == "pull":
-        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
+        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.8f}))"
         return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     if k == "pan":
         return (
-            f"zoompan=z=1.02:x='(iw-iw/zoom)*on/{last}':"
+            f"zoompan=z=1.08:x='(iw-iw/zoom)*on/{last}':"
             f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
         )
     return (
-        f"zoompan=z='min(zoom+{inc:.6f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
+        f"zoompan=z='min(zoom+{inc:.8f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
         f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
     )
 
 
 def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
-    """Slow Ken Burns via scale/crop (smoother than zoompan — less frame jitter)."""
+    """Fluid Ken Burns: overscan + continuous crop (no even-pixel trunc stepping)."""
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
-    z = 0.03  # ~3% over the still — readable motion, not a shake
+    # ~14% travel so every frame moves ≥1–2 px at 1080p (avoids "frozen then jump").
+    z = 0.14
     dur = max(0.8, float(seg))
+    p = f"min(t/{dur:.4f}\\,1)"
+    # Extra headroom so crop can glide without hitting edges early.
+    over = 1.0 + z + 0.04
+    ow = max(width + 2, int(round(width * over)) // 2 * 2)
+    oh = max(height + 2, int(round(height * over)) // 2 * 2)
     fill = (
-        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
-        f"crop={width}:{height}"
+        f"scale={ow}:{oh}:force_original_aspect_ratio=increase:flags=lanczos,"
+        f"crop={ow}:{oh}"
     )
+    # Dynamic crop size then lanczos down — float x/y keep subpixel motion smooth.
     if k == "pull":
+        # Start tight, ease out to wider frame.
         return (
-            f"{fill},scale=w='2*trunc(iw*(1+{z}*(1-min(t/{dur:.3f}\\,1)))/2)':h=-2:eval=frame,"
-            f"crop={width}:{height}"
+            f"{fill},"
+            f"crop=w='iw/({1 + z:.4f}-{z:.4f}*{p})':h='ih/({1 + z:.4f}-{z:.4f}*{p})':"
+            f"x='(iw-ow)/2':y='(ih-oh)/2',"
+            f"scale={width}:{height}:flags=lanczos"
         )
     if k == "pan":
-        pw = int(width * 1.04) // 2 * 2
-        ph = int(height * 1.04) // 2 * 2
         return (
-            f"scale={pw}:{ph}:force_original_aspect_ratio=increase,crop={pw}:{ph},"
-            f"crop={width}:{height}:x='(in_w-out_w)*min(t/{dur:.3f}\\,1)':y='(in_h-out_h)/2'"
+            f"{fill},"
+            f"crop={width}:{height}:x='(iw-ow)*{p}':y='(ih-oh)/2',"
+            f"scale={width}:{height}:flags=bicubic"
         )
+    # push — zoom in, slight diagonal for documentary feel
     return (
-        f"{fill},scale=w='2*trunc(iw*(1+{z}*min(t/{dur:.3f}\\,1))/2)':h=-2:eval=frame,"
-        f"crop={width}:{height}"
+        f"{fill},"
+        f"crop=w='iw/(1+{z:.4f}*{p})':h='ih/(1+{z:.4f}*{p})':"
+        f"x='(iw-ow)/2+(iw-ow)*0.12*{p}':y='(ih-oh)/2+(ih-oh)*0.06*{p}',"
+        f"scale={width}:{height}:flags=lanczos"
     )
 
 
@@ -330,9 +342,8 @@ def _encode_one_still(
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    pre_w = int(width * 1.06) // 2 * 2
-    pre_h = int(height * 1.06) // 2 * 2
-    # scale/crop drift instead of zoompan — zoompan subpixel steps look like a shake.
+    # Lock still input fps to the encode fps — default 25fps made t finish early → frozen tail.
+    fps = max(12, min(30, int(fps)))
     mv = _motion_vf(motion, index, seg, width, height)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
@@ -341,16 +352,17 @@ def _encode_one_still(
         else ""
     )
     vig = _vignette_vf(look)
-    vf = f"{mv}{fades}{vig},format=yuv420p,setsar=1"
+    vf = f"{mv}{fades}{vig},fps={fps},format=yuv420p,setsar=1"
     part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
-        "-loop", "1", "-i", str(img.resolve()),
-        "-vf", vf, "-frames:v", str(frames), "-t", f"{seg:.3f}",
-        "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
+        "-framerate", str(fps), "-loop", "1", "-i", str(img.resolve()),
+        "-vf", vf, "-r", str(fps), "-frames:v", str(frames), "-t", f"{seg:.3f}",
+        # No -tune stillimage: it fights continuous Ken Burns and looks stepped.
+        "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    limit = 12 if width <= 1280 else 22
+    limit = 18 if width <= 1280 else 32
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(part):
         part.unlink(missing_ok=True)
@@ -474,30 +486,42 @@ def _concat_edit_vf(
     transition: str,
     total: float,
 ) -> str:
-    """One-pass pan/drift + per-still fades. Cheap enough for a 10 min Vercel encode."""
+    """One-pass fluid Ken Burns + per-still fades (Vercel path)."""
     fps = max(12, min(30, int(fps)))
-    pw = int(width * 1.04) // 2 * 2
-    ph = int(height * 1.04) // 2 * 2
-    p = f"min(mod(t\\,{seg:.3f})/{max(seg, 0.01):.3f}\\,1)"
+    z = 0.14
+    over = 1.0 + z + 0.04
+    pw = max(width + 2, int(round(width * over)) // 2 * 2)
+    ph = max(height + 2, int(round(height * over)) // 2 * 2)
+    s = max(seg, 0.8)
+    p = f"min(mod(t\\,{s:.4f})/{s:.4f}\\,1)"
     m = str(motion or "mix").strip().lower()
+    # Alternate push / pull / pan in mix so motion never feels static.
     if m == "pull":
-        x = f"(in_w-out_w)*(1-{p})"
-        y = f"(in_h-out_h)/2"
+        crop_wh = (
+            f"crop=w='iw/({1 + z:.4f}-{z:.4f}*{p})':h='ih/({1 + z:.4f}-{z:.4f}*{p})':"
+            f"x='(iw-ow)/2':y='(ih-oh)/2'"
+        )
     elif m == "pan":
-        x = f"(in_w-out_w)*{p}"
-        y = f"(in_h-out_h)/2"
+        crop_wh = f"crop={width}:{height}:x='(iw-ow)*{p}':y='(ih-oh)/2'"
     elif m == "push":
-        x = f"(in_w-out_w)*{p}*0.55"
-        y = f"(in_h-out_h)*(0.42+0.16*{p})"
+        crop_wh = (
+            f"crop=w='iw/(1+{z:.4f}*{p})':h='ih/(1+{z:.4f}*{p})':"
+            f"x='(iw-ow)/2+(iw-ow)*0.12*{p}':y='(ih-oh)/2+(ih-oh)*0.06*{p}'"
+        )
     else:
-        # Gentle left/right only — no vertical sine (that read as a tremble).
-        x = f"(in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p})"
-        y = f"(in_h-out_h)/2"
+        # mix: even stills push-in, odd stills pull-out (continuous, no sine shake)
+        crop_wh = (
+            f"crop=w='iw/(1+{z:.4f}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,{p}\\,1-{p}))':"
+            f"h='ih/(1+{z:.4f}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,{p}\\,1-{p}))':"
+            f"x='(iw-ow)/2+(iw-ow)*0.1*{p}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,1\\,-1)':"
+            f"y='(ih-oh)/2'"
+        )
     fade = 0.28 if str(transition or "fade") == "fade" else 0.0
     bits = [
-        f"scale={pw}:{ph}:force_original_aspect_ratio=increase",
+        f"scale={pw}:{ph}:force_original_aspect_ratio=increase:flags=lanczos",
         f"crop={pw}:{ph}",
-        f"crop={width}:{height}:x='{x}':y='{y}'",
+        crop_wh,
+        f"scale={width}:{height}:flags=lanczos",
         f"fps={fps}",
         "format=yuv420p",
     ]
@@ -505,7 +529,6 @@ def _concat_edit_vf(
     if vig.startswith(","):
         bits.append(vig[1:])
     if fade:
-        s = max(seg, 0.8)
         d = min(fade, s / 3)
         bits.append(
             "eq=brightness='if(lt(mod(t"
@@ -576,8 +599,8 @@ def _slideshow_concat(
         cmd.extend(["-vf", vf, "-map", "0:v", "-map", "1:a"])
     cmd.extend(
         [
-            "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
-            "-pix_fmt", "yuv420p",
+            "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+            "-pix_fmt", "yuv420p", "-r", str(max(12, min(30, int(fps)))),
             "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart",
             str(output_path),
