@@ -1750,10 +1750,8 @@ function paintPreview(ws, p) {
         hasPrev
           ? `
         <div class="ff-player-wrap">
-          <p class="ff-player-label">Player de la prueba (subtítulos quemados)</p>
-          <video id="preview-player" controls playsinline crossorigin="anonymous" src="/api/projects/${id}/video/preview?t=${bust}" class="ff-player">
-            <track kind="subtitles" srclang="en" label="English" default src="/api/projects/${id}/captions.vtt?t=${bust}" />
-          </video>
+          <p class="ff-player-label">Player de la prueba (letras blancas abajo)</p>
+          <video id="preview-player" controls playsinline src="/api/projects/${id}/video/preview?t=${bust}" class="ff-player"></video>
         </div>`
           : `<p class="lead" style="margin-top:0.9rem;font-size:0.92rem">Todavía no hay prueba. Tocá el botón de arriba.</p>`
       }

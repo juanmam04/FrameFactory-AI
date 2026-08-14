@@ -404,7 +404,7 @@ def _ass_from_cues(cues: list[dict[str, Any]], *, width: int = 1920) -> str:
         "",
         "[V4+ Styles]",
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        f"Style: Default,Liberation Sans,{fs},&H00FFFFFF,&H000000FF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,4,0,2,70,70,78,1",
+        f"Style: Default,Liberation Sans,{fs},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,2.4,0,2,80,80,64,1",
         "",
         "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
@@ -488,17 +488,35 @@ def _caption_font(size: int):
 def _cue_png(text: str, dest: Path, width: int = 1920, height: int = 160, *, big: bool = False) -> None:
     from PIL import Image, ImageDraw
 
+    # Transparent plate — white letters + thin black outline only (no YouTube-style box).
     im = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(im)
-    # Soft dark bar so white text always reads on bright stills.
-    bar = Image.new("RGBA", (width, height), (0, 0, 0, 140))
-    im.alpha_composite(bar)
-    font_size = (52 if width >= 1600 else 34) if big else (42 if width >= 1600 else 28)
+    font_size = (46 if width >= 1600 else 30) if big else (40 if width >= 1600 else 26)
     font = _caption_font(font_size)
-    lines = [ln.strip() for ln in str(text or "").splitlines() if ln.strip()] or [""]
-    line_h = int(font_size * 1.25)
+    raw = " ".join(str(text or "").split())
+    # Prefer short documentary lines, max ~2.
+    max_chars = 52 if width >= 1600 else 38
+    words = raw.split()
+    lines: list[str] = []
+    cur = ""
+    for w in words:
+        trial = f"{cur} {w}".strip()
+        if cur and len(trial) > max_chars:
+            lines.append(cur)
+            cur = w
+            if len(lines) >= 2:
+                break
+        else:
+            cur = trial
+    if cur and len(lines) < 2:
+        lines.append(cur)
+    elif cur and len(lines) >= 2:
+        lines[-1] = (lines[-1] + " " + cur).strip()[: max_chars + 8]
+    if not lines:
+        lines = [""]
+    line_h = int(font_size * 1.22)
     total_h = line_h * len(lines)
-    y0 = max(8, (height - total_h) // 2)
+    y0 = max(4, height - total_h - 10)
     for i, line in enumerate(lines):
         try:
             bbox = draw.textbbox((0, 0), line, font=font)
@@ -507,8 +525,17 @@ def _cue_png(text: str, dest: Path, width: int = 1920, height: int = 160, *, big
             tw = len(line) * 14
         x = max(16, (width - tw) // 2)
         y = y0 + i * line_h
-        for dx, dy in ((-3, 0), (3, 0), (0, -3), (0, 3), (-2, -2), (2, 2)):
-            draw.text((x + dx, y + dy), line, font=font, fill=(0, 0, 0, 255))
+        for dx, dy in (
+            (-2, 0),
+            (2, 0),
+            (0, -2),
+            (0, 2),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+            (1, 1),
+        ):
+            draw.text((x + dx, y + dy), line, font=font, fill=(0, 0, 0, 220))
         draw.text((x, y), line, font=font, fill=(255, 255, 255, 255))
     dest.parent.mkdir(parents=True, exist_ok=True)
     im.save(dest, "PNG")
@@ -551,7 +578,7 @@ def _burn_with_overlays(
     cues = _merge_cues(cues, max_n=28 if big else 48)
     if not cues:
         raise RuntimeError("No hay carteles para quemar.")
-    bar_h = (220 if width >= 1600 else 160) if big else (180 if width >= 1600 else 140)
+    bar_h = (140 if width >= 1600 else 110) if big else (120 if width >= 1600 else 96)
     tmp = Path(tempfile.mkdtemp(prefix="ff-subs-"))
     try:
         cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src)]
