@@ -15,30 +15,14 @@ from src.voice_generator import OUTPUT_AUDIO, generar_voz
 
 
 def generate_project_voice(project: dict[str, Any], *, velocidad: float | None = None) -> Path:
-    from src.documentary.credentials import check_elevenlabs, check_openai
-
     script = str(project.get("script") or "").strip()
     if not script:
         raise ValueError("No script yet. Generate a script before voice.")
     if not project.get("script_approved"):
         raise ValueError("Approve the script before generating voice.")
 
-    # live=False → present keys are "unchecked", not "ok". Still usable for TTS.
-    oa = check_openai(live=False)
-    el = check_elevenlabs(live=False)
-    oa_ready = oa.status in ("ok", "unchecked")
-    el_ready = el.status in ("ok", "unchecked")
-    if not oa_ready and not el_ready:
-        details = []
-        if not oa_ready:
-            details.append(f"OpenAI: {oa.detail}")
-        if el.status == "missing":
-            details.append("ElevenLabs: not configured")
-        else:
-            details.append(f"ElevenLabs: {el.detail}")
-        raise RuntimeError(
-            "Voice blocked — no working TTS provider.\n" + "\n".join(details)
-        )
+    # No credential preflight here — keys may be "unchecked" without a live probe.
+    # generar_voz reloads env and raises a clear error if both providers fail.
 
     if velocidad is not None:
         speed = float(velocidad)
