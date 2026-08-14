@@ -3,7 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
-      "dev": true
+      "dev": false
     }
   },
   "functions": {
