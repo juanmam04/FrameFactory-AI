@@ -172,52 +172,53 @@ def _vignette_vf(look: str) -> str:
     return ",vignette=angle=PI/2.8"
 
 
-def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 30) -> str:
-    """Buttery Ken Burns: upscale → zoompan (subpixel) → output size.
-
-    Plain crop/scale at output resolution steps by whole pixels and looks stuck.
-    A 3–4× internal buffer is what makes zoompan glide frame-to-frame.
-    """
+def _ken_burns(kind: str, index: int, frames: int, width: int, height: int, fps: int = 24) -> str:
     styles = ("push", "pull", "pan")
     k = kind if kind in styles else styles[index % 3]
     d = max(8, int(frames))
     last = max(1, d - 1)
-    fps = max(24, min(30, int(fps)))
-    z_end = 1.20
+    z_end = 1.07
     inc = (z_end - 1.0) / last
-    # High-res working buffer (even dims). Caps keep Vercel encodes under the clock.
-    src_w = min(4800, max(int(width) * 3, 2880)) // 2 * 2
-    src_h = max(int(round(src_w * height / max(1, width))) // 2 * 2, height)
-    pre = (
-        f"scale={src_w}:{src_h}:force_original_aspect_ratio=increase:flags=lanczos,"
-        f"crop={src_w}:{src_h}"
+    if k == "pull":
+        z = f"if(eq(on,1),{z_end:.5f},max(1.0,zoom-{inc:.6f}))"
+        return f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    if k == "pan":
+        return (
+            f"zoompan=z=1.05:x='(iw-iw/zoom)*on/{last}':"
+            f"y='(ih-ih/zoom)/2':d={d}:s={width}x{height}:fps={fps}"
+        )
+    return (
+        f"zoompan=z='min(zoom+{inc:.6f},{z_end:.5f})':x='iw/2-(iw/zoom/2)':"
+        f"y='ih/2-(ih/zoom/2)':d={d}:s={width}x{height}:fps={fps}"
+    )
+
+
+def _motion_vf(kind: str, index: int, seg: float, width: int, height: int) -> str:
+    """Slow Ken Burns via scale/crop (faster than zoompan, same documentary feel)."""
+    styles = ("push", "pull", "pan")
+    k = kind if kind in styles else styles[index % 3]
+    z = 0.07
+    dur = max(0.8, float(seg))
+    fill = (
+        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+        f"crop={width}:{height}"
     )
     if k == "pull":
-        z = f"if(lte(on,1),{z_end:.8f},max(1.0,zoom-{inc:.12f}))"
-        zp = (
-            f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
-            f"d={d}:s={width}x{height}:fps={fps}"
+        return (
+            f"{fill},scale=w='2*trunc(iw*(1+{z}*(1-min(t/{dur:.3f}\\,1)))/2)':h=-2:eval=frame,"
+            f"crop={width}:{height}"
         )
-    elif k == "pan":
-        zp = (
-            f"zoompan=z={z_end:.6f}:x='(iw-iw/zoom)*on/{last}':y='(ih-ih/zoom)/2':"
-            f"d={d}:s={width}x{height}:fps={fps}"
+    if k == "pan":
+        pw = int(width * 1.08) // 2 * 2
+        ph = int(height * 1.08) // 2 * 2
+        return (
+            f"scale={pw}:{ph}:force_original_aspect_ratio=increase,crop={pw}:{ph},"
+            f"crop={width}:{height}:x='(in_w-out_w)*min(t/{dur:.3f}\\,1)':y='(in_h-out_h)/2'"
         )
-    else:
-        # push: accumulate zoom every frame (not t-based — avoids freeze at the end)
-        z = f"min(zoom+{inc:.12f},{z_end:.8f})"
-        zp = (
-            f"zoompan=z='{z}':"
-            f"x='iw/2-(iw/zoom/2)+(iw/zoom/2)*0.08*on/{last}':"
-            f"y='ih/2-(ih/zoom/2)+(ih/zoom/2)*0.04*on/{last}':"
-            f"d={d}:s={width}x{height}:fps={fps}"
-        )
-    return f"{pre},{zp}"
-
-
-def _motion_vf(kind: str, index: int, seg: float, width: int, height: int, *, frames: int, fps: int) -> str:
-    """Delegate to hi-res zoompan — the only path that stays fully fluid on stills."""
-    return _ken_burns(kind, index, frames, width, height, fps=fps)
+    return (
+        f"{fill},scale=w='2*trunc(iw*(1+{z}*min(t/{dur:.3f}\\,1))/2)':h=-2:eval=frame,"
+        f"crop={width}:{height}"
+    )
 
 
 def _slideshow_editorial(
@@ -246,7 +247,7 @@ def _slideshow_editorial(
     """Ken Burns + per-still fades. Unique stills are encoded once and reused."""
     import tempfile
 
-    fps = max(24, min(30, int(fps)))
+    fps = max(12, min(30, int(fps)))
     frames = max(8, int(round(seg * fps)))
     fade = 0.28 if transition == "fade" else 0.0
     owned = clip_dir is None
@@ -323,14 +324,14 @@ def _encode_one_still(
     fade: float,
     frames: int,
     index: int,
-    fps: int = 30,
+    fps: int = 24,
     crf: int = 17,
     preset: str = "veryfast",
     look: str = "soft",
 ) -> None:
-    fps = max(24, min(30, int(fps)))
-    frames = max(8, int(frames))
-    mv = _motion_vf(motion, index, seg, width, height, frames=frames, fps=fps)
+    pre_w = int(width * 1.14) // 2 * 2
+    pre_h = int(height * 1.14) // 2 * 2
+    zp = _ken_burns(motion, index, frames, width, height, fps=fps)
     fo = max(0.12, seg - fade) if fade else 0
     fades = (
         f",fade=t=in:st=0:d={fade:.2f},fade=t=out:st={fo:.2f}:d={fade:.2f}"
@@ -338,18 +339,19 @@ def _encode_one_still(
         else ""
     )
     vig = _vignette_vf(look)
-    # zoompan already emits `frames` at `fps`; fade/vignette after, then lock format.
-    vf = f"{mv}{fades}{vig},format=yuv420p,setsar=1"
+    vf = (
+        f"scale={pre_w}:{pre_h}:force_original_aspect_ratio=increase,"
+        f"crop={pre_w}:{pre_h},{zp}{fades}{vig},format=yuv420p,setsar=1"
+    )
     part = out.with_suffix(".part.mp4")
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
-        "-framerate", str(fps), "-loop", "1", "-i", str(img.resolve()),
-        "-vf", vf, "-r", str(fps), "-frames:v", str(frames),
-        "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+        "-loop", "1", "-i", str(img.resolve()),
+        "-vf", vf, "-frames:v", str(frames), "-t", f"{seg:.3f}",
+        "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    # Hi-res zoompan is heavier than crop; give the encoder room.
-    limit = 45 if width <= 1280 else 90
+    limit = 12 if width <= 1280 else 22
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(part):
         part.unlink(missing_ok=True)
@@ -473,41 +475,29 @@ def _concat_edit_vf(
     transition: str,
     total: float,
 ) -> str:
-    """Fallback one-pass path: hi-res buffer + continuous crop window (no pixel trunc)."""
-    fps = max(24, min(30, int(fps)))
-    z = 0.20
-    over = 1.0 + z + 0.08
-    pw = max(width + 2, int(round(width * over)) // 2 * 2)
-    ph = max(height + 2, int(round(height * over)) // 2 * 2)
-    s = max(seg, 0.8)
-    # Frame-smooth progress inside each still window
-    p = f"min(mod(t\\,{s:.4f})/{s:.4f}\\,1)"
+    """One-pass pan/drift + per-still fades. Cheap enough for a 10 min Vercel encode."""
+    fps = max(12, min(30, int(fps)))
+    pw = int(width * 1.08) // 2 * 2
+    ph = int(height * 1.08) // 2 * 2
+    p = f"min(mod(t\\,{seg:.3f})/{max(seg, 0.01):.3f}\\,1)"
     m = str(motion or "mix").strip().lower()
     if m == "pull":
-        crop_wh = (
-            f"crop=w='iw/({1 + z:.4f}-{z:.4f}*{p})':h='ih/({1 + z:.4f}-{z:.4f}*{p})':"
-            f"x='(iw-ow)/2':y='(ih-oh)/2'"
-        )
+        x = f"(in_w-out_w)*(1-{p})"
+        y = f"(in_h-out_h)/2"
     elif m == "pan":
-        crop_wh = f"crop={width}:{height}:x='(iw-ow)*{p}':y='(ih-oh)/2'"
+        x = f"(in_w-out_w)*{p}"
+        y = f"(in_h-out_h)/2"
     elif m == "push":
-        crop_wh = (
-            f"crop=w='iw/(1+{z:.4f}*{p})':h='ih/(1+{z:.4f}*{p})':"
-            f"x='(iw-ow)/2+(iw-ow)*0.1*{p}':y='(ih-oh)/2+(ih-oh)*0.05*{p}'"
-        )
+        x = f"(in_w-out_w)*{p}"
+        y = f"(in_h-out_h)*(0.25+0.5*{p})"
     else:
-        crop_wh = (
-            f"crop=w='iw/(1+{z:.4f}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,{p}\\,1-{p}))':"
-            f"h='ih/(1+{z:.4f}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,{p}\\,1-{p}))':"
-            f"x='(iw-ow)/2+(iw-ow)*0.12*{p}*if(eq(mod(floor(t/{s:.4f})\\,2),0)\\,1\\,-1)':"
-            f"y='(ih-oh)/2'"
-        )
+        x = f"(in_w-out_w)*if(eq(mod(floor(t/{seg:.3f})\\,2),0)\\,{p}\\,1-{p})"
+        y = f"(in_h-out_h)*(0.35+0.30*sin(2*PI*{p}))"
     fade = 0.28 if str(transition or "fade") == "fade" else 0.0
     bits = [
-        f"scale={pw}:{ph}:force_original_aspect_ratio=increase:flags=lanczos",
+        f"scale={pw}:{ph}:force_original_aspect_ratio=increase",
         f"crop={pw}:{ph}",
-        crop_wh,
-        f"scale={width}:{height}:flags=lanczos",
+        f"crop={width}:{height}:x='{x}':y='{y}'",
         f"fps={fps}",
         "format=yuv420p",
     ]
@@ -515,6 +505,7 @@ def _concat_edit_vf(
     if vig.startswith(","):
         bits.append(vig[1:])
     if fade:
+        s = max(seg, 0.8)
         d = min(fade, s / 3)
         bits.append(
             "eq=brightness='if(lt(mod(t"
@@ -585,8 +576,8 @@ def _slideshow_concat(
         cmd.extend(["-vf", vf, "-map", "0:v", "-map", "1:a"])
     cmd.extend(
         [
-            "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
-            "-pix_fmt", "yuv420p", "-r", str(max(12, min(30, int(fps)))),
+            "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
+            "-pix_fmt", "yuv420p",
             "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart",
             str(output_path),
@@ -615,7 +606,7 @@ def _montar_video_con_zoom_y_transiciones(
     height: int,
     video_solo: Path,
     fade_segundos: float = 0.25,
-    zoom_final: float = 1.03,
+    zoom_final: float = 1.06,
 ) -> None:
     """
     Genera el video de imágenes con zoom suave (Ken Burns) y fundidos cortos entre escenas.
