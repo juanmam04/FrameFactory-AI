@@ -354,21 +354,6 @@ def assemble_and_render(
     early_deadline = (start_time + 210.0) if vercel else None  # 3.5 min para prep
     
     if vercel:
-        # Si ya lleva mucho tiempo descargando assets, pausar y continuar después
-        if early_deadline and _time_start.monotonic() > early_deadline:
-            pid = str(project["id"])
-            rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-            rec.update({
-                "state": "running",
-                "need_continue": True,
-                "message": "Descargando assets desde la nube. Sigue en un momento…",
-                "stage": "download",
-                "error": "",
-            })
-            project["render"] = rec
-            save_project(project)
-            append_log(pid, "assemble paused during asset download (early timeout)")
-            return None
         _pull_render_assets_safe(str(project["id"]), project)
         if resume:
             try:
