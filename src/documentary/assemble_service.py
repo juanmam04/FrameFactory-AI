@@ -348,7 +348,27 @@ def assemble_and_render(
     from src.documentary.runtime import on_vercel
 
     vercel = on_vercel()
+    import time as _time_start
+
+    start_time = _time_start.monotonic()
+    early_deadline = (start_time + 210.0) if vercel else None  # 3.5 min para prep
+    
     if vercel:
+        # Si ya lleva mucho tiempo descargando assets, pausar y continuar después
+        if early_deadline and _time_start.monotonic() > early_deadline:
+            pid = str(project["id"])
+            rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+            rec.update({
+                "state": "running",
+                "need_continue": True,
+                "message": "Descargando assets desde la nube. Sigue en un momento…",
+                "stage": "download",
+                "error": "",
+            })
+            project["render"] = rec
+            save_project(project)
+            append_log(pid, "assemble paused during asset download (early timeout)")
+            return None
         _pull_render_assets_safe(str(project["id"]), project)
         if resume:
             try:
@@ -404,6 +424,9 @@ def assemble_and_render(
     rec0["updated_at"] = _utc_now()
     project["render"] = rec0
     save_project(project)
+    
+    import time as _time
+    
     try:
         _abort_if_cancelled(pid)
         touch_render_progress(
@@ -415,6 +438,21 @@ def assemble_and_render(
             percent=5 if not resume else None,
             push=True,
         )
+        # Si ya se está acercando al timeout de Vercel, pausar antes de Whisper
+        if vercel and early_deadline and _time.monotonic() > early_deadline:
+            rec_pause = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+            rec_pause.update({
+                "state": "running",
+                "need_continue": True,
+                "message": "Generando subtítulos (puede tardar). Continúa automáticamente…",
+                "stage": "captions_prep",
+                "percent": 5,
+                "error": "",
+            })
+            project["render"] = rec_pause
+            save_project(project)
+            append_log(pid, "assemble paused before Whisper (early timeout)")
+            return None
         try:
             from src.documentary.captions import captions_srt_path, generate_captions
 
@@ -426,8 +464,6 @@ def assemble_and_render(
             append_log(pid, f"captions srt ready source={(project.get('captions') or {}).get('source')}")
         except Exception as e:
             append_log(pid, f"captions srt skip: {e}")
-
-        import time as _time
 
         _last_push = [0.0]
         deadline = (_time.monotonic() + 230.0) if vercel else None

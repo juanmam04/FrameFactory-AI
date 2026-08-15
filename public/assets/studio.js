@@ -2394,12 +2394,36 @@ function paintRender(ws, p) {
 
   const startPoll = () => {
     if (paintRender._poll) clearTimeout(paintRender._poll);
+    paintRender._lastUpdate = paintRender._lastUpdate || Date.now();
+    paintRender._lastPercent = paintRender._lastPercent ?? null;
     const tick = async () => {
       if (state.project?.ui_step !== "render") return;
       try {
         const prev = paintRender._kind;
         const next = await api(`/api/projects/${id}/video/status`);
         paint(next);
+        
+        // Watchdog: si lleva >10min sin cambios en %, forzar resume
+        const now = Date.now();
+        const stuckMs = now - (paintRender._lastUpdate || now);
+        const stuckMin = stuckMs / 60000;
+        const pct = next.percent || 0;
+        const changed = pct !== paintRender._lastPercent;
+        if (changed) {
+          paintRender._lastUpdate = now;
+          paintRender._lastPercent = pct;
+        }
+        if (next.state === "running" && stuckMin > 10 && !paintRender._resuming) {
+          console.warn(`Render stuck at ${pct}% for ${stuckMin.toFixed(1)} min — forcing resume`);
+          paintRender._resuming = true;
+          paintRender._lastUpdate = now;
+          toast("Detecté que se trabó — reintentando...");
+          api(`/api/projects/${id}/render?resume=1`, { method: "POST", timeoutMs: 280000 })
+            .finally(() => {
+              paintRender._resuming = false;
+            });
+        }
+        
         if (next.need_continue && !paintRender._resuming) {
           paintRender._resuming = true;
           toast("Sigue en segundo plano…");
