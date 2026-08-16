@@ -1,0 +1,1189 @@
+{
+  "project_id": "doc-prev",
+  "topic": "X",
+  "shot_count": 21,
+  "batch_size": 10,
+  "batches": [
+    {
+      "id": "BATCH_01",
+      "start": 1,
+      "end": 12,
+      "label": "Le va bien",
+      "visual_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    {
+      "id": "BATCH_02",
+      "start": 13,
+      "end": 21,
+      "label": "Le va bien",
+      "visual_numbers": [
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    {
+      "id": "BATCH_03",
+      "start": 6,
+      "end": 15,
+      "label": "Qué quedó",
+      "visual_numbers": [
+        6,
+        8,
+        15
+      ]
+    }
+  ],
+  "flow_batches": [
+    {
+      "id": "BATCH_01",
+      "moment_id": "rise",
+      "moment_label": "Le va bien",
+      "visual_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        12
+      ],
+      "label": "Le va bien",
+      "count": 10,
+      "interchangeable": true,
+      "status": "ready_to_generate",
+      "imported": 0,
+      "prompt": "Create 10 separate 16:9 cinematic documentary stills of ONE STORY MOMENT: LE VA BIEN.\nALL stills = the climb. Energy, cheap beginnings, belief. Nobody is ruined yet.\nThey are INTERCHANGEABLE — not a sequence, not 1 then 2 then 3. Different camera and place, SAME climate.\nDo not create a collage. Do not tell a 10-step timeline. Do not repeat the same office/crowd.\n\nHARD RULES:\n- The same person must look like the same person across images (use character refs).\n- Change location, time of day, and camera every shot.\n- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,\n  handshake, CEO portrait, anonymous extras filling the frame.\n\nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk wit\n\nANGLES on Le va bien (same moment, different photograph):\n\n1. [DOGFOOD MOCK — NOT FOR PUBLICATION] X One named person from this story in frame — not a crowd of extras. establishing wide candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock.\n\n2. small apartment kitchen. English at a kitchen table, sketching a floor plan on scrap paper, blue hour, backpack from the first year. No crowd, no open-plan office. Protagonist in frame: English — same face as their master reference. medium action candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock.\n\n3. In production, replace with a fact-checked English script grounded in research and an approved Story Plan Protagonist in frame: English, Story Plan — same face as their master reference. close up candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock.\n\n4. 2019. Adam Neumann co-founded the company Protagonist in frame: Adam Neumann — same face as their master reference. environmental detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n5. diner booth. Later laughing with ONE cofounder over coffee in a scuffed diner booth, 3am, untucked shirt after a long night. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. over the shoulder candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\n6. fire escape, day. Later on a fire escape in daylight, looking at the block like it already belongs to them, midday, a single page folded in a pocket. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. hands on object candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\n7. brick-wall studio. Later taping a floor plan to a brick wall, sleeves rolled, 3am, 2014-era thin laptop under one arm. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. intimate moment candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\n8. 2019. neighborhood street. Adam Neumann on a bike or on foot through the neighborhood, the building behind them still ordinary, blue hour, wedding ring catching the light. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. doorway threshold candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n9. early-2010s NYC storefront. Later hangs a cheap paper sign on a raw storefront, almost nobody watching, winter light, wool coat. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. establishing wide candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\n10. 2019. small apartment kitchen. Adam Neumann at a kitchen table, sketching a floor plan on scrap paper, 3am, scuffed dress shoes. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. medium action candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\nGENERAL RULES:\n- 16:9 photoreal documentary;\n- protagonist visible and doing the action;\n- period-accurate wardrobe, phones, cars, interiors;\n- every frame is the SAME emotional beat from a new angle;\n- no readable text unless requested; no logos; no collage;\n- no stock office crowd.\n",
+      "references_needed": [
+        {
+          "id": "CHAR_001",
+          "name": "Adam Neumann",
+          "master_filename": "CHAR_001.png",
+          "kind": "character"
+        },
+        {
+          "id": "CHAR_002",
+          "name": "Later",
+          "master_filename": "CHAR_002.png",
+          "kind": "character"
+        }
+      ]
+    },
+    {
+      "id": "BATCH_02",
+      "moment_id": "rise",
+      "moment_label": "Le va bien",
+      "visual_numbers": [
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "label": "Le va bien",
+      "count": 8,
+      "interchangeable": true,
+      "status": "ready_to_generate",
+      "imported": 0,
+      "prompt": "Create 8 separate 16:9 cinematic documentary stills of ONE STORY MOMENT: LE VA BIEN.\nALL stills = the climb. Energy, cheap beginnings, belief. Nobody is ruined yet.\nThey are INTERCHANGEABLE — not a sequence, not 1 then 2 then 3. Different camera and place, SAME climate.\nDo not create a collage. Do not tell a 10-step timeline. Do not repeat the same office/crowd.\n\nHARD RULES:\n- The same person must look like the same person across images (use character refs).\n- Change location, time of day, and camera every shot.\n- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,\n  handshake, CEO portrait, anonymous extras filling the frame.\n\nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk wit\n\nANGLES on Le va bien (same moment, different photograph):\n\n1. raw loft. Later walking a raw unfinished floor — paint cans, one table, selling a room that is not built, blue hour, untucked shirt after a long night. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. close up candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\n2. 2019. sidewalk midday. Adam Neumann on a city sidewalk with a printed flyer, early street clothes, a few curious passersby, midday, open collar, no tie. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. environmental detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n3. 2019. fire escape, day. Adam Neumann carrying a cheap banner into an empty ground-floor space, 3am, keys to a space that is no longer theirs. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. two shot candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n4. tiny first office. Later on a fire escape in daylight, looking at the block like it already belongs to them, blue hour, 2014-era thin laptop under one arm. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. hands on object candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\n5. 2019. brick-wall studio. Adam Neumann in a tiny office with a second-hand desk, phone in hand, still hungry, midday, wedding ring catching the light. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. object detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n6. neighborhood street. Later taping a floor plan to a brick wall, sleeves rolled, winter light, a phone with the ringer off. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. intimate moment candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\n7. 2019. early-2010s NYC storefront. Adam Neumann on a bike or on foot through the neighborhood, the building behind them still ordinary, 3am, paper cup going cold. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. doorway threshold candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n8. sidewalk midday. Later hangs a cheap paper sign on a raw storefront, almost nobody watching, midday, untucked shirt after a long night. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. establishing wide candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\nGENERAL RULES:\n- 16:9 photoreal documentary;\n- protagonist visible and doing the action;\n- period-accurate wardrobe, phones, cars, interiors;\n- every frame is the SAME emotional beat from a new angle;\n- no readable text unless requested; no logos; no collage;\n- no stock office crowd.\n",
+      "references_needed": [
+        {
+          "id": "CHAR_001",
+          "name": "Adam Neumann",
+          "master_filename": "CHAR_001.png",
+          "kind": "character"
+        },
+        {
+          "id": "CHAR_002",
+          "name": "Later",
+          "master_filename": "CHAR_002.png",
+          "kind": "character"
+        }
+      ]
+    },
+    {
+      "id": "BATCH_03",
+      "moment_id": "aftermath",
+      "moment_label": "Qué quedó",
+      "visual_numbers": [
+        6,
+        8,
+        15
+      ],
+      "label": "Qué quedó",
+      "count": 3,
+      "interchangeable": true,
+      "status": "ready_to_generate",
+      "imported": 0,
+      "prompt": "Create 3 separate 16:9 cinematic documentary stills of ONE STORY MOMENT: QUÉ QUEDÓ.\nALL stills = what is left. Quiet, leftover rooms, the smaller number.\nThey are INTERCHANGEABLE — not a sequence, not 1 then 2 then 3. Different camera and place, SAME climate.\nDo not create a collage. Do not tell a 10-step timeline. Do not repeat the same office/crowd.\n\nHARD RULES:\n- The same person must look like the same person across images (use character refs).\n- Change location, time of day, and camera every shot.\n- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,\n  handshake, CEO portrait, anonymous extras filling the frame.\n\nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk wit\n\nANGLES on Qué quedó (same moment, different photograph):\n\n1. 2019. empty storefront interior. Adam Neumann standing in a doorway of a space that used to be loud, blue hour, open collar, no tie. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. two shot candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n2. 2019. tiny first office. Adam Neumann in an office with half the desks gone, one plant still alive, winter light, keys to a space that is no longer theirs. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. object detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n\n3. empty storefront interior. Later at a kitchen table with a thinner stack of papers, morning, winter light, a single page folded in a pocket. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. over the shoulder candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n\nGENERAL RULES:\n- 16:9 photoreal documentary;\n- protagonist visible and doing the action;\n- period-accurate wardrobe, phones, cars, interiors;\n- every frame is the SAME emotional beat from a new angle;\n- no readable text unless requested; no logos; no collage;\n- no stock office crowd.\n",
+      "references_needed": [
+        {
+          "id": "CHAR_001",
+          "name": "Adam Neumann",
+          "master_filename": "CHAR_001.png",
+          "kind": "character"
+        },
+        {
+          "id": "CHAR_002",
+          "name": "Later",
+          "master_filename": "CHAR_002.png",
+          "kind": "character"
+        }
+      ]
+    }
+  ],
+  "master_references": [
+    {
+      "id": "CHAR_001",
+      "name": "Adam Neumann",
+      "kind": "character",
+      "role": "Recurring figure related to: X",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "reference_required": true,
+      "master_filename": "CHAR_001.png",
+      "master_prompt": "Generate ONE master reference of Adam Neumann for FACE continuity in a true-story documentary.\nRealistic adult, period-appropriate wardrobe, documentary still of Adam Neumann\nClose-up to chest. Face fully visible, distinctive hair, period-accurate wardrobe. Plain or empty background. Photoreal 16:9.\nZERO other people. NO open-plan office, NO laptops, NO coworking, NO crowd.\nReconstruction reference — not an archival photo.",
+      "used_in_flow": 9,
+      "notes": ""
+    },
+    {
+      "id": "CHAR_002",
+      "name": "Later",
+      "kind": "character",
+      "role": "Recurring figure related to: X",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "reference_required": true,
+      "master_filename": "CHAR_002.png",
+      "master_prompt": "Generate ONE master reference of Later for FACE continuity in a true-story documentary.\nRealistic adult, period-appropriate wardrobe, documentary still of Later\nClose-up to chest. Face fully visible, distinctive hair, period-accurate wardrobe. Plain or empty background. Photoreal 16:9.\nZERO other people. NO open-plan office, NO laptops, NO coworking, NO crowd.\nReconstruction reference — not an archival photo.",
+      "used_in_flow": 9,
+      "notes": ""
+    }
+  ],
+  "stats": {
+    "total": 21,
+    "flow": 21,
+    "real_or_other": 0,
+    "by_type": {
+      "FLOW_REENACTMENT": 21
+    },
+    "flow_batches": 3,
+    "master_references": 2
+  },
+  "shots": [
+    {
+      "number": 1,
+      "id": "SHOT_001",
+      "expected_file": "001.png",
+      "narration": "[DOGFOOD MOCK — NOT FOR PUBLICATION] X.",
+      "shot_type": "establishing_wide",
+      "camera": "POV first person",
+      "action": "[DOGFOOD MOCK — NOT FOR PUBLICATION] X",
+      "location": "",
+      "emotion": "tensión",
+      "continuity": "opening shot",
+      "references": [],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): [DOGFOOD MOCK — NOT FOR PUBLICATION] X.\nSCENE / ACTION: [DOGFOOD MOCK — NOT FOR PUBLICATION] X\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: opening shot\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional h",
+      "status": "MISSING",
+      "scene_id": 1,
+      "beat_id": 1,
+      "visual_id": "V001",
+      "story_beat_id": "",
+      "narration_segment": "[DOGFOOD MOCK — NOT FOR PUBLICATION] X.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "[DOGFOOD MOCK — NOT FOR PUBLICATION] X",
+      "characters": [],
+      "period": "",
+      "duration_target": 10,
+      "reference_ids": [],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_push",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n[DOGFOOD MOCK — NOT FOR PUBLICATION] X One named person from this story in frame — not a crowd of extras. establishing wide candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 2,
+      "id": "SHOT_002",
+      "expected_file": "002.png",
+      "narration": "This is a placeholder third-person English documentary narration used only to verify the pipeline.",
+      "shot_type": "medium_action",
+      "camera": "over the shoulder",
+      "action": "English at a kitchen table, sketching a floor plan on scrap paper, blue hour, backpack from the first year. No crowd, no open-plan office.",
+      "location": "small apartment kitchen",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 001",
+      "references": [
+        "CHAR_003"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): This is a placeholder third-person English documentary narration used only to verify the pipeline.\nSCENE / ACTION: This is a placeholder third-person English documentary narration used only to verify the pipeline\nENVIRONMENT: lugar principal de la historia\nCAMERA: over the shoulder\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 001\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 2,
+      "beat_id": 2,
+      "visual_id": "V002",
+      "story_beat_id": "",
+      "narration_segment": "This is a placeholder third-person English documentary narration used only to verify the pipeline.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "English at a kitchen table, sketching a floor plan on scrap paper, blue hour, backpack from the first year. No crowd, no open-plan office.",
+      "characters": [
+        "English"
+      ],
+      "period": "",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_003"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_pull",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nsmall apartment kitchen. English at a kitchen table, sketching a floor plan on scrap paper, blue hour, backpack from the first year. No crowd, no open-plan office. Protagonist in frame: English — same face as their master reference. medium action candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 3,
+      "id": "SHOT_003",
+      "expected_file": "003.png",
+      "narration": "In production, replace with a fact-checked English script grounded in research and an approved Story Plan.",
+      "shot_type": "close_up",
+      "camera": "side angle",
+      "action": "In production, replace with a fact-checked English script grounded in research and an approved Story Plan",
+      "location": "",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 002",
+      "references": [
+        "CHAR_003",
+        "CHAR_004"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): In production, replace with a fact-checked English script grounded in research and an approved Story Plan.\nSCENE / ACTION: In production, replace with a fact-checked English script grounded in research and an approved Story Plan\nENVIRONMENT: lugar principal de la historia\nCAMERA: side angle\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 002\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 3,
+      "beat_id": 3,
+      "visual_id": "V003",
+      "story_beat_id": "",
+      "narration_segment": "In production, replace with a fact-checked English script grounded in research and an approved Story Plan.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "In production, replace with a fact-checked English script grounded in research and an approved Story Plan",
+      "characters": [
+        "English",
+        "Story Plan"
+      ],
+      "period": "",
+      "duration_target": 5,
+      "reference_ids": [
+        "CHAR_003",
+        "CHAR_004"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_left",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nIn production, replace with a fact-checked English script grounded in research and an approved Story Plan Protagonist in frame: English, Story Plan — same face as their master reference. close up candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 4,
+      "id": "SHOT_004",
+      "expected_file": "004.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "environmental_detail",
+      "camera": "close-up",
+      "action": "Adam Neumann co-founded the company",
+      "location": "",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 003",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: close-up\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 003\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 4,
+      "beat_id": 4,
+      "visual_id": "V004",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann co-founded the company",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 5,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_right",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. Adam Neumann co-founded the company Protagonist in frame: Adam Neumann — same face as their master reference. environmental detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 5,
+      "id": "SHOT_005",
+      "expected_file": "005.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "over_the_shoulder",
+      "camera": "wide shot",
+      "action": "Later laughing with ONE cofounder over coffee in a scuffed diner booth, 3am, untucked shirt after a long night. No crowd, no open-plan office.",
+      "location": "diner booth",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 004",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: wide shot\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 004\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 5,
+      "beat_id": 5,
+      "visual_id": "V005",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later laughing with ONE cofounder over coffee in a scuffed diner booth, 3am, untucked shirt after a long night. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "static",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\ndiner booth. Later laughing with ONE cofounder over coffee in a scuffed diner booth, 3am, untucked shirt after a long night. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. over the shoulder candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 6,
+      "id": "SHOT_006",
+      "expected_file": "006.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "two_shot",
+      "camera": "POV first person",
+      "action": "Adam Neumann carrying a cheap banner into an empty ground-floor space, blue hour, open collar, no tie. No crowd, no open-plan office.",
+      "location": "empty storefront interior",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 005",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 005\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional h",
+      "status": "MISSING",
+      "scene_id": 6,
+      "beat_id": 6,
+      "visual_id": "V006",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann carrying a cheap banner into an empty ground-floor space, blue hour, open collar, no tie. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_push",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. empty storefront interior. Adam Neumann carrying a cheap banner into an empty ground-floor space, blue hour, open collar, no tie. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. two shot candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "aftermath",
+      "moment_label": "Qué quedó"
+    },
+    {
+      "number": 7,
+      "id": "SHOT_007",
+      "expected_file": "007.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "hands_on_object",
+      "camera": "over the shoulder",
+      "action": "Later on a fire escape in daylight, looking at the block like it already belongs to them, midday, a single page folded in a pocket. No crowd, no open-plan office.",
+      "location": "fire escape, day",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 006",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: over the shoulder\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 006\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 7,
+      "beat_id": 7,
+      "visual_id": "V007",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later on a fire escape in daylight, looking at the block like it already belongs to them, midday, a single page folded in a pocket. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_pull",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nfire escape, day. Later on a fire escape in daylight, looking at the block like it already belongs to them, midday, a single page folded in a pocket. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. hands on object candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 8,
+      "id": "SHOT_008",
+      "expected_file": "008.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "object_detail",
+      "camera": "side angle",
+      "action": "Adam Neumann in a tiny office with a second-hand desk, phone in hand, still hungry, winter light, keys to a space that is no longer theirs. No crowd, no open-plan office.",
+      "location": "tiny first office",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 007",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: side angle\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 007\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 8,
+      "beat_id": 8,
+      "visual_id": "V008",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann in a tiny office with a second-hand desk, phone in hand, still hungry, winter light, keys to a space that is no longer theirs. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 5,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_left",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. tiny first office. Adam Neumann in a tiny office with a second-hand desk, phone in hand, still hungry, winter light, keys to a space that is no longer theirs. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. object detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "aftermath",
+      "moment_label": "Qué quedó"
+    },
+    {
+      "number": 9,
+      "id": "SHOT_009",
+      "expected_file": "009.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "intimate_moment",
+      "camera": "close-up",
+      "action": "Later taping a floor plan to a brick wall, sleeves rolled, 3am, 2014-era thin laptop under one arm. No crowd, no open-plan office.",
+      "location": "brick-wall studio",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 008",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: close-up\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 008\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 9,
+      "beat_id": 9,
+      "visual_id": "V009",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later taping a floor plan to a brick wall, sleeves rolled, 3am, 2014-era thin laptop under one arm. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_right",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nbrick-wall studio. Later taping a floor plan to a brick wall, sleeves rolled, 3am, 2014-era thin laptop under one arm. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. intimate moment candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 10,
+      "id": "SHOT_010",
+      "expected_file": "010.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "doorway_threshold",
+      "camera": "wide shot",
+      "action": "Adam Neumann on a bike or on foot through the neighborhood, the building behind them still ordinary, blue hour, wedding ring catching the light. No crowd, no open-plan office.",
+      "location": "neighborhood street",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 009",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: wide shot\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 009\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 10,
+      "beat_id": 10,
+      "visual_id": "V010",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann on a bike or on foot through the neighborhood, the building behind them still ordinary, blue hour, wedding ring catching the light. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "static",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. neighborhood street. Adam Neumann on a bike or on foot through the neighborhood, the building behind them still ordinary, blue hour, wedding ring catching the light. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. doorway threshold candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 11,
+      "id": "SHOT_011",
+      "expected_file": "011.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "establishing_wide",
+      "camera": "POV first person",
+      "action": "Later hangs a cheap paper sign on a raw storefront, almost nobody watching, winter light, wool coat. No crowd, no open-plan office.",
+      "location": "early-2010s NYC storefront",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 010",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 010\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional h",
+      "status": "MISSING",
+      "scene_id": 11,
+      "beat_id": 11,
+      "visual_id": "V011",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later hangs a cheap paper sign on a raw storefront, almost nobody watching, winter light, wool coat. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 10,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_push",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nearly-2010s NYC storefront. Later hangs a cheap paper sign on a raw storefront, almost nobody watching, winter light, wool coat. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. establishing wide candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 12,
+      "id": "SHOT_012",
+      "expected_file": "012.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "medium_action",
+      "camera": "over the shoulder",
+      "action": "Adam Neumann at a kitchen table, sketching a floor plan on scrap paper, 3am, scuffed dress shoes. No crowd, no open-plan office.",
+      "location": "small apartment kitchen",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 011",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: over the shoulder\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 011\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 12,
+      "beat_id": 12,
+      "visual_id": "V012",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann at a kitchen table, sketching a floor plan on scrap paper, 3am, scuffed dress shoes. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_pull",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. small apartment kitchen. Adam Neumann at a kitchen table, sketching a floor plan on scrap paper, 3am, scuffed dress shoes. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. medium action candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 13,
+      "id": "SHOT_013",
+      "expected_file": "013.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "close_up",
+      "camera": "side angle",
+      "action": "Later walking a raw unfinished floor — paint cans, one table, selling a room that is not built, blue hour, untucked shirt after a long night. No crowd, no open-plan office.",
+      "location": "raw loft",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 012",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: side angle\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 012\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 13,
+      "beat_id": 13,
+      "visual_id": "V013",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later walking a raw unfinished floor — paint cans, one table, selling a room that is not built, blue hour, untucked shirt after a long night. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 5,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_left",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nraw loft. Later walking a raw unfinished floor — paint cans, one table, selling a room that is not built, blue hour, untucked shirt after a long night. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. close up candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 14,
+      "id": "SHOT_014",
+      "expected_file": "014.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "environmental_detail",
+      "camera": "close-up",
+      "action": "Adam Neumann on a city sidewalk with a printed flyer, early street clothes, a few curious passersby, midday, open collar, no tie. No crowd, no open-plan office.",
+      "location": "sidewalk midday",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 013",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: close-up\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 013\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 14,
+      "beat_id": 14,
+      "visual_id": "V014",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann on a city sidewalk with a printed flyer, early street clothes, a few curious passersby, midday, open collar, no tie. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 5,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_right",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. sidewalk midday. Adam Neumann on a city sidewalk with a printed flyer, early street clothes, a few curious passersby, midday, open collar, no tie. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. environmental detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 15,
+      "id": "SHOT_015",
+      "expected_file": "015.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "over_the_shoulder",
+      "camera": "wide shot",
+      "action": "Later carrying a cheap banner into an empty ground-floor space, dawn, wedding ring catching the light. No crowd, no open-plan office.",
+      "location": "empty storefront interior",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 014",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: wide shot\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 014\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 15,
+      "beat_id": 15,
+      "visual_id": "V015",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later carrying a cheap banner into an empty ground-floor space, dawn, wedding ring catching the light. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "static",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nempty storefront interior. Later laughing with ONE cofounder over coffee in a scuffed diner booth, winter light, a single page folded in a pocket. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. over the shoulder candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "aftermath",
+      "moment_label": "Qué quedó"
+    },
+    {
+      "number": 16,
+      "id": "SHOT_016",
+      "expected_file": "016.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "two_shot",
+      "camera": "POV first person",
+      "action": "Adam Neumann on a fire escape in daylight, looking at the block like it already belongs to them, rain, a phone with the ringer off. No crowd, no open-plan office.",
+      "location": "fire escape, day",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 015",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 015\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional h",
+      "status": "MISSING",
+      "scene_id": 16,
+      "beat_id": 16,
+      "visual_id": "V016",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann on a fire escape in daylight, looking at the block like it already belongs to them, rain, a phone with the ringer off. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_push",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. fire escape, day. Adam Neumann carrying a cheap banner into an empty ground-floor space, 3am, keys to a space that is no longer theirs. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. two shot candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 17,
+      "id": "SHOT_017",
+      "expected_file": "017.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "hands_on_object",
+      "camera": "over the shoulder",
+      "action": "Later in a tiny office with a second-hand desk, phone in hand, still hungry, night, paper cup going cold. No crowd, no open-plan office.",
+      "location": "tiny first office",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 016",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: over the shoulder\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 016\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 17,
+      "beat_id": 17,
+      "visual_id": "V017",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later in a tiny office with a second-hand desk, phone in hand, still hungry, night, paper cup going cold. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_pull",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\ntiny first office. Later on a fire escape in daylight, looking at the block like it already belongs to them, blue hour, 2014-era thin laptop under one arm. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. hands on object candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 18,
+      "id": "SHOT_018",
+      "expected_file": "018.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "object_detail",
+      "camera": "side angle",
+      "action": "Adam Neumann taping a floor plan to a brick wall, sleeves rolled, golden hour, backpack from the first year. No crowd, no open-plan office.",
+      "location": "brick-wall studio",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 017",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: side angle\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 017\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 18,
+      "beat_id": 18,
+      "visual_id": "V018",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann taping a floor plan to a brick wall, sleeves rolled, golden hour, backpack from the first year. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 5,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_left",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. brick-wall studio. Adam Neumann in a tiny office with a second-hand desk, phone in hand, still hungry, midday, wedding ring catching the light. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. object detail candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 19,
+      "id": "SHOT_019",
+      "expected_file": "019.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "intimate_moment",
+      "camera": "close-up",
+      "action": "Later on a bike or on foot through the neighborhood, the building behind them still ordinary, dawn, wool coat. No crowd, no open-plan office.",
+      "location": "neighborhood street",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 018",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: close-up\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 018\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 19,
+      "beat_id": 19,
+      "visual_id": "V019",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later on a bike or on foot through the neighborhood, the building behind them still ordinary, dawn, wool coat. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "pan_right",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nneighborhood street. Later taping a floor plan to a brick wall, sleeves rolled, winter light, a phone with the ringer off. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. intimate moment candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 20,
+      "id": "SHOT_020",
+      "expected_file": "020.png",
+      "narration": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "shot_type": "doorway_threshold",
+      "camera": "wide shot",
+      "action": "Adam Neumann hangs a cheap paper sign on a raw storefront, almost nobody watching, night, a single page folded in a pocket. No crowd, no open-plan office.",
+      "location": "early-2010s NYC storefront",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 019",
+      "references": [
+        "CHAR_001"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.\nSCENE / ACTION: Adam Neumann co-founded the company\nENVIRONMENT: lugar principal de la historia\nCAMERA: wide shot\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 019\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LA",
+      "status": "MISSING",
+      "scene_id": 20,
+      "beat_id": 20,
+      "visual_id": "V020",
+      "story_beat_id": "",
+      "narration_segment": "Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Adam Neumann hangs a cheap paper sign on a raw storefront, almost nobody watching, night, a single page folded in a pocket. No crowd, no open-plan office.",
+      "characters": [
+        "Adam Neumann"
+      ],
+      "period": "2019",
+      "duration_target": 7,
+      "reference_ids": [
+        "CHAR_001"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "static",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\n2019. early-2010s NYC storefront. Adam Neumann on a bike or on foot through the neighborhood, the building behind them still ordinary, 3am, paper cup going cold. No crowd, no open-plan office. Protagonist in frame: Adam Neumann — same face as their master reference. doorway threshold candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    },
+    {
+      "number": 21,
+      "id": "SHOT_021",
+      "expected_file": "021.png",
+      "narration": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "shot_type": "establishing_wide",
+      "camera": "POV first person",
+      "action": "Later on a city sidewalk with a printed flyer, early street clothes, a few curious passersby, night, wool coat. No crowd, no open-plan office.",
+      "location": "sidewalk midday",
+      "emotion": "tensión",
+      "continuity": "same location as previous; follow from shot 020",
+      "references": [
+        "CHAR_002"
+      ],
+      "prompt": "DIRECTOR NOTE: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\nGLOBAL STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nSTORY MOMENT (illustrate this beat, do not typeset the words): The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.\nSCENE / ACTION: The public listing was withdrawn\nENVIRONMENT: lugar principal de la historia\nCAMERA: POV first person\nLIGHTING: indefinido\nCONTINUITY: same location as previous; follow from shot 020\nAVOID: crowded coworking, rows of laptops, generic glass conference room, CEO staring at camera, handshake, anonymous extras filling the frame, generic skyscraper, abstract money, cartoon, meme text, watermark.\nREFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.\nDETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen POV first person: camera = viewer eyes viewer protagonist body NOT visible (optional h",
+      "status": "MISSING",
+      "scene_id": 21,
+      "beat_id": 21,
+      "visual_id": "V021",
+      "story_beat_id": "",
+      "narration_segment": "The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+      "visual_type": "FLOW_REENACTMENT",
+      "description": "Later on a city sidewalk with a printed flyer, early street clothes, a few curious passersby, night, wool coat. No crowd, no open-plan office.",
+      "characters": [
+        "Later"
+      ],
+      "period": "",
+      "duration_target": 10,
+      "reference_ids": [
+        "CHAR_002"
+      ],
+      "person_strategy": "FLOW_REENACTMENT",
+      "ken_burns": "slow_push",
+      "flow_prompt": "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\nPhotoreal. No collage. No crowded office stock.\nSTYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at \nDIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.\n\nsidewalk midday. Later hangs a cheap paper sign on a raw storefront, almost nobody watching, midday, untucked shirt after a long night. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. establishing wide candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.\n",
+      "moment_id": "rise",
+      "moment_label": "Le va bien"
+    }
+  ],
+  "story_bible": {
+    "global_style": "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk with one person — not the same open-plan office thirty times. Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup.",
+    "characters": [
+      {
+        "id": "CHAR_001",
+        "name": "Adam Neumann",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of Adam Neumann",
+        "appears_in_shots": [
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20
+        ],
+        "reference_required": true,
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_001.png",
+        "periods": []
+      },
+      {
+        "id": "CHAR_002",
+        "name": "Later",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of Later",
+        "appears_in_shots": [
+          5,
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          19,
+          21
+        ],
+        "reference_required": true,
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_002.png",
+        "periods": []
+      },
+      {
+        "id": "CHAR_003",
+        "name": "English",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of English",
+        "appears_in_shots": [
+          2,
+          3
+        ],
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_003.png",
+        "periods": []
+      },
+      {
+        "id": "CHAR_004",
+        "name": "Story Plan",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of Story Plan",
+        "appears_in_shots": [
+          3
+        ],
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_004.png",
+        "periods": []
+      }
+    ],
+    "locations": [],
+    "important_objects": [
+      {
+        "id": "OBJ_001",
+        "name": "Financial document",
+        "description": "Balance sheet / pitch deck / report",
+        "visual_description": "Printed financial report or laptop screen with charts, no readable logos",
+        "appears_in_shots": [],
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "OBJ_001.png",
+        "periods": []
+      }
+    ],
+    "timeline_periods": [
+      {
+        "id": "TIME_001",
+        "name": "2019",
+        "description": "Period around 2019",
+        "visual_description": "Wardrobe, tech and interiors consistent with 2019",
+        "appears_in_shots": []
+      }
+    ],
+    "visual_style": "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk with one person — not the same open-plan office thirty times. Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup.",
+    "period_rules": [
+      "2019: period-accurate clothing, phones, computers, interiors — avoid anachronisms"
+    ]
+  },
+  "visual_bible": {
+    "global_style": "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk with one person — not the same open-plan office thirty times. Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup.",
+    "characters": [
+      {
+        "id": "CHAR_001",
+        "name": "Adam Neumann",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of Adam Neumann",
+        "appears_in_shots": [
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20
+        ],
+        "reference_required": true,
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_001.png",
+        "periods": []
+      },
+      {
+        "id": "CHAR_002",
+        "name": "Later",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of Later",
+        "appears_in_shots": [
+          5,
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          19,
+          21
+        ],
+        "reference_required": true,
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_002.png",
+        "periods": []
+      },
+      {
+        "id": "CHAR_003",
+        "name": "English",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of English",
+        "appears_in_shots": [
+          2,
+          3
+        ],
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_003.png",
+        "periods": []
+      },
+      {
+        "id": "CHAR_004",
+        "name": "Story Plan",
+        "description": "Recurring figure related to: X",
+        "visual_description": "Realistic adult, period-appropriate wardrobe, documentary still of Story Plan",
+        "appears_in_shots": [
+          3
+        ],
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "CHAR_004.png",
+        "periods": []
+      }
+    ],
+    "locations": [],
+    "important_objects": [
+      {
+        "id": "OBJ_001",
+        "name": "Financial document",
+        "description": "Balance sheet / pitch deck / report",
+        "visual_description": "Printed financial report or laptop screen with charts, no readable logos",
+        "appears_in_shots": [],
+        "appearance_strategy": "FLOW_REENACTMENT",
+        "master_reference_filename": "OBJ_001.png",
+        "periods": []
+      }
+    ],
+    "timeline_periods": [
+      {
+        "id": "TIME_001",
+        "name": "2019",
+        "description": "Period around 2019",
+        "visual_description": "Wardrobe, tech and interiors consistent with 2019",
+        "appears_in_shots": []
+      }
+    ],
+    "visual_style": "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk with one person — not the same open-plan office thirty times. Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup.",
+    "period_rules": [
+      "2019: period-accurate clothing, phones, computers, interiors — avoid anachronisms"
+    ]
+  },
+  "ready_count": 0,
+  "missing": [
+    "001",
+    "002",
+    "003",
+    "004",
+    "005",
+    "006",
+    "007",
+    "008",
+    "009",
+    "010",
+    "011",
+    "012",
+    "013",
+    "014",
+    "015",
+    "016",
+    "017",
+    "018",
+    "019",
+    "020",
+    "021"
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "id": "doc-prev",
+  "slug": "x",
+  "mode": "documentary",
+  "title": "X",
+  "topic": "X",
+  "language": "en",
+  "target_words": 800,
+  "target_duration_min": [
+    11,
+    15
+  ],
+  "research_notes": "",
+  "sources": [],
+  "research_skipped": false,
+  "script": "[DOGFOOD MOCK — NOT FOR PUBLICATION] X. This is a placeholder third-person English documentary narration used only to verify the pipeline. In production, replace with a fact-checked English script grounded in research and an approved Story Plan. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
+  "fact_check_status": "approved",
+  "script_approved": true,
+  "story_plan": {},
+  "story_plan_approved": false,
+  "voice_speed": 1.2,
+  "music_path": "",
+  "music_volume": 0.08,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "session_id": "",
+  "episode_number": 101,
+  "idea": {},
+  "creative_profile_snapshot": {},
+  "ui_step": "flow",
+  "checkpoints": {
+    "script_ready": true,
+    "flow_pack_ready": true,
+    "images_imported": false,
+    "voice_ready": false,
+    "assembly_ready": false,
+    "render_ready": false,
+    "captions_ready": false
+  },
+  "import_report": {},
+  "youtube": {},
+  "preview": {
+    "image_count": 0,
+    "missing_images": [
+      "Le va bien",
+      "Qué quedó"
+    ],
+    "voice_ok": false,
+    "voice_duration_sec": null,
+    "seconds_per_image": 6.0,
+    "warnings": [
+      "faltan bloques Le va bien, Qué quedó: se reutilizan fotos del relato",
+      "voice missing"
+    ],
+    "ready_to_assemble": false
+  },
+  "errors": [],
+  "created_at": "2026-08-16T06:34:20Z",
+  "updated_at": "2026-08-16T06:34:22Z",
+  "script_quality": {
+    "heuristic": {
+      "pass": true,
+      "scores": {
+        "filler_language": 1.0,
+        "specificity": 1.0,
+        "repetition": 1.0,
+        "ending": 0.8,
+        "length": 0.4,
+        "overall": 0.8400000000000001
+      },
+      "problems": [
+        "Script is short (~262 words)."
+      ],
+      "revision_instructions": [],
+      "word_count": 262,
+      "banned_hits": [],
+      "generic_hits": []
+    },
+    "revised": false
+  },
+  "script_editorial_notes": [],
+  "script_warnings": [
+    "Little research provided — script may be shorter than target."
+  ],
+  "visual_analysis": {
+    "shot_count": 21,
+    "path": "flow-pack/visual_analysis.json"
+  },
+  "visual_plan": {
+    "stats": {
+      "total": 21,
+      "flow": 21,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 21
+      },
+      "flow_batches": 3,
+      "master_references": 2
+    },
+    "batch_count": 3,
+    "path": "flow-pack/visual-plan.json"
+  },
+  "flow_pack": {
+    "shot_count": 21,
+    "batch_size": 10,
+    "stats": {
+      "total": 21,
+      "flow": 21,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 21
+      },
+      "flow_batches": 3,
+      "master_references": 2
+    }
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "id": "001-theranos",
+  "slug": "theranos-story",
+  "mode": "documentary",
+  "title": "Theranos story",
+  "topic": "Theranos story",
+  "language": "en",
+  "target_words": 2000,
+  "target_duration_min": [
+    11,
+    15
+  ],
+  "research_notes": "",
+  "sources": [],
+  "research_skipped": false,
+  "script": "",
+  "fact_check_status": "pending",
+  "script_approved": false,
+  "story_plan": {},
+  "story_plan_approved": false,
+  "voice_speed": 1.2,
+  "music_path": "",
+  "music_volume": 0.08,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "session_id": "sess-100",
+  "episode_number": 1,
+  "idea": {
+    "title_concept": "THERANOS",
+    "primary_entity": "Theranos"
+  },
+  "creative_profile_snapshot": {
+    "style": "fascinating true stories about companies — cinematic narrative documentary",
+    "content_type": "business_documentary",
+    "workflow": "documentary",
+    "avoid": [
+      "business education / MBA lecture tone",
+      "corporate analysis explainers",
+      "business advice / five lessons",
+      "school-essay tone",
+      "generic business motivation",
+      "listicles",
+      "fake drama",
+      "fabricated facts",
+      "forced rise-and-fall template on every story",
+      "Wikipedia definition openings",
+      "Welcome back / In today's video / subscribe CTAs",
+      "Reddit confession / first-person fiction"
+    ],
+    "niche": "Fascinating true stories about companies, founders, products, and the people around them — origins, rivalries, inventions, frauds, obsessions, mistakes, monopolies, failures, comebacks. Story first. Business second.",
+    "audience": {
+      "who": "General English-speaking YouTube audience with no required business interest — they should stay for the story.",
+      "pain_points": "Bored by lectures; hungry for what happened next.",
+      "reading_level": "general"
+    },
+    "tone": "intelligent, cinematic, curious, entertaining, confident, clear, agile",
+    "hook_style": "Cold-open on the central contradiction or stakes (e.g. $47B valuation vs renting desks), then rewind. Never open with a definition or model-of-business lecture.",
+    "pacing": "Medio",
+    "narrator_preference": "male_sharp",
+    "language_register": "English, natural, accessible, concrete — not academic",
+    "topics_to_avoid": "Fabricated quotes or numbers; hustle advice; dry textbook summaries; same company/story already covered in this session; forced morals.",
+    "topics_to_focus": [
+      "Origins / unlikely beginnings",
+      "Rise",
+      "Fall",
+      "Comeback",
+      "Rivalry / corporate war",
+      "Invention / transformation",
+      "Fraud / obsession",
+      "Huge mistake / strange decision",
+      "Survival / monopoly / expansion",
+      "Failed or brilliant product",
+      "Hidden empire",
+      "Founder story"
+    ],
+    "title_style": "Highly clickable without being misleading; specific stakes or numbers when true.",
+    "thumbnail_style": "YouTube CTR thumbnail: one named face filling half the frame, emotion readable on a phone, one story object on the other side, high contrast. No crowded offices, no arrows, no stock.",
+    "channel": {
+      "name": "100 Days — Business Documentaries",
+      "tagline": "Story first. Business second. · Fascinating true stories about companies.",
+      "content_pillars": "Origins; Rise; Fall; Comeback; Rivalry; Invention; Fraud; Obsession; Mistakes; Monopoly; Products; Hidden Empires; Founder Stories — only when there is a great true story",
+      "goal_count": 100,
+      "language": "en",
+      "target_words": 2000,
+      "target_duration_min": [
+        11,
+        15
+      ],
+      "visual_provider": "google_flow_manual"
+    },
+    "script": {
+      "structure_preference": "Story Plan first: central story + beats + causality; events over generalizations; no forced rise-and-fall lecture",
+      "forbidden_phrases": "Welcome back; In today's video; Make sure to subscribe; Like and comment; Here are five lessons; Let's dive into the business model; cautionary tale; meteoric rise; lessons learned; balancing ambition with pragmatism",
+      "cta_style": "none in narration",
+      "opening_style": "Cold open on stakes/contradiction; then rewind if needed"
+    },
+    "video": {
+      "primary_format": "youtube_long_16_9",
+      "target_length_category": "long_11_15",
+      "aspect_notes": "16:9",
+      "content_type": "business_documentary",
+      "narration_format": "third_person_documentary"
+    },
+    "visual": {
+      "look": "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk with one person — not the same open-plan office thirty times. Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup.",
+      "color_mood": "Restrained, serious, naturalistic, cinematic",
+      "shot_preferences": "Protagonists doing something; places; products; events; consequences; establishing / wide / close-up / environmental storytelling",
+      "b_roll_style": "Offices, factories, stores, cities, meetings, period-accurate details — avoid handshake/laptop/generic skyscraper/abstract money",
+      "reference_moodboards": "Google Flow masters for recurring people/places/objects before shot batch"
+    },
+    "editing": {
+      "cut_rhythm": "curious, story-driven documentary",
+      "transitions_default": "soft ken burns + short fades",
+      "lower_thirds": "no",
+      "subtitles_intent": "optional_later",
+      "music_role": "bajo_voz",
+      "pacing_visual": "Equal still duration locked to voice length",
+      "notes_for_ai_director": "FrameFactory is DIRECTOR; Flow is illustrator. Ask for the scene that advances the story moment — not stock business clichés."
+    },
+    "idea_generation": {
+      "brief": "Propose fascinating TRUE stories about companies for a daily English YouTube channel.\nStory first, business second. Ask: is there a GREAT story engine here — obsession, bet, irony, rupture?\nAny extraordinary company story can work: origin, rivalry, invention, fraud, obsession,\nmistake, monopoly, failed/brilliant product, founder story, survival, comeback — do NOT force rise-and-fall.\nPitch the cold-open moment and the desire of the main character(s).\nNever invent facts. Never pitch business-advice or listicle videos.",
+      "angles_to_favor": "Any extraordinary true company story with a clear story engine: origin, rivalry, invention, fraud, obsession, mistake, monopoly, failed/brilliant product, founder, survival, comeback.",
+      "angles_to_avoid": "Business advice; listicles; MBA explainers; fake drama; invented facts; forcing rise-and-fall when that isn't the story; repeating a company already produced."
+    },
+    "notes_freeform": "Publish one fascinating true company story per day for 100 days. Images via Google Flow manually. FrameFactory directs: script, flow prompts, import, voice, render."
+  },
+  "ui_step": "research",
+  "checkpoints": {
+    "script_ready": false,
+    "flow_pack_ready": false,
+    "images_imported": false,
+    "voice_ready": false,
+    "assembly_ready": false,
+    "render_ready": false,
+    "captions_ready": false
+  },
+  "import_report": {},
+  "youtube": {},
+  "preview": {},
+  "errors": [],
+  "created_at": "2026-08-16T06:34:10Z",
+  "updated_at": "2026-08-16T06:34:10Z"
+}

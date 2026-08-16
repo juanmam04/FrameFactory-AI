@@ -1,0 +1,25 @@
+VISUAL 006
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 006.png
+STORY BEAT: 
+DURATION TARGET: 7s
+KEN BURNS: slow_push
+
+NARRATION:
+The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.
+
+DESCRIPTION:
+Later carrying a cheap banner into an empty ground-floor space, blue hour, open collar, no tie. No crowd, no open-plan office.
+
+REFERENCES:
+CHAR_002
+
+PROMPT:
+Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.
+Photoreal. No collage. No crowded office stock.
+STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 
+DIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo.
+
+empty storefront interior. Later carrying a cheap banner into an empty ground-floor space, blue hour, open collar, no tie. No crowd, no open-plan office. Protagonist in frame: Later — same face as their master reference. two shot candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_002.png as identity reference.
+

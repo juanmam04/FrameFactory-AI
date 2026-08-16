@@ -1,0 +1,37 @@
+{
+  "word_count": 262,
+  "target_words": 800,
+  "target_range": [
+    1800,
+    2200
+  ],
+  "template": "business_documentary_en",
+  "language": "en",
+  "workflow": "documentary",
+  "pov": "third_person",
+  "factuality": "nonfiction",
+  "research_thin": true,
+  "story_plan": true,
+  "quality": {
+    "heuristic": {
+      "pass": true,
+      "scores": {
+        "filler_language": 1.0,
+        "specificity": 1.0,
+        "repetition": 1.0,
+        "ending": 0.8,
+        "length": 0.4,
+        "overall": 0.8400000000000001
+      },
+      "problems": [
+        "Script is short (~262 words)."
+      ],
+      "revision_instructions": [],
+      "word_count": 262,
+      "banned_hits": [],
+      "generic_hits": []
+    },
+    "revised": false
+  },
+  "legacy_storytime_context": false
+}
