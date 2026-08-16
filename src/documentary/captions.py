@@ -253,7 +253,12 @@ def _ts_to_sec(ts: str) -> float:
         return 0.0
 
 
-def generate_captions(project: dict[str, Any], *, force: bool = False) -> dict[str, Any]:
+def generate_captions(
+    project: dict[str, Any],
+    *,
+    force: bool = False,
+    allow_whisper: bool = True,
+) -> dict[str, Any]:
     pid = str(project["id"])
     script = str(project.get("script") or "").strip()
     if not script:
@@ -268,25 +273,21 @@ def generate_captions(project: dict[str, Any], *, force: bool = False) -> dict[s
     dest = captions_srt_path(pid)
     prev = project.get("captions") if isinstance(project.get("captions"), dict) else {}
     voice_fp = f"{duration:.2f}:{audio.stat().st_size if audio.is_file() else 0}"
-    if (
-        not force
-        and dest.is_file()
-        and dest.stat().st_size > 0
-        and str(prev.get("source") or "") == "whisper"
-        and str(prev.get("voice_fp") or "") == voice_fp
-    ):
-        text = dest.read_text(encoding="utf-8")
-        return {
-            "srt": text,
-            "cues": srt_to_cues(text),
-            "burned": bool(prev.get("burned")),
-            "source": "whisper",
-        }
+    if not force and dest.is_file() and dest.stat().st_size > 0:
+        same_voice = str(prev.get("voice_fp") or "") == voice_fp
+        if same_voice or not allow_whisper:
+            text = dest.read_text(encoding="utf-8")
+            return {
+                "srt": text,
+                "cues": srt_to_cues(text),
+                "burned": bool(prev.get("burned")),
+                "source": str(prev.get("source") or "estimate"),
+            }
 
     source = "estimate"
     srt = ""
     err = ""
-    if audio.is_file() and audio.stat().st_size > 0:
+    if allow_whisper and audio.is_file() and audio.stat().st_size > 0:
         try:
             srt = whisper_srt_from_audio(audio, language="en")
             source = "whisper"
@@ -531,7 +532,7 @@ def burn_into_final(project: dict[str, Any], *, width: int = 1920) -> Path:
         master.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, master)
     srt = captions_srt_path(pid)
-    generate_captions(project, force=True)
+    generate_captions(project, force=False, allow_whisper=False)
     srt = captions_srt_path(pid)
     tmp = project_dir(pid) / "render" / "final_burn.mp4"
     apply_captions_file(master, srt, tmp, width=width, crf=17, preset="veryfast")

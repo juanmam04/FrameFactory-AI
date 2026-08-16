@@ -70,3 +70,16 @@ def test_set_render_state_resume_keeps_percent(tmp_projects):
     assert rec2["kb_done"] == 9
     assert rec2["started_at"] == "2026-08-14T12:00:00Z"
     assert rec2["message"] == "reanudando"
+
+
+def test_vercel_encode_profile_is_one_pass():
+    from src.documentary.assemble_service import _encode_profile
+
+    w, h, _fps, _crf, preset, scale_to, label = _encode_profile(vercel=True, duration_sec=600)
+    assert (w, h) == (1920, 1080)
+    assert scale_to is None
+    assert preset == "ultrafast"
+    assert "HD" in label
+    w2, h2, *_rest, scale2, _lab = _encode_profile(vercel=True, duration_sec=20 * 60)
+    assert (w2, h2) == (1280, 720)
+    assert scale2 is None

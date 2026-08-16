@@ -242,7 +242,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260815-dlresume",
+            "build": "20260816-final",
         }
 
     @app.get("/api/ping")
@@ -253,7 +253,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260815-dlresume",
+            "build": "20260816-final",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -1172,7 +1172,7 @@ def create_app() -> FastAPI:
             except Exception:
                 age = 9999.0
             # Another lambda/request is still encoding — don't reset and start over.
-            if str(rec.get("state") or "") == "running" and age < 80 and not rec.get("need_continue"):
+            if str(rec.get("state") or "") == "running" and age < 240 and not rec.get("need_continue"):
                 return {"ok": True, "already": True, "project": _project_full(p)}
             set_render_state(
                 p,

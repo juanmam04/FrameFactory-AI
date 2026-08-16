@@ -615,7 +615,7 @@ def _slideshow_concat(
             str(output_path),
         ]
     )
-    limit = 45 if (duration_sec or 0) < 30 else 250
+    limit = 45 if (duration_sec or 0) < 30 else 270
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     list_file.unlink(missing_ok=True)
     if result.returncode != 0 or not mp4_is_complete(output_path):

@@ -348,11 +348,6 @@ def assemble_and_render(
     from src.documentary.runtime import on_vercel
 
     vercel = on_vercel()
-    import time as _time_start
-
-    start_time = _time_start.monotonic()
-    early_deadline = (start_time + 210.0) if vercel else None  # 3.5 min para prep
-    
     if vercel:
         _pull_render_assets_safe(str(project["id"]), project)
         if resume:
@@ -397,7 +392,9 @@ def assemble_and_render(
     log_path = project_dir(pid) / "logs" / "render.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     scale_to = None
-    width, height, fps, crf, preset, scale_to, quality_label = _encode_profile(vercel=vercel)
+    width, height, fps, crf, preset, scale_to, quality_label = _encode_profile(
+        vercel=vercel, duration_sec=float(duration or 0)
+    )
     rec0 = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
     rec0["need_continue"] = False
     rec0["message"] = "1/4 Planificando fotos y duración…"
@@ -409,40 +406,25 @@ def assemble_and_render(
     rec0["updated_at"] = _utc_now()
     project["render"] = rec0
     save_project(project)
-    
+
     import time as _time
-    
+
     try:
         _abort_if_cancelled(pid)
         touch_render_progress(
             project,
-            message="2/4 Preparando subtítulos…" if not resume else "Reanudando — subtítulos listos, sigo con los clips…",
+            message="2/4 Preparando subtítulos…" if not resume else "Reanudando el episodio…",
             stage="captions_prep",
             done=int(rec0.get("kb_done") or 0),
             total=len(images),
             percent=5 if not resume else None,
             push=True,
         )
-        # Si ya se está acercando al timeout de Vercel, pausar antes de Whisper
-        if vercel and early_deadline and _time.monotonic() > early_deadline:
-            rec_pause = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-            rec_pause.update({
-                "state": "running",
-                "need_continue": True,
-                "message": "Generando subtítulos (puede tardar). Continúa automáticamente…",
-                "stage": "captions_prep",
-                "percent": 5,
-                "error": "",
-            })
-            project["render"] = rec_pause
-            save_project(project)
-            append_log(pid, "assemble paused before Whisper (early timeout)")
-            return None
         try:
             from src.documentary.captions import captions_srt_path, generate_captions
 
-            # Don't re-run Whisper on every resume — that's what froze long episodes at 2–5%.
-            generate_captions(project, force=False)
+            # Whisper on a 10–20 min take kills the Vercel lambda. Use existing SRT / estimate.
+            generate_captions(project, force=False, allow_whisper=not vercel)
             srt = captions_srt_path(pid)
             if not srt.is_file() or srt.stat().st_size <= 0:
                 raise RuntimeError("empty srt")
@@ -471,9 +453,14 @@ def assemble_and_render(
             )
 
         already = int(rec0.get("kb_done") or 0) if resume else 0
+        encode_msg = (
+            f"3/4 Armando el episodio ({quality_label})…"
+            if vercel
+            else f"3/4 Armando clips con zoom/fundido — {already} de {len(images)}"
+        )
         touch_render_progress(
             project,
-            message=f"3/4 Armando clips con zoom/fundido — {already} de {len(images)}",
+            message=encode_msg,
             stage="encode",
             done=already,
             total=len(images),
@@ -495,11 +482,11 @@ def assemble_and_render(
             fps=fps,
             crf=crf,
             preset=preset,
-            editorial=True,
+            editorial=not vercel,
             look=str(edit.get("look") or "soft"),
             scale_to=scale_to,
-            clip_dir=clip_dir,
-            deadline_mono=deadline,
+            clip_dir=None if vercel else clip_dir,
+            deadline_mono=None if vercel else deadline,
             on_progress=_on_clip_progress,
             abort=lambda: _abort_if_cancelled(pid),
         )
@@ -515,16 +502,48 @@ def assemble_and_render(
             _sh.copy2(Path(result), master_video_path(pid))
         except Exception:
             pass
-        burned = False
-        touch_render_progress(
-            project,
-            message="4/4 Quemando subtítulos en inglés…",
-            stage="captions_burn",
-            done=len(images),
-            total=len(images),
-            percent=88,
-            push=True,
+        # Publish the episode NOW so a caption-burn timeout cannot eat the file.
+        set_checkpoint(project, "assembly_ready", True)
+        set_checkpoint(project, "render_ready", True)
+        rec_ready = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+        rec_ready.update(
+            {
+                "path": "render/final.mp4",
+                "seconds_per_image": sec,
+                "width": int((scale_to or (width, height))[0]),
+                "height": int((scale_to or (width, height))[1]),
+                "fps": fps,
+                "reuse": reuse,
+                "state": "done",
+                "need_continue": False,
+                "message": f"Video listo · {quality_label}.",
+                "error": "",
+                "stage": "done",
+                "percent": 92,
+                "kb_done": len(images),
+                "kb_total": len(images),
+                "finished_at": _utc_now(),
+            }
         )
+        project["render"] = rec_ready
+        save_project(project)
+        if vercel:
+            try:
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    cloud_sync.push_paths(
+                        pid,
+                        [
+                            "project.json",
+                            "render/final.mp4",
+                            "render/final_master.mp4",
+                            "render/captions.srt",
+                        ],
+                    )
+            except Exception as push_err:
+                append_log(pid, f"early final push: {push_err}")
+        burned = False
         try:
             from src.documentary.captions import burn_into_final
 
@@ -667,10 +686,17 @@ def _pull_preview_assets(project_id: str) -> None:
             break
 
 
-def _encode_profile(*, vercel: bool) -> tuple[int, int, int, int, str, tuple[int, int] | None, str]:
-    """Same encode profile for preview and full episode."""
+def _encode_profile(
+    *,
+    vercel: bool,
+    duration_sec: float = 0,
+) -> tuple[int, int, int, int, str, tuple[int, int] | None, str]:
+    """Vercel: one encode pass (no 720→1080 upscale). Local Mac: 4K."""
     if vercel:
-        return 1280, 720, 24, 20, "ultrafast", (1920, 1080), "Full HD 1080p"
+        # Long episodes: 720p so one lambda can finish. Shorter: 1080p in one pass.
+        if float(duration_sec or 0) > 12 * 60:
+            return 1280, 720, 20, 23, "ultrafast", None, "HD 720p"
+        return 1920, 1080, 24, 23, "ultrafast", None, "Full HD 1080p"
     return 3840, 2160, 24, 16, "medium", None, "4K"
 
 
