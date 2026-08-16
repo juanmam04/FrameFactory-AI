@@ -80,6 +80,7 @@ def test_vercel_encode_profile_is_one_pass():
     assert scale_to is None
     assert preset == "ultrafast"
     assert "HD" in label
-    w2, h2, *_rest, scale2, _lab = _encode_profile(vercel=True, duration_sec=20 * 60)
-    assert (w2, h2) == (1280, 720)
+    w2, h2, *_rest, scale2, lab2 = _encode_profile(vercel=True, duration_sec=20 * 60)
+    assert (w2, h2) == (1920, 1080)
     assert scale2 is None
+    assert "1080" in lab2

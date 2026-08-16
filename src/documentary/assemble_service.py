@@ -268,18 +268,67 @@ def _pull_render_assets(project_id: str) -> None:
     cloud_sync.pull_prefix(project_id, "images/")
 
 
-def _pull_render_assets_safe(project_id: str, project: dict[str, Any]) -> None:
-    """Like _pull_render_assets but never clobber a narration that matches the script."""
+def _image_relpaths(project_id: str, images: list[Path]) -> list[str]:
+    root = project_dir(project_id).resolve()
+    out: list[str] = []
+    for p in images:
+        try:
+            out.append(p.resolve().relative_to(root).as_posix())
+        except ValueError:
+            out.append(p.as_posix())
+    return out
+
+
+def _restore_stills(project_id: str, rels: list[str]) -> list[Path]:
+    root = project_dir(project_id)
+    images: list[Path] = []
+    for rel in rels:
+        path = root / str(rel)
+        if not path.is_file() or path.stat().st_size <= 0:
+            try:
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    cloud_sync.pull_one(project_id, str(rel))
+            except Exception:
+                pass
+        if path.is_file() and path.stat().st_size > 0:
+            images.append(path)
+    return images
+
+
+def _pull_for_render(project_id: str, project: dict[str, Any], *, resume: bool, stage: str) -> None:
     from src.documentary import cloud_sync
     from src.documentary.voice_script_sync import voice_matches_script
 
     if not cloud_sync.configured():
         return
+    rec = project.get("render") if isinstance(project.get("render"), dict) else {}
+    if stage == "captions_burn":
+        for rel in ("render/final_master.mp4", "render/final.mp4", "render/captions.srt"):
+            try:
+                cloud_sync.pull_one(project_id, rel)
+            except Exception:
+                pass
+        return
     audio = project_dir(project_id) / "audio" / "narration.mp3"
     if not (audio.is_file() and audio.stat().st_size > 0 and voice_matches_script(project)):
         cloud_sync.pull_one(project_id, "audio/narration.mp3")
     cloud_sync.pull_one(project_id, "flow-pack/shot-list.json")
-    cloud_sync.pull_prefix(project_id, "images/")
+    try:
+        cloud_sync.pull_one(project_id, "render/captions.srt")
+    except Exception:
+        pass
+    if resume:
+        try:
+            cloud_sync.pull_prefix(project_id, "render/clips/")
+        except Exception:
+            pass
+    rels = rec.get("still_relpaths") if isinstance(rec.get("still_relpaths"), list) else []
+    if resume and rels:
+        _restore_stills(project_id, [str(x) for x in rels])
+    else:
+        cloud_sync.pull_prefix(project_id, "images/")
 
 
 def _probe_audio_sec(path: Path) -> float:
@@ -345,213 +394,46 @@ def assemble_and_render(
     transiciones_suaves: bool = True,
     resume: bool = False,
 ) -> Path | None:
+    import time as _time
+
+    from src.documentary.captions import burn_into_final, generate_captions, master_video_path
     from src.documentary.runtime import on_vercel
-
-    vercel = on_vercel()
-    if vercel:
-        _pull_render_assets_safe(str(project["id"]), project)
-        if resume:
-            try:
-                from src.documentary import cloud_sync
-
-                if cloud_sync.configured():
-                    cloud_sync.pull_prefix(str(project["id"]), "render/clips/")
-            except Exception:
-                pass
-    if not verificar_ffmpeg():
-        raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
     from src.documentary.voice_script_sync import require_voice_matches_script
 
-    require_voice_matches_script(project)
+    vercel = on_vercel()
     pid = str(project["id"])
-    preview = build_preview(project)
-    if not preview["voice_ok"]:
-        raise RuntimeError("Voice is not ready yet. Generate voice before rendering.")
-    if not preview["image_count"] and not allow_missing:
-        raise RuntimeError("No images found to assemble. Import Flow stills first.")
+    rec0 = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+    stage = str(rec0.get("stage") or "")
+    t0 = _time.monotonic()
+    if vercel:
+        _pull_for_render(pid, project, resume=resume, stage=stage)
+    if not verificar_ffmpeg():
+        raise RuntimeError("Rendering needs FFmpeg installed and available in your PATH.")
+    require_voice_matches_script(project)
 
-    audio = project_dir(pid) / "audio" / "narration.mp3"
-    music = _resolve_music(project)
-    edit = edit_settings(project)
-    music_vol = float(edit["music_volume"])
-    duration = float((project.get("voice") or {}).get("duration_sec") or 0)
-    if duration <= 0:
-        duration = _probe_audio_sec(audio)
-    from src.documentary.reuse_stills import plan_still_timeline
-
-    images, sec, reuse = plan_still_timeline(
-        project, duration, max_sec=float(edit["seconds_per_image"])
-    )
-    if not images:
-        raise RuntimeError("No images found to assemble. Import Flow stills first.")
-
-    if not resume:
-        _wipe_old_render(pid, wipe_clips=True)
-    out = project_dir(pid) / "render" / "final.mp4"
-    clip_dir = _clip_dir(pid)
     log_path = project_dir(pid) / "logs" / "render.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    scale_to = None
+    out = project_dir(pid) / "render" / "final.mp4"
+    duration = float((project.get("voice") or {}).get("duration_sec") or 0)
+    audio = project_dir(pid) / "audio" / "narration.mp3"
+    if duration <= 0:
+        duration = _probe_audio_sec(audio)
     width, height, fps, crf, preset, scale_to, quality_label = _encode_profile(
         vercel=vercel, duration_sec=float(duration or 0)
     )
-    rec0 = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-    rec0["need_continue"] = False
-    rec0["message"] = "1/4 Planificando fotos y duración…"
-    rec0["stage"] = "plan"
-    rec0["kb_total"] = len(images)
-    if not resume:
-        rec0["kb_done"] = 0
-        rec0["percent"] = 2
-    rec0["updated_at"] = _utc_now()
-    project["render"] = rec0
-    save_project(project)
+    burn_w = int((scale_to or (width, height))[0])
 
-    import time as _time
-
-    try:
-        _abort_if_cancelled(pid)
-        touch_render_progress(
-            project,
-            message="2/4 Preparando subtítulos…" if not resume else "Reanudando el episodio…",
-            stage="captions_prep",
-            done=int(rec0.get("kb_done") or 0),
-            total=len(images),
-            percent=5 if not resume else None,
-            push=True,
-        )
-        try:
-            from src.documentary.captions import captions_srt_path, generate_captions
-
-            # Whisper on a 10–20 min take kills the Vercel lambda. Use existing SRT / estimate.
-            generate_captions(project, force=False, allow_whisper=not vercel)
-            srt = captions_srt_path(pid)
-            if not srt.is_file() or srt.stat().st_size <= 0:
-                raise RuntimeError("empty srt")
-            append_log(pid, f"captions srt ready source={(project.get('captions') or {}).get('source')}")
-        except Exception as e:
-            append_log(pid, f"captions srt skip: {e}")
-
-        _last_push = [0.0]
-        deadline = (_time.monotonic() + 230.0) if vercel else None
-
-        def _on_clip_progress(done: int, total: int) -> None:
-            _abort_if_cancelled(pid)
-            pct = 8 + int(70 * (done / max(1, total)))
-            now = _time.monotonic()
-            should_push = done == 1 or done >= total or (now - _last_push[0]) >= 8.0
-            if should_push:
-                _last_push[0] = now
-            touch_render_progress(
-                project,
-                message=f"3/4 Armando clips con zoom/fundido — foto {done} de {total}",
-                stage="encode",
-                done=done,
-                total=total,
-                percent=pct,
-                push=should_push,
-            )
-
-        already = int(rec0.get("kb_done") or 0) if resume else 0
-        encode_msg = (
-            f"3/4 Armando el episodio ({quality_label})…"
-            if vercel
-            else f"3/4 Armando clips con zoom/fundido — {already} de {len(images)}"
-        )
-        touch_render_progress(
-            project,
-            message=encode_msg,
-            stage="encode",
-            done=already,
-            total=len(images),
-            percent=8 + int(70 * (already / max(1, len(images)))),
-            push=True,
-        )
-        result = montar_slideshow(
-            images,
-            audio,
-            out,
-            segundos_por_imagen=sec,
-            width=width,
-            height=height,
-            musica_fondo=music,
-            music_volume=music_vol,
-            duration_sec=float(duration or 0) or None,
-            motion=str(edit["motion"]),
-            transition=str(edit["transition"]),
-            fps=fps,
-            crf=crf,
-            preset=preset,
-            editorial=not vercel,
-            look=str(edit.get("look") or "soft"),
-            scale_to=scale_to,
-            clip_dir=None if vercel else clip_dir,
-            deadline_mono=None if vercel else deadline,
-            on_progress=_on_clip_progress,
-            abort=lambda: _abort_if_cancelled(pid),
-        )
-        _abort_if_cancelled(pid)
-        if not mp4_is_complete(Path(result)):
-            Path(result).unlink(missing_ok=True)
-            raise RuntimeError("El render no terminó bien (video incompleto). Probá de nuevo.")
-        try:
-            import shutil as _sh
-
-            from src.documentary.captions import master_video_path
-
-            _sh.copy2(Path(result), master_video_path(pid))
-        except Exception:
-            pass
-        # Publish the episode NOW so a caption-burn timeout cannot eat the file.
-        set_checkpoint(project, "assembly_ready", True)
-        set_checkpoint(project, "render_ready", True)
-        rec_ready = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-        rec_ready.update(
-            {
-                "path": "render/final.mp4",
-                "seconds_per_image": sec,
-                "width": int((scale_to or (width, height))[0]),
-                "height": int((scale_to or (width, height))[1]),
-                "fps": fps,
-                "reuse": reuse,
-                "state": "done",
-                "need_continue": False,
-                "message": f"Video listo · {quality_label}.",
-                "error": "",
-                "stage": "done",
-                "percent": 92,
-                "kb_done": len(images),
-                "kb_total": len(images),
-                "finished_at": _utc_now(),
-            }
-        )
-        project["render"] = rec_ready
-        save_project(project)
-        if vercel:
+    def _mark_done(result: Path, *, burned: bool, sec: float, reuse: dict[str, Any], n_images: int) -> Path:
+        if not burned:
             try:
-                from src.documentary import cloud_sync
+                import shutil as _sh
 
-                if cloud_sync.configured():
-                    cloud_sync.push_paths(
-                        pid,
-                        [
-                            "project.json",
-                            "render/final.mp4",
-                            "render/final_master.mp4",
-                            "render/captions.srt",
-                        ],
-                    )
-            except Exception as push_err:
-                append_log(pid, f"early final push: {push_err}")
-        burned = False
-        try:
-            from src.documentary.captions import burn_into_final
-
-            burn_into_final(project, width=int((scale_to or (width, height))[0]))
-            burned = True
-        except Exception as cap_err:
-            append_log(pid, f"captions burn skip: {cap_err}")
-        _abort_if_cancelled(pid)
+                master = master_video_path(pid)
+                if mp4_is_complete(master):
+                    _sh.copy2(master, out)
+                    result = out
+            except Exception:
+                pass
         set_checkpoint(project, "assembly_ready", True)
         set_checkpoint(project, "render_ready", True)
         if burned:
@@ -580,8 +462,8 @@ def assemble_and_render(
                 "error": "",
                 "stage": "done",
                 "percent": 100,
-                "kb_done": len(images),
-                "kb_total": len(images),
+                "kb_done": n_images,
+                "kb_total": n_images,
                 "finished_at": _utc_now(),
             }
         )
@@ -592,43 +474,258 @@ def assemble_and_render(
         append_log(pid, f"render ok → {result} {quality_label} captions={burned}")
         log_path.write_text(f"OK {result}\n", encoding="utf-8")
         return Path(result)
+
+    def _try_burn() -> bool:
+        try:
+            burn_into_final(project, width=burn_w)
+            return True
+        except Exception as cap_err:
+            append_log(pid, f"captions burn skip: {cap_err}")
+            return False
+
+    try:
+        _abort_if_cancelled(pid)
+        if resume and stage == "captions_burn":
+            touch_render_progress(
+                project,
+                message="4/4 Quemando subtítulos alineados a la voz…",
+                stage="captions_burn",
+                percent=90,
+                push=True,
+            )
+            burned = _try_burn()
+            if not burned and vercel:
+                attempts = int(rec0.get("burn_attempts") or 0) + 1
+                rec0["burn_attempts"] = attempts
+                project["render"] = rec0
+                if attempts < 3:
+                    _mark_need_continue(
+                        project,
+                        message="Reintentando subtítulos sobre el episodio…",
+                        stage="captions_burn",
+                        percent=90,
+                        extra_paths=["render/final_master.mp4", "render/captions.srt"],
+                    )
+                    return None
+            sec = float(rec0.get("seconds_per_image") or 6)
+            reuse = rec0.get("reuse") if isinstance(rec0.get("reuse"), dict) else {}
+            n_images = int(rec0.get("kb_total") or 0)
+            return _mark_done(out if mp4_is_complete(out) else master_video_path(pid), burned=burned, sec=sec, reuse=reuse, n_images=n_images)
+
+        preview = build_preview(project)
+        if not preview["voice_ok"]:
+            raise RuntimeError("Voice is not ready yet. Generate voice before rendering.")
+        if not preview["image_count"] and not allow_missing:
+            raise RuntimeError("No images found to assemble. Import Flow stills first.")
+
+        music = _resolve_music(project)
+        edit = edit_settings(project)
+        music_vol = float(edit["music_volume"])
+        saved_rels = rec0.get("still_relpaths") if isinstance(rec0.get("still_relpaths"), list) else []
+        if resume and saved_rels:
+            images = _restore_stills(pid, [str(x) for x in saved_rels])
+            sec = float(rec0.get("seconds_per_image") or edit["seconds_per_image"])
+            reuse = rec0.get("reuse") if isinstance(rec0.get("reuse"), dict) else {}
+        else:
+            from src.documentary.reuse_stills import plan_still_timeline
+
+            images, sec, reuse = plan_still_timeline(
+                project, duration, max_sec=float(edit["seconds_per_image"])
+            )
+        if not images:
+            raise RuntimeError("No images found to assemble. Import Flow stills first.")
+
+        if not resume:
+            _wipe_old_render(pid, wipe_clips=True)
+        clip_dir = _clip_dir(pid)
+        rec0["need_continue"] = False
+        rec0["still_relpaths"] = _image_relpaths(pid, images)
+        rec0["seconds_per_image"] = sec
+        rec0["reuse"] = reuse
+        rec0["kb_total"] = len(images)
+        rec0["width"] = int((scale_to or (width, height))[0])
+        rec0["height"] = int((scale_to or (width, height))[1])
+        if not resume:
+            rec0["kb_done"] = 0
+            rec0["percent"] = 2
+            rec0["stage"] = "plan"
+            rec0["message"] = "1/4 Planificando fotos y duración…"
+        rec0["updated_at"] = _utc_now()
+        project["render"] = rec0
+        save_project(project)
+
+        if not _whisper_aligned(project):
+            touch_render_progress(
+                project,
+                message="2/4 Alineando subtítulos con la narración…",
+                stage="captions_prep",
+                done=int(rec0.get("kb_done") or 0),
+                total=len(images),
+                percent=5,
+                push=True,
+            )
+            attempts = int(rec0.get("whisper_attempts") or 0) + 1
+            rec0["whisper_attempts"] = attempts
+            project["render"] = rec0
+            save_project(project)
+            try:
+                generate_captions(project, force=True, allow_whisper=True, require_whisper=True)
+            except Exception as cap_err:
+                if vercel and attempts < 3:
+                    append_log(pid, f"captions whisper retry: {cap_err}")
+                    _mark_need_continue(
+                        project,
+                        message="Reintentando alinear los subtítulos a la voz…",
+                        stage="captions_prep",
+                        percent=5,
+                        done=int(rec0.get("kb_done") or 0),
+                        total=len(images),
+                    )
+                    return None
+                raise
+            append_log(pid, f"captions srt ready source={(project.get('captions') or {}).get('source')}")
+            if vercel and (_time.monotonic() - t0) > 90:
+                _mark_need_continue(
+                    project,
+                    message="Subtítulos alineados. Sigo con zoom y fundidos…",
+                    stage="encode",
+                    percent=8,
+                    done=int(rec0.get("kb_done") or 0),
+                    total=len(images),
+                    extra_paths=["render/captions.srt"],
+                )
+                return None
+
+        _last_push = [0.0]
+        elapsed = _time.monotonic() - t0
+        left = 275.0 - elapsed
+        deadline = (_time.monotonic() + max(25.0, left - 70.0)) if vercel else None
+
+        def _on_clip_progress(done: int, total: int) -> None:
+            _abort_if_cancelled(pid)
+            pct = 8 + int(70 * (done / max(1, total)))
+            now = _time.monotonic()
+            should_push = done == 1 or done >= total or (now - _last_push[0]) >= 8.0
+            if should_push:
+                _last_push[0] = now
+            touch_render_progress(
+                project,
+                message=f"3/4 Armando clips con zoom/fundido — foto {done} de {total}",
+                stage="encode",
+                done=done,
+                total=total,
+                percent=pct,
+                push=should_push,
+            )
+
+        already = int(rec0.get("kb_done") or 0) if resume else 0
+        touch_render_progress(
+            project,
+            message=f"3/4 Armando clips con zoom/fundido — {already} de {len(images)} · {quality_label}",
+            stage="encode",
+            done=already,
+            total=len(images),
+            percent=8 + int(70 * (already / max(1, len(images)))),
+            push=True,
+        )
+        result = montar_slideshow(
+            images,
+            audio,
+            out,
+            segundos_por_imagen=sec,
+            width=width,
+            height=height,
+            musica_fondo=music,
+            music_volume=music_vol,
+            duration_sec=float(duration or 0) or None,
+            motion=str(edit["motion"]),
+            transition=str(edit["transition"]),
+            fps=fps,
+            crf=crf,
+            preset=preset,
+            editorial=True,
+            look=str(edit.get("look") or "soft"),
+            scale_to=scale_to,
+            clip_dir=clip_dir,
+            deadline_mono=deadline,
+            on_progress=_on_clip_progress,
+            abort=lambda: _abort_if_cancelled(pid),
+        )
+        _abort_if_cancelled(pid)
+        if not mp4_is_complete(Path(result)):
+            Path(result).unlink(missing_ok=True)
+            raise RuntimeError("El render no terminó bien (video incompleto). Probá de nuevo.")
+        try:
+            import shutil as _sh
+
+            _sh.copy2(Path(result), master_video_path(pid))
+        except Exception:
+            pass
+        set_checkpoint(project, "assembly_ready", True)
+        if vercel:
+            try:
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    cloud_sync.push_paths(
+                        pid,
+                        ["project.json", "render/final_master.mp4", "render/captions.srt"],
+                    )
+            except Exception as push_err:
+                append_log(pid, f"master push: {push_err}")
+            if (_time.monotonic() - t0) > 180:
+                _mark_need_continue(
+                    project,
+                    message="4/4 Video armado. Ahora quemo los subtítulos…",
+                    stage="captions_burn",
+                    percent=90,
+                    done=len(images),
+                    total=len(images),
+                    extra_paths=["render/final_master.mp4", "render/captions.srt"],
+                )
+                return None
+
+        burned = _try_burn()
+        if not burned and vercel:
+            _mark_need_continue(
+                project,
+                message="4/4 Quemando subtítulos alineados a la voz…",
+                stage="captions_burn",
+                percent=90,
+                done=len(images),
+                total=len(images),
+                extra_paths=["render/final_master.mp4", "render/captions.srt"],
+            )
+            return None
+        return _mark_done(Path(result), burned=burned, sec=sec, reuse=reuse or {}, n_images=len(images))
     except EditorialPaused as paused:
         done = int(getattr(paused, "done", 0) or 0)
-        total = int(getattr(paused, "total", 0) or len(images))
+        total = int(getattr(paused, "total", 0) or 0) or int(rec0.get("kb_total") or 0)
         pct = 8 + int(70 * (done / max(1, total)))
-        rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
-        rec.update(
-            {
-                "state": "running",
-                "need_continue": True,
-                "message": f"Sigue en segundo plano — foto {done} de {total}. Podés salir.",
-                "stage": "encode",
-                "kb_done": done,
-                "kb_total": total,
-                "percent": pct,
-                "error": "",
-                "updated_at": _utc_now(),
-            }
-        )
-        project["render"] = rec
-        save_project(project)
         append_log(pid, f"render paused {done}/{total}")
         if vercel:
             try:
                 _push_clip_dir(pid)
-                from src.documentary import cloud_sync
-
-                if cloud_sync.configured():
-                    cloud_sync.push_paths(pid, ["project.json"])
             except Exception:
                 pass
+        _mark_need_continue(
+            project,
+            message=f"Sigue en segundo plano — foto {done} de {total}. Podés salir.",
+            stage="encode",
+            percent=pct,
+            done=done,
+            total=total,
+        )
         return None
     except RenderCancelled:
         append_log(pid, "render stopped by user")
         raise
     except Exception as e:
         append_log(pid, f"render FAIL: {e}")
-        log_path.write_text(f"FAIL {e}\n", encoding="utf-8")
+        try:
+            log_path.write_text(f"FAIL {e}\n", encoding="utf-8")
+        except Exception:
+            pass
         try:
             set_render_state(project, "error", error=str(e)[:400])
         except Exception:
@@ -686,17 +783,98 @@ def _pull_preview_assets(project_id: str) -> None:
             break
 
 
+def _kick_render_continue(project_id: str) -> None:
+    """Fire the next Vercel chunk now so the episode keeps going if the user leaves."""
+    from urllib.parse import quote
+    import os
+    import urllib.error
+    import urllib.request
+
+    host = (
+        (os.getenv("VERCEL_PROJECT_PRODUCTION_URL") or "").strip()
+        or (os.getenv("VERCEL_URL") or "").strip()
+    )
+    if not host:
+        return
+    if not host.startswith("http"):
+        host = "https://" + host
+    url = f"{host.rstrip('/')}/api/projects/{quote(str(project_id), safe='')}/render?resume=1"
+    req = urllib.request.Request(
+        url,
+        method="POST",
+        data=b"{}",
+        headers={"Content-Type": "application/json", "User-Agent": "FrameFactory-render-continue"},
+    )
+    try:
+        urllib.request.urlopen(req, timeout=2)
+    except (TimeoutError, urllib.error.URLError, OSError):
+        # Timeout is expected: the next lambda is running.
+        pass
+    except Exception:
+        pass
+
+
+def _whisper_aligned(project: dict[str, Any]) -> bool:
+    from src.documentary.captions import captions_srt_path
+
+    pid = str(project.get("id") or "")
+    path = captions_srt_path(pid)
+    cap = project.get("captions") if isinstance(project.get("captions"), dict) else {}
+    return (
+        path.is_file()
+        and path.stat().st_size > 0
+        and str(cap.get("source") or "") == "whisper"
+    )
+
+
+def _mark_need_continue(
+    project: dict[str, Any],
+    *,
+    message: str,
+    stage: str,
+    percent: int,
+    done: int | None = None,
+    total: int | None = None,
+    extra_paths: list[str] | None = None,
+) -> None:
+    rec = dict(project.get("render") or {}) if isinstance(project.get("render"), dict) else {}
+    rec.update(
+        {
+            "state": "running",
+            "need_continue": True,
+            "message": message[:240],
+            "stage": stage,
+            "percent": max(0, min(100, int(percent))),
+            "error": "",
+            "updated_at": _utc_now(),
+        }
+    )
+    if done is not None:
+        rec["kb_done"] = int(done)
+    if total is not None:
+        rec["kb_total"] = int(total)
+    project["render"] = rec
+    save_project(project)
+    pid = str(project.get("id") or "")
+    try:
+        from src.documentary import cloud_sync
+
+        if cloud_sync.configured():
+            rels = ["project.json", *(extra_paths or [])]
+            cloud_sync.push_paths(pid, rels)
+    except Exception:
+        pass
+    _kick_render_continue(pid)
+
+
 def _encode_profile(
     *,
     vercel: bool,
     duration_sec: float = 0,
 ) -> tuple[int, int, int, int, str, tuple[int, int] | None, str]:
-    """Vercel: one encode pass (no 720→1080 upscale). Local Mac: 4K."""
+    """Cloud: Full HD Ken Burns in one pass (no 720→1080 upscale). Local Mac: 4K."""
     if vercel:
-        # Long episodes: 720p so one lambda can finish. Shorter: 1080p in one pass.
-        if float(duration_sec or 0) > 12 * 60:
-            return 1280, 720, 20, 23, "ultrafast", None, "HD 720p"
-        return 1920, 1080, 24, 23, "ultrafast", None, "Full HD 1080p"
+        return 1920, 1080, 24, 20, "ultrafast", None, "Full HD 1080p"
     return 3840, 2160, 24, 16, "medium", None, "4K"
 
 

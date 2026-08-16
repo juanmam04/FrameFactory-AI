@@ -148,6 +148,8 @@ def montar_slideshow(
                 raise
             except Exception as e:
                 last = e
+        if clip_dir is not None and last is not None:
+            raise last
     for lk in looks:
         try:
             return _slideshow_concat(

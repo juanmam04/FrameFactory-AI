@@ -2413,7 +2413,8 @@ function paintRender(ws, p) {
           paintRender._lastUpdate = now;
           paintRender._lastPercent = pct;
         }
-        const stuckLimit = next.stage === "encode" && pct >= 8 ? 4.2 : 1.5;
+        const heavy = next.stage === "encode" || next.stage === "captions_prep" || next.stage === "captions_burn";
+        const stuckLimit = heavy ? 4.2 : 1.5;
         if (next.state === "running" && stuckMin > stuckLimit && !paintRender._resuming) {
           console.warn(`Render stuck at ${pct}% for ${stuckMin.toFixed(1)} min — forcing resume`);
           paintRender._resuming = true;

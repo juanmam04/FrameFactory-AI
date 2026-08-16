@@ -125,6 +125,14 @@ def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, 
                 data = path.read_bytes()
                 digest = _sha256(data)
                 cur.execute(
+                    "SELECT sha256 FROM ff_blobs WHERE project_id = %s AND rel_path = %s",
+                    (project_id, rel),
+                )
+                row = cur.fetchone()
+                if row and str(row[0] or "") == digest:
+                    skipped += 1
+                    continue
+                cur.execute(
                     """
                     INSERT INTO ff_blobs (project_id, rel_path, sha256, content, updated_at)
                     VALUES (%s, %s, %s, %s, NOW())
@@ -306,27 +314,26 @@ def list_rel_paths(project_id: str, prefix: str = "") -> list[str]:
 
 
 def pull_prefix(project_id: str, prefix: str) -> int:
-    """Download every blob under prefix in one query (skips thumbs and files already on disk)."""
+    """Download blobs under prefix. Lists paths first so resume does not reload files already on disk."""
     ensure_schema()
     root = projects_root() / project_id
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT rel_path, content FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                "SELECT rel_path FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
                 (project_id, prefix + "%"),
             )
             rows = cur.fetchall()
     written = 0
-    for rel, content in rows:
+    for (rel,) in rows:
         rel_s = str(rel)
         if ".thumb." in rel_s:
             continue
         path = root / rel_s
         if path.is_file() and path.stat().st_size > 0:
             continue
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(bytes(content))
-        written += 1
+        if pull_one(project_id, rel_s, force=True):
+            written += 1
     return written
 
 
