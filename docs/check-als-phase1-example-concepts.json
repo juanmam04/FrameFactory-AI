@@ -1,0 +1,492 @@
+[
+  {
+    "id": "bedroom-100m",
+    "content_format": "check_als",
+    "premise": "You start coding a niche SaaS in your childhood bedroom with almost no money, land a painful first customer, scale through near-bankruptcy, and build a nine-figure company.",
+    "title": "POV: You Build a $100M Company From Your Bedroom",
+    "title_options": [
+      {
+        "text": "POV: You Build a $100M Company From Your Bedroom",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 8
+        },
+        "overall_score": 8.0
+      },
+      {
+        "text": "POV: You Somehow You Build a $100M Company From Your Bedroom",
+        "scores": {
+          "clarity": 6,
+          "curiosity": 6,
+          "fantasy": 6,
+          "scale": 6,
+          "instant_understanding": 6,
+          "promise_match": 6
+        },
+        "overall_score": 6.0
+      },
+      {
+        "text": "POV: You Chase $100M company",
+        "scores": {
+          "clarity": 7,
+          "curiosity": 7,
+          "fantasy": 7,
+          "scale": 7,
+          "instant_understanding": 7,
+          "promise_match": 7
+        },
+        "overall_score": 7.0
+      }
+    ],
+    "one_line_fantasy": "From a bedroom desk to a $100M company before most people finish college.",
+    "starting_state": "AGE 19 · CASH $312 · parents' house · old laptop · unknown",
+    "end_state": "AGE 27 · COMPANY VALUE $100M+ · HQ · parents retired · known founder",
+    "core_transformation": "Broke teen builder → founder of a $100M company",
+    "story_category": "entrepreneurship",
+    "ending_direction": "empire",
+    "scores": {
+      "fantasy_strength": 7,
+      "curiosity": 8,
+      "relatability": 9,
+      "transformation_strength": 7,
+      "escalation_potential": 8,
+      "emotional_range": 9,
+      "thumbnail_potential": 7,
+      "title_potential": 8,
+      "visual_variety": 9,
+      "originality": 7
+    },
+    "overall_score": 7.9,
+    "thumbnail_concept": {
+      "main_visual": "Teen you at a messy bedroom desk vs distant glass HQ on the wall poster",
+      "protagonist_state": "hooded, tired, hungry for a win",
+      "environment": "childhood bedroom at night",
+      "central_contrast": "tiny room vs future empire",
+      "emotion": "quiet obsession",
+      "key_object": "glowing laptop",
+      "composition": "subject left, poster of skyscraper right",
+      "camera": "medium wide, slight low angle",
+      "lighting": "desk lamp + cold monitor light",
+      "background": "posters, cables, laundry pile",
+      "text_if_any": "",
+      "thumbnail_prompt": "2D cinematic illustration, simple expressive male teen at cluttered bedroom desk at night, laptop glow, contrast with a small framed image of a modern HQ, clean linework, detailed room, dramatic lighting, no cluttered text, YouTube thumbnail composition"
+    },
+    "hook": "You're 19 years old.\n\nYou have $312 in your bank account.\n\nYou still live with your parents.\n\nAt 2:14 in the morning, a stranger emails you about a problem that will eventually be worth a hundred million dollars.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": 19,
+      "starting_cash": "$312",
+      "starting_location": "parents' house / childhood bedroom",
+      "starting_status": "unknown student builder",
+      "target_outcome": "$100M company",
+      "business_or_career_type": "SaaS / software",
+      "timeline_scale": "8 years"
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": true,
+      "transformation_aligned": true,
+      "notes": "",
+      "pass": true
+    }
+  },
+  {
+    "id": "100-to-10m",
+    "content_format": "check_als",
+    "premise": "You flip $100 into a product hustle, survive scams and stockouts, and compound into eight figures.",
+    "title": "POV: You Turn $100 Into $10 Million",
+    "title_options": [
+      {
+        "text": "POV: You Turn $100 Into $10 Million",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 8
+        },
+        "overall_score": 8.0
+      },
+      {
+        "text": "POV: You Somehow You Turn $100 Into $10 Million",
+        "scores": {
+          "clarity": 6,
+          "curiosity": 6,
+          "fantasy": 6,
+          "scale": 6,
+          "instant_understanding": 6,
+          "promise_match": 6
+        },
+        "overall_score": 6.0
+      },
+      {
+        "text": "POV: You Chase $10M net worth",
+        "scores": {
+          "clarity": 7,
+          "curiosity": 7,
+          "fantasy": 7,
+          "scale": 7,
+          "instant_understanding": 7,
+          "promise_match": 7
+        },
+        "overall_score": 7.0
+      }
+    ],
+    "one_line_fantasy": "One hundred dollars becomes a ten-million-dollar life.",
+    "starting_state": "AGE 21 · CASH $100 · shared apartment · no employees",
+    "end_state": "AGE 29 · NET WORTH $10M · brand · warehouse · freedom",
+    "core_transformation": "Micro-hustle → multi-million operator",
+    "story_category": "wealth",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 8,
+      "curiosity": 9,
+      "relatability": 7,
+      "transformation_strength": 8,
+      "escalation_potential": 9,
+      "emotional_range": 7,
+      "thumbnail_potential": 8,
+      "title_potential": 9,
+      "visual_variety": 7,
+      "originality": 8
+    },
+    "overall_score": 8.0,
+    "thumbnail_concept": {
+      "main_visual": "One hundred dollars becomes a ten-million-dollar life.",
+      "protagonist_state": "young you, mid-transformation",
+      "environment": "key story location",
+      "central_contrast": "before vs after stakes",
+      "emotion": "tension",
+      "key_object": "one symbolic object",
+      "composition": "simple two-zone contrast",
+      "camera": "medium shot",
+      "lighting": "cinematic contrast",
+      "background": "simplified",
+      "text_if_any": "",
+      "thumbnail_prompt": "2D cinematic illustration for YouTube thumbnail: One hundred dollars becomes a ten-million-dollar life.. Simple expressive protagonist, strong contrast, few elements, clean linework, detailed environment, no busy text."
+    },
+    "hook": "You're 21.\n\nYour bank app shows $100.17.\n\nRent is due in six days.\n\nYou open a listing page that will either save you — or wipe you out.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": 21,
+      "starting_cash": "$100",
+      "starting_location": "shared apartment",
+      "starting_status": "broke hustler",
+      "target_outcome": "$10M net worth",
+      "business_or_career_type": "e-commerce / product flips",
+      "timeline_scale": "8 years"
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": true,
+      "transformation_aligned": true,
+      "notes": "",
+      "pass": true
+    }
+  },
+  {
+    "id": "buy-for-1",
+    "content_format": "check_als",
+    "premise": "You buy a bankrupt local company for a dollar, inherit its debts, and try to rebuild an empire from the wreckage.",
+    "title": "POV: You Buy a Bankrupt Company for $1",
+    "title_options": [
+      {
+        "text": "POV: You Buy a Bankrupt Company for $1",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 8
+        },
+        "overall_score": 8.0
+      },
+      {
+        "text": "POV: You Somehow You Buy a Bankrupt Company for $1",
+        "scores": {
+          "clarity": 6,
+          "curiosity": 6,
+          "fantasy": 6,
+          "scale": 6,
+          "instant_understanding": 6,
+          "promise_match": 6
+        },
+        "overall_score": 6.0
+      },
+      {
+        "text": "POV: You Chase turnaround of bankrupt company",
+        "scores": {
+          "clarity": 7,
+          "curiosity": 7,
+          "fantasy": 7,
+          "scale": 7,
+          "instant_understanding": 7,
+          "promise_match": 7
+        },
+        "overall_score": 7.0
+      }
+    ],
+    "one_line_fantasy": "One dollar buys you a dying company — and a war to revive it.",
+    "starting_state": "AGE 26 · CASH $8,400 · no ownership · restless operator",
+    "end_state": "AGE 34 · revived brand · or total collapse",
+    "core_transformation": "Outsider → owner of a company everyone wrote off",
+    "story_category": "career",
+    "ending_direction": "comeback",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 7,
+      "relatability": 8,
+      "transformation_strength": 9,
+      "escalation_potential": 7,
+      "emotional_range": 8,
+      "thumbnail_potential": 9,
+      "title_potential": 7,
+      "visual_variety": 8,
+      "originality": 9
+    },
+    "overall_score": 8.1,
+    "thumbnail_concept": {
+      "main_visual": "One dollar buys you a dying company — and a war to revive it.",
+      "protagonist_state": "young you, mid-transformation",
+      "environment": "key story location",
+      "central_contrast": "before vs after stakes",
+      "emotion": "tension",
+      "key_object": "one symbolic object",
+      "composition": "simple two-zone contrast",
+      "camera": "medium shot",
+      "lighting": "cinematic contrast",
+      "background": "simplified",
+      "text_if_any": "",
+      "thumbnail_prompt": "2D cinematic illustration for YouTube thumbnail: One dollar buys you a dying company — and a war to revive it.. Simple expressive protagonist, strong contrast, few elements, clean linework, detailed environment, no busy text."
+    },
+    "hook": "You're 26 years old.\n\nYou don't own anything that matters.\n\nThen a lawyer slides a one-page agreement across the table.\n\nPurchase price: one dollar. Liabilities: everything.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": 26,
+      "starting_cash": "$8,400",
+      "starting_location": "small industrial city",
+      "starting_status": "hungry operator",
+      "target_outcome": "turnaround of bankrupt company",
+      "business_or_career_type": "acquisition / turnaround",
+      "timeline_scale": "8 years"
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": true,
+      "transformation_aligned": true,
+      "notes": "",
+      "pass": true
+    }
+  },
+  {
+    "id": "retire-parents",
+    "content_format": "check_als",
+    "premise": "You grind a service business to retire your parents by 23, then face the emptiness and the next empire.",
+    "title": "POV: You Retire Your Parents at 23",
+    "title_options": [
+      {
+        "text": "POV: You Retire Your Parents at 23",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 8
+        },
+        "overall_score": 8.0
+      },
+      {
+        "text": "POV: You Somehow You Retire Your Parents at 23",
+        "scores": {
+          "clarity": 6,
+          "curiosity": 6,
+          "fantasy": 6,
+          "scale": 6,
+          "instant_understanding": 6,
+          "promise_match": 6
+        },
+        "overall_score": 6.0
+      },
+      {
+        "text": "POV: You Chase retire parents by 23",
+        "scores": {
+          "clarity": 7,
+          "curiosity": 7,
+          "fantasy": 7,
+          "scale": 7,
+          "instant_understanding": 7,
+          "promise_match": 7
+        },
+        "overall_score": 7.0
+      }
+    ],
+    "one_line_fantasy": "You make enough to free your parents — then decide who you become after.",
+    "starting_state": "AGE 18 · CASH $40 · parents stressed · childhood home",
+    "end_state": "AGE 23 · parents retired · you richer and restless",
+    "core_transformation": "Kid with a promise → provider who changed the family",
+    "story_category": "acquisition",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 7,
+      "curiosity": 8,
+      "relatability": 9,
+      "transformation_strength": 7,
+      "escalation_potential": 8,
+      "emotional_range": 9,
+      "thumbnail_potential": 7,
+      "title_potential": 8,
+      "visual_variety": 9,
+      "originality": 7
+    },
+    "overall_score": 7.9,
+    "thumbnail_concept": {
+      "main_visual": "You make enough to free your parents — then decide who you become after.",
+      "protagonist_state": "young you, mid-transformation",
+      "environment": "key story location",
+      "central_contrast": "before vs after stakes",
+      "emotion": "tension",
+      "key_object": "one symbolic object",
+      "composition": "simple two-zone contrast",
+      "camera": "medium shot",
+      "lighting": "cinematic contrast",
+      "background": "simplified",
+      "text_if_any": "",
+      "thumbnail_prompt": "2D cinematic illustration for YouTube thumbnail: You make enough to free your parents — then decide who you become after.. Simple expressive protagonist, strong contrast, few elements, clean linework, detailed environment, no busy text."
+    },
+    "hook": "You're 18.\n\nYour mom is still awake when you get home from work.\n\nShe's calculating bills on a paper napkin.\n\nYou promise yourself something you have no right to promise yet.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": 18,
+      "starting_cash": "$40",
+      "starting_location": "childhood home",
+      "starting_status": "provider-in-waiting",
+      "target_outcome": "retire parents by 23",
+      "business_or_career_type": "services / agency",
+      "timeline_scale": "5 years"
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": true,
+      "transformation_aligned": false,
+      "notes": "Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  },
+  {
+    "id": "empire-lost",
+    "content_format": "check_als",
+    "premise": "You build a hotel empire young, overextend, lose almost everything, and choose whether to disappear or rebuild.",
+    "title": "POV: You Build an Empire and Lose Everything",
+    "title_options": [
+      {
+        "text": "POV: You Build an Empire and Lose Everything",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 8
+        },
+        "overall_score": 8.0
+      },
+      {
+        "text": "POV: You Somehow You Build an Empire and Lose Everything",
+        "scores": {
+          "clarity": 6,
+          "curiosity": 6,
+          "fantasy": 6,
+          "scale": 6,
+          "instant_understanding": 6,
+          "promise_match": 6
+        },
+        "overall_score": 6.0
+      },
+      {
+        "text": "POV: You Chase hotel empire then collapse",
+        "scores": {
+          "clarity": 7,
+          "curiosity": 7,
+          "fantasy": 7,
+          "scale": 7,
+          "instant_understanding": 7,
+          "promise_match": 7
+        },
+        "overall_score": 7.0
+      }
+    ],
+    "one_line_fantasy": "The high of owning the skyline — and the night it all collapses.",
+    "starting_state": "AGE 22 · first motel deal · borrowed confidence",
+    "end_state": "AGE 31 · empire gone · one last chip left",
+    "core_transformation": "Rising hotel magnate → bankrupt survivor at a crossroads",
+    "story_category": "empire",
+    "ending_direction": "fall",
+    "scores": {
+      "fantasy_strength": 8,
+      "curiosity": 9,
+      "relatability": 7,
+      "transformation_strength": 8,
+      "escalation_potential": 9,
+      "emotional_range": 7,
+      "thumbnail_potential": 8,
+      "title_potential": 9,
+      "visual_variety": 7,
+      "originality": 8
+    },
+    "overall_score": 8.0,
+    "thumbnail_concept": {
+      "main_visual": "The high of owning the skyline — and the night it all collapses.",
+      "protagonist_state": "young you, mid-transformation",
+      "environment": "key story location",
+      "central_contrast": "before vs after stakes",
+      "emotion": "tension",
+      "key_object": "one symbolic object",
+      "composition": "simple two-zone contrast",
+      "camera": "medium shot",
+      "lighting": "cinematic contrast",
+      "background": "simplified",
+      "text_if_any": "",
+      "thumbnail_prompt": "2D cinematic illustration for YouTube thumbnail: The high of owning the skyline — and the night it all collapses.. Simple expressive protagonist, strong contrast, few elements, clean linework, detailed environment, no busy text."
+    },
+    "hook": "You're 22 years old.\n\nYou just closed on a motel nobody wanted.\n\nThe key feels heavier than it should.\n\nYou don't know it yet, but this is how empires start — and how they end.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": 22,
+      "starting_cash": "$2,100",
+      "starting_location": "highway motel town",
+      "starting_status": "first-time buyer",
+      "target_outcome": "hotel empire then collapse",
+      "business_or_career_type": "hospitality / real estate",
+      "timeline_scale": "9 years"
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": false,
+      "notes": "Hook must be second-person and fulfill the title promise. Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  }
+]

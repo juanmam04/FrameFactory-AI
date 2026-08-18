@@ -12,6 +12,7 @@ const state = {
   view: "home",
   bootstrap: null,
   ideas: [],
+  contentFormat: "documentary",
   project: null,
   shots: null,
   visualPlan: null,
@@ -820,6 +821,11 @@ async function boot() {
     if (status) status.textContent = tips[0];
     // Hard cap — never leave the user staring at skeletons for minutes.
     state.bootstrap = await api("/api/bootstrap", { timeoutMs: 12000 });
+    state.contentFormat =
+      state.bootstrap?.formats?.active ||
+      state.bootstrap?.channel?.content_format ||
+      state.contentFormat ||
+      "documentary";
     renderCreds(state.bootstrap.credentials);
     const note = state.bootstrap?.workspace?.sync_note;
     if (note) toast(note, 5000);
@@ -1016,18 +1022,35 @@ function renderHome() {
 
 async function renderIdeas() {
   setStageMode("home");
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  const isCheck = fmt === "check_als";
   stage().innerHTML = `
-    <p class="kicker">New episode</p>
-    <h1 class="h1">Pick a story engine</h1>
-    <p class="lead">Five true-story angles. Choose one, or drop your own topic.</p>
+    <p class="kicker">${isCheck ? "Check · Concept" : "New episode"}</p>
+    <h1 class="h1">${isCheck ? "Pick a life fantasy" : "Pick a story engine"}</h1>
+    <p class="lead">${
+      isCheck
+        ? "Ranked Aspirational Life Simulations. Inspect title, thumbnail concept, hook and scores — then choose one."
+        : "Five true-story angles. Choose one, or drop your own topic."
+    }</p>
     <div class="actions" style="margin-bottom:1.2rem">
-      <button class="btn btn-accent" id="gen-ideas">Generate ideas</button>
+      <label class="tag" style="display:inline-flex;gap:0.4rem;align-items:center">
+        Format
+        <select id="fmt-select">
+          <option value="check_als"${isCheck ? " selected" : ""}>Check ALS</option>
+          <option value="documentary"${!isCheck ? " selected" : ""}>Documentary</option>
+        </select>
+      </label>
+      <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generate concepts" : "Generate ideas"}</button>
       <button class="btn btn-ghost" id="manual">I have a topic</button>
       <button class="btn btn-ghost" id="back-home">Back</button>
     </div>
     <div id="manual-box" class="panel hidden field" style="margin-bottom:1rem">
       <label>Topic / working title</label>
-      <input id="manual-topic" placeholder="e.g. The SoftBank bet that almost buried WeWork"/>
+      <input id="manual-topic" placeholder="${
+        isCheck
+          ? "e.g. POV: You Build a Hotel Empire From One Motel"
+          : "e.g. The SoftBank bet that almost buried WeWork"
+      }"/>
       <div class="actions">
         <button class="btn btn-primary" id="manual-go">Continue</button>
       </div>
@@ -1038,13 +1061,39 @@ async function renderIdeas() {
     location.hash = "";
     go("home");
   };
+  $("#fmt-select").onchange = async () => {
+    const next = $("#fmt-select").value;
+    try {
+      const data = await api("/api/channel/format", {
+        method: "POST",
+        body: JSON.stringify({ content_format: next }),
+      });
+      state.contentFormat = data.content_format || next;
+      if (state.bootstrap) {
+        state.bootstrap.formats = state.bootstrap.formats || {};
+        state.bootstrap.formats.active = state.contentFormat;
+        if (data.channel) state.bootstrap.channel = { ...(state.bootstrap.channel || {}), ...data.channel };
+      }
+      state.ideas = [];
+      renderIdeas();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
   $("#manual").onclick = () => $("#manual-box").classList.toggle("hidden");
   $("#manual-go").onclick = async () => {
     const topic = $("#manual-topic").value.trim();
     if (!topic) return toast("Write a topic first");
     try {
       const data = await withBusy("Creating episode…", () =>
-        api("/api/projects", { method: "POST", body: JSON.stringify({ topic, title: topic }) })
+        api("/api/projects", {
+          method: "POST",
+          body: JSON.stringify({
+            topic,
+            title: topic,
+            content_format: state.contentFormat || fmt,
+          }),
+        })
       );
       state.project = data.project;
       location.hash = `project/${data.project.id}`;
@@ -1059,19 +1108,24 @@ async function renderIdeas() {
   else {
     $("#ideas").innerHTML = `
       <div class="panel">
-        <p class="lead">No ideas yet. Press <strong>Generate ideas</strong> when you want AI suggestions — it does not run automatically.</p>
+        <p class="lead">No ${isCheck ? "concepts" : "ideas"} yet. Press <strong>Generate</strong> when you want suggestions — it does not run automatically.</p>
       </div>`;
   }
 }
 
 async function loadIdeas(force) {
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
   try {
-    const data = await withBusy("Finding story engines…", () =>
-      api("/api/ideas", { method: "POST", body: JSON.stringify({ count: 5 }) })
+    const data = await withBusy(fmt === "check_als" ? "Scoring life fantasies…" : "Finding story engines…", () =>
+      api("/api/ideas", {
+        method: "POST",
+        body: JSON.stringify({ count: 5, content_format: fmt }),
+      })
     );
-    state.ideas = data.ideas || [];
+    state.contentFormat = data.content_format || fmt;
+    state.ideas = data.concepts?.length ? data.concepts : data.ideas || [];
     paintIdeas();
-    if (force) toast("Ideas ready");
+    if (force) toast(state.contentFormat === "check_als" ? "Concepts ready" : "Ideas ready");
   } catch (e) {
     toast(e.message);
     $("#ideas").innerHTML = `<div class="notice bad">${esc(e.message)}</div>`;
@@ -1081,6 +1135,11 @@ async function loadIdeas(force) {
 function paintIdeas() {
   const host = $("#ideas");
   if (!host) return;
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  if (fmt === "check_als") {
+    paintCheckConcepts(host);
+    return;
+  }
   host.innerHTML = state.ideas
     .map(
       (idea, i) => `
@@ -1104,13 +1163,104 @@ function paintIdeas() {
       const idea = state.ideas[Number(btn.dataset.pick)];
       try {
         const data = await withBusy("Creating episode…", () =>
-          api("/api/projects", { method: "POST", body: JSON.stringify({ idea }) })
+          api("/api/projects", {
+            method: "POST",
+            body: JSON.stringify({ idea, content_format: "documentary" }),
+          })
         );
         state.project = data.project;
         state.ideas = [];
         location.hash = `project/${data.project.id}`;
         go("project");
         await refreshBootstrap();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  });
+}
+
+function paintCheckConcepts(host) {
+  const sorted = [...state.ideas].sort((a, b) => (b.overall_score || 0) - (a.overall_score || 0));
+  state.ideas = sorted;
+  host.innerHTML = sorted
+    .map((c, i) => {
+      const scores = c.scores || {};
+      const scoreBits = Object.keys(scores)
+        .slice(0, 6)
+        .map((k) => `<span class="tag">${esc(k)} ${esc(scores[k])}</span>`)
+        .join("");
+      const thumb = c.thumbnail_concept || {};
+      const coh = c.coherence || {};
+      return `
+      <article class="idea idea-check">
+        <div class="tags" style="margin-bottom:0.4rem">
+          <span class="tag">${esc(c.story_category || "—")}</span>
+          <span class="tag">score ${esc(c.overall_score ?? "—")}</span>
+          <span class="tag">${esc(c.ending_direction || "")}</span>
+          <span class="tag">${coh.pass ? "coherent" : "review coherence"}</span>
+        </div>
+        <h3>${esc(c.title || "Untitled")}</h3>
+        <p><strong style="color:var(--ink)">Fantasy</strong> — ${esc(c.one_line_fantasy || "")}</p>
+        <p>${esc(c.premise || "")}</p>
+        <p><strong style="color:var(--ink)">Start</strong> — ${esc(c.starting_state || "—")}</p>
+        <p><strong style="color:var(--ink)">End</strong> — ${esc(c.end_state || "—")}</p>
+        <p><strong style="color:var(--ink)">Transformation</strong> — ${esc(c.core_transformation || "—")}</p>
+        <p><strong style="color:var(--ink)">Hook</strong></p>
+        <pre class="hook-block">${esc(c.hook || "")}</pre>
+        <p><strong style="color:var(--ink)">Thumbnail concept</strong> — ${esc(thumb.main_visual || "—")}</p>
+        <p class="muted">${esc(thumb.central_contrast || "")} · ${esc(thumb.emotion || "")}</p>
+        <details>
+          <summary>Thumbnail prompt</summary>
+          <pre class="hook-block">${esc(thumb.thumbnail_prompt || "")}</pre>
+        </details>
+        <div class="tags">${scoreBits}</div>
+        <div class="actions">
+          <button class="btn btn-primary" data-pick="${i}">Select concept</button>
+          <button class="btn btn-ghost" data-regen="title" data-i="${i}">Regen title</button>
+          <button class="btn btn-ghost" data-regen="thumbnail" data-i="${i}">Regen thumb</button>
+          <button class="btn btn-ghost" data-regen="hook" data-i="${i}">Regen hook</button>
+          <button class="btn btn-ghost" data-regen="concept" data-i="${i}">Regen concept</button>
+        </div>
+      </article>`;
+    })
+    .join("");
+
+  host.querySelectorAll("[data-pick]").forEach((btn) => {
+    btn.onclick = async () => {
+      const concept = state.ideas[Number(btn.dataset.pick)];
+      try {
+        const data = await withBusy("Creating Check episode…", () =>
+          api("/api/projects", {
+            method: "POST",
+            body: JSON.stringify({ concept, content_format: "check_als" }),
+          })
+        );
+        state.project = data.project;
+        state.ideas = [];
+        location.hash = `project/${data.project.id}`;
+        go("project");
+        await refreshBootstrap();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  });
+  host.querySelectorAll("[data-regen]").forEach((btn) => {
+    btn.onclick = async () => {
+      const i = Number(btn.dataset.i);
+      const part = btn.dataset.regen;
+      const package0 = state.ideas[i];
+      try {
+        const data = await withBusy(`Regenerating ${part}…`, () =>
+          api("/api/concepts/regenerate", {
+            method: "POST",
+            body: JSON.stringify({ package: package0, part }),
+          })
+        );
+        state.ideas[i] = data.package;
+        paintIdeas();
+        toast(`${part} updated`);
       } catch (e) {
         toast(e.message);
       }
@@ -2717,6 +2867,11 @@ function paintPublish(ws, p) {
 async function refreshBootstrap() {
   const prev = state.bootstrap?.credentials;
   state.bootstrap = await api("/api/bootstrap");
+  state.contentFormat =
+    state.bootstrap?.formats?.active ||
+    state.bootstrap?.channel?.content_format ||
+    state.contentFormat ||
+    "documentary";
   if (prev && prev.openai?.status && prev.openai.status !== "unchecked") {
     state.bootstrap.credentials = prev;
   }

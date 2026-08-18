@@ -30,9 +30,27 @@ def generate_story_ideas(
     memory_summary: str = "",
     count: int = 5,
     use_llm: bool = True,
+    content_format: str | None = None,
+    categories: list[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Return list of idea dicts. Offline → deterministic mocks."""
+    """Return idea/concept list. Routes Check ALS vs documentary by content_format."""
+    from src.documentary.formats import FORMAT_CHECK_ALS, content_format_from_profile, normalize_content_format
+
     p = merge_profile_disk(profile)
+    fmt = normalize_content_format(content_format) if content_format else content_format_from_profile(p)
+    if fmt == FORMAT_CHECK_ALS:
+        from src.documentary.formats.check_als.concepts import generate_concept_packages
+
+        packages = generate_concept_packages(
+            p,
+            prior_videos=prior_videos,
+            count=count,
+            categories=categories,
+            use_llm=use_llm,
+        )
+        # UI expects a list; Check packages are self-contained.
+        return packages
+
     prior = list(prior_videos or [])
     if not use_llm or not (os.getenv("OPENAI_API_KEY") or "").strip():
         return _mock_ideas(p, prior, count)

@@ -1,0 +1,982 @@
+[
+  {
+    "id": "rise_to_power",
+    "content_format": "check_als",
+    "premise": "You rise from a struggling tech startup to a billion-dollar empire, but not without personal sacrifice and tough decisions.",
+    "title": "POV: You Build a Tech Empire",
+    "title_options": [
+      {
+        "text": "POV: You Build a Tech Empire",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 10,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 9.2
+      },
+      {
+        "text": "POV: You Revolutionize an Industry",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 8,
+          "promise_match": 9
+        },
+        "overall_score": 8.7
+      },
+      {
+        "text": "POV: You Create a Global Brand",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 10,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 9.0
+      }
+    ],
+    "one_line_fantasy": "Imagine building a revolutionary tech company while grappling with the weight of your choices.",
+    "starting_state": "{'starting_age': 28, 'starting_cash': 10000, 'starting_location': 'San Francisco', 'starting_status': 'Engineer at a startup'}",
+    "end_state": "{'target_outcome': 'Billion-dollar tech company', 'business_or_career_type': 'Tech Entrepreneurship', 'timeline_scale': '10 years'}",
+    "core_transformation": "From struggling engineer to empire-making entrepreneur, dealing with personal and ethical challenges along the way.",
+    "story_category": "entrepreneurship",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 8,
+      "relatability": 7,
+      "transformation_strength": 9,
+      "escalation_potential": 9,
+      "emotional_range": 8,
+      "thumbnail_potential": 9,
+      "title_potential": 9,
+      "visual_variety": 9,
+      "originality": 8
+    },
+    "overall_score": 8.5,
+    "thumbnail_concept": {
+      "main_visual": "A sleek modern office with a large screen displaying graphs of growth",
+      "protagonist_state": "Focused and determined, reviewing plans",
+      "environment": "A bustling tech hub",
+      "central_contrast": "Ambition vs. sacrifice",
+      "emotion": "Intense drive",
+      "key_object": "Laptop with coding on the screen",
+      "composition": "Dynamic angle from below, emphasizing height of ambition",
+      "camera": "Close-up on the protagonist's face",
+      "lighting": "Bright, inspiring light",
+      "background": "City skyline of San Francisco",
+      "text_if_any": "The Price of Success",
+      "thumbnail_prompt": "A modern office bustling with energy, focusing on a determined figure at a laptop, ambition written on their face."
+    },
+    "hook": "You are an ambitious engineer in a crowded San Francisco startup. You have dreams bigger than your paycheck. You still live in a small apartment, working late nights to code the next big thing. Then, a once-in-a-lifetime opportunity presents itself.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": true,
+      "transformation_aligned": true,
+      "notes": "",
+      "pass": true
+    }
+  },
+  {
+    "id": "empire_buyer",
+    "content_format": "check_als",
+    "premise": "You inherit a failing sports franchise and transform it into a championship-winning team while navigating power struggles.",
+    "title": "POV: You Inherit a Sports Empire",
+    "title_options": [
+      {
+        "text": "POV: You Inherit a Sports Empire",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 8,
+          "fantasy": 10,
+          "scale": 10,
+          "instant_understanding": 9,
+          "promise_match": 9
+        },
+        "overall_score": 9.2
+      },
+      {
+        "text": "POV: You Turn a Failing Team into Champions",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 8,
+          "promise_match": 10
+        },
+        "overall_score": 8.8
+      },
+      {
+        "text": "POV: You Redeem a Legacy",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 10,
+          "scale": 8,
+          "instant_understanding": 9,
+          "promise_match": 9
+        },
+        "overall_score": 8.7
+      }
+    ],
+    "one_line_fantasy": "Transform a failing sports franchise into champions and navigate the tumult of power and legacy.",
+    "starting_state": "{'starting_age': 35, 'starting_cash': 500000, 'starting_location': 'New York', 'starting_status': 'Inheritor of a failing team'}",
+    "end_state": "{'target_outcome': 'Championship-winning sports team', 'business_or_career_type': 'Sports Management', 'timeline_scale': '5 years'}",
+    "core_transformation": "From inheriting a struggling franchise to becoming a celebrated owner, fighting against internal and external odds.",
+    "story_category": "sports_business",
+    "ending_direction": "comeback",
+    "scores": {
+      "fantasy_strength": 10,
+      "curiosity": 9,
+      "relatability": 8,
+      "transformation_strength": 9,
+      "escalation_potential": 8,
+      "emotional_range": 9,
+      "thumbnail_potential": 9,
+      "title_potential": 10,
+      "visual_variety": 8,
+      "originality": 9
+    },
+    "overall_score": 8.9,
+    "thumbnail_concept": {
+      "main_visual": "A packed stadium with fans cheering wildly",
+      "protagonist_state": "Confident and proud, standing in the owner's box",
+      "environment": "Vibrant sports stadium",
+      "central_contrast": "Past failures vs. current triumph",
+      "emotion": "Euphoric",
+      "key_object": "Championship trophy held high",
+      "composition": "Wide shot capturing the crowd and the protagonist",
+      "camera": "Aerial view of the stadium",
+      "lighting": "Bright, celebratory lights",
+      "background": "Celebration scene in the stands",
+      "text_if_any": "From Zero to Hero",
+      "thumbnail_prompt": "A triumphant scene in a packed stadium, focusing on a proud owner raising a championship trophy amidst cheering fans."
+    },
+    "hook": "",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": false,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": false,
+      "notes": "Title/thumbnail fantasy may diverge. Hook must be second-person and fulfill the title promise. Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  },
+  {
+    "id": "technological_freedom",
+    "content_format": "check_als",
+    "premise": "You develop a revolutionary app that offers financial freedom, but face the moral dilemmas of wealth disparity.",
+    "title": "POV: You Create Financial Freedom",
+    "title_options": [
+      {
+        "text": "POV: You Create Financial Freedom for All",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 8,
+          "fantasy": 10,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 9
+        },
+        "overall_score": 9.0
+      },
+      {
+        "text": "POV: You Disrupt the Financial World",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 9,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 10
+        },
+        "overall_score": 8.7
+      },
+      {
+        "text": "POV: You Change Lives with Technology",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 10,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 9
+        },
+        "overall_score": 8.8
+      }
+    ],
+    "one_line_fantasy": "Create a groundbreaking financial app that empowers the underprivileged but challenges your own ethics.",
+    "starting_state": "{'starting_age': 30, 'starting_cash': 20000, 'starting_location': 'Austin', 'starting_status': 'Tech Developer with an idea'}",
+    "end_state": "{'target_outcome': 'Global app with millions of users', 'business_or_career_type': 'App Development', 'timeline_scale': '4 years'}",
+    "core_transformation": "From a struggling developer to an impactful innovator grappling with the consequences of wealth.",
+    "story_category": "technology",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 8,
+      "relatability": 7,
+      "transformation_strength": 8,
+      "escalation_potential": 8,
+      "emotional_range": 9,
+      "thumbnail_potential": 8,
+      "title_potential": 9,
+      "visual_variety": 9,
+      "originality": 9
+    },
+    "overall_score": 8.4,
+    "thumbnail_concept": {
+      "main_visual": "A smartphone with the app open, showing financial statistics",
+      "protagonist_state": "Pensive, reflecting on the app's impact",
+      "environment": "Modern co-working space",
+      "central_contrast": "Innovation vs. ethics",
+      "emotion": "Conflicted",
+      "key_object": "Smartphone displaying the app",
+      "composition": "Close-up on the smartphone with a thoughtful protagonist in the background",
+      "camera": "Close-up on the phone",
+      "lighting": "Soft, focused light",
+      "background": "Co-working space with people working",
+      "text_if_any": "Freedom or Responsibility?",
+      "thumbnail_prompt": "A close-up of a smartphone displaying a revolutionary financial app, with a thoughtful developer in the background considering the implications."
+    },
+    "hook": "",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": false,
+      "notes": "Hook must be second-person and fulfill the title promise. Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  },
+  {
+    "id": "sports_luxury",
+    "content_format": "check_als",
+    "premise": "You gamble everything on your athletic career and face the highs and lows of fame, wealth, and personal relationships.",
+    "title": "POV: You Risk It All for Glory",
+    "title_options": [
+      {
+        "text": "POV: You Risk It All for Glory",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 8.8
+      },
+      {
+        "text": "POV: You Chase Athletic Stardom",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 9,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 9
+        },
+        "overall_score": 8.5
+      },
+      {
+        "text": "POV: You Live the Athlete's Dream",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 9
+        },
+        "overall_score": 8.7
+      }
+    ],
+    "one_line_fantasy": "Experience the roller coaster of being a professional athlete, balancing fame with personal sacrifice.",
+    "starting_state": "{'starting_age': 25, 'starting_cash': 5000, 'starting_location': 'Los Angeles', 'starting_status': 'Aspiring Athlete'}",
+    "end_state": "{'target_outcome': 'Professional athlete with wealth and fame', 'business_or_career_type': 'Sports Career', 'timeline_scale': '6 years'}",
+    "core_transformation": "From aspiring athlete to celebrity sports figure, navigating the pitfalls of fame and fortune.",
+    "story_category": "sports_business",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 8,
+      "relatability": 8,
+      "transformation_strength": 7,
+      "escalation_potential": 8,
+      "emotional_range": 9,
+      "thumbnail_potential": 9,
+      "title_potential": 8,
+      "visual_variety": 8,
+      "originality": 7
+    },
+    "overall_score": 8.1,
+    "thumbnail_concept": {
+      "main_visual": "A glamorous red carpet event for athletes",
+      "protagonist_state": "Shining in the spotlight, but looking pensive",
+      "environment": "Hollywood event",
+      "central_contrast": "Glory vs. personal turmoil",
+      "emotion": "Bittersweet pride",
+      "key_object": "Championship ring on finger",
+      "composition": "Wide shot with cameras and fans",
+      "camera": "Panning shot across the event",
+      "lighting": "Bright, glitzy lights",
+      "background": "Crowd of fans and reporters",
+      "text_if_any": "The Price of Fame",
+      "thumbnail_prompt": "A glamorous sports award ceremony with an athlete in the spotlight, surrounded by flashing cameras yet expressing a look of contemplation."
+    },
+    "hook": "",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": false,
+      "notes": "Hook must be second-person and fulfill the title promise. Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  },
+  {
+    "id": "freedom_sustainability",
+    "content_format": "check_als",
+    "premise": "You create a sustainable startup that changes the world but faces backlash from big corporations.",
+    "title": "POV: You Create a Sustainable Future",
+    "title_options": [
+      {
+        "text": "POV: You Create a Sustainable Future",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 9.0
+      },
+      {
+        "text": "POV: You Challenge Corporate Giants",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 9,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 9
+        },
+        "overall_score": 8.5
+      },
+      {
+        "text": "POV: You Lead the Green Revolution",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 10,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 9
+        },
+        "overall_score": 8.8
+      }
+    ],
+    "one_line_fantasy": "Launch a startup that champions sustainability while battling corporate interests.",
+    "starting_state": "{'starting_age': 29, 'starting_cash': 30000, 'starting_location': 'Seattle', 'starting_status': 'Eco-entrepreneur'}",
+    "end_state": "{'target_outcome': 'Recognized sustainable enterprise', 'business_or_career_type': 'Sustainable Business', 'timeline_scale': '7 years'}",
+    "core_transformation": "From eco-enthusiast to influential leader, fighting for the planet’s future while navigating corporate challenges.",
+    "story_category": "entrepreneurship",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 8,
+      "relatability": 9,
+      "transformation_strength": 8,
+      "escalation_potential": 9,
+      "emotional_range": 8,
+      "thumbnail_potential": 8,
+      "title_potential": 9,
+      "visual_variety": 9,
+      "originality": 8
+    },
+    "overall_score": 8.5,
+    "thumbnail_concept": {
+      "main_visual": "A vibrant green space filled with innovation",
+      "protagonist_state": "Passionate and determined, presenting ideas",
+      "environment": "Eco-friendly startup office",
+      "central_contrast": "Sustainability vs. corporate greed",
+      "emotion": "Inspiring",
+      "key_object": "Blueprint of a green product",
+      "composition": "Dynamic pose presenting ideas to a group",
+      "camera": "Close-up on protagonist, audience in focus behind",
+      "lighting": "Natural light flooding the space",
+      "background": "Green elements and startup ethos",
+      "text_if_any": "A New Way Forward",
+      "thumbnail_prompt": "A vibrant startup environment focused on sustainability, highlighting an eco-entrepreneur passionately presenting their green innovations to an engaged audience."
+    },
+    "hook": "",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": true,
+      "notes": "Hook must be second-person and fulfill the title promise.",
+      "pass": false
+    }
+  },
+  {
+    "id": "comeback_legacy",
+    "content_format": "check_als",
+    "premise": "After a downfall in your career, you make a remarkable comeback in business, restoring your family's legacy.",
+    "title": "POV: You Reclaim Your Family's Legacy",
+    "title_options": [
+      {
+        "text": "POV: You Reclaim Your Family's Legacy",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 9.0
+      },
+      {
+        "text": "POV: You Rise from the Ashes",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 8,
+          "scale": 9,
+          "instant_understanding": 8,
+          "promise_match": 9
+        },
+        "overall_score": 8.5
+      },
+      {
+        "text": "POV: You Restore Your Name",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 8,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 8.7
+      }
+    ],
+    "one_line_fantasy": "Make a powerful comeback after losing everything, restoring your family's name and legacy.",
+    "starting_state": "{'starting_age': 40, 'starting_cash': 1000, 'starting_location': 'Chicago', 'starting_status': 'Former Business Leader'}",
+    "end_state": "{'target_outcome': 'Successful business and legacy restored', 'business_or_career_type': 'Family Business', 'timeline_scale': '5 years'}",
+    "core_transformation": "From the depths of failure to an inspiring legacy, reclaiming your place in history.",
+    "story_category": "comeback",
+    "ending_direction": "comeback",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 8,
+      "relatability": 9,
+      "transformation_strength": 10,
+      "escalation_potential": 8,
+      "emotional_range": 8,
+      "thumbnail_potential": 9,
+      "title_potential": 9,
+      "visual_variety": 8,
+      "originality": 8
+    },
+    "overall_score": 8.6,
+    "thumbnail_concept": {
+      "main_visual": "A beautiful family-owned business bustling with activity",
+      "protagonist_state": "Proud but humble, overseeing operations",
+      "environment": "Restored family business",
+      "central_contrast": "Restoration vs. past failures",
+      "emotion": "Pride and relief",
+      "key_object": "Family crest displayed prominently",
+      "composition": "Wide shot of the family business in action",
+      "camera": "Eye-level with warmth",
+      "lighting": "Warm, inviting light",
+      "background": "Customers enjoying the revived business",
+      "text_if_any": "Legacy Restored",
+      "thumbnail_prompt": "A thriving family business with a proud member at the helm, reflecting warmth and joy, and a family crest prominently displayed."
+    },
+    "hook": "",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": true,
+      "notes": "Hook must be second-person and fulfill the title promise.",
+      "pass": false
+    }
+  },
+  {
+    "id": "technology_visionary",
+    "content_format": "check_als",
+    "premise": "You revolutionize the AI industry, facing tremendous challenges and ethical dilemmas in the process.",
+    "title": "POV: You Revolutionize AI Technology",
+    "title_options": [
+      {
+        "text": "POV: You Revolutionize AI Technology",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 10,
+          "fantasy": 9,
+          "scale": 10,
+          "instant_understanding": 10,
+          "promise_match": 10
+        },
+        "overall_score": 9.7
+      },
+      {
+        "text": "POV: You Create the Next Big AI",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 8,
+          "promise_match": 9
+        },
+        "overall_score": 8.7
+      },
+      {
+        "text": "POV: You Lead the AI Revolution",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 8.8
+      }
+    ],
+    "one_line_fantasy": "Become a visionary in AI technology, reshaping the future while wrestling with its implications.",
+    "starting_state": "{'starting_age': 32, 'starting_cash': 60000, 'starting_location': 'Silicon Valley', 'starting_status': 'AI Developer'}",
+    "end_state": "{'target_outcome': 'Leading AI firm with global impact', 'business_or_career_type': 'AI Development', 'timeline_scale': '8 years'}",
+    "core_transformation": "From a regular developer to a leader in AI innovation, navigating the complex landscape of ethics and power.",
+    "story_category": "technology",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 10,
+      "curiosity": 10,
+      "relatability": 7,
+      "transformation_strength": 9,
+      "escalation_potential": 9,
+      "emotional_range": 9,
+      "thumbnail_potential": 10,
+      "title_potential": 10,
+      "visual_variety": 9,
+      "originality": 10
+    },
+    "overall_score": 9.3,
+    "thumbnail_concept": {
+      "main_visual": "A futuristic tech lab with AI systems in action",
+      "protagonist_state": "Energized and focused, leading a team",
+      "environment": "High-tech laboratory",
+      "central_contrast": "Innovation vs. ethical dilemmas",
+      "emotion": "Excitement mixed with apprehension",
+      "key_object": "AI holographic interface displaying data",
+      "composition": "Wide shot showcasing the lab and protagonist",
+      "camera": "Bird's-eye view of the lab",
+      "lighting": "Cool, futuristic light",
+      "background": "Advanced tech and prototypes",
+      "text_if_any": "Shaping Tomorrow",
+      "thumbnail_prompt": "A high-tech laboratory bustling with AI activity, focused on an energized leader guiding a team, surrounded by futuristic technology and holographic interfaces."
+    },
+    "hook": "",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": false,
+      "notes": "Hook must be second-person and fulfill the title promise. Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  },
+  {
+    "id": "empire_warrior",
+    "content_format": "check_als",
+    "premise": "You create a martial arts empire, turning your passion into a global franchise while facing unexpected setbacks.",
+    "title": "POV: You Build a Martial Arts Empire",
+    "title_options": [
+      {
+        "text": "POV: You Build a Martial Arts Empire",
+        "scores": {
+          "clarity": 9,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 10,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 9.2
+      },
+      {
+        "text": "POV: You Defend Your Legacy",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 9,
+          "fantasy": 8,
+          "scale": 9,
+          "instant_understanding": 8,
+          "promise_match": 9
+        },
+        "overall_score": 8.5
+      },
+      {
+        "text": "POV: You Master the Art of Business",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 9,
+          "scale": 9,
+          "instant_understanding": 9,
+          "promise_match": 10
+        },
+        "overall_score": 8.8
+      }
+    ],
+    "one_line_fantasy": "Manifest your martial arts passion into a global franchise while navigating challenges along the way.",
+    "starting_state": "{'starting_age': 33, 'starting_cash': 10000, 'starting_location': 'Miami', 'starting_status': 'Martial Arts Instructor'}",
+    "end_state": "{'target_outcome': 'Flourishing martial arts brand with schools worldwide', 'business_or_career_type': 'Martial Arts Business', 'timeline_scale': '7 years'}",
+    "core_transformation": "From instructor to entrepreneur, establishing a martial arts legacy against the odds.",
+    "story_category": "empire",
+    "ending_direction": "victory",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 8,
+      "relatability": 7,
+      "transformation_strength": 9,
+      "escalation_potential": 8,
+      "emotional_range": 9,
+      "thumbnail_potential": 8,
+      "title_potential": 8,
+      "visual_variety": 9,
+      "originality": 8
+    },
+    "overall_score": 8.3,
+    "thumbnail_concept": {
+      "main_visual": "A network of martial arts studios worldwide",
+      "protagonist_state": "Proudly overseeing the operation",
+      "environment": "Dynamic dojo setting",
+      "central_contrast": "Passion vs. commercialism",
+      "emotion": "Satisfaction and pride",
+      "key_object": "Martial arts belt symbolizing achievement",
+      "composition": "Wide shot of multiple dojos in action",
+      "camera": "Aerial view showcasing the network",
+      "lighting": "Bright and motivating",
+      "background": "Activity in different dojos",
+      "text_if_any": "From Passion to Empire",
+      "thumbnail_prompt": "A dynamic network of martial arts studios, showcasing an instructor proudly overseeing the operation, with a martial arts belt symbolizing achievement."
+    },
+    "hook": "",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": null,
+      "starting_cash": "",
+      "starting_location": "",
+      "starting_status": "",
+      "target_outcome": "",
+      "business_or_career_type": "",
+      "timeline_scale": ""
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": true,
+      "notes": "Hook must be second-person and fulfill the title promise.",
+      "pass": false
+    }
+  },
+  {
+    "id": "retire-parents",
+    "content_format": "check_als",
+    "premise": "You grind a service business to retire your parents by 23, then face the emptiness and the next empire.",
+    "title": "POV: You Retire Your Parents at 23",
+    "title_options": [
+      {
+        "text": "POV: You Retire Your Parents at 23",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 8
+        },
+        "overall_score": 8.0
+      },
+      {
+        "text": "POV: You Somehow You Retire Your Parents at 23",
+        "scores": {
+          "clarity": 6,
+          "curiosity": 6,
+          "fantasy": 6,
+          "scale": 6,
+          "instant_understanding": 6,
+          "promise_match": 6
+        },
+        "overall_score": 6.0
+      },
+      {
+        "text": "POV: You Chase retire parents by 23",
+        "scores": {
+          "clarity": 7,
+          "curiosity": 7,
+          "fantasy": 7,
+          "scale": 7,
+          "instant_understanding": 7,
+          "promise_match": 7
+        },
+        "overall_score": 7.0
+      }
+    ],
+    "one_line_fantasy": "You make enough to free your parents — then decide who you become after.",
+    "starting_state": "AGE 18 · CASH $40 · parents stressed · childhood home",
+    "end_state": "AGE 23 · parents retired · you richer and restless",
+    "core_transformation": "Kid with a promise → provider who changed the family",
+    "story_category": "rise_and_fall",
+    "ending_direction": "victory_with_cost",
+    "scores": {
+      "fantasy_strength": 9,
+      "curiosity": 7,
+      "relatability": 8,
+      "transformation_strength": 9,
+      "escalation_potential": 7,
+      "emotional_range": 8,
+      "thumbnail_potential": 9,
+      "title_potential": 7,
+      "visual_variety": 8,
+      "originality": 9
+    },
+    "overall_score": 8.1,
+    "thumbnail_concept": {
+      "main_visual": "You make enough to free your parents — then decide who you become after.",
+      "protagonist_state": "young you, mid-transformation",
+      "environment": "key story location",
+      "central_contrast": "before vs after stakes",
+      "emotion": "tension",
+      "key_object": "one symbolic object",
+      "composition": "simple two-zone contrast",
+      "camera": "medium shot",
+      "lighting": "cinematic contrast",
+      "background": "simplified",
+      "text_if_any": "",
+      "thumbnail_prompt": "2D cinematic illustration for YouTube thumbnail: You make enough to free your parents — then decide who you become after.. Simple expressive protagonist, strong contrast, few elements, clean linework, detailed environment, no busy text."
+    },
+    "hook": "You're 18.\n\nYour mom is still awake when you get home from work.\n\nShe's calculating bills on a paper napkin.\n\nYou promise yourself something you have no right to promise yet.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": 18,
+      "starting_cash": "$40",
+      "starting_location": "childhood home",
+      "starting_status": "provider-in-waiting",
+      "target_outcome": "retire parents by 23",
+      "business_or_career_type": "services / agency",
+      "timeline_scale": "5 years"
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": true,
+      "transformation_aligned": false,
+      "notes": "Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  },
+  {
+    "id": "empire-lost",
+    "content_format": "check_als",
+    "premise": "You build a hotel empire young, overextend, lose almost everything, and choose whether to disappear or rebuild.",
+    "title": "POV: You Build an Empire and Lose Everything",
+    "title_options": [
+      {
+        "text": "POV: You Build an Empire and Lose Everything",
+        "scores": {
+          "clarity": 8,
+          "curiosity": 8,
+          "fantasy": 8,
+          "scale": 8,
+          "instant_understanding": 8,
+          "promise_match": 8
+        },
+        "overall_score": 8.0
+      },
+      {
+        "text": "POV: You Somehow You Build an Empire and Lose Everything",
+        "scores": {
+          "clarity": 6,
+          "curiosity": 6,
+          "fantasy": 6,
+          "scale": 6,
+          "instant_understanding": 6,
+          "promise_match": 6
+        },
+        "overall_score": 6.0
+      },
+      {
+        "text": "POV: You Chase hotel empire then collapse",
+        "scores": {
+          "clarity": 7,
+          "curiosity": 7,
+          "fantasy": 7,
+          "scale": 7,
+          "instant_understanding": 7,
+          "promise_match": 7
+        },
+        "overall_score": 7.0
+      }
+    ],
+    "one_line_fantasy": "The high of owning the skyline — and the night it all collapses.",
+    "starting_state": "AGE 22 · first motel deal · borrowed confidence",
+    "end_state": "AGE 31 · empire gone · one last chip left",
+    "core_transformation": "Rising hotel magnate → bankrupt survivor at a crossroads",
+    "story_category": "technology",
+    "ending_direction": "fall",
+    "scores": {
+      "fantasy_strength": 7,
+      "curiosity": 8,
+      "relatability": 9,
+      "transformation_strength": 7,
+      "escalation_potential": 8,
+      "emotional_range": 9,
+      "thumbnail_potential": 7,
+      "title_potential": 8,
+      "visual_variety": 9,
+      "originality": 7
+    },
+    "overall_score": 7.9,
+    "thumbnail_concept": {
+      "main_visual": "The high of owning the skyline — and the night it all collapses.",
+      "protagonist_state": "young you, mid-transformation",
+      "environment": "key story location",
+      "central_contrast": "before vs after stakes",
+      "emotion": "tension",
+      "key_object": "one symbolic object",
+      "composition": "simple two-zone contrast",
+      "camera": "medium shot",
+      "lighting": "cinematic contrast",
+      "background": "simplified",
+      "text_if_any": "",
+      "thumbnail_prompt": "2D cinematic illustration for YouTube thumbnail: The high of owning the skyline — and the night it all collapses.. Simple expressive protagonist, strong contrast, few elements, clean linework, detailed environment, no busy text."
+    },
+    "hook": "You're 22 years old.\n\nYou just closed on a motel nobody wanted.\n\nThe key feels heavier than it should.\n\nYou don't know it yet, but this is how empires start — and how they end.",
+    "hook_seconds_target": [
+      15,
+      30
+    ],
+    "world_seeds": {
+      "starting_age": 22,
+      "starting_cash": "$2,100",
+      "starting_location": "highway motel town",
+      "starting_status": "first-time buyer",
+      "target_outcome": "hotel empire then collapse",
+      "business_or_career_type": "hospitality / real estate",
+      "timeline_scale": "9 years"
+    },
+    "coherence": {
+      "title_matches_thumbnail": true,
+      "hook_fulfills_promise": false,
+      "transformation_aligned": false,
+      "notes": "Hook must be second-person and fulfill the title promise. Core transformation should match title + fantasy.",
+      "pass": false
+    }
+  }
+]

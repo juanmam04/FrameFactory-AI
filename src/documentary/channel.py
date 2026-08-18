@@ -11,11 +11,42 @@ from src.documentary.editorial import (
     IDEA_SYSTEM_EXTRA,
     VISUAL_DIRECTION,
 )
+from src.documentary.formats import (
+    FORMAT_CHECK_ALS,
+    FORMAT_DOCUMENTARY,
+    content_format_from_profile,
+    is_check_als_profile,
+    normalize_content_format,
+)
+from src.documentary.formats.check_als.profile import check_als_profile
 
 CHANNEL_TITLE = "100 Days — Business Documentaries"
 
+__all__ = [
+    "CHANNEL_TITLE",
+    "FORMAT_CHECK_ALS",
+    "FORMAT_DOCUMENTARY",
+    "business_documentary_profile",
+    "check_als_profile",
+    "channel_display_name",
+    "content_format_from_profile",
+    "documentary_script_context",
+    "duration_range_from_profile",
+    "goal_count_from_profile",
+    "is_check_als_profile",
+    "is_documentary_profile",
+    "language_from_profile",
+    "normalize_content_format",
+    "profile_snapshot",
+    "script_context_from_session",
+    "target_words_from_profile",
+    "visual_style_from_profile",
+]
+
 
 def is_documentary_profile(profile: dict[str, Any] | None) -> bool:
+    if is_check_als_profile(profile):
+        return False
     p = merge_profile_disk(profile)
     if str(p.get("workflow") or "").strip().lower() == "documentary":
         return True
@@ -47,6 +78,8 @@ def duration_range_from_profile(profile: dict[str, Any] | None) -> list[int]:
             return [int(raw[0]), int(raw[1])]
         except (TypeError, ValueError):
             pass
+    if is_check_als_profile(p):
+        return [12, 18]
     return [11, 15]
 
 

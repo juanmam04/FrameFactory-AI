@@ -1,0 +1,2639 @@
+{
+  "counts": {
+    "generated": 18,
+    "rejected": 6,
+    "eligible": 12,
+    "returned": 10
+  },
+  "content_language": "es",
+  "image_prompt_language": "en",
+  "rejected": [
+    {
+      "id": "plataforma_contenido",
+      "title": "La Revolución de la Monetización para Creadores",
+      "premise": "Lanzas una plataforma para creadores que permite monetizar el contenido de forma directa y sin comisiones.",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_world_seeds"
+      ],
+      "reasons": [
+        "world_seeds missing: starting_age, starting_cash, starting_location, starting_status, target_outcome, business_or_career_type, timeline_scale"
+      ],
+      "overall_score": 4.9
+    },
+    {
+      "id": "barco_turismo",
+      "title": "Transformación de un barco en un imperio turístico",
+      "premise": "Adquieres un barco turístico a precio de remate y ofreces viajes exclusivos a grupos pequeños.",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9
+    },
+    {
+      "id": "desarrollo_eco_turistico",
+      "title": "Transformas un terreno baldío en un eco-resort sostenible",
+      "premise": "Transformas un terreno baldío en un eco-resort que atrae a turistas buscando experiencias sostenibles.",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9
+    },
+    {
+      "id": "espacio_coworking_arte",
+      "title": "Espacio de Coworking Artístico: Creando Comunidad y Creatividad",
+      "premise": "Abres un espacio de coworking artístico que ofrece tarifas planas y talleres inclusivos para la comunidad.",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9
+    },
+    {
+      "id": "clases_arte_online",
+      "title": "Clases de Arte Online: Tu Pasión, Tu Horario",
+      "premise": "Inicias clases de arte online donde los estudiantes pagan por cada sesión y tú decides tus horarios. Con el auge del aprendizaje digital, te das cuenta de que hay una demanda insatisfecha para aprender arte desde casa. Tu pasión por el arte",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook",
+        "has_valid_world_seeds",
+        "coherence_pass"
+      ],
+      "reasons": [
+        "hook: hook vacío",
+        "world_seeds missing: starting_age, starting_cash, starting_location, starting_status, target_outcome, business_or_career_type, timeline_scale",
+        "coherence: hook empty"
+      ],
+      "overall_score": 4.9
+    },
+    {
+      "id": "reciclaje_contenedores",
+      "title": "Transformando plásticos en oportunidades",
+      "premise": "Montas una planta que recicla contenedores de plástico para convertirlos en productos exclusivos y rentables.",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9
+    }
+  ],
+  "eligible": [
+    {
+      "id": "taller_mecanico_ia",
+      "title": "Desafiando a los gigantes: tu IA en el taller mecánico",
+      "overall_score": 8.0,
+      "story_category": "tecnología"
+    },
+    {
+      "id": "lavanderia_muerta",
+      "title": "POV: Resucitas una lavandería muerta para atender a enfermeras del turno noche",
+      "overall_score": 8.0,
+      "story_category": "emprendimiento"
+    },
+    {
+      "id": "palcos_corporativos",
+      "title": "Transformando Palcos Vacíos en Oportunidades de Negocio",
+      "overall_score": 8.0,
+      "story_category": "negocios deportivos"
+    },
+    {
+      "id": "comida_a_domicilio",
+      "title": "POV: Transformas un restaurante en crisis en un líder de comida gourmet a domicilio.",
+      "overall_score": 8.0,
+      "story_category": "hospitalidad"
+    },
+    {
+      "id": "franquicia_frigorificos",
+      "title": "POV: Creas una franquicia de frigoríficos ecológicos que todos necesitan tras el apagón.",
+      "overall_score": 8.0,
+      "story_category": "retail"
+    },
+    {
+      "id": "app_entrenadores",
+      "title": "Conquista el mercado fitness: Crea tu app de entrenadores personales",
+      "overall_score": 7.8,
+      "story_category": "tecnología"
+    },
+    {
+      "id": "tienda_local_artesania",
+      "title": "Tu tienda de artesanías locales",
+      "overall_score": 7.8,
+      "story_category": "retail"
+    },
+    {
+      "id": "red_de_transporte",
+      "title": "Red de Transporte Alternativo",
+      "overall_score": 8.0,
+      "story_category": "logística"
+    },
+    {
+      "id": "nutricion_personalizada",
+      "title": "Conviértete en el referente de la nutrición personalizada",
+      "overall_score": 8.0,
+      "story_category": "contenido"
+    },
+    {
+      "id": "ecosistema_negocios_locales",
+      "title": "Construyes un marketplace local que desafía a los gigantes del e-commerce",
+      "overall_score": 8.0,
+      "story_category": "tecnología"
+    },
+    {
+      "id": "revista_autos_clasicos",
+      "title": "POV: Lanzas una revista digital que transforma el mundo de los autos clásicos.",
+      "overall_score": 8.0,
+      "story_category": "contenido"
+    },
+    {
+      "id": "festival_cultura_local",
+      "title": "Resucitando el Festival: Un Renacer Cultural",
+      "overall_score": 7.8,
+      "story_category": "technology"
+    }
+  ],
+  "top10": [
+    {
+      "id": "taller_mecanico_ia",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "A los 20 trabajas en la recepción de un taller mecánico. Después de las 18h las llamadas quedan sin contestar. Construyes una recepcionista IA tosca, cobras $99/mes, agendas 43 trabajos el primer mes, escalas a grupos de concesionarios y entonces la plataforma más grande de talleres copia la función y la regala gratis.",
+      "title": "Desafiando a los gigantes: tu IA en el taller mecánico",
+      "title_options": [
+        {
+          "text": "POV: Transformas un taller mecánico con tu propia IA",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: La recepcionista IA que cambió la industria automotriz",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Desde el mostrador hasta el éxito con IA",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagina si pudieras ayudar a talleres mecánicos a no perder más trabajos.",
+      "starting_state": "Eres un recepcionista en un taller mecánico, sin poder atender llamadas después de las 18h.",
+      "end_state": "Eres el líder de un servicio que permite a talleres independientes sobrevivir en un mercado hostil.",
+      "core_transformation": "Pasas de ser un simple empleado a un emprendedor que transforma la manera de operar de los talleres mecánicos.",
+      "story_category": "tecnología",
+      "ending_direction": "Sobrevivir como capa especializada o ser comprado en malas condiciones.",
+      "story_engine": {
+        "specific_opportunity": "Los talleres pierden trabajos después de las 18h porque nadie contesta el teléfono.",
+        "why_protagonist_notices_it": "Ves al dueño cerrar mientras el teléfono sigue sonando.",
+        "initial_action": "Construyes una recepcionista IA tosca en un fin de semana.",
+        "first_customer_or_break": "Tu dueño paga $99/mes si agenda trabajos reales.",
+        "business_or_progress_mechanism": "SaaS de suscripción para reservas fuera de horario en talleres.",
+        "why_it_works": "$99 es más barato que perder un solo trabajo de frenos.",
+        "growth_mechanism": "Referidos entre dueños y luego grupos multi-local de concesionarios.",
+        "first_proof": "43 trabajos agendados el primer mes.",
+        "first_major_reward": "Suficiente MRR para dejar el mostrador.",
+        "primary_opposition": "Dueños que desconfían de una recepción con IA.",
+        "mid_story_complication": "Una mala transcripción casi hace perder la cuenta piloto.",
+        "major_threat": "La plataforma más grande de gestión de talleres copia la función y la incluye gratis.",
+        "big_decision": "Vender al incumbente o pelear como especialista.",
+        "stakes": "Tus usuarios y si los talleres independientes siguen teniendo opción.",
+        "possible_cost": "Años de trabajo absorbidos en la página de producto de un competidor.",
+        "escalation_path": "1 taller → 5 → 50 → concesionarios → guerra del clon gratis.",
+        "endgame": "Sobrevivir como capa especializada o ser comprado en malas condiciones."
+      },
+      "central_story_question": "¿Podrás mantener tu negocio a flote frente a la competencia desleal?",
+      "open_loops": [
+        "¿Qué sucederá con los talleres independientes si tu servicio desaparece?",
+        "¿Cómo convencerás a los dueños escépticos sobre la IA?",
+        "¿Qué pasará si no puedes escalar lo suficientemente rápido?",
+        "¿Podrás mejorar tu tecnología antes de que la competencia te aplaste?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Tu dueño paga $99/mes si agenda trabajos reales.",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: 43 trabajos agendados el primer mes.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los talleres pierden trabajos después de las 18h porque nadie contesta el teléfono.",
+            "growth_mechanism: Referidos entre dueños y luego grupos multi-local de concesionarios.",
+            "first_proof: 43 trabajos agendados el primer mes.",
+            "major_threat: La plataforma más grande de gestión de talleres copia la función y la incluye gratis.",
+            "big_decision: Vender al incumbente o pelear como especialista."
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Un joven recepcionista en un taller mecánico, rodeado de herramientas y un ordenador con la interfaz de la IA.",
+        "protagonist_state": "Concentrado y determinado.",
+        "environment": "Un taller mecánico iluminado, con coches en reparación.",
+        "central_contrast": "El contraste entre la tecnología de la IA y los métodos tradicionales de trabajo.",
+        "emotion": "Esperanza y desafío.",
+        "key_object": "Un ordenador portátil que muestra la interfaz de la recepcionista IA.",
+        "composition": "El recepcionista en primer plano, con el taller de fondo.",
+        "camera": "Ángulo en picado que resalta la acción del recepcionista.",
+        "lighting": "Iluminación cálida que da un toque acogedor al taller.",
+        "background": "Herramientas y vehículos en el taller.",
+        "text_if_any": "Transformando el futuro de los talleres mecánicos.",
+        "thumbnail_prompt": "A young receptionist in a mechanic shop, focused on a computer showing an AI interface."
+      },
+      "hook": "Tienes 20 años y contestas el teléfono en un taller mecánico.\n\nA las 18:00 ves al dueño cerrar la puerta.\n\nEl teléfono sigue sonando.\n\nNadie contesta.\n\nDecides crear una solución que no solo ayude a tu taller, sino que podría cambiar la industria.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 20,
+        "starting_cash": "$0",
+        "starting_location": "taller mecánico",
+        "starting_status": "empleado",
+        "target_outcome": "mantener el negocio a flote",
+        "business_or_career_type": "SaaS",
+        "timeline_scale": "1 año"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_impact": 7,
+        "market_relevance": 8,
+        "story_depth": 7
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "lavanderia_muerta",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Compras una lavandería muerta por $1 con máquinas rotas y precios para enfermeras del turno noche.",
+      "title": "POV: Resucitas una lavandería muerta para atender a enfermeras del turno noche",
+      "title_options": [
+        {
+          "text": "POV: Resucitas una lavandería muerta para atender a enfermeras del turno noche",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Con un dólar, compras una lavandería y cambias la vida de las enfermeras",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Transformas una lavandería olvidada en el lugar favorito de las enfermeras",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagina ser el salvador de una lavandería muerta y convertirla en el refugio de las enfermeras del turno noche.",
+      "starting_state": "La lavandería está cerrada y en mal estado, sin clientes ni ingresos.",
+      "end_state": "La lavandería es un éxito, con una base de clientes leales y un flujo constante de ingresos.",
+      "core_transformation": "De una lavandería muerta a un centro de servicios esencial para enfermeras, generando empleo y satisfacción en la comunidad.",
+      "story_category": "emprendimiento",
+      "ending_direction": "rescate y éxito inesperado",
+      "story_engine": {
+        "specific_opportunity": "Las enfermeras del turno noche necesitan un servicio de lavandería que funcione después de su turno.",
+        "why_protagonist_notices_it": "Escuchas a las enfermeras hablar sobre lo complicado que es encontrar una lavandería abierta a esas horas.",
+        "initial_action": "Compras la lavandería muerta y te dedicas a repararla en un mes.",
+        "first_customer_or_break": "Una enfermera prueba tu servicio y queda satisfecha, recomendándote a sus colegas.",
+        "business_or_progress_mechanism": "Ofreces un servicio de lavandería 24/7 con entrega a domicilio para enfermeras.",
+        "why_it_works": "Las enfermeras prefieren pagar $10 por un servicio conveniente en lugar de perder tiempo buscando otra opción.",
+        "growth_mechanism": "Las recomendaciones boca a boca y promociones dirigidas a hospitales cercanos.",
+        "first_proof": "Logras atender a 50 enfermeras en el primer mes.",
+        "first_major_reward": "Recibes $500 en ingresos mensuales, suficientes para cubrir los costos básicos.",
+        "primary_opposition": "Competidores que operan durante el día y no creen en un servicio nocturno.",
+        "mid_story_complication": "Una de las máquinas de lavandería se descompone justo antes de un gran pedido.",
+        "major_threat": "Una cadena de lavanderías comienza a ofrecer un servicio similar a precios más bajos.",
+        "big_decision": "Decidir si invertir en más máquinas o mantener un servicio limitado.",
+        "stakes": "El éxito del negocio y la posibilidad de generar empleo para más personas.",
+        "possible_cost": "Inversiones de hasta $5,000 en equipos y marketing sin garantía de retorno.",
+        "escalation_path": "50 enfermeras → 200 clientes → colaboración con hospitales → expansión a otras zonas.",
+        "endgame": "Convertirte en la lavandería preferida para todo el personal de salud en la región."
+      },
+      "central_story_question": "¿Podrás revivir la lavandería y atraer a las enfermeras del turno noche?",
+      "open_loops": [
+        "¿Cómo logras convencer a las enfermeras para que usen tu lavandería?",
+        "¿Qué cambios harás en el negocio para atraer clientes?",
+        "¿Qué harás cuando los competidores comiencen a notar tu éxito?",
+        "¿Cómo superarás las dificultades iniciales con las máquinas rotas?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Una enfermera prueba tu servicio y queda satisfecha, recomendándote a sus colega",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Logras atender a 50 enfermeras en el primer mes.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Las enfermeras del turno noche necesitan un servicio de lavandería que funcione después de",
+            "growth_mechanism: Las recomendaciones boca a boca y promociones dirigidas a hospitales cercanos.",
+            "first_proof: Logras atender a 50 enfermeras en el primer mes.",
+            "major_threat: Una cadena de lavanderías comienza a ofrecer un servicio similar a precios más bajos.",
+            "big_decision: Decidir si invertir en más máquinas o mantener un servicio limitado."
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Una lavandería antigua y descuidada con máquinas oxidadas, mostrando un contraste entre lo que era y lo que podría ser.",
+        "protagonist_state": "Un emprendedor decidido, con herramientas en mano, listo para reparar la lavandería.",
+        "environment": "Un barrio de Ciudad de México, con enfermeras en uniformes que pasan por la calle, buscando un lugar para lavar su ropa.",
+        "central_contrast": "La lavandería en mal estado frente a una enfermería llena de vida y movimiento.",
+        "emotion": "Esperanza y determinación.",
+        "key_object": "Una máquina de lavandería brillante y nueva, simbolizando el cambio y la renovación.",
+        "composition": "Primer plano de la máquina renovada con enfermeras felices al fondo.",
+        "camera": "Ángulo bajo para dar protagonismo a la máquina y a las enfermeras que regresan.",
+        "lighting": "Iluminación cálida que resalta el ambiente acogedor de la lavandería.",
+        "background": "Un atardecer en la ciudad, simbolizando un nuevo comienzo.",
+        "text_if_any": "\"Tu lavandería, su refugio\"",
+        "thumbnail_prompt": "A revitalized laundromat bustling with happy nurses, showcasing a before-and-after transformation."
+      },
+      "hook": "Estás cansado de escuchar a las enfermeras del turno noche quejándose de la falta de opciones para lavar su ropa tras largas jornadas. \n\nCon un dólar en el bolsillo, decides comprar esa lavandería muerta que parece no tener futuro. \n\nLas máquinas están rotas y los precios no son atractivos, pero tienes un plan que podría cambiarlo todo.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 28,
+        "starting_cash": "$1",
+        "starting_location": "Ciudad de México",
+        "starting_status": "Emprendedor en busca de oportunidades",
+        "target_outcome": "Convertirte en la lavandería preferida para el personal de salud",
+        "business_or_career_type": "Servicio de lavandería",
+        "timeline_scale": "6 meses"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_impact": 7,
+        "unique_angle": 8
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "palcos_corporativos",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "En un estadio, los palcos corporativos están vacíos mientras las entradas para los partidos se agotan. Creas un sistema de licencias de asiento prepago que permite la reventa de estos palcos, generando ingresos adicionales.",
+      "title": "Transformando Palcos Vacíos en Oportunidades de Negocio",
+      "title_options": [],
+      "one_line_fantasy": "Imagina transformar palcos vacíos en un imperio de reventa que desafía a la competencia.",
+      "starting_state": "Los palcos corporativos están vacíos y las entradas generales se agotan rápidamente.",
+      "end_state": "Tu negocio se ha expandido a múltiples estadios, pero enfrentas una feroz competencia que amenaza tu éxito.",
+      "core_transformation": "De un estadio con palcos vacíos a una red de licencias de reventa que redefine la experiencia de los aficionados.",
+      "story_category": "negocios deportivos",
+      "ending_direction": "El negocio se expande a múltiples estadios y equipos, pero enfrenta la amenaza de una empresa competidora que ofrece reventa gratuita.",
+      "story_engine": {
+        "specific_opportunity": "Los palcos corporativos del estadio están vacíos en cada partido, mientras las entradas generales se agotan rápidamente.",
+        "why_protagonist_notices_it": "Observas que los palcos están desocupados y los aficionados están dispuestos a pagar más por una buena experiencia.",
+        "initial_action": "Desarrollas un sistema de licencias de asiento prepago que permite la reventa de los palcos no utilizados.",
+        "first_customer_or_break": "El primer cliente paga $500 por un palco para un partido clave, lo que valida tu idea.",
+        "business_or_progress_mechanism": "Un sistema de licencias que permite a las empresas comprar y revender palcos vacíos por un precio premium.",
+        "why_it_works": "Las empresas están dispuestas a pagar más por una experiencia exclusiva y la posibilidad de revender si no pueden asistir.",
+        "growth_mechanism": "Expansión a otros estadios y equipos deportivos, creando una red de licencias.",
+        "first_proof": "Logras vender 10 palcos en el primer partido, generando $5,000 en ingresos.",
+        "first_major_reward": "Obtienes suficiente capital para invertir en marketing y expandir el negocio a otros estadios.",
+        "primary_opposition": "Una empresa rival que ofrece una plataforma de reventa gratuita para palcos vacíos.",
+        "mid_story_complication": "Un escándalo sobre la reventa de entradas pone en riesgo la reputación de tu negocio.",
+        "major_threat": "La competencia lanza una campaña agresiva y se asocia con equipos de la liga para ofrecer reventa sin costo.",
+        "big_decision": "Decidir si seguir innovando y mejorando tu oferta o unirte a la competencia con una estrategia de precios más agresiva.",
+        "stakes": "El futuro de tu negocio y la posibilidad de perder a tus clientes y socios comerciales.",
+        "possible_cost": "Inversiones significativas en marketing que podrían no generar un retorno si la competencia gana terreno.",
+        "escalation_path": "1 estadio → 5 estadios → licencias de eventos en vivo → batalla contra el competidor gratuito.",
+        "endgame": "Establecer tu marca como la principal opción de reventa de palcos o ser absorbido por una empresa más grande."
+      },
+      "central_story_question": "¿Podrá la protagonista mantener su negocio ante la competencia y las críticas sobre la reventa?",
+      "open_loops": [
+        "¿Cómo atraerá a los primeros clientes para los palcos?",
+        "¿Qué pasará cuando un gran equipo de la liga decida prohibir la reventa?",
+        "¿Cómo lidiará con la crítica de los aficionados que consideran injusta la reventa?",
+        "¿Quién será el principal competidor que desafiará su éxito?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: El primer cliente paga $500 por un palco para un partido clave, lo que valida tu",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Logras vender 10 palcos en el primer partido, generando $5,000 en ingresos.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los palcos corporativos del estadio están vacíos en cada partido, mientras las entradas ge",
+            "growth_mechanism: Expansión a otros estadios y equipos deportivos, creando una red de licencias.",
+            "first_proof: Logras vender 10 palcos en el primer partido, generando $5,000 en ingresos.",
+            "major_threat: La competencia lanza una campaña agresiva y se asocia con equipos de la liga para ofrecer ",
+            "big_decision: Decidir si seguir innovando y mejorando tu oferta o unirte a la competencia con una estrat"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Un palco corporativo vacío en un estadio lleno de aficionados emocionados.",
+        "protagonist_state": "Determinado y enfocado en su negocio.",
+        "environment": "Estadio vibrante y lleno de energía.",
+        "central_contrast": "La soledad del palco vacío frente a la multitud animada.",
+        "emotion": "Ansiedad y emoción por el futuro del negocio.",
+        "key_object": "Un boleto de palco con un precio elevado.",
+        "composition": "Enfoque en el palco vacío con la multitud de fondo.",
+        "camera": "Toma amplia que muestra la diferencia entre el palco y la multitud.",
+        "lighting": "Iluminación brillante en la multitud y más tenue en el palco.",
+        "background": "Estadio lleno de gente animada.",
+        "text_if_any": "Transforma lo vacío en oportunidades.",
+        "thumbnail_prompt": "A corporate box in a stadium filled with excited fans."
+      },
+      "hook": "Te das cuenta de que puedes transformar esos espacios vacíos en ingresos. Creas un sistema de licencias de asiento prepago que permite a las empresas revender esos palcos. El primer cliente paga $500 y tú sientes que estás a punto de cambiar las reglas del juego. Pero, ¿podrás mantener tu negocio ante la competencia que ofrece reventa gratuita?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$10000",
+        "starting_location": "Ciudad de México",
+        "starting_status": "Emprendedor en el sector deportivo",
+        "target_outcome": "Crear una red de licencias de reventa en varios estadios",
+        "business_or_career_type": "Emprendimiento en el sector deportivo",
+        "timeline_scale": "1-2 años"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": false
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_impact": 7,
+        "business_relevance": 8
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "comida_a_domicilio",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Un restaurante con deudas transforma su menú en opciones gourmet para entrega a domicilio y triunfa.",
+      "title": "POV: Transformas un restaurante en crisis en un líder de comida gourmet a domicilio.",
+      "title_options": [
+        {
+          "text": "POV: Transformas un restaurante en crisis en un líder de comida gourmet a domicilio.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Rediseñas tu negocio y triunfas en el mundo de la entrega gourmet.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: De deudas a éxito: reinventas tu restaurante para el delivery gourmet.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Un cambio audaz puede llevar tu restaurante de la quiebra al éxito absoluto.",
+      "starting_state": "Un restaurante en crisis con deudas acumuladas y un menú poco atractivo.",
+      "end_state": "Un restaurante próspero, reconocido por su comida gourmet a domicilio y con una base de clientes leales.",
+      "core_transformation": "Transformar un negocio en crisis en un referente de calidad y éxito en el mercado de entrega a domicilio.",
+      "story_category": "hospitalidad",
+      "ending_direction": "El restaurante se convierte en el líder del mercado de comida gourmet a domicilio.",
+      "story_engine": {
+        "specific_opportunity": "Los restaurantes en la zona han descuidado la calidad de la comida a domicilio, ofreciendo solo comida rápida y sin sabor.",
+        "why_protagonist_notices_it": "El dueño se da cuenta de que muchos clientes piden comida a domicilio, pero se quejan de la falta de calidad.",
+        "initial_action": "Decide rediseñar el menú, incorporando recetas gourmet que puedan entregarse sin perder calidad.",
+        "first_customer_or_break": "Un cliente habitual pide una de las nuevas opciones gourmet y comparte su experiencia en redes sociales.",
+        "business_or_progress_mechanism": "Modelo de negocio basado en la entrega a domicilio de comida gourmet a través de plataformas digitales.",
+        "why_it_works": "Los clientes están dispuestos a pagar hasta $30 por una cena gourmet en casa, lo que aumenta el margen de ganancias.",
+        "growth_mechanism": "Campañas de marketing en redes sociales y colaboraciones con influencers gastronómicos.",
+        "first_proof": "Recibe un aumento del 50% en pedidos durante el primer mes tras el cambio del menú.",
+        "first_major_reward": "El restaurante logra salir de deudas y empieza a generar ganancias estables.",
+        "primary_opposition": "Un competidor local que tiene un fuerte reconocimiento de marca y ofrece comida a domicilio a precios bajos.",
+        "mid_story_complication": "Una crisis de suministros provoca la escasez de ingredientes clave para las nuevas recetas gourmet.",
+        "major_threat": "Una cadena de restaurantes nacional decide lanzar una línea similar de comida gourmet a domicilio con grandes recursos de marketing.",
+        "big_decision": "Decidir si mantener la calidad de los ingredientes o reducir costos para competir con la cadena nacional.",
+        "stakes": "El futuro del restaurante y la posibilidad de cerrar sus puertas definitivamente si no se adapta al mercado.",
+        "possible_cost": "Perder la lealtad de los clientes si se compromete la calidad de la comida.",
+        "escalation_path": "Mejorar el menú → Aumentar la promoción en redes sociales → Lanzar un programa de lealtad → Enfrentarse a la cadena nacional.",
+        "endgame": "Convertirse en un referente de comida gourmet a domicilio en la ciudad, con múltiples sucursales."
+      },
+      "central_story_question": "¿Logrará el restaurante salir de la crisis y convertirse en un referente gastronómico en la entrega a domicilio?",
+      "open_loops": [
+        "¿Qué pasará si los clientes no responden a la nueva oferta gourmet?",
+        "¿Cómo manejará el dueño la presión de los acreedores?",
+        "¿Qué hará el chef cuando vea que su menú no tiene éxito inicial?",
+        "¿Quién será el primer cliente que impulse el cambio del restaurante?",
+        "¿Cuál será la reacción de la competencia ante este nuevo enfoque?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Un cliente habitual pide una de las nuevas opciones gourmet y comparte su experi",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Recibe un aumento del 50% en pedidos durante el primer mes tras el cambio del me",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los restaurantes en la zona han descuidado la calidad de la comida a domicilio, ofreciendo",
+            "growth_mechanism: Campañas de marketing en redes sociales y colaboraciones con influencers gastronómicos.",
+            "first_proof: Recibe un aumento del 50% en pedidos durante el primer mes tras el cambio del menú.",
+            "major_threat: Una cadena de restaurantes nacional decide lanzar una línea similar de comida gourmet a do",
+            "big_decision: Decidir si mantener la calidad de los ingredientes o reducir costos para competir con la c"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Un chef en una cocina moderna, preparando un plato gourmet con ingredientes frescos.",
+        "protagonist_state": "Dueño de un restaurante, con expresión decidida y creativa.",
+        "environment": "Cocina de un restaurante elegante, bien iluminada y con utensilios de alta calidad.",
+        "central_contrast": "La calidad gourmet frente a la comida rápida común.",
+        "emotion": "Determinación y pasión por la cocina.",
+        "key_object": "Un plato gourmet bien presentado, simbolizando el nuevo menú.",
+        "composition": "El chef en el centro, con ingredientes frescos alrededor y el plato gourmet al frente.",
+        "camera": "Ángulo en picado, enfocando al chef y el plato.",
+        "lighting": "Iluminación cálida y brillante, destacando los colores de los ingredientes.",
+        "background": "Estantes con ingredientes frescos y utensilios de cocina.",
+        "text_if_any": "¡Transforma tu comida a domicilio!",
+        "thumbnail_prompt": "A chef in a modern kitchen, preparing a gourmet dish with fresh ingredients."
+      },
+      "hook": "Te das cuenta de que tus clientes quieren calidad en su comida a domicilio. \nDecides arriesgarte y rediseñar el menú con opciones gourmet. \n¿Lograrás atraer a nuevos clientes y salvar tu negocio?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 35,
+        "starting_cash": "$5000",
+        "starting_location": "Ciudad de México",
+        "starting_status": "Dueño de un restaurante en crisis",
+        "target_outcome": "Convertirse en el líder del mercado de comida gourmet a domicilio",
+        "business_or_career_type": "Restaurante",
+        "timeline_scale": "6 meses"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_engagement": 8
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "franquicia_frigorificos",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Creas una franquicia de frigoríficos ecológicos que se vuelven indispensables tras el apagón energético.",
+      "title": "POV: Creas una franquicia de frigoríficos ecológicos que todos necesitan tras el apagón.",
+      "title_options": [
+        {
+          "text": "POV: Creas una franquicia de frigoríficos ecológicos que todos necesitan tras el apagón.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Transformas el mercado de electrodomésticos con tu innovación ecológica.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Te enfrentas a grandes cadenas y luchas por la sostenibilidad en tu negocio.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagina ser el pionero en el negocio de frigoríficos ecológicos, transformando la forma en que las familias conservan sus alimentos.",
+      "starting_state": "Eres un emprendedor con una idea innovadora y un prototipo de frigorífico ecológico.",
+      "end_state": "Tu franquicia se expande a nivel nacional y se convierte en un referente en sostenibilidad.",
+      "core_transformation": "Pasas de ser un emprendedor con una idea a un líder en el mercado de productos ecológicos.",
+      "story_category": "retail",
+      "ending_direction": "La franquicia se expande a nivel nacional y se convierte en un referente en sostenibilidad.",
+      "story_engine": {
+        "specific_opportunity": "La demanda de frigoríficos ecológicos aumenta drásticamente debido a un apagón energético prolongado.",
+        "why_protagonist_notices_it": "Observas que las familias luchan por mantener sus alimentos frescos y comienzan a buscar soluciones sostenibles.",
+        "initial_action": "Desarrollas un prototipo de frigorífico que utiliza energía solar y lo presentas en ferias locales.",
+        "first_customer_or_break": "Una tienda local compra 10 unidades para revenderlas, generando $5,000 en ingresos iniciales.",
+        "business_or_progress_mechanism": "Franquicia de frigoríficos ecológicos con un sistema de apoyo y capacitación para nuevos franquiciados.",
+        "why_it_works": "Los frigoríficos ecológicos son más eficientes y reducen costos de energía, lo que atrae a consumidores conscientes.",
+        "growth_mechanism": "Expansión a través de franquicias locales, aprovechando el interés en sostenibilidad tras el apagón.",
+        "first_proof": "Vendes 100 frigoríficos en el primer mes de operaciones con franquicias.",
+        "first_major_reward": "Generas un ingreso mensual recurrente de $20,000 que te permite reinvertir en marketing y desarrollo.",
+        "primary_opposition": "Grandes cadenas de electrodomésticos que intentan desacreditar la calidad de tus productos ecológicos.",
+        "mid_story_complication": "Un competidor lanza una campaña de marketing negativa que afecta temporalmente tus ventas.",
+        "major_threat": "Una empresa multinacional lanza una línea de frigoríficos ecológicos a precios muy bajos, amenazando tu cuota de mercado.",
+        "big_decision": "Decidir entre mantener los estándares de calidad o reducir costos para competir con el nuevo rival.",
+        "stakes": "La viabilidad de tu franquicia y el impacto en la sostenibilidad a largo plazo.",
+        "possible_cost": "Poder perder la confianza de los clientes si decides sacrificar calidad por precio.",
+        "escalation_path": "Empezar con 5 franquicias → 20 franquicias → Alianzas con tiendas locales → Competencia internacional.",
+        "endgame": "Convertirse en el líder del mercado de frigoríficos ecológicos y establecer un modelo de negocio replicable a nivel global."
+      },
+      "central_story_question": "¿Cómo superar la competencia desleal y mantener la calidad en tiempos de crisis?",
+      "open_loops": [
+        "¿Lograrán establecer la primera franquicia en la ciudad antes del apagón?",
+        "¿Cómo responderán los competidores tradicionales ante la nueva demanda?",
+        "¿Qué estrategias utilizarán para hacer que sus frigoríficos sean la opción preferida?",
+        "¿Podrán escalar su modelo de negocio sin sacrificar la calidad?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Una tienda local compra 10 unidades para revenderlas, generando $5,000 en ingres",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Vendes 100 frigoríficos en el primer mes de operaciones con franquicias.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: La demanda de frigoríficos ecológicos aumenta drásticamente debido a un apagón energético ",
+            "growth_mechanism: Expansión a través de franquicias locales, aprovechando el interés en sostenibilidad tras ",
+            "first_proof: Vendes 100 frigoríficos en el primer mes de operaciones con franquicias.",
+            "major_threat: Una empresa multinacional lanza una línea de frigoríficos ecológicos a precios muy bajos, ",
+            "big_decision: Decidir entre mantener los estándares de calidad o reducir costos para competir con el nue"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Un frigorífico ecológico brillante y moderno en una cocina familiar, rodeado de productos frescos.",
+        "protagonist_state": "Un emprendedor emocionado mostrando su prototipo.",
+        "environment": "Una feria de innovación tecnológica con gente interesada.",
+        "central_contrast": "El frigorífico ecológico versus un frigorífico convencional apagado.",
+        "emotion": "Esperanza y determinación.",
+        "key_object": "Un frigorífico ecológico.",
+        "composition": "El frigorífico al centro, con personas a su alrededor mostrando interés.",
+        "camera": "Ángulo panorámico que abarca la feria.",
+        "lighting": "Iluminación brillante y acogedora.",
+        "background": "Un entorno de feria lleno de color y energía.",
+        "text_if_any": "¡La revolución ecológica ha comenzado!",
+        "thumbnail_prompt": "A vibrant eco-friendly refrigerator in a family kitchen, surrounded by fresh produce."
+      },
+      "hook": "El apagón energético ha dejado a todos buscando soluciones. Tú decides actuar. Desarrollas un frigorífico ecológico que utiliza energía solar y lo presentas en ferias locales. La primera tienda compra 10 unidades y generas $5,000 en ingresos. Pero, ¿serás capaz de mantener la calidad frente a la competencia desleal que intenta desacreditarte?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$10000",
+        "starting_location": "Ciudad de México",
+        "starting_status": "Emprendedor con una idea y un prototipo",
+        "target_outcome": "Liderar el mercado de frigoríficos ecológicos",
+        "business_or_career_type": "Franquicia",
+        "timeline_scale": "2 años"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": false
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_impact": 7,
+        "realism": 8,
+        "scalability": 9
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "red_de_transporte",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Creas una red de transporte alternativo que desafía a las grandes compañías de entregas con precios competitivos.",
+      "title": "Red de Transporte Alternativo",
+      "title_options": [
+        {
+          "text": "POV: Creas una red de entrega que desafía a los gigantes",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Transformas la logística local con precios competitivos",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Revolucionas las entregas para pequeñas empresas",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagina si pudieras ofrecer entregas rápidas y económicas a las pequeñas empresas, compitiendo directamente con los grandes.",
+      "starting_state": "Tienes una idea innovadora, pero poco capital y sin clientes.",
+      "end_state": "Tu red de transporte es reconocida y preferida por pequeñas empresas en varias ciudades.",
+      "core_transformation": "Pasas de ser un emprendedor con una idea a ser un líder en la logística local, ayudando a las pequeñas empresas a prosperar.",
+      "story_category": "logística",
+      "ending_direction": "Competir con gigantes del sector y buscar la sostenibilidad del negocio.",
+      "story_engine": {
+        "specific_opportunity": "Las pequeñas empresas y emprendedores necesitan opciones de entrega más económicas y rápidas.",
+        "why_protagonist_notices_it": "Recibes quejas constantes de clientes que no pueden pagar las tarifas de las grandes compañías de transporte.",
+        "initial_action": "Decides crear una plataforma de transporte colaborativo que conecta a transportistas independientes con empresas pequeñas.",
+        "first_customer_or_break": "Una tienda local te contrata para hacer sus entregas a un precio 30% más bajo que su proveedor actual.",
+        "business_or_progress_mechanism": "Una aplicación que permite a los transportistas independientes ofertar por trabajos de entrega.",
+        "why_it_works": "Los dueños de negocios prefieren precios bajos y un servicio más personalizado.",
+        "growth_mechanism": "Utilizas testimonios de clientes satisfechos para atraer más negocios y transportistas a la plataforma.",
+        "first_proof": "Logras realizar 100 entregas en el primer mes con un 95% de satisfacción del cliente.",
+        "first_major_reward": "Recibes una inversión inicial de $50,000 por parte de un inversor que ve potencial en tu modelo.",
+        "primary_opposition": "Las grandes compañías de entregas que tienen una base de clientes leal y recursos extensivos.",
+        "mid_story_complication": "Una serie de retrasos en las entregas causa que algunos clientes se quejen y amenacen con irse.",
+        "major_threat": "Una gran empresa de transporte lanza una campaña de precios agresivos para eliminar la competencia.",
+        "big_decision": "Decidir si invertir en marketing agresivo para competir o buscar alianzas con otras empresas locales.",
+        "stakes": "La supervivencia de tu negocio y la posibilidad de que las pequeñas empresas pierdan su opción de entrega asequible.",
+        "possible_cost": "Perder la inversión inicial y la confianza de tus primeros clientes si no logras resolver los problemas de entrega.",
+        "escalation_path": "1 cliente → 10 clientes → 50 clientes → expansión a varias ciudades → competencia directa con grandes empresas.",
+        "endgame": "Lograr estabilidad y reconocimiento en el mercado como la opción preferida para entregas locales."
+      },
+      "central_story_question": "¿Podrás construir una red de transporte que desafíe a los grandes y mantenga una base de clientes leales?",
+      "open_loops": [
+        "¿Cómo ganarás la confianza de los primeros clientes?",
+        "¿Qué estrategias usarás para escalar tu red de transporte?",
+        "¿Cómo enfrentarás la competencia de las grandes empresas?",
+        "¿Qué obstáculos inesperados surgirán en el camino?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Una tienda local te contrata para hacer sus entregas a un precio 30% más bajo qu",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Logras realizar 100 entregas en el primer mes con un 95% de satisfacción del cli",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Las pequeñas empresas y emprendedores necesitan opciones de entrega más económicas y rápid",
+            "growth_mechanism: Utilizas testimonios de clientes satisfechos para atraer más negocios y transportistas a l",
+            "first_proof: Logras realizar 100 entregas en el primer mes con un 95% de satisfacción del cliente.",
+            "major_threat: Una gran empresa de transporte lanza una campaña de precios agresivos para eliminar la com",
+            "big_decision: Decidir si invertir en marketing agresivo para competir o buscar alianzas con otras empres"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Un transportista independiente cargando paquetes en una bicicleta en una calle urbana.",
+        "protagonist_state": "Emprendedor decidido y optimista, mirando su aplicación.",
+        "environment": "Ciudad de México, con una mezcla de edificios modernos y pequeños comercios.",
+        "central_contrast": "El contraste entre la pequeña empresa del protagonista y la gran compañía de entregas.",
+        "emotion": "Determinación y esperanza.",
+        "key_object": "Un teléfono móvil mostrando la aplicación de entrega.",
+        "composition": "Enfoque en el transportista con la ciudad de fondo.",
+        "camera": "Ángulo bajo para dar una sensación de grandeza al transportista.",
+        "lighting": "Luz natural, resaltando la energía de la ciudad.",
+        "background": "Edificios y tráfico urbano.",
+        "text_if_any": "\"La entrega local, reinventada.\"",
+        "thumbnail_prompt": "A delivery person on a bicycle in a bustling urban setting, showcasing a mobile app for local deliveries."
+      },
+      "hook": "Tu misión es desafiar a las grandes compañías de entregas, ofreciendo precios competitivos y un servicio personalizado. Empiezas con una tienda local que te contrata, pero pronto enfrentas la presión de gigantes del sector que no están dispuestos a ceder su mercado. ¿Podrás ganar la confianza de tus primeros clientes y construir una base sólida para tu negocio?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$5000",
+        "starting_location": "Ciudad de México",
+        "starting_status": "Emprendedor con experiencia en logística",
+        "target_outcome": "Construir una red de transporte sólida y sostenible",
+        "business_or_career_type": "Logística y transporte",
+        "timeline_scale": "2 años"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": false
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_impact": 7
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "nutricion_personalizada",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Lanzas una serie de videos sobre nutrición personalizada, creando una comunidad comprometida y cobrando acceso premium. Al principio, recibes mensajes de amigos pidiendo consejos sobre nutrición personalizada y te das cuenta de que hay un vacío en el mercado. Creas un plan de contenido y grabas los primeros 5 videos en una semana. Consigues 50 suscriptores que pagan $10/mes por el contenido premium en el primer mes. Los suscriptores ven el valor en pagar $10/mes para recibir información adaptada a sus necesidades específicas. Alcanzas 200 suscriptores en el tercer mes, con un 75% de retención. Generas $2,000 en ingresos mensuales, lo que te permite dedicarte a tiempo completo a la producción de contenido. Sin embargo, un influencer de salud lanza una serie de videos gratuitos que atraen a parte de tu audiencia y un gigante de la nutrición lanza una plataforma similar a un precio reducido. Debes decidir si invertir en publicidad para competir o enfocarte en fortalecer la comunidad existente. El futuro de tu negocio y la lealtad de tus suscriptores está en juego.",
+      "title": "Conviértete en el referente de la nutrición personalizada",
+      "title_options": [],
+      "one_line_fantasy": "Imagina ser la voz de la nutrición personalizada en una comunidad que te apoya y valora tu contenido.",
+      "starting_state": "Luchas por encontrar tu lugar en el mundo de la nutrición y no sabes cómo empezar.",
+      "end_state": "Te has convertido en una autoridad en nutrición personalizada con una comunidad sólida y múltiples fuentes de ingresos.",
+      "core_transformation": "Pasas de ser un emprendedor desconocido a un referente en nutrición personalizada, con una comunidad leal que valora tu trabajo.",
+      "story_category": "contenido",
+      "ending_direction": "El negocio se vuelve un referente en salud y bienestar, pero enfrenta la competencia de gigantes de la nutrición que intentan replicar tu modelo.",
+      "story_engine": {
+        "specific_opportunity": "Las personas buscan asesoría nutricional personalizada pero se sienten abrumadas por la información contradictoria en internet.",
+        "why_protagonist_notices_it": "Recibes mensajes de amigos pidiendo consejos sobre nutrición personalizada y te das cuenta de que hay un vacío en el mercado.",
+        "initial_action": "Creas un plan de contenido y grabas los primeros 5 videos en una semana.",
+        "first_customer_or_break": "Consigues 50 suscriptores que pagan $10/mes por el contenido premium en el primer mes.",
+        "business_or_progress_mechanism": "Suscripción mensual para acceso a videos exclusivos de nutrición personalizada.",
+        "why_it_works": "Los suscriptores ven el valor en pagar $10/mes para recibir información adaptada a sus necesidades específicas.",
+        "growth_mechanism": "Creación de una comunidad en redes sociales que comparte sus resultados y recomendaciones.",
+        "first_proof": "Alcanzas 200 suscriptores en el tercer mes, con un 75% de retención.",
+        "first_major_reward": "Generas $2,000 en ingresos mensuales, lo que te permite dedicarte a tiempo completo a la producción de contenido.",
+        "primary_opposition": "Grandes empresas de nutrición que ofrecen contenido gratuito y tienen más recursos para promocionarse.",
+        "mid_story_complication": "Un influencer de salud lanza una serie de videos gratuitos que atraen a parte de tu audiencia.",
+        "major_threat": "Un gigante de la nutrición lanza una plataforma similar y ofrece suscripciones a precio reducido.",
+        "big_decision": "Decidir si invertir en publicidad para competir o enfocarte en fortalecer la comunidad existente.",
+        "stakes": "El futuro de tu negocio y la lealtad de tus suscriptores, que podrían irse con la competencia.",
+        "possible_cost": "Perder el acceso a tu audiencia si no puedes competir con el contenido gratuito.",
+        "escalation_path": "50 suscriptores → 200 → 1,000 → lanzar un libro o programa de coaching.",
+        "endgame": "Convertirte en una autoridad en nutrición personalizada y tener múltiples fuentes de ingresos, o ser superado por competidores que ofrecen contenido gratuito."
+      },
+      "central_story_question": "¿Podrás mantener la autenticidad de tu comunidad mientras creces ante la presión de los grandes competidores?",
+      "open_loops": [
+        "¿Cómo construirás tu comunidad inicial?",
+        "¿Qué tipo de contenido enganchará a tus suscriptores?",
+        "¿Cómo manejarás la competencia que empieza a ofrecer contenido similar?",
+        "¿Qué estrategias usarás para escalar tu negocio?",
+        "¿Cómo garantizarás la calidad de la nutrición personalizada en tus videos?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Consigues 50 suscriptores que pagan $10/mes por el contenido premium en el prime",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Alcanzas 200 suscriptores en el tercer mes, con un 75% de retención.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Las personas buscan asesoría nutricional personalizada pero se sienten abrumadas por la in",
+            "growth_mechanism: Creación de una comunidad en redes sociales que comparte sus resultados y recomendaciones.",
+            "first_proof: Alcanzas 200 suscriptores en el tercer mes, con un 75% de retención.",
+            "major_threat: Un gigante de la nutrición lanza una plataforma similar y ofrece suscripciones a precio re",
+            "big_decision: Decidir si invertir en publicidad para competir o enfocarte en fortalecer la comunidad exi"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Un creador de contenido en un entorno acogedor de cocina, rodeado de ingredientes frescos y coloridos.",
+        "protagonist_state": "Entusiasmado y concentrado mientras graba un video.",
+        "environment": "Una cocina moderna y luminosa, llena de utensilios de cocina y alimentos saludables.",
+        "central_contrast": "El contraste entre los ingredientes saludables y la comida procesada en la mesa.",
+        "emotion": "Pasión y determinación por ayudar a los demás a mejorar su salud.",
+        "key_object": "Una laptop abierta mostrando el contenido del video que está grabando.",
+        "composition": "El creador de contenido en el centro, con los ingredientes en primer plano y la laptop detrás.",
+        "camera": "Ángulo ligeramente elevado que muestra al creador y el entorno.",
+        "lighting": "Iluminación brillante y natural que resalta los colores de los ingredientes.",
+        "background": "Una pared decorada con recetas y consejos de nutrición.",
+        "text_if_any": "¡Únete a la revolución de la nutrición personalizada!",
+        "thumbnail_prompt": "A content creator in a bright kitchen, passionately filming a video about personalized nutrition."
+      },
+      "hook": "Al principio, tus amigos te piden consejos porque no saben a quién acudir. Te das cuenta del vacío que existe en el mercado y decides actuar. Creas contenido que realmente ayuda a las personas, pero a medida que creces, la competencia se vuelve más feroz. ¿Podrás mantener la autenticidad de tu comunidad mientras navegas en este nuevo mundo?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$0",
+        "starting_location": "Ciudad de México",
+        "starting_status": "Emprendedor en fase inicial",
+        "target_outcome": "Convertirte en un referente en nutrición personalizada",
+        "business_or_career_type": "Contenido digital de salud",
+        "timeline_scale": "1-2 años"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": false
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_engagement": 10
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "ecosistema_negocios_locales",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Creas un marketplace para pequeños negocios locales que permite a los usuarios comprar todo en un solo lugar.",
+      "title": "Construyes un marketplace local que desafía a los gigantes del e-commerce",
+      "title_options": [
+        {
+          "text": "POV: Transformas tu barrio con un marketplace para negocios locales",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Luchas contra los gigantes del comercio online con tu plataforma local",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Creas un ecosistema de compras locales que cambia tu comunidad",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagina tener el poder de revitalizar tu comunidad local a través de un marketplace que conecta a compradores y pequeños negocios.",
+      "starting_state": "Los pequeños negocios locales están cerrando y enfrentan dificultades para atraer clientes.",
+      "end_state": "Tu marketplace se ha convertido en un referente local, apoyando a los negocios y ofreciendo una alternativa viable a los gigantes del comercio electrónico.",
+      "core_transformation": "De ser un emprendedor con una idea a ser el líder de un movimiento que apoya la economía local.",
+      "story_category": "tecnología",
+      "ending_direction": "La plataforma se convierte en un referente para la compra local y enfrenta la competencia de gigantes del comercio electrónico.",
+      "story_engine": {
+        "specific_opportunity": "Los pequeños negocios locales luchan por atraer clientes en un mercado dominado por grandes plataformas de venta online.",
+        "why_protagonist_notices_it": "Ves que muchos negocios de tu barrio están cerrando y sus dueños están frustrados por la falta de clientes.",
+        "initial_action": "Decides crear un marketplace que centraliza la compra de productos de múltiples pequeños negocios locales.",
+        "first_customer_or_break": "Consigues que 10 negocios se registren en la plataforma en su primer mes.",
+        "business_or_progress_mechanism": "Marketplace que conecta a consumidores con pequeños negocios mediante un sistema de pedidos y entregas local.",
+        "why_it_works": "Los clientes prefieren apoyar a negocios locales y buscan conveniencia al comprar en un solo lugar.",
+        "growth_mechanism": "Campañas de marketing local y promociones que incentivan a los consumidores a elegir negocios de su área.",
+        "first_proof": "Logras 500 transacciones en el primer trimestre, validando la necesidad del servicio.",
+        "first_major_reward": "Obtienes $5,000 en ingresos y una sólida base de clientes leales.",
+        "primary_opposition": "Grandes plataformas de e-commerce que empiezan a ofrecer envíos rápidos y descuentos agresivos.",
+        "mid_story_complication": "Un cambio en las políticas de envío de una empresa competidora pone en riesgo tu modelo de negocio.",
+        "major_threat": "Un gigante del comercio electrónico lanza una campaña centrada en la entrega de productos locales, ofreciendo precios bajos.",
+        "big_decision": "Decidir si mantener el enfoque en la calidad del servicio o bajar precios para competir.",
+        "stakes": "La supervivencia de tu marketplace y el futuro de los pequeños negocios locales que dependen de él.",
+        "possible_cost": "Riesgas la reputación de tu marketplace si no puedes cumplir con las expectativas de los clientes.",
+        "escalation_path": "De 10 negocios a 50 en un año, luego expandirse a otras ciudades mientras enfrentas la competencia.",
+        "endgame": "Convertirte en el referente del comercio local en tu región o ser adquirido por una gran plataforma que busca entrar en el mercado local."
+      },
+      "central_story_question": "¿Podrá el marketplace sobrevivir y prosperar ante la amenaza de competidores más grandes?",
+      "open_loops": [
+        "¿Cómo atraerás a los pequeños negocios a tu plataforma?",
+        "¿Qué estrategias usarás para captar la atención de los consumidores locales?",
+        "¿Cómo enfrentarás la competencia de las grandes plataformas de e-commerce?",
+        "¿Qué obstáculos surgirán en el camino hacia la expansión?",
+        "¿Lograrás crear una comunidad leal de compradores y vendedores?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Consigues que 10 negocios se registren en la plataforma en su primer mes.",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Logras 500 transacciones en el primer trimestre, validando la necesidad del serv",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los pequeños negocios locales luchan por atraer clientes en un mercado dominado por grande",
+            "growth_mechanism: Campañas de marketing local y promociones que incentivan a los consumidores a elegir negoc",
+            "first_proof: Logras 500 transacciones en el primer trimestre, validando la necesidad del servicio.",
+            "major_threat: Un gigante del comercio electrónico lanza una campaña centrada en la entrega de productos ",
+            "big_decision: Decidir si mantener el enfoque en la calidad del servicio o bajar precios para competir."
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Un emprendedor sonriente frente a una computadora, mostrando una plataforma de marketplace en la pantalla, rodeado de productos locales.",
+        "protagonist_state": "Emprendedor motivado y decidido.",
+        "environment": "Una oficina pequeña y acogedora con elementos de negocios locales.",
+        "central_contrast": "La alegría del emprendedor frente a la frustración de los dueños de negocios locales.",
+        "emotion": "Esperanza y determinación.",
+        "key_object": "Una laptop con la interfaz del marketplace visible.",
+        "composition": "El emprendedor en primer plano, con productos locales en el fondo.",
+        "camera": "Ángulo ligeramente bajo, enfatizando la determinación del protagonista.",
+        "lighting": "Iluminación cálida que transmite una sensación de comunidad.",
+        "background": "Un mural que representa la cultura local.",
+        "text_if_any": "Revitaliza tu comunidad.",
+        "thumbnail_prompt": "A smiling entrepreneur in front of a computer, showing a marketplace platform on the screen, surrounded by local products."
+      },
+      "hook": "Te das cuenta de que muchos están cerrando porque no tienen clientes. Creas un marketplace donde todos pueden comprar en un solo lugar. ¿Podrás competir con los gigantes del comercio electrónico y salvar a tu comunidad?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 25,
+        "starting_cash": "$2000",
+        "starting_location": "Ciudad de México",
+        "starting_status": "Emprendedor con experiencia en tecnología",
+        "target_outcome": "Crear una plataforma de referencia para compras locales",
+        "business_or_career_type": "Marketplace de comercio local",
+        "timeline_scale": "2 años"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_impact": 7,
+        "scalability": 8,
+        "market_potential": 9
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "revista_autos_clasicos",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Lanzas una revista digital sobre autos clásicos que obtiene suscriptores de entusiastas de todo el mundo.",
+      "title": "POV: Lanzas una revista digital que transforma el mundo de los autos clásicos.",
+      "title_options": [
+        {
+          "text": "POV: Lanzas una revista digital que transforma el mundo de los autos clásicos.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Creas un imperio editorial centrado en los autos clásicos.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Tu pasión por los autos clásicos se convierte en una revista de éxito internacional.",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Conviertes tu pasión por los autos clásicos en una revista digital que inspira a miles de entusiastas.",
+      "starting_state": "Tienes un blog con pocos seguidores y un gran deseo de crear contenido de calidad.",
+      "end_state": "Tu revista es reconocida globalmente, con miles de suscriptores y una comunidad activa.",
+      "core_transformation": "Pasas de ser un aficionado a autos clásicos a ser un referente en la industria editorial automotriz.",
+      "story_category": "contenido",
+      "ending_direction": "la revista se convierte en la referencia mundial sobre autos clásicos.",
+      "story_engine": {
+        "specific_opportunity": "Los entusiastas de autos clásicos buscan contenido de calidad que no encuentran en medios tradicionales.",
+        "why_protagonist_notices_it": "Recibes mensajes de amigos que no saben qué leer sobre sus autos favoritos.",
+        "initial_action": "Decides crear un blog que se convierte en revista digital con artículos y reportajes exclusivos.",
+        "first_customer_or_break": "Consigues 100 suscriptores en el primer mes, todos pagando $10 cada uno.",
+        "business_or_progress_mechanism": "Modelo de suscripción mensual con contenido exclusivo y artículos en profundidad.",
+        "why_it_works": "Los entusiastas valoran la calidad y la especialización, prefiriendo pagar por contenido que no encuentran en otros lados.",
+        "growth_mechanism": "Atraes suscriptores mediante redes sociales y colaboraciones con influencers del mundo automotriz.",
+        "first_proof": "Logras publicar un artículo viral que recibe 10,000 visitas en una semana.",
+        "first_major_reward": "Consigues 1,000 suscriptores y generas $10,000 en ingresos mensuales.",
+        "primary_opposition": "Blogs gratuitos y revistas impresas con un enfoque generalista.",
+        "mid_story_complication": "Un conocido blog de autos decide lanzar una sección dedicada a autos clásicos, robando parte de tu audiencia.",
+        "major_threat": "Una gran revista automovilística decide lanzar su propia revista digital centrada en autos clásicos, con recursos ilimitados.",
+        "big_decision": "Decidir si buscar financiamiento externo para expandir la revista o mantenerla como un proyecto personal.",
+        "stakes": "La viabilidad de la revista y si podrás convertirla en un referente en el sector.",
+        "possible_cost": "Perder suscriptores si no puedes ofrecer contenido fresco y exclusivo.",
+        "escalation_path": "100 suscriptores → 1,000 → 5,000 → buscar publicidad y patrocinios.",
+        "endgame": "Convertirte en la revista líder mundial en autos clásicos, generando ingresos significativos a través de publicidad y colaboraciones."
+      },
+      "central_story_question": "¿Cómo lograr que los entusiastas de autos clásicos elijan tu revista sobre otras opciones gratuitas en línea?",
+      "open_loops": [
+        "¿Lograrás captar la atención de los grandes coleccionistas?",
+        "¿Qué estrategias usarás para monetizar la revista?",
+        "¿Cómo enfrentarás la competencia de blogs populares?",
+        "¿Cuál será tu primer gran artículo que marcará la diferencia?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Consigues 100 suscriptores en el primer mes, todos pagando $10 cada uno.",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Logras publicar un artículo viral que recibe 10,000 visitas en una semana.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los entusiastas de autos clásicos buscan contenido de calidad que no encuentran en medios ",
+            "growth_mechanism: Atraes suscriptores mediante redes sociales y colaboraciones con influencers del mundo aut",
+            "first_proof: Logras publicar un artículo viral que recibe 10,000 visitas en una semana.",
+            "major_threat: Una gran revista automovilística decide lanzar su propia revista digital centrada en autos",
+            "big_decision: Decidir si buscar financiamiento externo para expandir la revista o mantenerla como un pro"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 8.0,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Una portada vibrante de la revista con un clásico auto deportivo en primer plano, rodeado de entusiastas admirando el vehículo.",
+        "protagonist_state": "Un emprendedor apasionado, trabajando en su computadora con imágenes de autos clásicos en la pantalla.",
+        "environment": "Un entorno acogedor de oficina con elementos de diseño automotriz, como posters de autos clásicos en las paredes.",
+        "central_contrast": "El contraste entre la modernidad de la revista digital y la nostalgia de los autos clásicos.",
+        "emotion": "Pasión y entusiasmo por el mundo automotriz.",
+        "key_object": "Un ejemplar de la revista digital en una tableta, mostrando un artículo destacado sobre un auto clásico.",
+        "composition": "La composición debe ser dinámica, con el auto en el centro y los entusiastas en acción alrededor.",
+        "camera": "Un ángulo ligeramente elevado que capte la emoción de los entusiastas.",
+        "lighting": "Iluminación brillante que resalte los colores vibrantes del auto y la revista.",
+        "background": "Un fondo que sugiera un evento automovilístico o una reunión de entusiastas.",
+        "text_if_any": "\"Revista Digital de Autos Clásicos\"",
+        "thumbnail_prompt": "A vibrant magazine cover featuring a classic sports car in the foreground, surrounded by enthusiasts admiring the vehicle."
+      },
+      "hook": "Imagina lanzar una revista digital sobre autos clásicos. \nTus amigos están buscando contenido de calidad, pero solo encuentran información superficial en otros lugares. \nTú decides crear algo diferente. \n¿Lograrás atraer a los apasionados de los autos clásicos y convertir tu proyecto en un referente mundial?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 25,
+        "starting_cash": "$500",
+        "starting_location": "Ciudad de México",
+        "starting_status": "emprendedor",
+        "target_outcome": "convertirse en la revista líder mundial sobre autos clásicos",
+        "business_or_career_type": "editorial",
+        "timeline_scale": "3 años"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_engagement": 8
+      },
+      "rank_score": 8.0
+    },
+    {
+      "id": "app_entrenadores",
+      "content_format": "check_als",
+      "language": "es",
+      "content_language": "es",
+      "image_prompt_language": "en",
+      "premise": "Desarrollas una app que conecta entrenadores personales con clientes en tiempo real y cobra un 20% de comisión.",
+      "title": "Conquista el mercado fitness: Crea tu app de entrenadores personales",
+      "title_options": [],
+      "one_line_fantasy": "Imagina dirigir la app que revoluciona la forma en que los entrenadores encuentran clientes y cómo esto transforma tu vida.",
+      "starting_state": "Estás trabajando en un empleo que no te satisface y sientes que tienes una gran idea que podría cambiar tu vida.",
+      "end_state": "Has construido una plataforma líder en el sector fitness, con miles de entrenadores y clientes usando tu app diariamente.",
+      "core_transformation": "Pasas de ser un empleado insatisfecho a un emprendedor exitoso que lidera una plataforma innovadora en el mundo del fitness.",
+      "story_category": "tecnología",
+      "ending_direction": "Sobrevivir como plataforma líder o ser superado por una app gratuita de un competidor.",
+      "story_engine": {
+        "specific_opportunity": "Los entrenadores personales necesitan una forma eficiente de conseguir clientes sin depender de redes sociales.",
+        "why_protagonist_notices_it": "Escuchas a un entrenador hablar sobre sus dificultades para encontrar nuevos clientes.",
+        "initial_action": "Desarrollas la app en tres meses, trabajando noches y fines de semana.",
+        "first_customer_or_break": "Un entrenador se inscribe y paga el 20% de comisión tras conseguir 10 clientes en su primera semana.",
+        "business_or_progress_mechanism": "Modelo de negocio basado en comisiones por cada cliente conseguido a través de la app.",
+        "why_it_works": "El 20% es un coste aceptable para los entrenadores que de otro modo no tendrían acceso a clientes.",
+        "growth_mechanism": "Sistemas de referidos donde los entrenadores que traen nuevos usuarios reciben un mes gratis.",
+        "first_proof": "Un entrenador reporta haber incrementado sus ingresos en un 30% en el primer mes de uso.",
+        "first_major_reward": "Suficiente ingreso para invertir en publicidad y atraer más entrenadores.",
+        "primary_opposition": "Competidores que ofrecen servicios similares sin costo alguno.",
+        "mid_story_complication": "Una serie de malas reseñas en la app afectan la confianza de los usuarios potenciales.",
+        "major_threat": "Una gran empresa de fitness lanza una app gratuita que absorbe a muchos entrenadores de la plataforma.",
+        "big_decision": "Decidir si reducir la comisión al 15% para competir o mantener el precio y mejorar la calidad del servicio.",
+        "stakes": "El futuro de tu negocio y la posibilidad de que los entrenadores se queden sin una plataforma confiable.",
+        "possible_cost": "Perder la inversión inicial si decides cerrar la app por la competencia.",
+        "escalation_path": "10 entrenadores → 100 → 1000 → enfrentamiento directo con la app gratuita del competidor.",
+        "endgame": "Consolidarte como la plataforma de referencia para entrenadores o ser forzado a cerrar o vender a un competidor."
+      },
+      "central_story_question": "¿Podrás mantener la competitividad de tu app frente a la amenaza de la competencia que ofrece servicios similares de forma gratuita?",
+      "open_loops": [
+        "¿Cómo convencerás a los entrenadores de que tu plataforma vale la pena?",
+        "¿Qué harás cuando un competidor lance una app gratuita similar?",
+        "¿Lograrás escalar tu negocio antes de que sea demasiado tarde?"
+      ],
+      "scores": {
+        "specificity": 9,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 9,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Un entrenador se inscribe y paga el 20% de comisión tras conseguir 10 clientes e",
+            "problema/oportunidad concreta",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Un entrenador reporta haber incrementado sus ingresos en un 30% en el primer mes",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los entrenadores personales necesitan una forma eficiente de conseguir clientes sin depend",
+            "growth_mechanism: Sistemas de referidos donde los entrenadores que traen nuevos usuarios reciben un mes grat",
+            "first_proof: Un entrenador reporta haber incrementado sus ingresos en un 30% en el primer mes de uso.",
+            "major_threat: Una gran empresa de fitness lanza una app gratuita que absorbe a muchos entrenadores de la",
+            "big_decision: Decidir si reducir la comisión al 15% para competir o mantener el precio y mejorar la cali"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "no major cliché hits; mechanism-based originality"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 6,
+          "evidence": [
+            "partial hint transformation_strength=6"
+          ]
+        },
+        "escalation_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint escalation_potential=6"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        },
+        "emotional_range": {
+          "score": 6,
+          "evidence": [
+            "partial hint emotional_range=6"
+          ]
+        },
+        "visual_variety": {
+          "score": 6,
+          "evidence": [
+            "partial hint visual_variety=6"
+          ]
+        }
+      },
+      "overall_score": 7.8,
+      "specificity_score": 9,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "Una app móvil moderna mostrando entrenadores y clientes conectándose en tiempo real.",
+        "protagonist_state": "Un emprendedor decidido frente a su computadora, trabajando en la app.",
+        "environment": "Una oficina en casa con notas y esquemas sobre la mesa.",
+        "central_contrast": "La lucha entre el éxito y el fracaso en el competitivo mundo de las apps.",
+        "emotion": "Determinación y ansiedad por el futuro.",
+        "key_object": "Un teléfono móvil mostrando la interfaz de la app.",
+        "composition": "Protagonista en primer plano, con la pantalla de la app destacando al fondo.",
+        "camera": "Ángulo ligeramente bajo para dar protagonismo al emprendedor.",
+        "lighting": "Iluminación cálida que refleja un ambiente de trabajo intenso.",
+        "background": "Elementos de motivación y éxito en la pared, como gráficos de crecimiento.",
+        "text_if_any": "¡Conéctate con tus clientes ahora!",
+        "thumbnail_prompt": "A modern mobile app interface connecting personal trainers with clients in real-time, with a determined entrepreneur in the foreground."
+      },
+      "hook": "Eres un emprendedor que ha tenido una idea brillante. \n\nTe das cuenta de que muchos entrenadores personales tienen problemas para conseguir clientes. \n\nDecides crear una app que conecte a entrenadores con clientes en tiempo real y que cobre una comisión. \n\nSin embargo, la competencia se acerca rápidamente, y deberás luchar para mantener tu lugar en el mercado.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 28,
+        "starting_cash": "$5000",
+        "starting_location": "Madrid, España",
+        "starting_status": "Empleado en una empresa de marketing digital",
+        "target_outcome": "Convertirse en el líder del mercado de aplicaciones de fitness",
+        "business_or_career_type": "Desarrollo de software y emprendimiento",
+        "timeline_scale": "12 meses"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 9,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 6,
+        "escalation_potential": 6,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "emotional_range": 6,
+        "visual_variety": 6,
+        "originality": 7,
+        "emotional_impact": 7,
+        "engagement": 8
+      },
+      "rank_score": 7.8
+    }
+  ]
+}

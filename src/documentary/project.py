@@ -70,6 +70,7 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "id": "",
     "slug": "",
     "mode": "documentary",
+    "content_format": "documentary",  # documentary | check_als
     "title": "",
     "topic": "",
     "language": "en",
@@ -93,6 +94,7 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "session_id": "",
     "episode_number": 0,
     "idea": {},
+    "concept": {},  # Check ALS full concept package (Phase 1+)
     "creative_profile_snapshot": {},
     "ui_step": "research",
     "checkpoints": {k: False for k in CHECKPOINT_KEYS},
@@ -268,7 +270,11 @@ def create_project(
     language: str = "en",
     target_duration_min: list[int] | None = None,
     episode_number: int | None = None,
+    content_format: str | None = None,
+    concept: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    from src.documentary.formats import FORMAT_CHECK_ALS, normalize_content_format
+
     topic = (topic or "").strip()
     if not topic:
         raise ValueError("topic required")
@@ -281,23 +287,44 @@ def create_project(
     if root.exists() and (root / "project.json").exists():
         raise FileExistsError(f"Project already exists: {pid}")
     ensure_layout(root)
+    fmt = normalize_content_format(content_format) if content_format else "documentary"
+    if isinstance(concept, dict) and concept:
+        fmt = FORMAT_CHECK_ALS
+    if isinstance(idea, dict) and isinstance(idea.get("check_concept"), dict) and not concept:
+        concept = idea.get("check_concept")
+        fmt = FORMAT_CHECK_ALS
     data = deepcopy(DEFAULT_PROJECT)
+    ui_step = "research"
+    research_skipped = False
+    dur = list(target_duration_min or [11, 15])
+    words = int(max(800, min(2500, target_words)))
+    mode = "documentary"
+    if fmt == FORMAT_CHECK_ALS:
+        mode = "check_als"
+        ui_step = "story"
+        research_skipped = True
+        dur = list(target_duration_min or [12, 18])
+        words = int(max(800, min(2800, target_words if target_words != 2000 else 2200)))
     data.update(
         {
             "id": pid,
             "slug": slug,
+            "mode": mode,
+            "content_format": fmt,
             "title": title,
             "topic": topic,
             "language": (language or "en").strip() or "en",
-            "target_words": int(max(800, min(2500, target_words))),
-            "target_duration_min": list(target_duration_min or [11, 15]),
+            "target_words": words,
+            "target_duration_min": dur,
             "research_notes": research_notes or "",
             "sources": list(sources or []),
+            "research_skipped": research_skipped,
             "session_id": sid,
             "episode_number": ep,
             "idea": dict(idea or {}),
+            "concept": dict(concept or {}),
             "creative_profile_snapshot": deepcopy(creative_profile) if isinstance(creative_profile, dict) else {},
-            "ui_step": "research",
+            "ui_step": ui_step,
             "created_at": _utc_now(),
             "updated_at": _utc_now(),
         }
@@ -320,6 +347,10 @@ def create_project(
     if idea:
         (root / "metadata" / "idea.json").write_text(
             json.dumps(idea, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+    if concept:
+        (root / "metadata" / "concept.json").write_text(
+            json.dumps(concept, ensure_ascii=False, indent=2), encoding="utf-8"
         )
     return data
 

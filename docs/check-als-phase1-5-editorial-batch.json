@@ -1,0 +1,2670 @@
+{
+  "counts": {
+    "generated": 17,
+    "rejected": 3,
+    "eligible": 14,
+    "returned": 10
+  },
+  "rejected": [
+    {
+      "id": "dead_weaving_factory",
+      "title": "Reviving Threads: A Sustainable Fashion Revolution",
+      "premise": "You acquire a defunct weaving factory for a song and modernize it to produce eco-friendly fabrics, leading the charge in sustainable fashion.",
+      "eligible": false,
+      "failed_gates": [
+        "thumbnail_concrete"
+      ],
+      "reasons": [
+        "thumbnail: placeholders: medium shot"
+      ],
+      "overall_score": 4.9
+    },
+    {
+      "id": "abandoned_bookstore_resurgence",
+      "title": "Resurgence of the Abandoned Bookstore",
+      "premise": "You buy a neglected bookstore with a rich history and breathe new life into it with community events and author signings, providing a haven for book lovers.",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook lacks concrete situational detail"
+      ],
+      "overall_score": 4.9
+    },
+    {
+      "id": "co-working_space_community_building",
+      "title": "From Neglect to Innovation: Building a Co-Working Community",
+      "premise": "You transform a neglected office building into a trendy co-working space that fosters innovation and collaboration, enhancing the local entrepreneurial scene.",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook lacks concrete situational detail"
+      ],
+      "overall_score": 4.9
+    }
+  ],
+  "eligible": [
+    {
+      "id": "food_truck_turnaround",
+      "title": "From Zero to Late-Night Hero",
+      "overall_score": 8.4,
+      "story_category": "entrepreneurship"
+    },
+    {
+      "id": "abandoned_gym_franchise",
+      "title": "Reviving the Heart of Fitness",
+      "overall_score": 8.5,
+      "story_category": "empire"
+    },
+    {
+      "id": "newspaper_subscription_model",
+      "title": "The Local Voice",
+      "overall_score": 8.4,
+      "story_category": "media"
+    },
+    {
+      "id": "abandoned_logistics_warehouse",
+      "title": "Logistics Empire: The Warehouse Transformation",
+      "overall_score": 8.4,
+      "story_category": "logistics"
+    },
+    {
+      "id": "failed_karaoke_bar_revival",
+      "title": "Karaoke Comeback: Reviving a Dream",
+      "overall_score": 8.5,
+      "story_category": "hospitality"
+    },
+    {
+      "id": "flower_shop_marketplace",
+      "title": "Blooming Business: The Flower Marketplace Revolution",
+      "overall_score": 8.4,
+      "story_category": "retail"
+    },
+    {
+      "id": "forgotten_museum_licensing",
+      "title": "Reviving the Past: The Museum's Journey",
+      "overall_score": 4.1,
+      "story_category": "media"
+    },
+    {
+      "id": "sports_team_acquisition",
+      "title": "From Last Place to Glory: The Sports Team Revolution",
+      "overall_score": 8.4,
+      "story_category": "sports_business"
+    },
+    {
+      "id": "unpopular_brewery_arbitrage",
+      "title": "From Dust to Draft: The Brewery Rebirth",
+      "overall_score": 8.4,
+      "story_category": "entrepreneurship"
+    },
+    {
+      "id": "discount_movies_theater",
+      "title": "The Discount Cinema Revival",
+      "overall_score": 8.7,
+      "story_category": "hospitality"
+    },
+    {
+      "id": "high-end_plant_shop",
+      "title": "Rooted in Luxury: The High-End Plant Shop",
+      "overall_score": 8.4,
+      "story_category": "retail"
+    },
+    {
+      "id": "outdated_tech_repair_shop",
+      "title": "Reviving Tech: From Obsolete to Innovative",
+      "overall_score": 8.2,
+      "story_category": "technology"
+    },
+    {
+      "id": "failing_canadian_football_team",
+      "title": "From Last Place to Glory: The Comeback of a Canadian Football Team",
+      "overall_score": 8.5,
+      "story_category": "sports_business"
+    },
+    {
+      "id": "party_supply_empire",
+      "title": "Party Supply Empire",
+      "overall_score": 8.6,
+      "story_category": "retail"
+    }
+  ],
+  "top10": [
+    {
+      "id": "discount_movies_theater",
+      "content_format": "check_als",
+      "premise": "You buy an old cinema and turn it into a discount theater, reviving community interest in film and creating a nostalgic escape for families.",
+      "title": "The Discount Cinema Revival",
+      "title_options": [
+        {
+          "text": "Reel Dreams: The Discount Theater Revolution",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Cinema on a Budget: A Community's Hope",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "The Last Stand of the Small Screen",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "You transform a forgotten cinema into a thriving community hub where families can escape the pressures of modern life with affordable entertainment.",
+      "starting_state": "You are an aspiring entrepreneur with a vision but limited cash.",
+      "end_state": "Your theater is a thriving local landmark, cherished by families and standing strong against corporate competition.",
+      "core_transformation": "You evolve from a struggling new owner into a beloved community leader, fostering connections and joy through cinema.",
+      "story_category": "hospitality",
+      "ending_direction": "success through community support",
+      "story_engine": {
+        "specific_opportunity": "Local families are looking for affordable entertainment options amidst rising ticket prices at chain theaters.",
+        "why_protagonist_notices_it": "You overhear parents lamenting about the high costs of taking their kids to the movies.",
+        "initial_action": "You purchase the derelict cinema for $50,000, envisioning a budget-friendly alternative.",
+        "first_customer_or_break": "The first weekend, 200 people flock to see a classic film for just $5 a ticket.",
+        "business_or_progress_mechanism": "A discount pricing model that offers $5 tickets and $3 concession items.",
+        "why_it_works": "Families can afford a night out without breaking the bank, creating a loyal customer base.",
+        "growth_mechanism": "Word-of-mouth marketing and community events attract more patrons, driving ticket sales.",
+        "first_proof": "You sell out the theater for a nostalgic screening of 'The Goonies' and have a line out the door.",
+        "first_major_reward": "You generate enough revenue to cover operating costs and reinvest in upgrades.",
+        "primary_opposition": "A nearby Regal Cinema is known for its luxury recliners and premium pricing.",
+        "mid_story_complication": "A sudden health crisis leads to a temporary closure, risking loss of momentum.",
+        "major_threat": "Regal announces a new discount night, undercutting your pricing and threatening your customer base.",
+        "big_decision": "Decide whether to hold a community fundraiser to expand or cut back to survive.",
+        "stakes": "The future of your theater and whether it can serve as a community hub.",
+        "possible_cost": "Potential backlash from loyal customers if you raise prices to compete.",
+        "escalation_path": "Increase community engagement → Host events → Launch a loyalty program → Compete against the chain's new initiative.",
+        "endgame": "Establish the theater as a beloved local landmark, thriving despite competition."
+      },
+      "central_story_question": "Can a small theater compete against big chains while fostering community connections?",
+      "open_loops": [
+        "Will the community embrace the new theater concept?",
+        "How will you finance the renovations needed?",
+        "What happens when a major chain opens nearby?",
+        "Can you attract enough customers to sustain the business?"
+      ],
+      "scores": {
+        "specificity": 9,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 10,
+        "escalation_potential": 8,
+        "filmability": 8,
+        "thumbnail_potential": 9,
+        "emotional_range": 9,
+        "visual_variety": 8,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 9,
+          "evidence": [
+            "concrete customer/break: The first weekend, 200 people flock to see a classic film for just $5 a ticket.",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: You sell out the theater for a nostalgic screening of 'The Goonies' and have a l",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Local families are looking for affordable entertainment options amidst rising ticket price",
+            "growth_mechanism: Word-of-mouth marketing and community events attract more patrons, driving ticket sales.",
+            "first_proof: You sell out the theater for a nostalgic screening of 'The Goonies' and have a line out th",
+            "major_threat: Regal announces a new discount night, undercutting your pricing and threatening your custo",
+            "big_decision: Decide whether to hold a community fundraiser to expand or cut back to survive."
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 10,
+          "evidence": [
+            "partial hint transformation_strength=10"
+          ]
+        },
+        "escalation_potential": {
+          "score": 8,
+          "evidence": [
+            "partial hint escalation_potential=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 9,
+          "evidence": [
+            "partial hint emotional_range=9"
+          ]
+        },
+        "visual_variety": {
+          "score": 8,
+          "evidence": [
+            "partial hint visual_variety=8"
+          ]
+        }
+      },
+      "overall_score": 8.7,
+      "specificity_score": 9,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant, retro-style cinema marquee with colorful lights, showcasing a classic film title, surrounded by excited families.",
+        "protagonist_state": "You, a determined entrepreneur, are joyfully welcoming families into your newly revitalized theater.",
+        "environment": "The bustling small-town street filled with families, laughter, and the aroma of freshly popped popcorn.",
+        "central_contrast": "The contrast between the old, worn-out cinema and the lively, rejuvenated atmosphere you've created.",
+        "emotion": "A sense of nostalgia and joy as families rediscover the magic of cinema together.",
+        "key_object": "The cinema's iconic marquee, glowing brightly with the film schedule.",
+        "composition": "A wide shot capturing the theater entrance with families lining up, framed by the bright marquee lights.",
+        "camera": "A slightly low-angle shot to emphasize the grandeur of the marquee and the excitement of the crowd.",
+        "lighting": "Warm, inviting lighting that highlights the marquee and the happy faces of families.",
+        "background": "The charming small-town backdrop with vintage storefronts and trees, enhancing the nostalgic feel.",
+        "text_if_any": "Join us for a night of nostalgia!",
+        "thumbnail_prompt": "Create a lively, nostalgic scene of a small-town cinema revival, highlighting the excitement of families enjoying affordable movies together."
+      },
+      "hook": "You buy a derelict cinema for $50,000, envisioning a budget-friendly alternative to the expensive chain theaters in town. As you scrub the dusty floors and hang up new movie posters, you overhear parents lamenting about the high costs of taking their kids to the movies. With a dream of creating a nostalgic escape for families, you launch your discount theater, offering $5 tickets and $3 concession items. But can you really compete against the luxury of nearby Regal Cinema?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "50000",
+        "starting_location": "small town",
+        "starting_status": "new business owner",
+        "target_outcome": "transform the cinema into a beloved community hub",
+        "business_or_career_type": "hospitality",
+        "timeline_scale": "1 year"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 10,
+        "escalation_potential": 8,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 9,
+        "visual_variety": 8,
+        "originality": 0
+      },
+      "rank_score": 8.7
+    },
+    {
+      "id": "party_supply_empire",
+      "content_format": "check_als",
+      "premise": "You invest in a small party supply store, expanding it into a multi-location empire that dominates the market for all celebrations imaginable.",
+      "title": "Party Supply Empire",
+      "title_options": [
+        {
+          "text": "Celebration Domination: Building Your Party Supply Empire",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "From Small Store to Market Leader: The Party Supply Journey",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "The Ultimate Celebration: Transforming a Store into an Empire",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine turning a small party supply store into the go-to destination for all celebrations, where every event sparkles with your unique offerings.",
+      "starting_state": "You are a newly invested entrepreneur with a small party supply store struggling to meet demand.",
+      "end_state": "You lead a thriving multi-location party supply empire, known for its exceptional variety and customer loyalty.",
+      "core_transformation": "From a small-town store owner to a regional market leader in party supplies, mastering the art of scaling a business in a competitive landscape.",
+      "story_category": "retail",
+      "ending_direction": "dominance and expansion in the party supply market",
+      "story_engine": {
+        "specific_opportunity": "Local party supply stores struggle to fulfill the high demand for themed events and celebrations.",
+        "why_protagonist_notices_it": "You notice that customers frequently leave empty-handed due to limited inventory during peak seasons.",
+        "initial_action": "You invest $50,000 to acquire the existing store and double its inventory.",
+        "first_customer_or_break": "A wedding planner orders $1,200 worth of decorations after being impressed with your selection.",
+        "business_or_progress_mechanism": "Multi-location retail strategy with a focus on themed party supplies and online ordering.",
+        "why_it_works": "Offering a wider variety of unique and hard-to-find items makes your store stand out in a crowded market.",
+        "growth_mechanism": "Opening additional locations in high traffic areas and establishing partnerships with event planners.",
+        "first_proof": "In the first year, sales increase by 150% compared to the previous owner.",
+        "first_major_reward": "Earnings allow you to reinvest $100,000 into a second location.",
+        "primary_opposition": "A well-established competitor, Party Plus, aggressively lowers prices to maintain market share.",
+        "mid_story_complication": "Supply chain delays cause a shortage of popular items just before the holiday season.",
+        "major_threat": "A large retail chain, MegaCelebrations, announces plans to open a store within a mile of your flagship location.",
+        "big_decision": "Decide whether to invest heavily in marketing to counter the new competition or to focus on enhancing customer experience.",
+        "stakes": "The future of your growing empire and the livelihoods of your employees depend on your next move.",
+        "possible_cost": "You risk losing your initial investment and the chance to create a sustainable business.",
+        "escalation_path": "1 store → 3 stores → 10 stores → online expansion → potential acquisition offers.",
+        "endgame": "Become the leading party supply brand in the region or face the threat of being driven out by larger competitors."
+      },
+      "central_story_question": "Can you outmaneuver competitors and secure a loyal customer base in the competitive party supply industry?",
+      "open_loops": [
+        "Will the local competitor be able to keep up with your expansion?",
+        "How will you manage supply chain issues as you scale?",
+        "Can your marketing strategies attract the right customer demographics?",
+        "What will happen when a larger corporation tries to acquire your stores?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 9,
+        "escalation_potential": 8,
+        "filmability": 8,
+        "thumbnail_potential": 9,
+        "emotional_range": 7,
+        "visual_variety": 8,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: A wedding planner orders $1,200 worth of decorations after being impressed with ",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: In the first year, sales increase by 150% compared to the previous owner.",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Local party supply stores struggle to fulfill the high demand for themed events and celebr",
+            "growth_mechanism: Opening additional locations in high traffic areas and establishing partnerships with even",
+            "first_proof: In the first year, sales increase by 150% compared to the previous owner.",
+            "major_threat: A large retail chain, MegaCelebrations, announces plans to open a store within a mile of y",
+            "big_decision: Decide whether to invest heavily in marketing to counter the new competition or to focus o"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint transformation_strength=9"
+          ]
+        },
+        "escalation_potential": {
+          "score": 8,
+          "evidence": [
+            "partial hint escalation_potential=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 7,
+          "evidence": [
+            "partial hint emotional_range=7"
+          ]
+        },
+        "visual_variety": {
+          "score": 8,
+          "evidence": [
+            "partial hint visual_variety=8"
+          ]
+        }
+      },
+      "overall_score": 8.6,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant party supply store filled with colorful decorations, balloons, and party favors, bustling with excited customers.",
+        "protagonist_state": "",
+        "environment": "",
+        "central_contrast": "The contrast between the cheerful, colorful inventory and the worried expression of the protagonist as they realize the need for expansion.",
+        "emotion": "",
+        "key_object": "A large, eye-catching display of themed party supplies that showcases the store's unique offerings.",
+        "composition": "",
+        "camera": "",
+        "lighting": "",
+        "background": "",
+        "text_if_any": "",
+        "thumbnail_prompt": "A dynamic scene of a thriving party supply store, with the protagonist contemplating their next big move amidst a backdrop of colorful decorations and happy customers."
+      },
+      "hook": "You walk into your newly acquired party supply store, excited for the future. The shelves are stocked, but you notice customers leaving disappointed—there are barely any themed decorations for the upcoming wedding season. You realize that if you don't act fast, your investment will dwindle. You take a deep breath and decide to double the inventory, pouring $50,000 into expanding your offerings. Your first big break comes when a wedding planner places a $1,200 order, signaling that you’re onto something big. But as you expand, competitors lurk, and you must navigate their aggressive pricing strategies while ensuring your customers leave with everything they need to celebrate life's biggest moments.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "50000",
+        "starting_location": "a small town",
+        "starting_status": "a newly invested entrepreneur",
+        "target_outcome": "to dominate the party supply market",
+        "business_or_career_type": "retail",
+        "timeline_scale": "5 years"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 9,
+        "escalation_potential": 8,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 7,
+        "visual_variety": 8,
+        "originality": 0
+      },
+      "rank_score": 8.6
+    },
+    {
+      "id": "abandoned_gym_franchise",
+      "content_format": "check_als",
+      "premise": "You revitalize an abandoned gym franchise, offering unique classes and personal training, making it the go-to hub for wellness enthusiasts in your community.",
+      "title": "Reviving the Heart of Fitness",
+      "title_options": [
+        {
+          "text": "From Abandoned to Beloved: The Gym's Comeback",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Sweat, Grit, and Glory: Building a Fitness Empire",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Wellness Revolution: Transforming a Gym, Transforming Lives",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine turning a deserted gym into the hottest wellness center in town, where every class feels like a celebration.",
+      "starting_state": "An abandoned gym with outdated equipment and a tarnished reputation.",
+      "end_state": "A thriving community wellness center with a loyal membership and a reputation for innovative fitness offerings.",
+      "core_transformation": "Transforming a neglected space into a vibrant community hub that inspires health and fitness.",
+      "story_category": "empire",
+      "ending_direction": "triumphant recovery and expansion",
+      "story_engine": {
+        "specific_opportunity": "The local community lacks engaging fitness options, with the nearest competitor offering only traditional gym services.",
+        "why_protagonist_notices_it": "You see the abandoned gym filled with equipment while observing the crowded classes at a nearby boutique fitness studio.",
+        "initial_action": "You invest $20,000 of your savings to lease the abandoned gym and renovate it.",
+        "first_customer_or_break": "A local influencer pays for a premium personal training package, attracting others to join.",
+        "business_or_progress_mechanism": "A membership model combined with pay-per-class offerings for specialized fitness classes.",
+        "why_it_works": "Unique classes at $25 each attract fitness enthusiasts looking for variety and community.",
+        "growth_mechanism": "Word-of-mouth from satisfied customers leads to social media buzz and increased memberships.",
+        "first_proof": "Within three months, you have 100 active members, doubling the gym's previous membership count.",
+        "first_major_reward": "You earn enough profit to reinvest in additional classes and equipment, totaling $15,000.",
+        "primary_opposition": "A well-established local fitness chain, FitLife, with a strong marketing budget and loyal customer base.",
+        "mid_story_complication": "A negative online review from an unhappy former gym member goes viral, threatening your growing reputation.",
+        "major_threat": "FitLife launches a marketing campaign offering discounted memberships to lure your clients away.",
+        "big_decision": "Decide whether to pivot your marketing strategy to focus on community events or cut prices to compete directly.",
+        "stakes": "Your financial investment and the potential to become a community wellness leader or face closure.",
+        "possible_cost": "Investing all your savings could lead to personal bankruptcy if the gym fails again.",
+        "escalation_path": "1 class → 5 unique classes → community events → partnerships with local health businesses → expansion to multiple locations.",
+        "endgame": "Achieve a thriving gym business that not only survives but also sets the standard for fitness in the community."
+      },
+      "central_story_question": "Can you transform a failing gym into a thriving community wellness center amidst fierce competition?",
+      "open_loops": [
+        "What unique classes will attract the community?",
+        "How will you handle the existing franchise's bad reputation?",
+        "Who will be your first loyal customer?",
+        "What innovative marketing strategies will you employ?",
+        "How will you fend off competition from local fitness centers?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 7,
+        "escalation_potential": 8,
+        "filmability": 9,
+        "thumbnail_potential": 9,
+        "emotional_range": 7,
+        "visual_variety": 8,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: A local influencer pays for a premium personal training package, attracting othe",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: Within three months, you have 100 active members, doubling the gym's previous me",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: The local community lacks engaging fitness options, with the nearest competitor offering o",
+            "growth_mechanism: Word-of-mouth from satisfied customers leads to social media buzz and increased membership",
+            "first_proof: Within three months, you have 100 active members, doubling the gym's previous membership c",
+            "major_threat: FitLife launches a marketing campaign offering discounted memberships to lure your clients",
+            "big_decision: Decide whether to pivot your marketing strategy to focus on community events or cut prices"
+          ]
+        },
+        "filmability": {
+          "score": 9,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "~2 location cues",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 7,
+          "evidence": [
+            "partial hint transformation_strength=7"
+          ]
+        },
+        "escalation_potential": {
+          "score": 8,
+          "evidence": [
+            "partial hint escalation_potential=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 7,
+          "evidence": [
+            "partial hint emotional_range=7"
+          ]
+        },
+        "visual_variety": {
+          "score": 8,
+          "evidence": [
+            "partial hint visual_variety=8"
+          ]
+        }
+      },
+      "overall_score": 8.5,
+      "specificity_score": 10,
+      "filmability": 9,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant fitness class in action, with diverse participants engaged in a unique workout led by an enthusiastic trainer in a revitalized gym space.",
+        "protagonist_state": "",
+        "environment": "",
+        "central_contrast": "The transformation from a dusty, abandoned gym to a lively wellness center filled with energy and community spirit.",
+        "emotion": "",
+        "key_object": "A large banner showcasing the gym's new branding and unique class offerings, symbolizing the gym's rebirth.",
+        "composition": "",
+        "camera": "",
+        "lighting": "",
+        "background": "",
+        "text_if_any": "",
+        "thumbnail_prompt": "Capture the essence of community and transformation in fitness. Show a lively class in a once-abandoned gym, with a mix of people enjoying a unique workout, bright colors, and a sense of camaraderie."
+      },
+      "hook": "You stand in the dusty, abandoned gym, the faint smell of rust and old equipment lingering in the air. The once vibrant space is a ghost of its former self, but as you look around, you see potential. Just down the street, the boutique fitness studio is packed, their unique classes booking weeks in advance. You know this community craves variety and engagement in their fitness routines. With $20,000 of your savings, you take a leap and lease the space, ready to transform it into a wellness hub that people will flock to.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "20000",
+        "starting_location": "downtown neighborhood",
+        "starting_status": "unemployed and seeking new opportunities",
+        "target_outcome": "transform the gym into a community hub",
+        "business_or_career_type": "fitness franchise",
+        "timeline_scale": "1 year"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 7,
+        "escalation_potential": 8,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 7,
+        "visual_variety": 8,
+        "originality": 0
+      },
+      "rank_score": 8.5
+    },
+    {
+      "id": "failed_karaoke_bar_revival",
+      "content_format": "check_als",
+      "premise": "You take over a failed karaoke bar and infuse it with themed nights and a vibrant atmosphere, escaping the mundane and building a lively community spot.",
+      "title": "Karaoke Comeback: Reviving a Dream",
+      "title_options": [
+        {
+          "text": "The Stage Awaits: Reviving a Karaoke Bar",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "From Dust to Dance: Transforming a Failed Venue",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Singing for Success: A Bar's Second Chance",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine turning a forgotten karaoke bar into the heartbeat of your community, where every night is a celebration.",
+      "starting_state": "You are unemployed and feeling unfulfilled, watching a failed business struggle.",
+      "end_state": "You have transformed the karaoke bar into a popular hotspot, filled with laughter and music, with a loyal customer base and thriving revenue.",
+      "core_transformation": "You evolve from a spectator of failure to a successful entrepreneur, creating a joyful community space.",
+      "story_category": "hospitality",
+      "ending_direction": "transformational success",
+      "story_engine": {
+        "specific_opportunity": "The local entertainment scene lacks a vibrant karaoke option for themed events.",
+        "why_protagonist_notices_it": "You see the bar's empty tables and hear the owner lament about losing customers to a nearby pub.",
+        "initial_action": "You decide to take over the lease for $1,500 a month and revamp the bar within two weeks.",
+        "first_customer_or_break": "The first themed night, '80s Night', sells out with 50 tickets at $20 each.",
+        "business_or_progress_mechanism": "Weekly themed karaoke nights with ticket sales and drink promotions.",
+        "why_it_works": "Themed nights attract different demographics, increasing foot traffic and repeat visits.",
+        "growth_mechanism": "Social media buzz and word-of-mouth referrals from the community.",
+        "first_proof": "The bar generates $1,000 in revenue on the first themed night.",
+        "first_major_reward": "You cover the monthly lease within the first week and make a profit of $500.",
+        "primary_opposition": "The popular local tavern that has a loyal customer base and hosts trivia nights.",
+        "mid_story_complication": "A competing bar launches a rival karaoke night the same week you introduce '90s Night'.",
+        "major_threat": "The competitor offers free drinks to attract your customers away, threatening your new venture.",
+        "big_decision": "Decide whether to lower prices on drinks or invest in better entertainment to outshine the competition.",
+        "stakes": "Your financial stability and the risk of losing the community's support.",
+        "possible_cost": "Investing $5,000 in renovations that may not yield immediate returns if the competition remains strong.",
+        "escalation_path": "Initial themed nights → Collaborating with local artists → Expanding to private events → Hosting contests with cash prizes.",
+        "endgame": "Establish the bar as the go-to entertainment venue in the area, potentially franchising the concept."
+      },
+      "central_story_question": "Can you turn a failed karaoke bar into a thriving community hub?",
+      "open_loops": [
+        "What unique theme will attract customers?",
+        "How will you compete against the popular local tavern?",
+        "Can you build a loyal customer base in a short time?",
+        "What unexpected challenges will arise during the revival?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "transformation_strength": 9,
+        "escalation_potential": 7,
+        "filmability": 8,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: The first themed night, '80s Night', sells out with 50 tickets at $20 each.",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: The bar generates $1,000 in revenue on the first themed night.",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: The local entertainment scene lacks a vibrant karaoke option for themed events.",
+            "growth_mechanism: Social media buzz and word-of-mouth referrals from the community.",
+            "first_proof: The bar generates $1,000 in revenue on the first themed night.",
+            "major_threat: The competitor offers free drinks to attract your customers away, threatening your new ven",
+            "big_decision: Decide whether to lower prices on drinks or invest in better entertainment to outshine the"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "transformation_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint transformation_strength=9"
+          ]
+        },
+        "escalation_potential": {
+          "score": 7,
+          "evidence": [
+            "partial hint escalation_potential=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 8,
+          "evidence": [
+            "partial hint emotional_range=8"
+          ]
+        },
+        "visual_variety": {
+          "score": 7,
+          "evidence": [
+            "partial hint visual_variety=7"
+          ]
+        }
+      },
+      "overall_score": 8.5,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant karaoke bar filled with colorful lights and enthusiastic patrons singing into microphones.",
+        "protagonist_state": "",
+        "environment": "",
+        "central_contrast": "The contrast between the lively atmosphere of the karaoke night and the previous emptiness of the bar.",
+        "emotion": "",
+        "key_object": "A microphone with a spotlight shining on it, symbolizing the revival of the bar.",
+        "composition": "",
+        "camera": "",
+        "lighting": "",
+        "background": "",
+        "text_if_any": "",
+        "thumbnail_prompt": "Capture the energy of a bustling karaoke night, with a diverse crowd enjoying themselves, singing, and celebrating, showcasing the transformation from a failed bar to a community hub."
+      },
+      "hook": "You step into the dimly lit karaoke bar, its walls lined with dusty trophies and faded posters. The owner, a weary man in his fifties, tells you about the empty tables and dwindling crowds, lost to a nearby pub. You can feel the potential in the air, an unfulfilled dream waiting for revival. With a spark of inspiration, you decide to take over the lease for $1,500 a month and transform this place into a vibrant hub of music and laughter, starting with an '80s Night that you hope will bring the community together again.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "2000",
+        "starting_location": "downtown",
+        "starting_status": "unemployed",
+        "target_outcome": "transform the bar into a profitable entertainment venue",
+        "business_or_career_type": "hospitality",
+        "timeline_scale": "6 months"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "transformation_strength": 9,
+        "escalation_potential": 7,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 0
+      },
+      "rank_score": 8.5
+    },
+    {
+      "id": "failing_canadian_football_team",
+      "content_format": "check_als",
+      "premise": "You buy a failing Canadian football team, introduce local talent and community events, and lead them to a stunning championship comeback.",
+      "title": "From Last Place to Glory: The Comeback of a Canadian Football Team",
+      "title_options": [
+        {
+          "text": "Reviving a Fallen Franchise: The Heart of Canadian Football",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Local Heroes: Turning a Team Around",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Against All Odds: The Championship Comeback",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine transforming a struggling team into champions through community spirit and local talent.",
+      "starting_state": "A failing football team with empty stands and frustrated fans.",
+      "end_state": "A triumphant team celebrated by a passionate community, securing a championship and its future in the league.",
+      "core_transformation": "From a struggling franchise to a community-centered powerhouse, revitalizing local support and team spirit.",
+      "story_category": "sports_business",
+      "ending_direction": "triumphant",
+      "story_engine": {
+        "specific_opportunity": "The local Canadian football team is in last place, struggling to fill the stands at their home games.",
+        "why_protagonist_notices_it": "After attending several games, you see empty seats and hear fans expressing frustration over the team's performance.",
+        "initial_action": "You decide to buy the team for $500,000, believing you can revive its fortunes.",
+        "first_customer_or_break": "You sign a local star quarterback for $250,000, and ticket sales spike by 30% for the next game.",
+        "business_or_progress_mechanism": "Community-driven engagement through local events and talent recruitment.",
+        "why_it_works": "Local fans feel a renewed connection to the team, driving up attendance and merchandise sales.",
+        "growth_mechanism": "Community events like tailgates and meet-and-greets with players foster loyalty and increase season ticket sales by 40%.",
+        "first_proof": "Attendance rises from 5,000 to 10,000 fans per game within three months.",
+        "first_major_reward": "The team secures a sponsorship deal worth $1 million with a local brewery.",
+        "primary_opposition": "Rival team owners who want to maintain their dominance and fanbase.",
+        "mid_story_complication": "A key player suffers a season-ending injury just before the playoffs, putting the championship run at risk.",
+        "major_threat": "The league threatens to relocate the team if attendance doesn't improve by the end of the season.",
+        "big_decision": "Decide whether to invest in a last-minute player trade or focus on community-driven events to boost morale.",
+        "stakes": "The future of the franchise and whether it can survive in the league.",
+        "possible_cost": "Risk losing ownership and investment if the team fails to perform.",
+        "escalation_path": "Reviving local interest → Competing for playoff spots → Securing a championship → Gaining national recognition.",
+        "endgame": "Lead the team to championship victory and ensure long-term sustainability through community support."
+      },
+      "central_story_question": "Can a community-driven approach revive a failing sports franchise?",
+      "open_loops": [
+        "Will the local talent be enough to turn the team around?",
+        "How will the community react to the changes?",
+        "What will happen if the rival team continues to dominate?",
+        "Can the protagonist overcome financial difficulties?",
+        "Will the championship be enough to secure long-term success?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 8,
+        "thumbnail_potential": 8,
+        "emotional_range": 9,
+        "visual_variety": 8,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: You sign a local star quarterback for $250,000, and ticket sales spike by 30% fo",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: Attendance rises from 5,000 to 10,000 fans per game within three months.",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: The local Canadian football team is in last place, struggling to fill the stands at their ",
+            "growth_mechanism: Community events like tailgates and meet-and-greets with players foster loyalty and increa",
+            "first_proof: Attendance rises from 5,000 to 10,000 fans per game within three months.",
+            "major_threat: The league threatens to relocate the team if attendance doesn't improve by the end of the ",
+            "big_decision: Decide whether to invest in a last-minute player trade or focus on community-driven events"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint transformation_strength=8"
+          ]
+        },
+        "escalation_potential": {
+          "score": 7,
+          "evidence": [
+            "partial hint escalation_potential=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 8,
+          "evidence": [
+            "partial hint thumbnail_potential=8"
+          ]
+        },
+        "emotional_range": {
+          "score": 9,
+          "evidence": [
+            "partial hint emotional_range=9"
+          ]
+        },
+        "visual_variety": {
+          "score": 8,
+          "evidence": [
+            "partial hint visual_variety=8"
+          ]
+        }
+      },
+      "overall_score": 8.5,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant football stadium filled with cheering fans, waving flags, and a spotlight on the team celebrating a touchdown.",
+        "protagonist_state": "A determined team owner, passionately engaging with fans and players.",
+        "environment": "The stadium bustling with energy during a game, showcasing the transformation from empty stands to a lively atmosphere.",
+        "central_contrast": "The contrast between the empty stands at the beginning of the season and the packed stadium during the championship game.",
+        "emotion": "Joy and excitement as the community comes together to support their team.",
+        "key_object": "A championship trophy held high by the team captain amidst the crowd.",
+        "composition": "Dynamic angles capturing the action on the field and the joy in the stands.",
+        "camera": "Wide-angle lens to capture the full scope of the stadium and its atmosphere.",
+        "lighting": "Bright stadium lights illuminating the field and the fans, creating a celebratory ambiance.",
+        "background": "A backdrop of jubilant fans, fireworks, and team banners.",
+        "text_if_any": "From Last Place to Glory!",
+        "thumbnail_prompt": "Create a visually striking thumbnail that captures the essence of a Canadian football team's triumphant comeback, focusing on the emotional highs of community support and the excitement of a championship victory."
+      },
+      "hook": "You stand in the empty stands of a cold stadium, the echoes of disappointed fans ringing in your ears. The Canadian football team you just bought is in last place, struggling to fill the seats. You feel the weight of your investment, a staggering $500,000, and the responsibility to turn things around. As you watch the frustration of loyal supporters, a spark ignites within you. You decide to bring local talent back to the field and host community events to reignite the passion of the fans. Can you lead this team from the ashes to a stunning championship comeback?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 35,
+        "starting_cash": "500000",
+        "starting_location": "Toronto, Canada",
+        "starting_status": "New team owner",
+        "target_outcome": "Lead the team to a championship victory and secure its future.",
+        "business_or_career_type": "Sports ownership",
+        "timeline_scale": "One season"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 0,
+        "thumbnail_potential": 8,
+        "emotional_range": 9,
+        "visual_variety": 8,
+        "originality": 0
+      },
+      "rank_score": 8.5
+    },
+    {
+      "id": "food_truck_turnaround",
+      "content_format": "check_als",
+      "premise": "You acquire a struggling food truck with terrible reviews and turn it into the hottest late-night spot by revamping the menu and hiring a charismatic chef.",
+      "title": "From Zero to Late-Night Hero",
+      "title_options": [
+        {
+          "text": "Taco Takeover: Reviving the Food Truck",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Late-Night Redemption: A Culinary Journey",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Gourmet Dreams: Transforming a Food Truck",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine turning a failing food truck into the hottest late-night destination, attracting crowds with unforgettable tacos.",
+      "starting_state": "Owner of a food truck with terrible reviews and no customers.",
+      "end_state": "Owner of a popular late-night food truck with a loyal customer base and glowing reviews.",
+      "core_transformation": "You evolve from a struggling food truck owner to a successful entrepreneur with a thriving late-night culinary empire.",
+      "story_category": "entrepreneurship",
+      "ending_direction": "success",
+      "story_engine": {
+        "specific_opportunity": "Late-night food options are scarce in the neighborhood, leaving a gap for popular quick-service meals.",
+        "why_protagonist_notices_it": "You notice long lines at nearby diners while your food truck sits empty late at night.",
+        "initial_action": "You purchase the food truck for $15,000, despite its bad reputation.",
+        "first_customer_or_break": "A group of college students stops by and raves about the new tacos on the revamped menu.",
+        "business_or_progress_mechanism": "A unique late-night menu featuring gourmet tacos and affordable drinks.",
+        "why_it_works": "Gourmet tacos priced at $5 each attract students looking for affordable late-night eats.",
+        "growth_mechanism": "Social media campaigns and collaborations with local influencers to drive traffic.",
+        "first_proof": "Customer reviews increase from 1 star to 4.5 stars within the first month.",
+        "first_major_reward": "Sales hit $1,500 on a Friday night after the first month of operation.",
+        "primary_opposition": "A popular diner nearby that has been the go-to late-night spot for years.",
+        "mid_story_complication": "A health inspection reveals minor violations, threatening your reputation.",
+        "major_threat": "The diner introduces a new late-night menu to reclaim lost customers.",
+        "big_decision": "Invest in a food truck upgrade or expand the menu to compete directly with the diner.",
+        "stakes": "Your investment and future in the food industry hinge on the food truck's success.",
+        "possible_cost": "$20,000 in additional debt if the upgrade fails to attract customers.",
+        "escalation_path": "Local buzz → social media virality → expanding to catering events → opening a brick-and-mortar location.",
+        "endgame": "Transform the food truck into a thriving late-night restaurant chain."
+      },
+      "central_story_question": "Can you transform a failing food truck into a popular late-night destination?",
+      "open_loops": [
+        "What specific changes will attract customers?",
+        "How will the community react to the revamped food truck?",
+        "Can the new chef deliver the quality needed to satisfy late-night crowds?",
+        "What strategies will be employed to compete with local diners?",
+        "Will the initial investment pay off?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 8,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: A group of college students stops by and raves about the new tacos on the revamp",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: Customer reviews increase from 1 star to 4.5 stars within the first month.",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Late-night food options are scarce in the neighborhood, leaving a gap for popular quick-se",
+            "growth_mechanism: Social media campaigns and collaborations with local influencers to drive traffic.",
+            "first_proof: Customer reviews increase from 1 star to 4.5 stars within the first month.",
+            "major_threat: The diner introduces a new late-night menu to reclaim lost customers.",
+            "big_decision: Invest in a food truck upgrade or expand the menu to compete directly with the diner."
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint transformation_strength=8"
+          ]
+        },
+        "escalation_potential": {
+          "score": 7,
+          "evidence": [
+            "partial hint escalation_potential=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 8,
+          "evidence": [
+            "partial hint emotional_range=8"
+          ]
+        },
+        "visual_variety": {
+          "score": 7,
+          "evidence": [
+            "partial hint visual_variety=7"
+          ]
+        }
+      },
+      "overall_score": 8.4,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant food truck adorned with colorful lights and a neon 'Tacos' sign, parked bustling outside a college campus at night.",
+        "protagonist_state": "A determined food truck owner, wearing a chef's apron, smiling as they serve tacos to a line of excited customers.",
+        "environment": "A lively college campus with students gathered around the food truck, illuminated by the warm glow of streetlights.",
+        "central_contrast": "The contrast between the empty food truck's past and the current bustling scene filled with happy customers.",
+        "emotion": "Excitement and hope as the food truck transforms into a popular late-night destination.",
+        "key_object": "A plate of gourmet tacos, beautifully presented, showcasing the food truck's new menu.",
+        "composition": "The food truck in the foreground with a line of eager customers stretching back, highlighting the transformation.",
+        "camera": "A dynamic angle capturing both the food truck and the excited crowd.",
+        "lighting": "Warm, inviting lighting that creates a festive nighttime atmosphere.",
+        "background": "The backdrop of a busy college campus with students socializing and enjoying their tacos.",
+        "text_if_any": "'From Zero to Late-Night Hero!'",
+        "thumbnail_prompt": "Create a vibrant nighttime scene of a food truck bustling with happy customers, showcasing gourmet tacos and the transformation of the business."
+      },
+      "hook": "You acquire a struggling food truck with terrible reviews and a dwindling customer base. Each night, you park it outside a busy college campus, watching the lines form at nearby diners while your truck sits empty and forlorn. Determined to change its fate, you revamp the menu, adding gourmet tacos and affordable drinks, and hire a charismatic chef to entice the late-night crowd. Can your vision turn this food truck into the hottest spot in town?",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "15000",
+        "starting_location": "College town",
+        "starting_status": "Owner of a struggling food truck",
+        "target_outcome": "Transform food truck into a thriving late-night restaurant",
+        "business_or_career_type": "Food service",
+        "timeline_scale": "6 months"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 0
+      },
+      "rank_score": 8.4
+    },
+    {
+      "id": "newspaper_subscription_model",
+      "content_format": "check_als",
+      "premise": "You launch a niche digital newspaper with a subscription model focusing on local stories, transforming it into a respected voice and the go-to source for community news.",
+      "title": "The Local Voice",
+      "title_options": [
+        {
+          "text": "Hyperlocal Heroes: A Newspaper's Rise",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Against the Giants: Your Community's News",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "The Subscription Revolution: Local Stories Matter",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine being the heartbeat of your community, shaping local narratives and driving engagement with every story you publish.",
+      "starting_state": "Struggling to find a way to engage your community in meaningful conversations about local issues.",
+      "end_state": "A thriving digital newspaper that not only informs but also unites the community around local stories and events.",
+      "core_transformation": "From being an unnoticed observer of local conversations to becoming the trusted voice that shapes them, fostering community engagement and loyalty.",
+      "story_category": "media",
+      "ending_direction": "success through community engagement and brand loyalty",
+      "story_engine": {
+        "specific_opportunity": "Local communities lack a dedicated source for relevant news.",
+        "why_protagonist_notices_it": "You see neighbors discussing national news while ignoring local stories that affect them directly.",
+        "initial_action": "Create a website and publish a week’s worth of local news articles.",
+        "first_customer_or_break": "A local resident subscribes for $5 a month after seeing a compelling article about a community event.",
+        "business_or_progress_mechanism": "Subscription-based digital newspaper focused on hyper-local content.",
+        "why_it_works": "$5/month is a small price for quality local news that directly impacts subscribers' lives.",
+        "growth_mechanism": "Word-of-mouth referrals from satisfied subscribers and partnerships with local businesses.",
+        "first_proof": "The first month brings in 100 subscribers, validating the interest in local content.",
+        "first_major_reward": "Revenue reaches $500/month, allowing you to invest in better content and marketing.",
+        "primary_opposition": "A large regional newspaper that dominates ad space and readership.",
+        "mid_story_complication": "A critical review from a local influencer leads to a drop in new subscriptions.",
+        "major_threat": "The regional newspaper launches a low-cost local news section to combat your growth.",
+        "big_decision": "To either pivot to a broader audience or double down on niche content.",
+        "stakes": "The future of the newspaper and the importance of local journalism in your community.",
+        "possible_cost": "Losing subscribers and community trust if the quality of content declines.",
+        "escalation_path": "Start with 100 subscribers → grow to 500 → 1000 → face potential acquisition offers.",
+        "endgame": "Establishing the newspaper as the leading voice in local news, with a loyal subscriber base."
+      },
+      "central_story_question": "Can a small digital newspaper thrive against larger media conglomerates?",
+      "open_loops": [
+        "How will the community respond to local news?",
+        "What tactics will be used to attract subscribers?",
+        "Will larger newspapers retaliate?",
+        "How will the protagonist handle content creation and curation?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 8,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: A local resident subscribes for $5 a month after seeing a compelling article abo",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: The first month brings in 100 subscribers, validating the interest in local cont",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Local communities lack a dedicated source for relevant news.",
+            "growth_mechanism: Word-of-mouth referrals from satisfied subscribers and partnerships with local businesses.",
+            "first_proof: The first month brings in 100 subscribers, validating the interest in local content.",
+            "major_threat: The regional newspaper launches a low-cost local news section to combat your growth.",
+            "big_decision: To either pivot to a broader audience or double down on niche content."
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint transformation_strength=8"
+          ]
+        },
+        "escalation_potential": {
+          "score": 7,
+          "evidence": [
+            "partial hint escalation_potential=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 8,
+          "evidence": [
+            "partial hint emotional_range=8"
+          ]
+        },
+        "visual_variety": {
+          "score": 7,
+          "evidence": [
+            "partial hint visual_variety=7"
+          ]
+        }
+      },
+      "overall_score": 8.4,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A passionate group of diverse community members gathered around a digital tablet, engaging with local news articles.",
+        "protagonist_state": "",
+        "environment": "",
+        "central_contrast": "The vibrant colors of the digital tablet screen against the muted tones of the town background.",
+        "emotion": "",
+        "key_object": "The digital tablet displaying headlines of local stories.",
+        "composition": "",
+        "camera": "",
+        "lighting": "",
+        "background": "",
+        "text_if_any": "",
+        "thumbnail_prompt": "Capture the essence of community engagement with a digital newspaper, showcasing people actively discussing local issues on a tablet."
+      },
+      "hook": "You sit at your cluttered desk, staring at your computer screen, the blinking cursor taunting you. A group of neighbors gathers outside, passionately discussing the latest national headlines, oblivious to the local issues that directly impact their lives. You notice their frustration with the lack of local news, and an idea strikes you: what if you could create a platform that speaks directly to them? With determination, you launch a niche digital newspaper, focusing on the heart of your community's stories, transforming it into a respected voice and the go-to source for local news.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 28,
+        "starting_cash": "100",
+        "starting_location": "small town",
+        "starting_status": "aspiring entrepreneur",
+        "target_outcome": "establishing a successful local news platform",
+        "business_or_career_type": "media",
+        "timeline_scale": "12 months"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 0
+      },
+      "rank_score": 8.4
+    },
+    {
+      "id": "abandoned_logistics_warehouse",
+      "content_format": "check_als",
+      "premise": "You acquire a dilapidated warehouse and turn it into a high-efficiency logistics hub, attracting e-commerce businesses looking for fast fulfillment.",
+      "title": "Logistics Empire: The Warehouse Transformation",
+      "title_options": [
+        {
+          "text": "From Dust to Delivery: Building a Logistics Empire",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Fast Track: Transforming a Warehouse into a Logistics Hub",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "The Last Mile: Competing Against Giants in Logistics",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine turning a forgotten warehouse into the heart of a thriving logistics empire.",
+      "starting_state": "You are a new entrepreneur with a vision and a cash investment in a dilapidated warehouse.",
+      "end_state": "You have established a successful logistics hub, recognized for fast delivery and customer satisfaction, either standing strong against competitors or being acquired by a larger firm.",
+      "core_transformation": "You grow from an uncertain entrepreneur into a confident business leader, transforming a neglected space into a vital logistics center.",
+      "story_category": "logistics",
+      "ending_direction": "overcoming competition and scaling the business",
+      "story_engine": {
+        "specific_opportunity": "E-commerce businesses are struggling with slow delivery times from existing logistics providers.",
+        "why_protagonist_notices_it": "You receive complaints from local online retailers about delays in shipping their products.",
+        "initial_action": "Purchase the abandoned warehouse for $150,000 and begin renovations.",
+        "first_customer_or_break": "A local e-commerce store agrees to a trial run with your logistics hub for $2,000 per month.",
+        "business_or_progress_mechanism": "A logistics hub that uses advanced technology to manage inventory and shipping efficiently.",
+        "why_it_works": "Faster delivery times attract e-commerce businesses that rely on quick fulfillment to keep their customers happy.",
+        "growth_mechanism": "Word-of-mouth referrals from satisfied e-commerce clients lead to increased business.",
+        "first_proof": "Successfully fulfill orders for five local businesses within the first month, achieving a 98% on-time delivery rate.",
+        "first_major_reward": "Contract with a mid-sized e-commerce company, bringing in $10,000 per month.",
+        "primary_opposition": "Established logistics companies that have long-term contracts with e-commerce businesses.",
+        "mid_story_complication": "The warehouse faces unexpected zoning regulations that delay operations for two months.",
+        "major_threat": "A major logistics firm, FedEx, starts offering lower rates to attract your customers.",
+        "big_decision": "Decide whether to reduce your rates to compete or invest in better technology to enhance your service.",
+        "stakes": "The survival of your logistics hub and the livelihoods of the employees you hire depend on your choices.",
+        "possible_cost": "Investing $50,000 in technology upgrades that may not yield immediate returns.",
+        "escalation_path": "Start with local businesses → expand to regional e-commerce companies → face off against national firms.",
+        "endgame": "Become a recognized player in the logistics industry or face acquisition by a larger competitor."
+      },
+      "central_story_question": "Can you establish your logistics hub before a major competitor takes notice?",
+      "open_loops": [
+        "What unique features will make your hub stand out?",
+        "How will you handle the initial costs of renovation?",
+        "Will the e-commerce businesses trust a new logistics provider?",
+        "What happens when a larger competitor tries to acquire your clients?"
+      ],
+      "scores": {
+        "specificity": 9,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 9,
+        "filmability": 8,
+        "thumbnail_potential": 8,
+        "emotional_range": 7,
+        "visual_variety": 7,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 9,
+          "evidence": [
+            "named industry/business model",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: Successfully fulfill orders for five local businesses within the first month, ac",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: E-commerce businesses are struggling with slow delivery times from existing logistics prov",
+            "growth_mechanism: Word-of-mouth referrals from satisfied e-commerce clients lead to increased business.",
+            "first_proof: Successfully fulfill orders for five local businesses within the first month, achieving a ",
+            "major_threat: A major logistics firm, FedEx, starts offering lower rates to attract your customers.",
+            "big_decision: Decide whether to reduce your rates to compete or invest in better technology to enhance y"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint transformation_strength=8"
+          ]
+        },
+        "escalation_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint escalation_potential=9"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 8,
+          "evidence": [
+            "partial hint thumbnail_potential=8"
+          ]
+        },
+        "emotional_range": {
+          "score": 7,
+          "evidence": [
+            "partial hint emotional_range=7"
+          ]
+        },
+        "visual_variety": {
+          "score": 7,
+          "evidence": [
+            "partial hint visual_variety=7"
+          ]
+        }
+      },
+      "overall_score": 8.4,
+      "specificity_score": 9,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A bustling logistics hub filled with delivery trucks and workers efficiently handling packages.",
+        "protagonist_state": "",
+        "environment": "",
+        "central_contrast": "The transformation from a dilapidated warehouse to a thriving logistics center.",
+        "emotion": "",
+        "key_object": "A state-of-the-art inventory management system displayed on a screen.",
+        "composition": "",
+        "camera": "",
+        "lighting": "",
+        "background": "",
+        "text_if_any": "",
+        "thumbnail_prompt": "Create a vibrant scene of a transformed logistics hub, highlighting the contrast between the old, abandoned warehouse and the new, high-tech operations."
+      },
+      "hook": "You acquire a dilapidated warehouse in a struggling industrial district. The paint is peeling, and broken windows line the walls. As you step inside, the smell of dust and disarray fills the air. E-commerce businesses nearby are struggling with slow delivery times, and you see an opportunity. You pull out your phone, reading complaints from local retailers about their logistics providers. This is your chance. You buy the warehouse for $150,000 and begin renovations, envisioning a state-of-the-art logistics hub that could turn the tide for these businesses.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "150000",
+        "starting_location": "abandoned warehouse in a struggling industrial district",
+        "starting_status": "new entrepreneur with a vision",
+        "target_outcome": "establish a successful logistics hub",
+        "business_or_career_type": "logistics and transportation",
+        "timeline_scale": "12 months"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 9,
+        "filmability": 0,
+        "thumbnail_potential": 8,
+        "emotional_range": 7,
+        "visual_variety": 7,
+        "originality": 0
+      },
+      "rank_score": 8.4
+    },
+    {
+      "id": "flower_shop_marketplace",
+      "content_format": "check_als",
+      "premise": "You build an online marketplace for local flower shops, connecting them to customers and eliminating the middleman, revitalizing the industry in your town.",
+      "title": "Blooming Business: The Flower Marketplace Revolution",
+      "title_options": [
+        {
+          "text": "Petals of Change: Reviving Local Florists",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "From Bud to Bloom: Building a Floral Empire",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "The Last Bouquet: Fighting for Local Flower Shops",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine transforming your community by empowering local flower shops and creating a thriving online marketplace.",
+      "starting_state": "Frustrated with a dead-end job while witnessing local businesses struggle.",
+      "end_state": "Leading a successful online marketplace that revitalizes local flower shops and fosters community connections.",
+      "core_transformation": "From an underemployed dreamer to a successful entrepreneur championing local businesses.",
+      "story_category": "retail",
+      "ending_direction": "fighting for survival against larger competitors",
+      "story_engine": {
+        "specific_opportunity": "Local flower shops struggle to connect with customers directly and lose sales to big online retailers.",
+        "why_protagonist_notices_it": "You visit multiple flower shops and see their owners frustrated by low foot traffic and high commission fees from wholesalers.",
+        "initial_action": "You spend three months building a user-friendly website to showcase local flower shops.",
+        "first_customer_or_break": "A local florist agrees to list their products on your site for a 10% commission.",
+        "business_or_progress_mechanism": "An online marketplace model that allows local flower shops to sell directly to consumers.",
+        "why_it_works": "Eliminating the middleman allows shops to keep prices competitive while increasing their profit margins.",
+        "growth_mechanism": "Word-of-mouth referrals from satisfied shop owners and targeted online marketing campaigns.",
+        "first_proof": "Within the first month, 20 local shops sign up, generating $2,000 in sales.",
+        "first_major_reward": "You gain enough traction to quit your day job and focus entirely on the marketplace.",
+        "primary_opposition": "A large national flower delivery service threatens to undercut prices and offer free shipping.",
+        "mid_story_complication": "One of your biggest shops decides to leave the platform after a pricing dispute, impacting your sales.",
+        "major_threat": "The national flower delivery service launches a massive advertising campaign, drawing attention away from local shops.",
+        "big_decision": "Decide whether to lower your commission rates to keep shops or maintain profitability.",
+        "stakes": "The survival of local flower shops and the potential loss of your business if they don't thrive.",
+        "possible_cost": "Investing your savings into marketing that may not yield results if shops do not adopt the platform.",
+        "escalation_path": "1 shop → 20 shops → city-wide awareness → competing against the national service.",
+        "endgame": "Either establish a loyal customer base that values local businesses or face being pushed out of the market."
+      },
+      "central_story_question": "Can you sustain your marketplace against a corporate giant's free offering?",
+      "open_loops": [
+        "Will the local shops embrace the new platform?",
+        "How will you handle the backlash from traditional wholesalers?",
+        "What will happen when a national flower delivery service enters the market?",
+        "Can you scale your platform fast enough to stay ahead?",
+        "Will you survive the financial challenges of scaling?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 7,
+        "escalation_potential": 8,
+        "filmability": 8,
+        "thumbnail_potential": 9,
+        "emotional_range": 7,
+        "visual_variety": 8,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: A local florist agrees to list their products on your site for a 10% commission.",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: Within the first month, 20 local shops sign up, generating $2,000 in sales.",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Local flower shops struggle to connect with customers directly and lose sales to big onlin",
+            "growth_mechanism: Word-of-mouth referrals from satisfied shop owners and targeted online marketing campaigns",
+            "first_proof: Within the first month, 20 local shops sign up, generating $2,000 in sales.",
+            "major_threat: The national flower delivery service launches a massive advertising campaign, drawing atte",
+            "big_decision: Decide whether to lower your commission rates to keep shops or maintain profitability."
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 7,
+          "evidence": [
+            "partial hint transformation_strength=7"
+          ]
+        },
+        "escalation_potential": {
+          "score": 8,
+          "evidence": [
+            "partial hint escalation_potential=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 7,
+          "evidence": [
+            "partial hint emotional_range=7"
+          ]
+        },
+        "visual_variety": {
+          "score": 8,
+          "evidence": [
+            "partial hint visual_variety=8"
+          ]
+        }
+      },
+      "overall_score": 8.4,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant flower shop bursting with colorful blooms, showcasing a variety of flowers that represent local craftsmanship.",
+        "protagonist_state": "Determined and passionate, with a laptop open to the marketplace website.",
+        "environment": "A sunny street in a small town, with local shops and community members interacting.",
+        "central_contrast": "The contrast between the lively flower shop and the looming shadow of a large corporate flower delivery service.",
+        "emotion": "Hope and determination to support local businesses.",
+        "key_object": "A smartphone displaying the online marketplace app, symbolizing connection.",
+        "composition": "The protagonist in the foreground, with the flower shop and the smartphone prominently featured.",
+        "camera": "A close-up shot that captures the protagonist’s focused expression.",
+        "lighting": "Bright, natural light to emphasize the vibrancy of the flowers and the positivity of the community.",
+        "background": "Hints of the town's other local shops and community members enjoying the day.",
+        "text_if_any": "Blooming Business: Supporting Local Florists",
+        "thumbnail_prompt": "Create an engaging thumbnail showing a passionate protagonist in a colorful flower shop, with a smartphone app highlighting the online marketplace."
+      },
+      "hook": "You stand in the heart of your quaint town, surrounded by vibrant blooms and the scent of fresh flowers. In the small flower shop next door, you overhear the owner lament about dwindling sales and the burden of hefty commissions. You realize there’s a massive opportunity to connect these local businesses directly with customers through an online marketplace. With a surge of determination, you decide to take action, building a platform that could not only save these shops but also bring the community closer together.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 28,
+        "starting_cash": "5000",
+        "starting_location": "small town",
+        "starting_status": "underemployed",
+        "target_outcome": "establish a thriving online marketplace",
+        "business_or_career_type": "e-commerce",
+        "timeline_scale": "1 year"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 7,
+        "escalation_potential": 8,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 7,
+        "visual_variety": 8,
+        "originality": 0
+      },
+      "rank_score": 8.4
+    },
+    {
+      "id": "sports_team_acquisition",
+      "content_format": "check_als",
+      "premise": "You make a bold move to acquire a struggling local sports team, transforming it into a championship contender and gaining unmatched recognition in your city.",
+      "title": "From Last Place to Glory: The Sports Team Revolution",
+      "title_options": [
+        {
+          "text": "Turning a Franchise Around: Your Path to Sports Glory",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "Rebuilding Dreams: The Journey of a Sports Entrepreneur",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "From Struggles to Championships: Your Legacy in Sports",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "one_line_fantasy": "Imagine transforming a struggling sports team into a championship contender and becoming a local legend.",
+      "starting_state": "A struggling sports team with a dwindling fanbase and a history of losses.",
+      "end_state": "A championship-winning team with a vibrant fanbase, solid financial backing, and a revered status in the community.",
+      "core_transformation": "You evolve from an aspiring entrepreneur to a celebrated sports icon, recognized for your leadership and vision in revitalizing the team.",
+      "story_category": "sports_business",
+      "ending_direction": "triumphant victory and legacy building",
+      "story_engine": {
+        "specific_opportunity": "The local sports team has a loyal fan base but has been underperforming for years, averaging only 2,000 fans per game.",
+        "why_protagonist_notices_it": "After attending a game, you overhear fans discussing their disappointment and longing for a winning team.",
+        "initial_action": "You approach the owner and negotiate a purchase price of $5 million to acquire the team.",
+        "first_customer_or_break": "After the acquisition, you offer discounted season tickets at $150 each, selling out the first 500 tickets within a week.",
+        "business_or_progress_mechanism": "You implement a strategy focusing on community engagement and enhanced player development.",
+        "why_it_works": "Fans are excited about fresh leadership and the chance to support a team that is committed to winning.",
+        "growth_mechanism": "You leverage local sponsorships and partnerships to increase revenue, signing a $1 million deal with a local brewery.",
+        "first_proof": "The team wins its first game under your management, drawing an audience of 8,000 fans, doubling the average attendance.",
+        "first_major_reward": "You receive a $1.5 million bonus from ticket sales and merchandise in the first season.",
+        "primary_opposition": "The previous owner and a faction of disgruntled fans who believe the team should not have been sold.",
+        "mid_story_complication": "A star player sustains a season-ending injury, threatening the team's performance and morale.",
+        "major_threat": "A rival team in the league is consistently winning and attracting more fans, overshadowing your efforts.",
+        "big_decision": "You must decide whether to invest an additional $2 million in player contracts or focus on community outreach.",
+        "stakes": "Your reputation as a sports entrepreneur and the financial viability of the team hang in the balance.",
+        "possible_cost": "Investing heavily in player contracts could lead to substantial losses if the team does not win.",
+        "escalation_path": "From grassroots initiatives → increasing ticket sales → attracting top talent → challenging the rival team for the championship.",
+        "endgame": "Lead the team to a championship victory, solidifying your status as a local sports icon and ensuring the team's financial stability."
+      },
+      "central_story_question": "Can you turn the team's fortunes around and secure your place in the city's sports history?",
+      "open_loops": [
+        "What inspired you to take the risk of acquiring the team?",
+        "How will the local community react to your acquisition?",
+        "What challenges will you face in revamping the team's image?",
+        "Will you be able to attract star players to bolster the roster?"
+      ],
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 8,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 1
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "named industry/business model",
+            "concrete customer/break: After the acquisition, you offer discounted season tickets at $150 each, selling",
+            "concrete problem/opportunity",
+            "concrete transaction/price",
+            "concrete growth mechanism",
+            "concrete competitor/threat",
+            "first proof: The team wins its first game under your management, drawing an audience of 8,000",
+            "tangible first major reward",
+            "consequential decision"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: The local sports team has a loyal fan base but has been underperforming for years, averagi",
+            "growth_mechanism: You leverage local sponsorships and partnerships to increase revenue, signing a $1 million",
+            "first_proof: The team wins its first game under your management, drawing an audience of 8,000 fans, dou",
+            "major_threat: A rival team in the league is consistently winning and attracting more fans, overshadowing",
+            "big_decision: You must decide whether to invest an additional $2 million in player contracts or focus on"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 1,
+          "evidence": [
+            "no major cliché hits"
+          ]
+        },
+        "curiosity": {
+          "score": 8,
+          "evidence": [
+            "partial hint curiosity=8"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 9,
+          "evidence": [
+            "partial hint fantasy_strength=9"
+          ]
+        },
+        "transformation_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint transformation_strength=8"
+          ]
+        },
+        "escalation_potential": {
+          "score": 7,
+          "evidence": [
+            "partial hint escalation_potential=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 9,
+          "evidence": [
+            "partial hint thumbnail_potential=9"
+          ]
+        },
+        "emotional_range": {
+          "score": 8,
+          "evidence": [
+            "partial hint emotional_range=8"
+          ]
+        },
+        "visual_variety": {
+          "score": 7,
+          "evidence": [
+            "partial hint visual_variety=7"
+          ]
+        }
+      },
+      "overall_score": 8.4,
+      "specificity_score": 10,
+      "filmability": 8,
+      "eligible": true,
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "thumbnail_concept": {
+        "main_visual": "A vibrant stadium filled with cheering fans, showcasing the excitement of a game day.",
+        "protagonist_state": "You, a determined entrepreneur, stand in front of the stadium, ready to take on the challenge of reviving the team.",
+        "environment": "The bustling atmosphere of a local city stadium, with banners and merchandise representing the struggling team.",
+        "central_contrast": "The contrast between the empty seats of past games and the packed crowd celebrating a recent victory.",
+        "emotion": "A mix of hope, determination, and excitement as you envision the team's transformation.",
+        "key_object": "A championship trophy, symbolizing your goal and the success you aim to achieve.",
+        "composition": "A dynamic shot that captures both the protagonist and the enthusiastic crowd, highlighting the journey ahead.",
+        "camera": "A wide-angle lens to encompass the grand scale of the stadium and the excitement of the fans.",
+        "lighting": "Bright stadium lights illuminating the field and the faces of the cheering crowd.",
+        "background": "The stadium's scoreboard displaying the team's recent win, showcasing the turnaround.",
+        "text_if_any": "From Last Place to Glory: Join the Journey!",
+        "thumbnail_prompt": "Create a thrilling image of a bustling stadium on game day, highlighting the journey of transforming a struggling sports team into a championship contender."
+      },
+      "hook": "You sit in the stands, the crowd's disappointment palpable as the home team struggles to find its footing. The owner has just announced the team is up for sale. You feel a spark of determination ignite within you.  \n\nWhat if you could take this team, once a source of pride, and turn it into a championship contender?  \n\nWith a bold move, you approach the owner and negotiate a purchase price of $5 million, ready to transform the franchise and gain unmatched recognition in your city.",
+      "hook_seconds_target": [
+        15,
+        30
+      ],
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "500000",
+        "starting_location": "local city stadium",
+        "starting_status": "aspiring entrepreneur",
+        "target_outcome": "championship victory and legacy",
+        "business_or_career_type": "sports franchise ownership",
+        "timeline_scale": "3 years"
+      },
+      "coherence": {
+        "pass": true,
+        "title_matches_thumbnail": true,
+        "hook_fulfills_promise": true,
+        "transformation_aligned": true,
+        "checks": {
+          "title": true,
+          "fantasy": true,
+          "thumbnail": true,
+          "hook": true,
+          "transformation": true,
+          "end_state": true
+        },
+        "notes": "",
+        "aux_lexical_title_thumb": true
+      },
+      "llm_score_hints": {
+        "specificity": 0,
+        "story_engine_strength": 0,
+        "curiosity": 8,
+        "fantasy_strength": 9,
+        "transformation_strength": 8,
+        "escalation_potential": 7,
+        "filmability": 0,
+        "thumbnail_potential": 9,
+        "emotional_range": 8,
+        "visual_variety": 7,
+        "originality": 0
+      },
+      "rank_score": 8.4
+    }
+  ]
+}

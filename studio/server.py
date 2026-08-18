@@ -26,12 +26,18 @@ from src.documentary.runtime import configure_workspace, on_vercel  # noqa: E402
 configure_workspace()
 
 from src.documentary.channel import (  # noqa: E402
+    FORMAT_CHECK_ALS,
+    FORMAT_DOCUMENTARY,
     business_documentary_profile,
     channel_display_name,
+    check_als_profile,
+    content_format_from_profile,
     duration_range_from_profile,
     goal_count_from_profile,
+    is_check_als_profile,
     is_documentary_profile,
     language_from_profile,
+    normalize_content_format,
     profile_snapshot,
     target_words_from_profile,
 )
@@ -299,6 +305,11 @@ def create_app() -> FastAPI:
                     "session_id": sess.get("id"),
                     "tagline": (profile.get("channel") or {}).get("tagline")
                     or "Fascinating true stories about companies.",
+                    "content_format": content_format_from_profile(profile),
+                },
+                "formats": {
+                    "active": content_format_from_profile(profile),
+                    "available": [FORMAT_DOCUMENTARY, FORMAT_CHECK_ALS],
                 },
                 "workspace": {
                     "projects_dir": str(PROJECTS_ROOT),
@@ -394,52 +405,119 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
-    # ── ideas ───────────────────────────────────────────────────────
+    # ── ideas / Check concepts ───────────────────────────────────────
     @app.post("/api/ideas")
     def ideas(body: IdeasBody | None = None):
         body = body or IdeasBody()
-        sess, profile = _ensure_channel()
+        fmt = normalize_content_format(body.content_format) if body.content_format else None
+        if fmt:
+            sess, profile = _activate_format(fmt)
+        else:
+            sess, profile = _ensure_channel()
         prior = list_projects_for_session(str(sess.get("id") or ""))
         try:
+            active_fmt = content_format_from_profile(profile)
             items = generate_story_ideas(
                 profile,
                 prior_videos=prior,
                 memory_summary=str(sess.get("memory_summary") or ""),
                 count=int(body.count or 5),
                 use_llm=True,
+                content_format=active_fmt,
+                categories=list(body.categories or []) or None,
             )
-            return {"ideas": items}
+            return {
+                "ideas": items,
+                "concepts": items if active_fmt == FORMAT_CHECK_ALS else [],
+                "content_format": active_fmt,
+            }
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
+    @app.post("/api/concepts/regenerate")
+    def regenerate_concept(body: ConceptRegenBody):
+        from src.documentary.formats.check_als.concepts import regenerate_concept_part
+
+        _activate_format(FORMAT_CHECK_ALS)
+        try:
+            pkg = regenerate_concept_part(
+                body.package or {},
+                body.part,
+                profile=check_als_profile(),
+                use_llm=True,
+            )
+            return {"package": pkg, "content_format": FORMAT_CHECK_ALS}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/channel/format")
+    def switch_format(body: FormatBody | None = None):
+        body = body or FormatBody()
+        fmt = normalize_content_format(body.content_format)
+        sess, profile = _activate_format(fmt)
+        return {
+            "ok": True,
+            "content_format": content_format_from_profile(profile),
+            "channel": {
+                "name": channel_display_name(profile, str(sess.get("title") or "")),
+                "session_id": sess.get("id"),
+                "tagline": (profile.get("channel") or {}).get("tagline") or "",
+                "content_format": content_format_from_profile(profile),
+            },
+        }
+
     @app.post("/api/projects")
     def new_project(body: NewProjectBody):
-        sess, profile = _ensure_channel()
-        idea = body.idea or {
-            "title_concept": body.title or body.topic,
-            "story": body.topic,
-            "hook": "",
-            "why_it_works": "User topic",
-            "content_pillar": "",
-            "visual_potential": "Medium",
-            "research_risk": "Medium",
-            "primary_entity": (body.topic or "")[:80],
-        }
-        topic = str(idea.get("story") or idea.get("title_concept") or body.topic or "").strip()
-        title = str(idea.get("title_concept") or body.title or topic).strip()
-        if not topic:
-            raise HTTPException(400, "Topic required")
+        concept = body.concept if isinstance(body.concept, dict) else None
+        fmt_hint = normalize_content_format(body.content_format) if body.content_format else None
+        if concept:
+            fmt_hint = FORMAT_CHECK_ALS
+        sess, profile = _activate_format(fmt_hint) if fmt_hint else _ensure_channel()
+
         try:
-            data = create_project(
-                topic,
-                title=title,
-                target_words=target_words_from_profile(profile, 2000),
-                session_id=str(sess.get("id") or ""),
-                creative_profile=profile_snapshot(profile),
-                idea=idea,
-                language=language_from_profile(profile),
-                target_duration_min=duration_range_from_profile(profile),
-            )
+            if concept or (isinstance(body.idea, dict) and isinstance((body.idea or {}).get("check_concept"), dict)):
+                from src.documentary.formats.check_als.concepts import package_to_project_fields
+
+                pkg = concept or (body.idea or {}).get("check_concept")
+                fields = package_to_project_fields(pkg)
+                data = create_project(
+                    str(fields["topic"]),
+                    title=str(fields["title"]),
+                    target_words=int(fields.get("target_words") or 2200),
+                    session_id=str(sess.get("id") or ""),
+                    creative_profile=profile_snapshot(check_als_profile()),
+                    idea=fields.get("idea"),
+                    language=fields.get("language") or "es",
+                    target_duration_min=list(fields.get("target_duration_min") or [12, 18]),
+                    content_format=FORMAT_CHECK_ALS,
+                    concept=fields.get("concept"),
+                )
+            else:
+                idea = body.idea or {
+                    "title_concept": body.title or body.topic,
+                    "story": body.topic,
+                    "hook": "",
+                    "why_it_works": "User topic",
+                    "content_pillar": "",
+                    "visual_potential": "Medium",
+                    "research_risk": "Medium",
+                    "primary_entity": (body.topic or "")[:80],
+                }
+                topic = str(idea.get("story") or idea.get("title_concept") or body.topic or "").strip()
+                title = str(idea.get("title_concept") or body.title or topic).strip()
+                if not topic:
+                    raise HTTPException(400, "Topic required")
+                data = create_project(
+                    topic,
+                    title=title,
+                    target_words=target_words_from_profile(profile, 2000),
+                    session_id=str(sess.get("id") or ""),
+                    creative_profile=profile_snapshot(profile),
+                    idea=idea,
+                    language=language_from_profile(profile),
+                    target_duration_min=duration_range_from_profile(profile),
+                    content_format=content_format_from_profile(profile),
+                )
             if on_vercel():
                 from src.documentary import cloud_sync
 
@@ -447,6 +525,8 @@ def create_app() -> FastAPI:
                     _sync_safe(lambda: cloud_sync.push_project(str(data.get("id") or "")))
                     _sync_safe(cloud_sync.push_sessions)
             return {"project": _project_full(data)}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
@@ -1548,12 +1628,25 @@ def _flow_payload(project_id: str, p: dict[str, Any]) -> dict[str, Any]:
 
 class IdeasBody(BaseModel):
     count: int = 5
+    content_format: str = ""
+    categories: list[str] = Field(default_factory=list)
+
+
+class ConceptRegenBody(BaseModel):
+    package: dict[str, Any] = Field(default_factory=dict)
+    part: str = "title"  # concept | title | thumbnail | hook
+
+
+class FormatBody(BaseModel):
+    content_format: str = FORMAT_CHECK_ALS
 
 
 class NewProjectBody(BaseModel):
     topic: str = ""
     title: str = ""
     idea: dict[str, Any] | None = None
+    concept: dict[str, Any] | None = None
+    content_format: str = ""
 
 
 class StepBody(BaseModel):
@@ -1645,10 +1738,13 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "id": p.get("id"),
         "title": p.get("title"),
         "topic": p.get("topic"),
+        "mode": p.get("mode") or "documentary",
+        "content_format": p.get("content_format") or "documentary",
         "episode_number": int(p.get("episode_number") or 0),
         "ui_step": p.get("ui_step") or prog.get("current") or "research",
         "progress": prog,
         "idea": p.get("idea") or {},
+        "concept": p.get("concept") or {},
         "research_notes": p.get("research_notes") or "",
         "sources": p.get("sources") or [],
         "research_ai_generated": bool(p.get("research_ai_generated")),
@@ -1682,7 +1778,20 @@ def _voice_of(p: dict) -> dict:
     return voice
 
 
-def _ensure_channel() -> tuple[dict[str, Any], dict[str, Any]]:
+def _ensure_channel(preferred_format: str | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Keep documentary channel intact; optionally prefer Check ALS when requested."""
+    _ensure_documentary_channel()
+    _ensure_check_channel()
+    want = normalize_content_format(preferred_format) if preferred_format else None
+    if not want:
+        env_fmt = (os.getenv("FRAMEFACTORY_CONTENT_FORMAT") or "").strip()
+        want = normalize_content_format(env_fmt) if env_fmt else None
+    if want == FORMAT_CHECK_ALS:
+        return _activate_format(FORMAT_CHECK_ALS)
+    return _activate_format(FORMAT_DOCUMENTARY)
+
+
+def _ensure_documentary_channel() -> None:
     store = ensure_store()
     for s in store.get("sessions") or []:
         if not isinstance(s, dict):
@@ -1698,28 +1807,82 @@ def _ensure_channel() -> tuple[dict[str, Any], dict[str, Any]]:
             stale_dur = list(ch.get("target_duration_min") or []) != list(fresh_ch.get("target_duration_min") or [11, 15])
             stale_tag = ch.get("tagline") != fresh_ch.get("tagline")
             if stale_words or stale_dur or stale_tag or not is_documentary_profile(prof):
-                # Keep session id/messages; refresh editorial defaults (2000 words / 11–15 min)
                 s["creative_profile"] = fresh
                 persist_session(store, str(s["id"]), list(s.get("messages") or []), fresh)
-                prof = fresh
-            set_active_session(store, str(s["id"]))
-            return s, merge_profile_disk(s.get("creative_profile"))
-
+            return
     profile = business_documentary_profile()
-    opening = "100 Days — Business Documentaries channel ready."
     store, sid = add_session(store, "100 Days — Business Documentaries", profile)
-    messages = [
-        {"role": "assistant", "content": opening},
-    ]
-    persist_session(store, sid, messages, profile)
+    persist_session(store, sid, [{"role": "assistant", "content": "100 Days — Business Documentaries channel ready."}], profile)
     persist_session_summary(
         store,
         sid,
         "Channel: 100 Days Business Documentaries. EN, ~11–15 min / ~2000 words, story-first.",
     )
+
+
+def _ensure_check_channel() -> None:
+    from src.documentary.formats.check_als.editorial import CHANNEL_NAME
+
+    store = ensure_store()
+    for s in store.get("sessions") or []:
+        if not isinstance(s, dict):
+            continue
+        title = str(s.get("title") or "")
+        prof = merge_profile_disk(s.get("creative_profile"))
+        ch_name = str((prof.get("channel") or {}).get("name") or "")
+        if CHANNEL_NAME in title or CHANNEL_NAME in ch_name or is_check_als_profile(prof):
+            fresh = check_als_profile()
+            # Refresh pack defaults without deleting session
+            s["creative_profile"] = fresh
+            persist_session(store, str(s["id"]), list(s.get("messages") or []), fresh)
+            return
+    profile = check_als_profile()
+    store, sid = add_session(store, CHANNEL_NAME, profile)
+    persist_session(
+        store,
+        sid,
+        [{"role": "assistant", "content": "Check — Aspirational Life Simulations ready."}],
+        profile,
+    )
+    persist_session_summary(
+        store,
+        sid,
+        "Channel: Check ALS. EN, second person, 12–18 min, fictional life progression.",
+    )
+
+
+def _activate_format(fmt: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    from src.documentary.formats.check_als.editorial import CHANNEL_NAME
+
+    fmt = normalize_content_format(fmt)
+    _ensure_documentary_channel()
+    _ensure_check_channel()
+    store = ensure_store()
+    target_name = CHANNEL_NAME if fmt == FORMAT_CHECK_ALS else "100 Days — Business Documentaries"
+    for s in store.get("sessions") or []:
+        if not isinstance(s, dict):
+            continue
+        title = str(s.get("title") or "")
+        prof = merge_profile_disk(s.get("creative_profile"))
+        ch_name = str((prof.get("channel") or {}).get("name") or "")
+        hit = target_name in title or target_name in ch_name
+        if fmt == FORMAT_CHECK_ALS:
+            hit = hit or is_check_als_profile(prof)
+        else:
+            hit = hit or is_documentary_profile(prof)
+        if hit:
+            set_active_session(store, str(s["id"]))
+            return s, merge_profile_disk(s.get("creative_profile"))
+    # Fallback
+    if fmt == FORMAT_CHECK_ALS:
+        profile = check_als_profile()
+        store, sid = add_session(store, CHANNEL_NAME, profile)
+        set_active_session(store, sid)
+        return {"id": sid, "title": CHANNEL_NAME}, profile
+    profile = business_documentary_profile()
+    store, sid = add_session(store, "100 Days — Business Documentaries", profile)
     set_active_session(store, sid)
-    sess = get_session(load_store(), sid) or {"id": sid, "title": "100 Days — Business Documentaries"}
-    return sess, profile
+    return {"id": sid, "title": "100 Days — Business Documentaries"}, profile
 
 
 # Named studio_app on purpose: a top-level `app` makes Vercel detect FastAPI

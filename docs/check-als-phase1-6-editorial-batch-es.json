@@ -1,0 +1,4675 @@
+{
+  "phase": "1.6",
+  "counts": {
+    "generated": 23,
+    "rejected": 13,
+    "eligible": 10,
+    "returned": 10
+  },
+  "content_language": "es",
+  "image_prompt_language": "en",
+  "generated": 23,
+  "rejected": [
+    {
+      "id": "lavanderia-franquicia",
+      "title": "POV: Compras una lavandería por $1 y construyes un imperio",
+      "premise": "Compras una lavandería por $1; el techo es franquiciar 120 locales y pelear con una cadena nacional.",
+      "scale_ceiling": "national",
+      "eligible": false,
+      "failed_gates": [
+        "has_scale_progression"
+      ],
+      "reasons": [
+        "escalation_ladder corta o scale_potential bajo"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 8.85
+    },
+    {
+      "id": "palcos-esports",
+      "title": "POV: Empiezas a llenar palcos vacíos en eventos de esports",
+      "premise": "En los eventos de esports, hay palcos vacíos que podrían ser ocupados por fanáticos dispuestos a pagar. Ofreces licencias prepago para que los equipos de la liga puedan vender porciones de sus palcos a estos fanáticos, creando una nueva fuente de ingresos.",
+      "scale_ceiling": "international",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 9.3
+    },
+    {
+      "id": "club-licenciamiento",
+      "title": "POV: Compras los derechos de imagen de un club de fútbol y lo transformas en un éxito.",
+      "premise": "Adquieres derechos de imagen de un equipo de fútbol y mejoras la marca; logras una venta multimillonaria.",
+      "scale_ceiling": "national",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 9.45
+    },
+    {
+      "id": "merchandising-nft",
+      "title": "POV: Compras merchandising de artistas emergentes y creas NFTs para fans internacionales",
+      "premise": "Compras merchandising de artistas emergentes; introduces NFTs y creas una comunidad internacional de fans.",
+      "scale_ceiling": "international",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 8.45
+    },
+    {
+      "id": "clases-online",
+      "title": "POV: Empiezas tu plataforma de clases de dibujo online",
+      "premise": "Inicias clases de dibujo online; te vuelves la plataforma de arte más popular y accedes a un público global.",
+      "scale_ceiling": "international",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 9.45
+    },
+    {
+      "id": "paneles-solares",
+      "title": "POV: Construyes paneles solares accesibles para todas las familias",
+      "premise": "Una empresa fabrica paneles solares de bajo costo, permitiendo que todas las familias puedan acceder a energía limpia y sostenible, generando un impacto positivo en el medio ambiente y la economía local.",
+      "scale_ceiling": "national",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 9.1
+    },
+    {
+      "id": "piscinas-mantenimiento",
+      "title": "POV: Compras una empresa de mantenimiento de piscinas en quiebra y la transformas",
+      "premise": "Adquieres una empresa de mantenimiento de piscinas en quiebra; la elevas y la vendes a una gran corporación.",
+      "scale_ceiling": "national",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 8.95
+    },
+    {
+      "id": "bio-cuidado",
+      "title": "POV: Creas una marca de productos bio y la llevas al mundo",
+      "premise": "Compras productos de cuidado personal bio a granel; vendes a través de una tienda online y creas tu marca internacionalmente.",
+      "scale_ceiling": "international",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 9.1
+    },
+    {
+      "id": "taller-restauracion",
+      "title": "POV: Transformas un taller de antigüedades en un estudio artístico",
+      "premise": "Recuperas un taller de restauración de antigüedades; lo conviertes en un estudio artístico que atrae a compradores de todo el país.",
+      "scale_ceiling": "national",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: no es segunda persona (falta tú/te/tienes/eres…)"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 9.45
+    },
+    {
+      "id": "agencia-influencers",
+      "title": "POV: Creas una agencia de influencers y luchas por destacar",
+      "premise": "Creas una agencia de influencers que conecta marcas con creadores; te conviertes en el puente entre ambos mundos.",
+      "scale_ceiling": "national",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 8.55
+    },
+    {
+      "id": "interiorismo-sostenible",
+      "title": "POV: Montas una empresa de interiorismo sostenible y te vuelves un referente mundial",
+      "premise": "Montas una empresa de interiorismo que utiliza solo materiales sostenibles; te vuelves un referente a nivel mundial en eco-diseño.",
+      "scale_ceiling": "international",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 8.95
+    },
+    {
+      "id": "coaching-online",
+      "title": "POV: Empiezas a dar coaching online y transformas vidas",
+      "premise": "Inicias sesiones de coaching online sobre productividad; tu audiencia se expande a miles en todo el mundo.",
+      "scale_ceiling": "international",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 8.8
+    },
+    {
+      "id": "vendo-flores",
+      "title": "POV: Adquieres una florería en quiebra y la conviertes en un imperio floral",
+      "premise": "Adquieres una florería en quiebra; innovas con sus productos y te conviertes en líder en ventas en el país.",
+      "scale_ceiling": "national",
+      "eligible": false,
+      "failed_gates": [
+        "has_valid_hook"
+      ],
+      "reasons": [
+        "hook: hook sin detalle situacional concreto"
+      ],
+      "overall_score": 4.9,
+      "aspirational_score": 9.15
+    }
+  ],
+  "eligible": [
+    {
+      "id": "taller-ia",
+      "title": "POV: Construyes una recepcionista IA para talleres mecánicos",
+      "overall_score": 8.9,
+      "aspirational_score": 9.25,
+      "scale_ceiling": "national",
+      "story_category": "tecnología",
+      "specific_mechanism": "SaaS de suscripción para reservas fuera de horario en talleres"
+    },
+    {
+      "id": "motos-logistica",
+      "title": "POV: Comienzas un servicio de logística con motos desechadas",
+      "overall_score": 8.57,
+      "aspirational_score": 8.6,
+      "scale_ceiling": "national",
+      "story_category": "logística",
+      "specific_mechanism": "Servicio de logística urgente utilizando motos reparadas para entregas rápidas."
+    },
+    {
+      "id": "cafeteria-creator-economy",
+      "title": "POV: Construyes una cafetería que se convierte en un centro creativo",
+      "overall_score": 9.01,
+      "aspirational_score": 9.45,
+      "scale_ceiling": "national",
+      "story_category": "retail",
+      "specific_mechanism": "Modelo de negocio basado en la venta de café y comida mientras se realizan eventos creativos."
+    },
+    {
+      "id": "franquicia-bio",
+      "title": "POV: Creas una franquicia de comida bio",
+      "overall_score": 8.9,
+      "aspirational_score": 9.25,
+      "scale_ceiling": "national",
+      "story_category": "retail",
+      "specific_mechanism": "Sistema de franquicias que permite a otros emprendedores abrir sucursales de tu marca con un modelo de negocio probado."
+    },
+    {
+      "id": "software-educativo",
+      "title": "POV: Construyes un software educativo que transforma la enseñanza",
+      "overall_score": 8.65,
+      "aspirational_score": 8.65,
+      "scale_ceiling": "international",
+      "story_category": "tecnología",
+      "specific_mechanism": "Modelo de suscripción anual por $120 por estudiante."
+    },
+    {
+      "id": "productos-aroma",
+      "title": "POV: Creas un imperio sensorial de aromas únicos",
+      "overall_score": 8.9,
+      "aspirational_score": 9.25,
+      "scale_ceiling": "national",
+      "story_category": "retail",
+      "specific_mechanism": "Marketplace que conecta a productores de aromas artesanales con consumidores interesados."
+    },
+    {
+      "id": "renting-coches",
+      "title": "POV: Compras una empresa de renting de coches y la escalas internacionalmente",
+      "overall_score": 8.7,
+      "aspirational_score": 9.15,
+      "scale_ceiling": "national",
+      "story_category": "logística",
+      "specific_mechanism": "Modelo de renting corporativo con contratos anuales y precios competitivos."
+    },
+    {
+      "id": "red-de-gimnasios",
+      "title": "POV: Abres tu primer gimnasio y creas un imperio fitness",
+      "overall_score": 8.78,
+      "aspirational_score": 9.25,
+      "scale_ceiling": "national",
+      "story_category": "hospitalidad",
+      "specific_mechanism": "Franquicias que replican tu modelo de negocio de gimnasio exitoso."
+    },
+    {
+      "id": "alquiler-de-espacios",
+      "title": "POV: Alquilas espacios y revives comunidades",
+      "overall_score": 8.76,
+      "aspirational_score": 8.9,
+      "scale_ceiling": "national",
+      "story_category": "inmobiliaria",
+      "specific_mechanism": "Modelo de negocio basado en alquileres flexibles y servicios adicionales como wifi y mobiliario."
+    },
+    {
+      "id": "mercado-agricultura",
+      "title": "POV: Creas un marketplace agrícola y empoderas a productores locales",
+      "overall_score": 8.87,
+      "aspirational_score": 9.1,
+      "scale_ceiling": "national",
+      "story_category": "retail",
+      "specific_mechanism": "Marketplace en línea que conecta agricultores locales con consumidores urbanos."
+    }
+  ],
+  "top10": [
+    {
+      "title": "POV: Construyes una cafetería que se convierte en un centro creativo",
+      "premise": "Tienes una cafetería que alberga creadores locales; se hace famosa y te vuelves dueño de una comunidad de miles.",
+      "story_engine": {
+        "specific_opportunity": "Las cafeterías tradicionales no ofrecen espacios para que los creadores locales se presenten y vendan sus productos.",
+        "why_protagonist_notices_it": "Observas a artistas y creadores buscando lugares donde mostrar su trabajo pero sin éxito.",
+        "initial_action": "Decides ofrecer tu cafetería como un espacio gratuito para eventos y presentaciones de creadores locales.",
+        "first_customer_or_break": "Un ilustrador organiza su primera exposición en tu cafetería y atrae a 50 personas en una sola noche.",
+        "business_or_progress_mechanism": "Modelo de negocio basado en la venta de café y comida mientras se realizan eventos creativos.",
+        "why_it_works": "Los creadores y sus seguidores compran café y comida, aumentando tus ingresos mientras apoyas a la comunidad.",
+        "growth_mechanism": "Los creadores atraen a sus seguidores, quienes se convierten en clientes regulares de la cafetería.",
+        "first_proof": "Atraes a 200 nuevos clientes en el primer mes gracias a los eventos de creadores.",
+        "first_major_reward": "Logras un aumento del 50% en las ventas mensuales gracias a la afluencia de nuevos clientes.",
+        "primary_opposition": "Otras cafeterías que comienzan a ofrecer eventos similares para atraer clientes.",
+        "mid_story_complication": "Un creador popular decide mudarse a otra ciudad y llevas a cabo un evento menos concurrido.",
+        "major_threat": "Una cadena de cafeterías nacional lanza una campaña para atraer creadores a sus locales con grandes incentivos.",
+        "big_decision": "Decidir entre mantener el enfoque en creadores locales o expandir a otros tipos de eventos más comerciales.",
+        "stakes": "Si no puedes mantener la comunidad, perderás tanto la clientela como la reputación de la cafetería.",
+        "possible_cost": "Inversiones en marketing y eventos que no generan el retorno esperado.",
+        "escalation_path": "['1 evento semanal', '10 eventos al mes', 'Colaboraciones con artistas locales', 'Apertura de un segundo local', 'Consolidación de una red de cafeterías creativas en la ciudad', 'Expansión a otras ciudades', 'Conviértete en un referente nacional de la cultura creativa']",
+        "endgame": "Convertirte en un referente de la cultura creativa en la ciudad, con una red de cafeterías que apoyan a creadores locales."
+      },
+      "escalation_ladder": [
+        "1 evento semanal",
+        "10 eventos al mes",
+        "Colaboraciones con artistas locales",
+        "Apertura de un segundo local",
+        "Consolidación de una red de cafeterías creativas en la ciudad",
+        "Expansión a otras ciudades",
+        "Conviértete en un referente nacional de la cultura creativa"
+      ],
+      "life_progression": {
+        "start": [
+          "Propietario de una pequeña cafetería",
+          "Pocos clientes y escasa interacción con la comunidad"
+        ],
+        "early_reward": [
+          "Aumento del 30% en ventas tras el primer evento exitoso",
+          "Reconocimiento local entre los creadores"
+        ],
+        "mid_reward": [
+          "Estableces un calendario regular de eventos",
+          "Aumentas tu base de clientes a 500"
+        ],
+        "major_reward": [
+          "Patrimonio neto de $500,000",
+          "Red de 3 cafeterías funcionando"
+        ],
+        "late_state": [
+          "Disfrutas de más tiempo libre",
+          "Te conviertes en un líder de opinión en la comunidad creativa"
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Aumento del 50% en las ventas mensuales gracias a eventos creativos.",
+          "story_beat": "Logras un aumento significativo en tus ingresos."
+        },
+        {
+          "type": "status",
+          "description": "Reconocimiento como referente de la cultura creativa en la ciudad.",
+          "story_beat": "Te conviertes en un líder respetado en la comunidad."
+        },
+        {
+          "type": "freedom",
+          "description": "Mayor tiempo libre para disfrutar de tu vida personal.",
+          "story_beat": "Puedes equilibrar trabajo y vida personal de manera efectiva."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Una cafetería pequeña con pocos clientes y escaso reconocimiento.",
+        "end": "Una red de cafeterías reconocidas a nivel nacional, con una comunidad activa de creadores.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 6,
+        "evidence": [
+          "amenaza competitiva de escala",
+          "escalation_ladder con 7 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy": {
+        "score": 8,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, freedom, status",
+          "vida deseable: patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo convertir una cafetería local en un centro de creatividad y comunidad rentable?",
+      "open_loops": [
+        "¿Cómo atraer a los creadores locales a tu cafetería?",
+        "¿Qué estrategias usarás para monetizar la comunidad que creas?",
+        "¿Cómo manejarás la competencia de otras cafeterías y espacios creativos?",
+        "¿Qué pasará si la comunidad se vuelve demasiado grande para manejarla tú solo?"
+      ],
+      "hook": "¿Tienes una pasión por el café y la creatividad? Imagina tener una cafetería que no solo sirve las mejores bebidas, sino que también se convierte en un refugio para creadores locales. Atrae a artistas, músicos y emprendedores, y construye una comunidad vibrante que te llevará a la fama. ¡Descubre cómo transformar tu cafetería en un centro de creatividad y comunidad rentable!",
+      "thumbnail_concept": {
+        "main_visual": "Una cafetería vibrante llena de gente creativa.",
+        "protagonist_state": "El propietario sonriente interactuando con los clientes.",
+        "environment": "Un espacio acogedor con arte en las paredes.",
+        "central_contrast": "El bullicio de la cafetería frente a la soledad del inicio.",
+        "emotion": "Energía creativa y conexión comunitaria.",
+        "key_object": "Una taza de café en la mano del protagonista.",
+        "composition": "Vista amplia de la cafetería con enfoque en el protagonista.",
+        "camera": "Ángulo bajo para dar protagonismo al propietario.",
+        "lighting": "Luz cálida y acogedora.",
+        "background": "Artistas y creadores trabajando y socializando.",
+        "text_if_any": "¡Únete a la comunidad creativa!",
+        "thumbnail_prompt": "A vibrant coffee shop filled with creative people, showcasing community and artistic expression."
+      },
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$5000",
+        "starting_location": "Centro de la ciudad",
+        "starting_status": "Propietario de una pequeña cafetería",
+        "target_outcome": "Convertirte en un referente cultural con múltiples locales.",
+        "business_or_career_type": "Cafetería y espacio creativo",
+        "timeline_scale": "5 años"
+      },
+      "aspirational_score": 9.45,
+      "aspirational_evidence": [
+        "amenaza competitiva de escala",
+        "escalation_ladder con 7 niveles",
+        "scale_ceiling=national",
+        "fantasía de ownership/control",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, freedom, status",
+        "vida deseable: patrimonio",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 6,
+          "evidence": [
+            "amenaza competitiva de escala",
+            "escalation_ladder con 7 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control"
+          ]
+        },
+        "life_fantasy": {
+          "score": 8,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, freedom, status",
+            "vida deseable: patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 9.45,
+        "aspirational_evidence": [
+          "amenaza competitiva de escala",
+          "escalation_ladder con 7 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, freedom, status",
+          "vida deseable: patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 8,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "1 evento semanal",
+            "10 eventos al mes",
+            "Colaboraciones con artistas locales",
+            "Apertura de un segundo local",
+            "Consolidación de una red de cafeterías creativas en la ciudad",
+            "Expansión a otras ciudades",
+            "Conviértete en un referente nacional de la cultura creativa"
+          ],
+          "life_progression": {
+            "start": [
+              "Propietario de una pequeña cafetería",
+              "Pocos clientes y escasa interacción con la comunidad"
+            ],
+            "early_reward": [
+              "Aumento del 30% en ventas tras el primer evento exitoso",
+              "Reconocimiento local entre los creadores"
+            ],
+            "mid_reward": [
+              "Estableces un calendario regular de eventos",
+              "Aumentas tu base de clientes a 500"
+            ],
+            "major_reward": [
+              "Patrimonio neto de $500,000",
+              "Red de 3 cafeterías funcionando"
+            ],
+            "late_state": [
+              "Disfrutas de más tiempo libre",
+              "Te conviertes en un líder de opinión en la comunidad creativa"
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Aumento del 50% en las ventas mensuales gracias a eventos creativos.",
+              "story_beat": "Logras un aumento significativo en tus ingresos."
+            },
+            {
+              "type": "status",
+              "description": "Reconocimiento como referente de la cultura creativa en la ciudad.",
+              "story_beat": "Te conviertes en un líder respetado en la comunidad."
+            },
+            {
+              "type": "freedom",
+              "description": "Mayor tiempo libre para disfrutar de tu vida personal.",
+              "story_beat": "Puedes equilibrar trabajo y vida personal de manera efectiva."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Una cafetería pequeña con pocos clientes y escaso reconocimiento.",
+            "end": "Una red de cafeterías reconocidas a nivel nacional, con una comunidad activa de creadores.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 8,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Un ilustrador organiza su primera exposición en tu cafetería y atrae a 50 person",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Atraes a 200 nuevos clientes en el primer mes gracias a los eventos de creadores",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Las cafeterías tradicionales no ofrecen espacios para que los creadores locales se present",
+            "growth_mechanism: Los creadores atraen a sus seguidores, quienes se convierten en clientes regulares de la c",
+            "first_proof: Atraes a 200 nuevos clientes en el primer mes gracias a los eventos de creadores.",
+            "major_threat: Una cadena de cafeterías nacional lanza una campaña para atraer creadores a sus locales co",
+            "big_decision: Decidir entre mantener el enfoque en creadores locales o expandir a otros tipos de eventos"
+          ]
+        },
+        "aspirational_strength": {
+          "score": 10,
+          "evidence": [
+            "amenaza competitiva de escala",
+            "escalation_ladder con 7 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas"
+          ]
+        },
+        "life_transformation": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, freedom, status",
+            "vida deseable: patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 8,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=7"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 9.01,
+      "rank_score": 9.1045,
+      "story_category": "retail",
+      "one_line_fantasy": "Construir un espacio donde la creatividad florezca y las comunidades se unan.",
+      "starting_state": "Tienes una pequeña cafetería con pocos clientes y un menú básico.",
+      "end_state": "A los 5 años, tu cafetería es un referente cultural en la ciudad, con un patrimonio neto de $500,000, 10 empleados, y una red de 3 locales, mientras disfrutas de más tiempo libre.",
+      "core_transformation": "Pasar de ser un propietario de cafetería anónimo a ser un líder en la comunidad creativa local.",
+      "ending_direction": "expansión y consolidación de la comunidad",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Creas una comunidad alrededor de tu cafetería",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Transformas tu cafetería en un espacio para creadores",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Haces de tu cafetería un referente cultural",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Modelo de negocio basado en la venta de café y comida mientras se realizan eventos creativos.",
+      "business_fantasy_eval": {
+        "score": 6,
+        "evidence": [
+          "amenaza competitiva de escala",
+          "escalation_ladder con 7 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 8,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, freedom, status",
+          "vida deseable: patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Construyes una recepcionista IA para talleres mecánicos",
+      "premise": "A los 20 trabajas en la recepción de un taller mecánico. Después de las 18h las llamadas quedan sin contestar. Construyes una recepcionista IA tosca, cobras $99/mes, agendas 43 trabajos el primer mes, escalas a grupos de concesionarios y entonces la plataforma más grande de talleres copia la función y la regala gratis.",
+      "story_engine": {
+        "specific_opportunity": "Los talleres pierden trabajos después de las 18h porque nadie contesta el teléfono",
+        "why_protagonist_notices_it": "Ves al dueño cerrar mientras el teléfono sigue sonando",
+        "initial_action": "Construyes una recepcionista IA tosca en un fin de semana",
+        "first_customer_or_break": "Tu dueño paga $99/mes si agenda trabajos reales",
+        "business_or_progress_mechanism": "SaaS de suscripción para reservas fuera de horario en talleres",
+        "why_it_works": "$99 es más barato que perder un solo trabajo de frenos",
+        "growth_mechanism": "Referidos entre dueños y luego grupos multi-local de concesionarios",
+        "first_proof": "43 trabajos agendados el primer mes",
+        "first_major_reward": "Suficiente MRR para dejar el mostrador",
+        "primary_opposition": "Dueños que desconfían de una recepción con IA",
+        "mid_story_complication": "Una mala transcripción casi hace perder la cuenta piloto",
+        "major_threat": "La plataforma más grande de gestión de talleres copia la función y la incluye gratis",
+        "big_decision": "Vender al incumbente o pelear como especialista",
+        "stakes": "Tus usuarios y si los talleres independientes siguen teniendo opción",
+        "possible_cost": "Años de trabajo absorbidos en la página de producto de un competidor",
+        "escalation_path": "['1 taller → 5 → 50 → concesionarios → guerra del clon gratis']",
+        "endgame": "Sobrevivir como capa especializada o ser comprado en malas condiciones"
+      },
+      "escalation_ladder": [
+        "1 taller con 1 suscripción de $99/mes",
+        "5 talleres con un MRR de $495",
+        "50 talleres con un MRR de $4,950",
+        "Concesionarios nacionales con un MRR de $50,000",
+        "Competencia desleal de la plataforma más grande"
+      ],
+      "life_progression": {
+        "start": [
+          "Trabajas largas horas en la recepción",
+          "Tus ingresos son limitados"
+        ],
+        "early_reward": [
+          "Primer cliente paga $99/mes",
+          "Sientes que estás haciendo algo valioso"
+        ],
+        "mid_reward": [
+          "Escalas a 5 talleres",
+          "Dejas el trabajo en el taller"
+        ],
+        "major_reward": [
+          "Expansión a concesionarios",
+          "Estabilidad financiera"
+        ],
+        "late_state": [
+          "Decisión de vender o luchar",
+          "Reconocimiento en la industria"
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Ingresos recurrentes de $50,000 al mes",
+          "story_beat": "La estabilidad financiera te permite dejar tu trabajo anterior."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Flexibilidad para trabajar desde cualquier lugar",
+          "story_beat": "Puedes gestionar tu negocio desde casa o donde sea."
+        },
+        {
+          "type": "freedom",
+          "description": "Control total de tu tiempo",
+          "story_beat": "Decides cuándo y cómo trabajar, disfrutando de tu vida personal."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Trabajas en un taller mecánico, contestando llamadas sin parar.",
+        "end": "Eres el dueño de un negocio de tecnología, con ingresos estables y libertad para vivir como quieras.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 5,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, freedom, lifestyle",
+          "vida deseable: padres, patrimonio, departamento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Podrás mantener tu negocio ante la competencia desleal?",
+      "open_loops": [
+        "¿Cómo convencerás a los dueños escépticos de probar la IA?",
+        "¿Qué harás si la plataforma más grande te copia?",
+        "¿Lograrás escalar tu negocio a concesionarios nacionales?",
+        "¿Cómo manejarás la crisis de la transcripción fallida?",
+        "¿Qué decidirás entre vender y luchar?"
+      ],
+      "hook": "Tienes 20 años y contestas el teléfono en un taller mecánico.\n\nA las 18:00 ves al dueño cerrar la puerta.\n\nEl teléfono sigue sonando.\n\nNadie contesta. Te das cuenta de que hay una oportunidad: construir una recepcionista IA que trabaje mientras los talleres están cerrados. ¿Podrás escalar tu negocio antes de que la competencia te copie?",
+      "thumbnail_concept": {
+        "main_visual": "Una joven en la recepción de un taller mecánico con un teléfono sonando y una computadora frente a ella, mostrando un software de gestión de citas.",
+        "protagonist_state": "Visible frustración mientras contesta llamadas.",
+        "environment": "Un taller mecánico con herramientas y vehículos de fondo.",
+        "central_contrast": "El contraste entre la juventud de la protagonista y la antigüedad del taller.",
+        "emotion": "Frustración y determinación.",
+        "key_object": "Un teléfono antiguo que representa la falta de atención al cliente.",
+        "composition": "La protagonista en el centro, con el taller desordenado alrededor.",
+        "camera": "Plano medio enfocado en la protagonista y el teléfono.",
+        "lighting": "Iluminación tenue, resaltando la computadora.",
+        "background": "El taller mecánico desordenado, con herramientas y coches.",
+        "text_if_any": "Construye tu futuro con IA.",
+        "thumbnail_prompt": "A young woman at a mechanic's shop answering a ringing phone, frustrated but determined to create an AI receptionist."
+      },
+      "world_seeds": {
+        "starting_age": 20,
+        "starting_cash": "$0",
+        "starting_location": "Taller mecánico en una ciudad mediana",
+        "starting_status": "Empleado a tiempo parcial",
+        "target_outcome": "Crear un negocio exitoso de SaaS",
+        "business_or_career_type": "Emprendimiento tecnológico",
+        "timeline_scale": "2 años"
+      },
+      "aspirational_score": 9.25,
+      "aspirational_evidence": [
+        "mecanismo de crecimiento concreto",
+        "escalation_ladder con 5 niveles",
+        "scale_ceiling=national",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, freedom, lifestyle",
+        "vida deseable: padres, patrimonio, departamento",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 5,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national"
+          ]
+        },
+        "life_fantasy": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, freedom, lifestyle",
+            "vida deseable: padres, patrimonio, departamento",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 9.25,
+        "aspirational_evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, freedom, lifestyle",
+          "vida deseable: padres, patrimonio, departamento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "1 taller con 1 suscripción de $99/mes",
+            "5 talleres con un MRR de $495",
+            "50 talleres con un MRR de $4,950",
+            "Concesionarios nacionales con un MRR de $50,000",
+            "Competencia desleal de la plataforma más grande"
+          ],
+          "life_progression": {
+            "start": [
+              "Trabajas largas horas en la recepción",
+              "Tus ingresos son limitados"
+            ],
+            "early_reward": [
+              "Primer cliente paga $99/mes",
+              "Sientes que estás haciendo algo valioso"
+            ],
+            "mid_reward": [
+              "Escalas a 5 talleres",
+              "Dejas el trabajo en el taller"
+            ],
+            "major_reward": [
+              "Expansión a concesionarios",
+              "Estabilidad financiera"
+            ],
+            "late_state": [
+              "Decisión de vender o luchar",
+              "Reconocimiento en la industria"
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Ingresos recurrentes de $50,000 al mes",
+              "story_beat": "La estabilidad financiera te permite dejar tu trabajo anterior."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Flexibilidad para trabajar desde cualquier lugar",
+              "story_beat": "Puedes gestionar tu negocio desde casa o donde sea."
+            },
+            {
+              "type": "freedom",
+              "description": "Control total de tu tiempo",
+              "story_beat": "Decides cuándo y cómo trabajar, disfrutando de tu vida personal."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Trabajas en un taller mecánico, contestando llamadas sin parar.",
+            "end": "Eres el dueño de un negocio de tecnología, con ingresos estables y libertad para vivir como quieras.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Tu dueño paga $99/mes si agenda trabajos reales",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: 43 trabajos agendados el primer mes",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los talleres pierden trabajos después de las 18h porque nadie contesta el teléfono",
+            "growth_mechanism: Referidos entre dueños y luego grupos multi-local de concesionarios",
+            "first_proof: 43 trabajos agendados el primer mes",
+            "major_threat: La plataforma más grande de gestión de talleres copia la función y la incluye gratis",
+            "big_decision: Vender al incumbente o pelear como especialista"
+          ]
+        },
+        "aspirational_strength": {
+          "score": 10,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas",
+            "tipos de reward: financial, freedom, lifestyle"
+          ]
+        },
+        "life_transformation": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, freedom, lifestyle",
+            "vida deseable: padres, patrimonio, departamento",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 7,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=5"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.9,
+      "rank_score": 8.9925,
+      "story_category": "tecnología",
+      "one_line_fantasy": "Construir un negocio de IA que transforme la atención al cliente en talleres mecánicos.",
+      "starting_state": "Trabajas en la recepción de un taller mecánico, contestando llamadas y viendo cómo se pierden trabajos.",
+      "end_state": "edad: 25 · patrimonio: $250,000 · valuación: $2 millones · empleados: 5 · países: operando en 3 países · padres: apoyándote en tu emprendimiento · vivienda: viviendo en un departamento propio · control_del_tiempo: flexibilidad total para gestionar tu tiempo",
+      "core_transformation": "Pasar de trabajar en un taller a ser el dueño de un negocio de tecnología que transforma la industria.",
+      "ending_direction": "Sobrevivir como capa especializada o ser comprado en malas condiciones",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Creas un SaaS que revoluciona la atención al cliente en talleres",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Empiezas un negocio de IA y te enfrentas a la competencia",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Luchas por sobrevivir como emprendedor ante la copia de tu idea",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "SaaS de suscripción para reservas fuera de horario en talleres",
+      "business_fantasy_eval": {
+        "score": 5,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, freedom, lifestyle",
+          "vida deseable: padres, patrimonio, departamento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Creas una franquicia de comida bio",
+      "premise": "Creas una franquicia de comida bio; desde un local en tu ciudad a 200 sucursales en el continente.",
+      "story_engine": {
+        "specific_opportunity": "El aumento en la demanda de alimentos orgánicos y saludables en un mercado que crece un 15% anual.",
+        "why_protagonist_notices_it": "Observas que cada vez más personas buscan opciones de comida rápida que sean saludables y accesibles.",
+        "initial_action": "Abres el primer local de comida bio en el centro de tu ciudad con un menú atractivo y precios accesibles.",
+        "first_customer_or_break": "Un influencer local visita tu local y comparte su experiencia, atrayendo a 100 nuevos clientes en una semana.",
+        "business_or_progress_mechanism": "Sistema de franquicias que permite a otros emprendedores abrir sucursales de tu marca con un modelo de negocio probado.",
+        "why_it_works": "Ofreces un menú atractivo a precios competitivos, lo que atrae tanto a consumidores conscientes como a jóvenes que buscan opciones saludables.",
+        "growth_mechanism": "Franquicias que se expanden a través de un modelo de negocio escalable y marketing comunitario.",
+        "first_proof": "Logras ventas de $50,000 en el primer mes, superando las expectativas iniciales.",
+        "first_major_reward": "Recibes una atención mediática que te permite obtener inversores interesados en expandir la franquicia.",
+        "primary_opposition": "Cadenas de comida rápida que lanzan líneas de productos saludables para competir directamente contigo.",
+        "mid_story_complication": "Un problema de suministro obliga a cerrar temporalmente una de tus sucursales, lo que genera malestar entre los clientes.",
+        "major_threat": "Una gran cadena de comida rápida lanza una campaña agresiva de publicidad en la que descalifica tu marca.",
+        "big_decision": "Decidir si invertir en una campaña de marketing masiva o enfocarte en mejorar la calidad y la experiencia del cliente.",
+        "stakes": "La viabilidad de tu franquicia y la lealtad de tus clientes ante la competencia.",
+        "possible_cost": "Invertir todos tus ahorros y la posibilidad de perder tu inversión inicial si no funciona.",
+        "escalation_path": "1 local → 10 franquicias → 50 franquicias → 200 sucursales → competir a nivel internacional.",
+        "endgame": "Convertirte en un referente de comida bio en el continente, con una marca reconocida y un modelo de negocio sostenible."
+      },
+      "escalation_ladder": [
+        "{'level': '1 local', 'description': 'Abres tu primer local de comida bio en el centro de tu ciudad.'}",
+        "{'level': '10 franquicias', 'description': 'Logras que 10 emprendedores se unan a tu franquicia.'}",
+        "{'level': '50 franquicias', 'description': 'Tu marca se establece en 50 ciudades diferentes.'}",
+        "{'level': '200 sucursales', 'description': 'Expandes tu franquicia a 200 sucursales en el continente.'}",
+        "{'level': 'competir a nivel internacional', 'description': 'Inicias la expansión internacional con el objetivo de ser un líder en el mercado.'}"
+      ],
+      "life_progression": {
+        "start": [
+          "Luchas por atraer a clientes en un mercado competitivo.",
+          "Tus ingresos son limitados y la inversión inicial es alta."
+        ],
+        "early_reward": [
+          "Recibes atención mediática que aumenta tus ventas.",
+          "Tus clientes comienzan a recomendar tu local a otros."
+        ],
+        "mid_reward": [
+          "Logras abrir tus primeras franquicias con éxito.",
+          "Tus ingresos aumentan y comienzas a ver beneficios."
+        ],
+        "major_reward": [
+          "Te conviertes en un referente en el sector de comida bio.",
+          "Tu franquicia es reconocida por su calidad y servicio."
+        ],
+        "late_state": [
+          "Eres dueño de una marca reconocida con 200 sucursales.",
+          "Tienes un patrimonio neto de $10 millones y controlas tu tiempo."
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Patrimonio neto de $10 millones tras 10 años de expansión.",
+          "story_beat": "Alcanzas estabilidad económica y puedes invertir en nuevas ideas."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Vives en una casa soñada en una zona exclusiva.",
+          "story_beat": "Disfrutas de los beneficios de tu éxito profesional."
+        },
+        {
+          "type": "status",
+          "description": "Tu marca se convierte en sinónimo de comida saludable en el continente.",
+          "story_beat": "Recibes premios y reconocimientos por tu innovación en la industria."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Tienes un pequeño local en una esquina de tu ciudad con pocos clientes y recursos limitados.",
+        "end": "Eres el propietario de 200 sucursales en todo el continente, reconocido como líder en comida bio.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 6,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy": {
+        "score": 8,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo puedes escalar una franquicia de comida bio en un mercado competitivo?",
+      "open_loops": [
+        "¿Cuál es la clave para atraer a clientes que buscan opciones saludables?",
+        "¿Cómo superarás la desconfianza inicial de los inversores?",
+        "¿Qué estrategias utilizarás para diferenciarte de las cadenas de comida rápida?",
+        "¿Podrás mantener la calidad del producto en todas las sucursales?",
+        "¿Qué harás ante la creciente competencia en el sector de comida saludable?"
+      ],
+      "hook": "¿Te imaginas transformar tu amor por la comida saludable en un imperio de franquicias?\nDesde un pequeño local en tu ciudad hasta 200 sucursales en el continente,\nla oportunidad de cambiar la forma en que la gente come está en tus manos.",
+      "thumbnail_concept": {
+        "main_visual": "Un emprendedor sonriente frente a su primera franquicia de comida bio, con un menú atractivo en la mano.",
+        "protagonist_state": "Entusiasta y determinado, listo para expandir su negocio.",
+        "environment": "Un local moderno y acogedor, lleno de clientes satisfechos.",
+        "central_contrast": "Colores vibrantes de los alimentos frescos y saludables en el menú.",
+        "emotion": "Felicidad y orgullo por su logro.",
+        "key_object": "Menú atractivo con opciones saludables y coloridas.",
+        "composition": "El emprendedor en primer plano, con el local y clientes al fondo.",
+        "camera": "Toma en ángulo bajo para resaltar al emprendedor.",
+        "lighting": "Iluminación cálida y acogedora que resalta el ambiente del local.",
+        "background": "Clientes disfrutando de sus comidas, creando un ambiente vibrante.",
+        "text_if_any": "¡Bienvenido a la revolución de la comida bio!",
+        "thumbnail_prompt": "A smiling entrepreneur in front of his first organic food franchise, holding an attractive menu."
+      },
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$20000",
+        "starting_location": "Centro de la ciudad",
+        "starting_status": "Propietario de un pequeño local",
+        "target_outcome": "200 sucursales en el continente",
+        "business_or_career_type": "Franquicia de comida bio",
+        "timeline_scale": "10 años"
+      },
+      "aspirational_score": 9.25,
+      "aspirational_evidence": [
+        "mecanismo de crecimiento concreto",
+        "escalation_ladder con 5 niveles",
+        "scale_ceiling=national",
+        "fantasía de ownership/control",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, lifestyle, status",
+        "vida deseable: patrimonio",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 6,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control"
+          ]
+        },
+        "life_fantasy": {
+          "score": 8,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 9.25,
+        "aspirational_evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "{'level': '1 local', 'description': 'Abres tu primer local de comida bio en el centro de tu ciudad.'}",
+            "{'level': '10 franquicias', 'description': 'Logras que 10 emprendedores se unan a tu franquicia.'}",
+            "{'level': '50 franquicias', 'description': 'Tu marca se establece en 50 ciudades diferentes.'}",
+            "{'level': '200 sucursales', 'description': 'Expandes tu franquicia a 200 sucursales en el continente.'}",
+            "{'level': 'competir a nivel internacional', 'description': 'Inicias la expansión internacional con el objetivo de ser un líder en el mercado.'}"
+          ],
+          "life_progression": {
+            "start": [
+              "Luchas por atraer a clientes en un mercado competitivo.",
+              "Tus ingresos son limitados y la inversión inicial es alta."
+            ],
+            "early_reward": [
+              "Recibes atención mediática que aumenta tus ventas.",
+              "Tus clientes comienzan a recomendar tu local a otros."
+            ],
+            "mid_reward": [
+              "Logras abrir tus primeras franquicias con éxito.",
+              "Tus ingresos aumentan y comienzas a ver beneficios."
+            ],
+            "major_reward": [
+              "Te conviertes en un referente en el sector de comida bio.",
+              "Tu franquicia es reconocida por su calidad y servicio."
+            ],
+            "late_state": [
+              "Eres dueño de una marca reconocida con 200 sucursales.",
+              "Tienes un patrimonio neto de $10 millones y controlas tu tiempo."
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Patrimonio neto de $10 millones tras 10 años de expansión.",
+              "story_beat": "Alcanzas estabilidad económica y puedes invertir en nuevas ideas."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Vives en una casa soñada en una zona exclusiva.",
+              "story_beat": "Disfrutas de los beneficios de tu éxito profesional."
+            },
+            {
+              "type": "status",
+              "description": "Tu marca se convierte en sinónimo de comida saludable en el continente.",
+              "story_beat": "Recibes premios y reconocimientos por tu innovación en la industria."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Tienes un pequeño local en una esquina de tu ciudad con pocos clientes y recursos limitados.",
+            "end": "Eres el propietario de 200 sucursales en todo el continente, reconocido como líder en comida bio.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Un influencer local visita tu local y comparte su experiencia, atrayendo a 100 n",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Logras ventas de $50,000 en el primer mes, superando las expectativas iniciales.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: El aumento en la demanda de alimentos orgánicos y saludables en un mercado que crece un 15",
+            "growth_mechanism: Franquicias que se expanden a través de un modelo de negocio escalable y marketing comunit",
+            "first_proof: Logras ventas de $50,000 en el primer mes, superando las expectativas iniciales.",
+            "major_threat: Una gran cadena de comida rápida lanza una campaña agresiva de publicidad en la que descal",
+            "big_decision: Decidir si invertir en una campaña de marketing masiva o enfocarte en mejorar la calidad y"
+          ]
+        },
+        "aspirational_strength": {
+          "score": 10,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas"
+          ]
+        },
+        "life_transformation": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 7,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=5"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.9,
+      "rank_score": 8.9925,
+      "story_category": "retail",
+      "one_line_fantasy": "Construyes una franquicia de comida saludable que se expande por todo el continente.",
+      "starting_state": "Tienes un pequeño local de comida bio en tu ciudad con ventas modestas y una clientela local.",
+      "end_state": "A los 10 años, cuentas con 200 sucursales en todo el continente, un patrimonio neto de $10 millones y una marca reconocida en el ámbito de la comida saludable.",
+      "core_transformation": "Transformas un pequeño negocio local en una exitosa franquicia internacional, ganando reconocimiento y estabilidad financiera.",
+      "ending_direction": "expansión sostenible y reconocimiento de marca",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Abres tu primera franquicia de comida bio",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Construyes un imperio de comida saludable",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Transformas tu pasión por la comida bio en un negocio exitoso",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Sistema de franquicias que permite a otros emprendedores abrir sucursales de tu marca con un modelo de negocio probado.",
+      "business_fantasy_eval": {
+        "score": 6,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 8,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Creas un imperio sensorial de aromas únicos",
+      "premise": "Lanzas un marketplace de aromas seleccionados; creas un imperio sensorial que resuena con miles de personas.",
+      "story_engine": {
+        "specific_opportunity": "La creciente demanda de productos aromáticos personalizados en el mercado nacional.",
+        "why_protagonist_notices_it": "Recibes múltiples comentarios de amigos sobre la falta de opciones de aromas únicos en tiendas locales.",
+        "initial_action": "Investigas proveedores de aromas artesanales y creas una plataforma online en tres meses.",
+        "first_customer_or_break": "Vendes 100 kits de aromas en la primera semana a $49 cada uno.",
+        "business_or_progress_mechanism": "Marketplace que conecta a productores de aromas artesanales con consumidores interesados.",
+        "why_it_works": "Los productos aromáticos personalizados generan una conexión emocional con los consumidores, lo que impulsa las ventas.",
+        "growth_mechanism": "Campañas de marketing en redes sociales y colaboraciones con influencers del bienestar y estilo de vida.",
+        "first_proof": "Lograste vender 500 kits en el primer mes, superando tus expectativas iniciales.",
+        "first_major_reward": "Generas $24,500 en ingresos en el primer mes, lo que te permite reinvertir en el negocio.",
+        "primary_opposition": "Grandes marcas de fragancias que dominan el mercado con precios bajos y una fuerte presencia de marca.",
+        "mid_story_complication": "Un proveedor de aromas se retrasa en la entrega, lo que afecta la disponibilidad de productos en tu plataforma.",
+        "major_threat": "Una marca reconocida lanza una línea de productos aromáticos a un precio competitivo, amenazando tu cuota de mercado.",
+        "big_decision": "Optar por diversificar tu oferta de productos o enfocarte en la calidad y exclusividad de tus aromas.",
+        "stakes": "La viabilidad de tu negocio y la posibilidad de ser un referente en el sector de aromas personalizados.",
+        "possible_cost": "Inversiones significativas en marketing que podrían no resultar efectivas si no atraen a suficientes clientes.",
+        "escalation_path": "Inicio regional → expansión nacional → apertura de tiendas físicas → lanzamiento internacional.",
+        "endgame": "Convertirte en la plataforma líder de aromas personalizados en el mercado, con presencia internacional."
+      },
+      "escalation_ladder": [
+        "Inicio regional con ventas de $10,000 en el primer trimestre",
+        "Expansión a nivel nacional alcanzando $100,000 en ingresos anuales",
+        "Apertura de 5 tiendas físicas en ciudades clave",
+        "Lanzamiento internacional con presencia en 3 países",
+        "Consolidación como la plataforma líder de aromas personalizados"
+      ],
+      "life_progression": {
+        "start": [
+          "Trabajas en un empleo que no te satisface",
+          "Sientes una pasión por los aromas"
+        ],
+        "early_reward": [
+          "Generas tus primeros $24,500 en el primer mes",
+          "Recibes reconocimiento en redes sociales"
+        ],
+        "mid_reward": [
+          "Tu plataforma se vuelve popular entre influencers",
+          "Aumentas tus ingresos a $100,000 en el primer año"
+        ],
+        "major_reward": [
+          "Te conviertes en referente en el sector de aromas",
+          "Logras abrir 5 tiendas físicas"
+        ],
+        "late_state": [
+          "Tienes un patrimonio de $2 millones",
+          "Envías productos a 10 países",
+          "Disfrutas de la libertad de ser tu propio jefe"
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Patrimonio de $2 millones",
+          "story_beat": "Consolidación de tu negocio en el mercado."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Libertad de horarios y trabajo desde cualquier lugar",
+          "story_beat": "Vivir la vida que siempre soñaste."
+        },
+        {
+          "type": "status",
+          "description": "Reconocimiento como líder en el sector de aromas",
+          "story_beat": "Eres un referente en experiencias sensoriales."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Trabajando en un empleo que no te satisface.",
+        "end": "Dueño de un imperio de aromas con presencia internacional.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 5,
+        "evidence": [
+          "endgame de negocio: Convertirte en la plataforma líder de aromas personalizados en el mercado, con p",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: libertad, patrimonio, reconocimiento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo transformar una idea de aromas en un imperio nacional exitoso?",
+      "open_loops": [
+        "¿Qué aromas resonarán más con el público?",
+        "¿Cómo lidiarás con la competencia que ya tiene un mercado establecido?",
+        "¿Qué estrategias usarás para escalar tu negocio rápidamente?",
+        "¿Cómo asegurarás la calidad de los productos en tu marketplace?"
+      ],
+      "hook": "¿Te imaginas crear un imperio sensorial a través de aromas únicos? Lanzas un marketplace que conecta a productores artesanales con personas que buscan experiencias olfativas. No solo venderás productos, sino que crearás conexiones emocionales que resonarán en miles de hogares.",
+      "thumbnail_concept": {
+        "main_visual": "Un emprendedor rodeado de frascos de aromas coloridos y vibrantes.",
+        "protagonist_state": "Con una expresión de entusiasmo y determinación.",
+        "environment": "Un taller acogedor con luz natural y plantas aromáticas.",
+        "central_contrast": "La calidez de los aromas frente a la frialdad del mercado convencional.",
+        "emotion": "Pasión y creatividad.",
+        "key_object": "Un frasco de aroma artesanal en la mano del emprendedor.",
+        "composition": "El emprendedor en primer plano con los frascos de fondo.",
+        "camera": "Enfoque en el frasco mientras el emprendedor sonríe.",
+        "lighting": "Luz suave y cálida.",
+        "background": "Estantes llenos de ingredientes naturales.",
+        "text_if_any": "Crea tu propia experiencia sensorial.",
+        "thumbnail_prompt": "An entrepreneur surrounded by colorful and vibrant aroma bottles, showcasing passion and creativity."
+      },
+      "world_seeds": {
+        "starting_age": 25,
+        "starting_cash": "$5,000",
+        "starting_location": "Ciudad mediana",
+        "starting_status": "Empleado insatisfecho",
+        "target_outcome": "Convertirte en un líder del mercado de aromas",
+        "business_or_career_type": "Emprendimiento en retail",
+        "timeline_scale": "5 años"
+      },
+      "aspirational_score": 9.25,
+      "aspirational_evidence": [
+        "endgame de negocio: Convertirte en la plataforma líder de aromas personalizados en el mercado, con p",
+        "escalation_ladder con 5 niveles",
+        "scale_ceiling=national",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, lifestyle, status",
+        "vida deseable: libertad, patrimonio, reconocimiento",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 5,
+          "evidence": [
+            "endgame de negocio: Convertirte en la plataforma líder de aromas personalizados en el mercado, con p",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national"
+          ]
+        },
+        "life_fantasy": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: libertad, patrimonio, reconocimiento",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 9.25,
+        "aspirational_evidence": [
+          "endgame de negocio: Convertirte en la plataforma líder de aromas personalizados en el mercado, con p",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: libertad, patrimonio, reconocimiento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "Inicio regional con ventas de $10,000 en el primer trimestre",
+            "Expansión a nivel nacional alcanzando $100,000 en ingresos anuales",
+            "Apertura de 5 tiendas físicas en ciudades clave",
+            "Lanzamiento internacional con presencia en 3 países",
+            "Consolidación como la plataforma líder de aromas personalizados"
+          ],
+          "life_progression": {
+            "start": [
+              "Trabajas en un empleo que no te satisface",
+              "Sientes una pasión por los aromas"
+            ],
+            "early_reward": [
+              "Generas tus primeros $24,500 en el primer mes",
+              "Recibes reconocimiento en redes sociales"
+            ],
+            "mid_reward": [
+              "Tu plataforma se vuelve popular entre influencers",
+              "Aumentas tus ingresos a $100,000 en el primer año"
+            ],
+            "major_reward": [
+              "Te conviertes en referente en el sector de aromas",
+              "Logras abrir 5 tiendas físicas"
+            ],
+            "late_state": [
+              "Tienes un patrimonio de $2 millones",
+              "Envías productos a 10 países",
+              "Disfrutas de la libertad de ser tu propio jefe"
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Patrimonio de $2 millones",
+              "story_beat": "Consolidación de tu negocio en el mercado."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Libertad de horarios y trabajo desde cualquier lugar",
+              "story_beat": "Vivir la vida que siempre soñaste."
+            },
+            {
+              "type": "status",
+              "description": "Reconocimiento como líder en el sector de aromas",
+              "story_beat": "Eres un referente en experiencias sensoriales."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Trabajando en un empleo que no te satisface.",
+            "end": "Dueño de un imperio de aromas con presencia internacional.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Vendes 100 kits de aromas en la primera semana a $49 cada uno.",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Lograste vender 500 kits en el primer mes, superando tus expectativas iniciales.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: La creciente demanda de productos aromáticos personalizados en el mercado nacional.",
+            "growth_mechanism: Campañas de marketing en redes sociales y colaboraciones con influencers del bienestar y e",
+            "first_proof: Lograste vender 500 kits en el primer mes, superando tus expectativas iniciales.",
+            "major_threat: Una marca reconocida lanza una línea de productos aromáticos a un precio competitivo, amen",
+            "big_decision: Optar por diversificar tu oferta de productos o enfocarte en la calidad y exclusividad de "
+          ]
+        },
+        "aspirational_strength": {
+          "score": 10,
+          "evidence": [
+            "endgame de negocio: Convertirte en la plataforma líder de aromas personalizados en el mercado, con p",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas",
+            "tipos de reward: financial, lifestyle, status"
+          ]
+        },
+        "life_transformation": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: libertad, patrimonio, reconocimiento",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 7,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=5"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.9,
+      "rank_score": 8.9925,
+      "story_category": "retail",
+      "one_line_fantasy": "Construir un imperio de aromas que transforme la experiencia sensorial de miles.",
+      "starting_state": "Tienes un trabajo de 9 a 5, sientes que te falta algo, y tu pasión por los aromas te lleva a investigar un nuevo negocio.",
+      "end_state": "A los 35 años, tienes un patrimonio de $2 millones, una plataforma de aromas con 50 empleados, envías productos a 10 países y disfrutas de la libertad de ser tu propio jefe.",
+      "core_transformation": "Pasas de ser un empleado insatisfecho a un emprendedor exitoso que crea experiencias únicas a través de aromas.",
+      "ending_direction": "expansión internacional",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Construyes un marketplace de aromas que transforma vidas",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Lanzas un negocio de aromas y cambias la forma de sentir",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Creas un imperio de aromas que conecta almas",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Marketplace que conecta a productores de aromas artesanales con consumidores interesados.",
+      "business_fantasy_eval": {
+        "score": 5,
+        "evidence": [
+          "endgame de negocio: Convertirte en la plataforma líder de aromas personalizados en el mercado, con p",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: libertad, patrimonio, reconocimiento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Creas un marketplace agrícola y empoderas a productores locales",
+      "premise": "Creas un marketplace para productos agrícolas locales; empoderas a pequeños productores y escalas a nivel nacional.",
+      "story_engine": {
+        "specific_opportunity": "Los pequeños productores locales no tienen acceso a una plataforma para vender directamente al consumidor.",
+        "why_protagonist_notices_it": "Ves a un agricultor local frustrado porque no puede vender su cosecha en el mercado.",
+        "initial_action": "Desarrollas un marketplace en línea donde los agricultores pueden listar sus productos.",
+        "first_customer_or_break": "Un agricultor se registra y vende 200 kilos de tomates en la primera semana.",
+        "business_or_progress_mechanism": "Marketplace en línea que conecta agricultores locales con consumidores urbanos.",
+        "why_it_works": "Los consumidores prefieren productos frescos y locales a precios competitivos y con historias personales.",
+        "growth_mechanism": "Alianzas con cooperativas agrícolas y campañas de marketing en redes sociales.",
+        "first_proof": "Ventas de 5,000 dólares en el primer mes y 50 productores registrados.",
+        "first_major_reward": "Recibes reconocimiento en medios locales por tu impacto en la comunidad agrícola.",
+        "primary_opposition": "Grandes cadenas de supermercados que ofrecen precios más bajos y tienen más visibilidad.",
+        "mid_story_complication": "Un productor clave se retira de la plataforma tras no ver resultados inmediatos.",
+        "major_threat": "Una cadena de supermercados lanza una campaña de marketing para desviar a tus clientes.",
+        "big_decision": "Decidir si invertir en publicidad agresiva o enfocarte en mejorar la experiencia del usuario.",
+        "stakes": "La supervivencia de tu marketplace y la viabilidad económica de los pequeños agricultores.",
+        "possible_cost": "Inversión de tiempo y recursos en marketing que podría no dar resultados inmediatos.",
+        "escalation_path": "De 50 a 200 productores, luego a 1,000, y la expansión a varias ciudades.",
+        "endgame": "Establecerte como la plataforma líder de productos agrícolas locales en el país."
+      },
+      "escalation_ladder": [
+        "Comienzas con 50 productores locales",
+        "Aumentas a 200 productores en seis meses",
+        "Expandes a 1,000 productores en un año",
+        "Estableces alianzas con cooperativas en varias ciudades",
+        "Consolidar el marketplace como la opción preferida en el país",
+        "Logras reconocimiento nacional en medios de comunicación",
+        "Te conviertes en el líder del sector agrícola en el país",
+        "Exploras la expansión internacional"
+      ],
+      "life_progression": {
+        "start": [
+          "Inicias con un pequeño espacio en tu hogar",
+          "Trabajas muchas horas solo",
+          "Tus ingresos son inestables"
+        ],
+        "early_reward": [
+          "Logras tus primeras ventas exitosas",
+          "Recibes comentarios positivos de clientes",
+          "Comienzas a construir una red de productores"
+        ],
+        "mid_reward": [
+          "Te reconocen en medios locales",
+          "Ganas premios por tu innovación",
+          "Tu plataforma comienza a crecer exponencialmente"
+        ],
+        "major_reward": [
+          "Te estableces como una marca reconocida",
+          "Tus ingresos se estabilizan y crecen",
+          "Contratas a tu primer empleado"
+        ],
+        "late_state": [
+          "Tu marketplace tiene miles de usuarios",
+          "Expandiste a otras ciudades",
+          "Tienes un equipo comprometido y motivado"
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Patrimonio de $2 millones tras el crecimiento del marketplace.",
+          "story_beat": "Lograste estabilidad financiera y puedes invertir en nuevas tecnologías."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Flexibilidad para trabajar desde casa y dedicar tiempo a tu familia.",
+          "story_beat": "Puedes asistir a eventos familiares sin preocuparte por horarios estrictos."
+        },
+        {
+          "type": "status",
+          "description": "Reconocimiento por tu impacto en la comunidad agrícola.",
+          "story_beat": "Eres un referente en el sector y participas en conferencias sobre sostenibilidad."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Un grupo de productores locales luchando por sobrevivir.",
+        "end": "Un marketplace exitoso que empodera a miles de agricultores y consumidores.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 4,
+        "evidence": [
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: padres, patrimonio, reconocimiento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Podrás competir con las grandes cadenas de supermercados que amenazan la existencia de los pequeños productores?",
+      "open_loops": [
+        "¿Cómo conseguirás que los productores confíen en tu plataforma?",
+        "¿Qué estrategias usarás para atraer a los consumidores urbanos?",
+        "¿Qué impacto tendrá la competencia desleal de los supermercados en tu negocio?",
+        "¿Cómo escalarás tu marketplace sin perder la esencia local?",
+        "¿Qué medidas tomarás para asegurar la sostenibilidad de los productores?"
+      ],
+      "hook": "¿Te imaginas transformar la agricultura local en un imperio? Empoderas a pequeños productores, y compites contra gigantes del retail, creando un marketplace que conecta a los consumidores con lo mejor de la tierra. ¿Podrás hacerlo crecer y marcar la diferencia?",
+      "thumbnail_concept": {
+        "main_visual": "Una imagen vibrante de un agricultor local sonriente sosteniendo productos frescos en un mercado.",
+        "protagonist_state": "Feliz y satisfecho por el éxito de su venta.",
+        "environment": "Un mercado agrícola lleno de vida con consumidores felices.",
+        "central_contrast": "La alegría del agricultor frente a la frialdad de los grandes supermercados.",
+        "emotion": "Esperanza y orgullo.",
+        "key_object": "Una caja de productos frescos con el logo del marketplace.",
+        "composition": "El agricultor en el primer plano, con el mercado de fondo.",
+        "camera": "Ángulo bajo para dar protagonismo al agricultor.",
+        "lighting": "Luz natural brillante que resalta los colores de los productos.",
+        "background": "Un mercado lleno de gente comprando y disfrutando.",
+        "text_if_any": "¡Apoya a los productores locales!",
+        "thumbnail_prompt": "A vibrant image of a smiling local farmer holding fresh produce at a bustling market."
+      },
+      "world_seeds": {
+        "starting_age": 28,
+        "starting_cash": "$5,000",
+        "starting_location": "Una pequeña ciudad agrícola",
+        "starting_status": "Emprendedor sin experiencia previa en el sector",
+        "target_outcome": "Ser la plataforma líder en el mercado agrícola nacional",
+        "business_or_career_type": "Marketplace agrícola",
+        "timeline_scale": "3 años"
+      },
+      "aspirational_score": 9.1,
+      "aspirational_evidence": [
+        "escalation_ladder con 8 niveles",
+        "scale_ceiling=national",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, lifestyle, status",
+        "vida deseable: padres, patrimonio, reconocimiento",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 4,
+          "evidence": [
+            "escalation_ladder con 8 niveles",
+            "scale_ceiling=national"
+          ]
+        },
+        "life_fantasy": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: padres, patrimonio, reconocimiento",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 9.1,
+        "aspirational_evidence": [
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=national",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: padres, patrimonio, reconocimiento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 9,
+        "life_transformation": 10,
+        "scale_potential": 8,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "Comienzas con 50 productores locales",
+            "Aumentas a 200 productores en seis meses",
+            "Expandes a 1,000 productores en un año",
+            "Estableces alianzas con cooperativas en varias ciudades",
+            "Consolidar el marketplace como la opción preferida en el país",
+            "Logras reconocimiento nacional en medios de comunicación",
+            "Te conviertes en el líder del sector agrícola en el país",
+            "Exploras la expansión internacional"
+          ],
+          "life_progression": {
+            "start": [
+              "Inicias con un pequeño espacio en tu hogar",
+              "Trabajas muchas horas solo",
+              "Tus ingresos son inestables"
+            ],
+            "early_reward": [
+              "Logras tus primeras ventas exitosas",
+              "Recibes comentarios positivos de clientes",
+              "Comienzas a construir una red de productores"
+            ],
+            "mid_reward": [
+              "Te reconocen en medios locales",
+              "Ganas premios por tu innovación",
+              "Tu plataforma comienza a crecer exponencialmente"
+            ],
+            "major_reward": [
+              "Te estableces como una marca reconocida",
+              "Tus ingresos se estabilizan y crecen",
+              "Contratas a tu primer empleado"
+            ],
+            "late_state": [
+              "Tu marketplace tiene miles de usuarios",
+              "Expandiste a otras ciudades",
+              "Tienes un equipo comprometido y motivado"
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Patrimonio de $2 millones tras el crecimiento del marketplace.",
+              "story_beat": "Lograste estabilidad financiera y puedes invertir en nuevas tecnologías."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Flexibilidad para trabajar desde casa y dedicar tiempo a tu familia.",
+              "story_beat": "Puedes asistir a eventos familiares sin preocuparte por horarios estrictos."
+            },
+            {
+              "type": "status",
+              "description": "Reconocimiento por tu impacto en la comunidad agrícola.",
+              "story_beat": "Eres un referente en el sector y participas en conferencias sobre sostenibilidad."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Un grupo de productores locales luchando por sobrevivir.",
+            "end": "Un marketplace exitoso que empodera a miles de agricultores y consumidores.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 9,
+        "life_transformation": 10,
+        "scale_potential": 8,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Un agricultor se registra y vende 200 kilos de tomates en la primera semana.",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Ventas de 5,000 dólares en el primer mes y 50 productores registrados.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los pequeños productores locales no tienen acceso a una plataforma para vender directament",
+            "growth_mechanism: Alianzas con cooperativas agrícolas y campañas de marketing en redes sociales.",
+            "first_proof: Ventas de 5,000 dólares en el primer mes y 50 productores registrados.",
+            "major_threat: Una cadena de supermercados lanza una campaña de marketing para desviar a tus clientes.",
+            "big_decision: Decidir si invertir en publicidad agresiva o enfocarte en mejorar la experiencia del usuar"
+          ]
+        },
+        "aspirational_strength": {
+          "score": 9,
+          "evidence": [
+            "escalation_ladder con 8 niveles",
+            "scale_ceiling=national",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: padres, patrimonio, reconocimiento"
+          ]
+        },
+        "life_transformation": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: padres, patrimonio, reconocimiento",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 8,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=8"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.87,
+      "rank_score": 8.960999999999999,
+      "story_category": "retail",
+      "one_line_fantasy": "Construir un imperio agrícola que empodera a los productores locales y ofrece a los consumidores alimentos frescos y directos del campo.",
+      "starting_state": "Un pequeño grupo de productores locales sin acceso a un mercado directo.",
+      "end_state": "edad: 35 · patrimonio: $2 millones · valuación: $10 millones · empleados: 50 · países: 1 · padres: Apoyan tu emprendimiento · vivienda: Casa propia en una zona tranquila · control_del_tiempo: Flexibilidad para trabajar desde casa y manejar tu tiempo",
+      "core_transformation": "Pasas de ser un simple emprendedor a ser el líder de un movimiento que conecta a los productores locales con el mercado nacional.",
+      "ending_direction": "crecimiento sostenido y reconocimiento nacional",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Empoderas a agricultores y creas un imperio agrícola",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Construyes un marketplace que transforma la agricultura local",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Inicias un negocio agrícola que desafía a los gigantes del retail",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Marketplace en línea que conecta agricultores locales con consumidores urbanos.",
+      "business_fantasy_eval": {
+        "score": 4,
+        "evidence": [
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: padres, patrimonio, reconocimiento",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Abres tu primer gimnasio y creas un imperio fitness",
+      "premise": "Abres tu primer gimnasio y creas una red de franquicias que abarca toda la región; un verdadero imperio fitness.",
+      "story_engine": {
+        "specific_opportunity": "La gente busca opciones de fitness accesibles y de calidad en su localidad.",
+        "why_protagonist_notices_it": "Ves un gimnasio local lleno de gente pero que no ofrece las mejores instalaciones.",
+        "initial_action": "Decides invertir tus ahorros y abrir un gimnasio con equipo de última generación.",
+        "first_customer_or_break": "Un grupo de 50 personas se inscriben en tu apertura, superando tus expectativas.",
+        "business_or_progress_mechanism": "Franquicias que replican tu modelo de negocio de gimnasio exitoso.",
+        "why_it_works": "Ofreces precios competitivos y un ambiente motivador, atrayendo a más clientes.",
+        "growth_mechanism": "Promociones en redes sociales y programas de referidos que incentivan a los miembros a traer amigos.",
+        "first_proof": "Alcanza 200 miembros en el primer mes, validando tu modelo de negocio.",
+        "first_major_reward": "Generas ingresos suficientes para abrir una segunda ubicación en la ciudad vecina.",
+        "primary_opposition": "Gimnasios grandes y establecidos con más recursos y reconocimiento de marca.",
+        "mid_story_complication": "Un socio clave se retira y pone en riesgo la expansión planeada.",
+        "major_threat": "Una cadena internacional de gimnasios decide abrir una ubicación a solo 5 km de tu primer gimnasio.",
+        "big_decision": "Elegir entre diversificar tus servicios o enfocarte en la calidad del gimnasio actual.",
+        "stakes": "La viabilidad de tu sueño de crear un imperio fitness y la posibilidad de perder tu inversión inicial.",
+        "possible_cost": "Cierre de tu primer gimnasio si no logras retener a tus miembros frente a la competencia.",
+        "escalation_path": "1 gimnasio → 5 franquicias → 20 ubicaciones → competencia directa con cadenas grandes.",
+        "endgame": "Convertirte en una de las cadenas de gimnasios más reconocidas de la región, o cerrar por la competencia."
+      },
+      "escalation_ladder": [
+        "1 gimnasio",
+        "5 franquicias",
+        "20 ubicaciones",
+        "Competencia directa con cadenas grandes",
+        "Reconocimiento regional",
+        "Expansión internacional"
+      ],
+      "life_progression": {
+        "start": [
+          "Tienes un gimnasio pequeño y una gran visión."
+        ],
+        "early_reward": [
+          "Alcanza 200 miembros en el primer mes."
+        ],
+        "mid_reward": [
+          "Abres tu segunda ubicación y duplicas tu ingreso."
+        ],
+        "major_reward": [
+          "Tu marca se vuelve conocida y respetada en la industria."
+        ],
+        "late_state": [
+          "Tienes varias franquicias y controlas una buena parte del mercado local."
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Generas ingresos suficientes para una vida cómoda.",
+          "story_beat": "Tus gimnasios empiezan a generar ganancias significativas."
+        },
+        {
+          "type": "status",
+          "description": "Eres reconocido como un líder en la industria del fitness.",
+          "story_beat": "Recibes premios y reconocimientos en conferencias del sector."
+        },
+        {
+          "type": "freedom",
+          "description": "Tienes la libertad de gestionar tu tiempo y tus inversiones.",
+          "story_beat": "Puedes elegir cuándo trabajar y cuándo disfrutar de tus hobbies."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Tienes un pequeño gimnasio y muchas dudas.",
+        "end": "Eres el propietario de una red de franquicias exitosa y respetada.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 6,
+        "evidence": [
+          "amenaza competitiva de escala",
+          "escalation_ladder con 6 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy": {
+        "score": 9,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, freedom, status",
+          "vida deseable: padres, patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo superarás la competencia feroz y mantener la calidad de tus gimnasios?",
+      "open_loops": [
+        "¿Lograrás abrir tu primer gimnasio antes de que cierre el financiamiento?",
+        "¿Cómo atraerás a los primeros clientes a tu nuevo gimnasio?",
+        "¿Qué estrategias implementarás para franquiciar tu marca?",
+        "¿Cómo gestionarás la oposición de competidores establecidos?"
+      ],
+      "hook": "¿Te imaginas abriendo tu propio gimnasio y convirtiéndote en el líder de una red de franquicias en tu región? Aquí te contamos cómo lograrlo paso a paso.",
+      "thumbnail_concept": {
+        "main_visual": "Un gimnasio moderno lleno de personas entrenando.",
+        "protagonist_state": "Un emprendedor entusiasta con una sonrisa.",
+        "environment": "Un gimnasio vibrante y lleno de energía.",
+        "central_contrast": "El contraste entre un gimnasio vacío y uno lleno de vida.",
+        "emotion": "Entusiasmo y determinación.",
+        "key_object": "Un trofeo que simboliza el éxito en el fitness.",
+        "composition": "Una vista amplia que muestra el gimnasio y a los clientes.",
+        "camera": "Ángulo panorámico.",
+        "lighting": "Iluminación brillante y motivadora.",
+        "background": "Paredes decoradas con fotos de transformaciones de clientes.",
+        "text_if_any": "Construye tu imperio fitness.",
+        "thumbnail_prompt": "A modern gym filled with people training and a smiling entrepreneur."
+      },
+      "world_seeds": {
+        "starting_age": 25,
+        "starting_cash": "$5000",
+        "starting_location": "ciudad mediana",
+        "starting_status": "emprendedor con pasión por el fitness",
+        "target_outcome": "crear una red de franquicias exitosa",
+        "business_or_career_type": "gimnasio",
+        "timeline_scale": "5 años"
+      },
+      "aspirational_score": 9.25,
+      "aspirational_evidence": [
+        "amenaza competitiva de escala",
+        "escalation_ladder con 6 niveles",
+        "scale_ceiling=national",
+        "fantasía de ownership/control",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, freedom, status",
+        "vida deseable: padres, patrimonio",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 6,
+          "evidence": [
+            "amenaza competitiva de escala",
+            "escalation_ladder con 6 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control"
+          ]
+        },
+        "life_fantasy": {
+          "score": 9,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, freedom, status",
+            "vida deseable: padres, patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 9.25,
+        "aspirational_evidence": [
+          "amenaza competitiva de escala",
+          "escalation_ladder con 6 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, freedom, status",
+          "vida deseable: padres, patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "1 gimnasio",
+            "5 franquicias",
+            "20 ubicaciones",
+            "Competencia directa con cadenas grandes",
+            "Reconocimiento regional",
+            "Expansión internacional"
+          ],
+          "life_progression": {
+            "start": [
+              "Tienes un gimnasio pequeño y una gran visión."
+            ],
+            "early_reward": [
+              "Alcanza 200 miembros en el primer mes."
+            ],
+            "mid_reward": [
+              "Abres tu segunda ubicación y duplicas tu ingreso."
+            ],
+            "major_reward": [
+              "Tu marca se vuelve conocida y respetada en la industria."
+            ],
+            "late_state": [
+              "Tienes varias franquicias y controlas una buena parte del mercado local."
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Generas ingresos suficientes para una vida cómoda.",
+              "story_beat": "Tus gimnasios empiezan a generar ganancias significativas."
+            },
+            {
+              "type": "status",
+              "description": "Eres reconocido como un líder en la industria del fitness.",
+              "story_beat": "Recibes premios y reconocimientos en conferencias del sector."
+            },
+            {
+              "type": "freedom",
+              "description": "Tienes la libertad de gestionar tu tiempo y tus inversiones.",
+              "story_beat": "Puedes elegir cuándo trabajar y cuándo disfrutar de tus hobbies."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Tienes un pequeño gimnasio y muchas dudas.",
+            "end": "Eres el propietario de una red de franquicias exitosa y respetada.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 9,
+        "story_engine_strength": 10,
+        "aspirational_strength": 10,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 9,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Un grupo de 50 personas se inscriben en tu apertura, superando tus expectativas.",
+            "problema/oportunidad concreta",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Alcanza 200 miembros en el primer mes, validando tu modelo de negocio.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: La gente busca opciones de fitness accesibles y de calidad en su localidad.",
+            "growth_mechanism: Promociones en redes sociales y programas de referidos que incentivan a los miembros a tra",
+            "first_proof: Alcanza 200 miembros en el primer mes, validando tu modelo de negocio.",
+            "major_threat: Una cadena internacional de gimnasios decide abrir una ubicación a solo 5 km de tu primer ",
+            "big_decision: Elegir entre diversificar tus servicios o enfocarte en la calidad del gimnasio actual."
+          ]
+        },
+        "aspirational_strength": {
+          "score": 10,
+          "evidence": [
+            "amenaza competitiva de escala",
+            "escalation_ladder con 6 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas"
+          ]
+        },
+        "life_transformation": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, freedom, status",
+            "vida deseable: padres, patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 7,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=6"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.78,
+      "rank_score": 8.872499999999999,
+      "story_category": "hospitalidad",
+      "one_line_fantasy": "Construir un imperio de gimnasios que inspire a miles a llevar un estilo de vida saludable.",
+      "starting_state": "Tienes ahorros limitados y una gran pasión por el fitness.",
+      "end_state": "edad: 35 · patrimonio: 10000000.0 · valuación: 50000000.0 · empleados: 100 · países: 1 · padres: apoyan tu sueño · vivienda: casa propia en un vecindario próspero · control_del_tiempo: puedes dedicar tiempo a tu familia y hobbies",
+      "core_transformation": "Pasar de un emprendedor solitario a ser un líder de una red de franquicias exitosa.",
+      "ending_direction": "expansión y consolidación del imperio",
+      "specificity_score": 9,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Construyes una red de gimnasios y conquistas el mercado",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Empiezas tu camino hacia un imperio de fitness",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Heredas una pasión y transformas la industria del gimnasio",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Franquicias que replican tu modelo de negocio de gimnasio exitoso.",
+      "business_fantasy_eval": {
+        "score": 6,
+        "evidence": [
+          "amenaza competitiva de escala",
+          "escalation_ladder con 6 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 9,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, freedom, status",
+          "vida deseable: padres, patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Alquilas espacios y revives comunidades",
+      "premise": "Alquilas espacios en desuso y los conviertes en oficinas creativas; haces que las empresas locales prosperen.",
+      "story_engine": {
+        "specific_opportunity": "Las empresas locales no encuentran espacios asequibles y adaptables para trabajar.",
+        "why_protagonist_notices_it": "Ves varias oficinas vacías en un barrio que solía ser vibrante.",
+        "initial_action": "Contactas a propietarios de espacios vacíos para ofrecerles un nuevo modelo de alquiler.",
+        "first_customer_or_break": "Consigues tu primer contrato con una startup que busca un espacio creativo por solo $500 al mes.",
+        "business_or_progress_mechanism": "Modelo de negocio basado en alquileres flexibles y servicios adicionales como wifi y mobiliario.",
+        "why_it_works": "Las startups prefieren pagar $500 al mes por un espacio en lugar de los $2000 que costaría un alquiler tradicional.",
+        "growth_mechanism": "Expansión mediante asociaciones con incubadoras de startups y referencias de emprendedores satisfechos.",
+        "first_proof": "La primera startup genera un aumento del 30% en sus ingresos tras mudarse a tu espacio.",
+        "first_major_reward": "Logras alquilar cinco espacios en el primer año, generando ingresos de $2500 mensuales.",
+        "primary_opposition": "Propietarios tradicionales que no creen en el modelo de alquiler flexible.",
+        "mid_story_complication": "Un nuevo regulador introduce restricciones que complican el proceso de alquiler y reforma de espacios.",
+        "major_threat": "Una gran empresa de bienes raíces lanza un proyecto similar con precios de lanzamiento bajos.",
+        "big_decision": "Decidir si ajustar precios o invertir en una campaña de marketing para destacar la comunidad que has creado.",
+        "stakes": "La viabilidad de tu negocio y el impacto en la revitalización del barrio.",
+        "possible_cost": "Pérdida de inversión inicial si el modelo no se acepta en el mercado.",
+        "escalation_path": "1 espacio → 5 espacios → 20 espacios → expansión a otras ciudades → competir con grandes empresas.",
+        "endgame": "Establecerte como el líder en alquiler de espacios creativos en varias ciudades."
+      },
+      "escalation_ladder": [
+        "{'level': '1 espacio', 'description': 'Alquilas tu primer espacio vacío por $500 al mes.'}",
+        "{'level': '5 espacios', 'description': 'Logras alquilar cinco espacios en el primer año, generando ingresos de $2500 mensuales.'}",
+        "{'level': '20 espacios', 'description': 'Aumentas tu portafolio a 20 espacios, consolidando tu presencia en el mercado.'}",
+        "{'level': 'expansión a otras ciudades', 'description': 'Comienzas a abrir oficinas en otras ciudades, llevando tu modelo de negocio a nuevos mercados.'}",
+        "{'level': 'competir con grandes empresas', 'description': 'Te estableces como un competidor fuerte frente a grandes empresas de bienes raíces.'}"
+      ],
+      "life_progression": {
+        "start": [
+          "Alquilas tu primer espacio vacío."
+        ],
+        "early_reward": [
+          "Generas ingresos estables."
+        ],
+        "mid_reward": [
+          "Expandes tu red de espacios."
+        ],
+        "major_reward": [
+          "Te reconocen como líder en el sector."
+        ],
+        "late_state": [
+          "Tienes un portafolio diversificado en varias ciudades."
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Generas $2500 mensuales en ingresos de alquiler.",
+          "story_beat": "Con cada nuevo espacio alquilado, tus finanzas se estabilizan."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Disfrutas de un horario flexible y control sobre tu tiempo.",
+          "story_beat": "Tienes la libertad de gestionar tu tiempo y proyectos."
+        },
+        {
+          "type": "status",
+          "description": "Eres reconocido como un líder en el sector de alquiler de espacios creativos.",
+          "story_beat": "Tu éxito atrae la atención de medios y emprendedores."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Alquilas un espacio vacío por $500 al mes, con la incertidumbre de un nuevo modelo de negocio.",
+        "end": "Eres dueño de una red de espacios creativos en varias ciudades, generando ingresos estables y apoyando a la comunidad.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 4,
+        "evidence": [
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: padres, oficina, patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo transformar espacios olvidados en oportunidades de negocio para emprendedores locales?",
+      "open_loops": [
+        "¿Lograrás convencer a los propietarios de los beneficios del alquiler?",
+        "¿Qué pasará si un competidor empieza a ofrecer precios más bajos?",
+        "¿Cómo enfrentarás la resistencia de las empresas tradicionales?",
+        "¿Qué impacto tendrán tus acciones en la comunidad local?"
+      ],
+      "hook": "¿Estás listo para transformar espacios olvidados en oficinas creativas que impulsan a las empresas locales? 🚀 Imagina alquilar esos lugares desiertos y convertirlos en el hogar de nuevas ideas. Tu misión es hacer que cada rincón cuente y que la comunidad prospere. ¿Te atreves a dar el primer paso?",
+      "thumbnail_concept": {
+        "main_visual": "Espacios creativos vibrantes",
+        "protagonist_state": "Emprendedor en crecimiento",
+        "environment": "Oficinas modernas y acogedoras",
+        "central_contrast": "Transformación de lo viejo a lo nuevo",
+        "emotion": "Inspiración y creatividad",
+        "key_object": "Mobiliario innovador",
+        "composition": "Espacios abiertos y colaborativos",
+        "camera": "Ángulo amplio mostrando la comunidad",
+        "lighting": "Iluminación cálida y natural",
+        "background": "Barrio revitalizado",
+        "text_if_any": "Transforma tu comunidad",
+        "thumbnail_prompt": "A vibrant coworking space filled with entrepreneurs collaborating, showcasing the transformation of a once-abandoned building."
+      },
+      "world_seeds": {
+        "starting_age": 28,
+        "starting_cash": "$500",
+        "starting_location": "Barrio en recuperación",
+        "starting_status": "Emprendedor solitario",
+        "target_outcome": "Establecerte como líder en el mercado",
+        "business_or_career_type": "Alquiler de espacios creativos",
+        "timeline_scale": "3 años"
+      },
+      "aspirational_score": 8.9,
+      "aspirational_evidence": [
+        "escalation_ladder con 5 niveles",
+        "scale_ceiling=national",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, lifestyle, status",
+        "vida deseable: padres, oficina, patrimonio",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 4,
+          "evidence": [
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national"
+          ]
+        },
+        "life_fantasy": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: padres, oficina, patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 8.9,
+        "aspirational_evidence": [
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: padres, oficina, patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 9,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "{'level': '1 espacio', 'description': 'Alquilas tu primer espacio vacío por $500 al mes.'}",
+            "{'level': '5 espacios', 'description': 'Logras alquilar cinco espacios en el primer año, generando ingresos de $2500 mensuales.'}",
+            "{'level': '20 espacios', 'description': 'Aumentas tu portafolio a 20 espacios, consolidando tu presencia en el mercado.'}",
+            "{'level': 'expansión a otras ciudades', 'description': 'Comienzas a abrir oficinas en otras ciudades, llevando tu modelo de negocio a nuevos mercados.'}",
+            "{'level': 'competir con grandes empresas', 'description': 'Te estableces como un competidor fuerte frente a grandes empresas de bienes raíces.'}"
+          ],
+          "life_progression": {
+            "start": [
+              "Alquilas tu primer espacio vacío."
+            ],
+            "early_reward": [
+              "Generas ingresos estables."
+            ],
+            "mid_reward": [
+              "Expandes tu red de espacios."
+            ],
+            "major_reward": [
+              "Te reconocen como líder en el sector."
+            ],
+            "late_state": [
+              "Tienes un portafolio diversificado en varias ciudades."
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Generas $2500 mensuales en ingresos de alquiler.",
+              "story_beat": "Con cada nuevo espacio alquilado, tus finanzas se estabilizan."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Disfrutas de un horario flexible y control sobre tu tiempo.",
+              "story_beat": "Tienes la libertad de gestionar tu tiempo y proyectos."
+            },
+            {
+              "type": "status",
+              "description": "Eres reconocido como un líder en el sector de alquiler de espacios creativos.",
+              "story_beat": "Tu éxito atrae la atención de medios y emprendedores."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Alquilas un espacio vacío por $500 al mes, con la incertidumbre de un nuevo modelo de negocio.",
+            "end": "Eres dueño de una red de espacios creativos en varias ciudades, generando ingresos estables y apoyando a la comunidad.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 9,
+        "life_transformation": 10,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 8,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Consigues tu primer contrato con una startup que busca un espacio creativo por s",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: La primera startup genera un aumento del 30% en sus ingresos tras mudarse a tu e",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Las empresas locales no encuentran espacios asequibles y adaptables para trabajar.",
+            "growth_mechanism: Expansión mediante asociaciones con incubadoras de startups y referencias de emprendedores",
+            "first_proof: La primera startup genera un aumento del 30% en sus ingresos tras mudarse a tu espacio.",
+            "major_threat: Una gran empresa de bienes raíces lanza un proyecto similar con precios de lanzamiento baj",
+            "big_decision: Decidir si ajustar precios o invertir en una campaña de marketing para destacar la comunid"
+          ]
+        },
+        "aspirational_strength": {
+          "score": 9,
+          "evidence": [
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: padres, oficina, patrimonio"
+          ]
+        },
+        "life_transformation": {
+          "score": 10,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "vida deseable: padres, oficina, patrimonio",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 7,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=5"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 8,
+          "evidence": [
+            "partial hint fantasy_strength=8"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.76,
+      "rank_score": 8.849,
+      "story_category": "inmobiliaria",
+      "one_line_fantasy": "Conviertes espacios en desuso en oficinas creativas que impulsan a emprendedores locales.",
+      "starting_state": "Alquilas tu primer espacio vacío por $500 al mes, luchando contra la falta de aceptación del modelo flexible.",
+      "end_state": "edad: 35 · patrimonio: 250000 · valuación: 500000 · empleados: 20 · países: 5 · padres: independientes · vivienda: casa propia · control_del_tiempo: flexible",
+      "core_transformation": "Pasas de ser un emprendedor solitario a convertirte en un líder del mercado en alquiler de espacios creativos, impactando positivamente a la comunidad.",
+      "ending_direction": "crecimiento sostenible",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Transformas oficinas vacías en centros creativos",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Conviertes espacios olvidados en oportunidades",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Haces crecer a startups con tus oficinas creativas",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Modelo de negocio basado en alquileres flexibles y servicios adicionales como wifi y mobiliario.",
+      "business_fantasy_eval": {
+        "score": 4,
+        "evidence": [
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 10,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "vida deseable: padres, oficina, patrimonio",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Compras una empresa de renting de coches y la escalas internacionalmente",
+      "premise": "Adquieres una empresa de renting de coches; escalas su modelo a 4 países y logras millonarios contratos corporativos.",
+      "story_engine": {
+        "specific_opportunity": "Las empresas buscan soluciones de alquiler de coches flexibles y a buen precio para sus empleados.",
+        "why_protagonist_notices_it": "Recibes una llamada de un amigo que dirige una gran corporación, que necesita una flota de coches para un nuevo proyecto.",
+        "initial_action": "Adquieres una empresa de renting de coches local con una flota de 50 vehículos.",
+        "first_customer_or_break": "Consigues un contrato de $500,000 al año con una empresa de tecnología que necesita 100 coches para sus empleados.",
+        "business_or_progress_mechanism": "Modelo de renting corporativo con contratos anuales y precios competitivos.",
+        "why_it_works": "Las empresas prefieren alquilar para evitar los altos costos de compra y mantenimiento de vehículos.",
+        "growth_mechanism": "Expansión a través de asociaciones con empresas locales en cada nuevo país que ingresas.",
+        "first_proof": "El primer contrato de $500,000 asegura ingresos estables y valida tu modelo de negocio.",
+        "first_major_reward": "Logras rentar 200 coches en el primer año, generando $1,000,000 en ingresos.",
+        "primary_opposition": "Competidores establecidos que ofrecen precios más bajos y tienen flotas más grandes.",
+        "mid_story_complication": "Un escándalo sobre el mantenimiento de los coches afecta la reputación de la industria del renting en tu nuevo país.",
+        "major_threat": "Una multinacional de renting de coches reduce sus precios en un 30% para ganar cuota de mercado.",
+        "big_decision": "Decidir si invertir en marketing agresivo o bajar precios para competir.",
+        "stakes": "El futuro de tu empresa y la posibilidad de perder contratos importantes si no logras competir.",
+        "possible_cost": "Inversiones significativas en publicidad y marketing sin garantía de retorno.",
+        "escalation_path": "Primero consolidar en el país actual → luego ingresar a un segundo país → finalmente expandirse a dos más al mismo tiempo.",
+        "endgame": "Convertirte en un líder del mercado en Europa o cerrar la empresa debido a la competencia feroz."
+      },
+      "escalation_ladder": [
+        "Iniciar con 50 coches en un solo país.",
+        "Lograr un primer contrato de $500,000.",
+        "Alquilar 200 coches en el primer año.",
+        "Expandirte a un segundo país con éxito.",
+        "Establecer contratos anuales con varias corporaciones.",
+        "Alquilar 1,000 coches en 4 países.",
+        "Generar ingresos anuales de $10 millones.",
+        "Convertirte en un líder del mercado en Europa."
+      ],
+      "life_progression": {
+        "start": [
+          "Eres un empresario local luchando por hacer crecer tu negocio."
+        ],
+        "early_reward": [
+          "Consigues tu primer contrato corporativo que asegura ingresos estables."
+        ],
+        "mid_reward": [
+          "Expandes tu flota y aumentas tus ingresos significativamente."
+        ],
+        "major_reward": [
+          "Alcanzas contratos con grandes multinacionales, consolidando tu posición en el mercado."
+        ],
+        "late_state": [
+          "Eres reconocido como un líder en la industria del renting de coches."
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Ingresos anuales de $10 millones.",
+          "story_beat": "Logras estabilizar tus finanzas y reinvertir en el negocio."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Vives en una casa lujosa y viajas frecuentemente.",
+          "story_beat": "Tu éxito te permite disfrutar de una vida cómoda y llena de experiencias."
+        },
+        {
+          "type": "status",
+          "description": "Reconocimiento en la industria y networking con líderes de negocios.",
+          "story_beat": "Te invitan a conferencias y eventos de prestigio."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Eres un pequeño empresario con una flota de 50 coches.",
+        "end": "Eres un líder en el sector del renting con 1,000 coches en 4 países.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 7,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "amenaza competitiva de escala",
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy": {
+        "score": 7,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo lograrás diferenciarte en un mercado saturado y mantener tus contratos corporativos?",
+      "open_loops": [
+        "¿Qué pasará cuando un competidor internacional intente desbancar tu modelo?",
+        "¿Cómo manejarás la logística de operar en diferentes países?",
+        "¿Cuáles serán las reacciones de los clientes corporativos ante un cambio en la gestión?",
+        "¿Qué harás si los costos de operación aumentan drásticamente?"
+      ],
+      "hook": "Tú adquieres una empresa de renting de coches y, en poco tiempo, escalas su modelo a 4 países. Consigues millonarios contratos corporativos, pero también enfrentas la feroz competencia de gigantes de la industria. ¿Podrás mantenerte a flote y convertirte en un líder del sector?",
+      "thumbnail_concept": {
+        "main_visual": "Un empresario sonriente junto a una flota de coches de alta gama.",
+        "protagonist_state": "Confiado y exitoso.",
+        "environment": "Una ciudad moderna con rascacielos de fondo.",
+        "central_contrast": "El empresario frente a la flota de coches.",
+        "emotion": "Éxito y ambición.",
+        "key_object": "Un contrato grande en la mano del empresario.",
+        "composition": "El empresario en primer plano, con los coches alineados detrás.",
+        "camera": "Ángulo bajo para dar una sensación de grandeza.",
+        "lighting": "Brillante y optimista.",
+        "background": "Edificios altos y un cielo despejado.",
+        "text_if_any": "¡Conviértete en un líder del renting!",
+        "thumbnail_prompt": "A confident businessman standing in front of a fleet of luxury cars in a modern city."
+      },
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$50000",
+        "starting_location": "Madrid, España",
+        "starting_status": "Propietario de una pequeña empresa",
+        "target_outcome": "Convertirse en un líder del mercado de renting de coches a nivel internacional",
+        "business_or_career_type": "Renting de coches",
+        "timeline_scale": "10 años"
+      },
+      "aspirational_score": 9.15,
+      "aspirational_evidence": [
+        "mecanismo de crecimiento concreto",
+        "amenaza competitiva de escala",
+        "escalation_ladder con 8 niveles",
+        "scale_ceiling=national",
+        "fantasía de ownership/control",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, lifestyle, status",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 7,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "amenaza competitiva de escala",
+            "escalation_ladder con 8 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control"
+          ]
+        },
+        "life_fantasy": {
+          "score": 7,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 9.15,
+        "aspirational_evidence": [
+          "mecanismo de crecimiento concreto",
+          "amenaza competitiva de escala",
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 10,
+        "life_transformation": 9,
+        "scale_potential": 8,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "Iniciar con 50 coches en un solo país.",
+            "Lograr un primer contrato de $500,000.",
+            "Alquilar 200 coches en el primer año.",
+            "Expandirte a un segundo país con éxito.",
+            "Establecer contratos anuales con varias corporaciones.",
+            "Alquilar 1,000 coches en 4 países.",
+            "Generar ingresos anuales de $10 millones.",
+            "Convertirte en un líder del mercado en Europa."
+          ],
+          "life_progression": {
+            "start": [
+              "Eres un empresario local luchando por hacer crecer tu negocio."
+            ],
+            "early_reward": [
+              "Consigues tu primer contrato corporativo que asegura ingresos estables."
+            ],
+            "mid_reward": [
+              "Expandes tu flota y aumentas tus ingresos significativamente."
+            ],
+            "major_reward": [
+              "Alcanzas contratos con grandes multinacionales, consolidando tu posición en el mercado."
+            ],
+            "late_state": [
+              "Eres reconocido como un líder en la industria del renting de coches."
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Ingresos anuales de $10 millones.",
+              "story_beat": "Logras estabilizar tus finanzas y reinvertir en el negocio."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Vives en una casa lujosa y viajas frecuentemente.",
+              "story_beat": "Tu éxito te permite disfrutar de una vida cómoda y llena de experiencias."
+            },
+            {
+              "type": "status",
+              "description": "Reconocimiento en la industria y networking con líderes de negocios.",
+              "story_beat": "Te invitan a conferencias y eventos de prestigio."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Eres un pequeño empresario con una flota de 50 coches.",
+            "end": "Eres un líder en el sector del renting con 1,000 coches en 4 países.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 9,
+        "story_engine_strength": 10,
+        "aspirational_strength": 10,
+        "life_transformation": 9,
+        "scale_potential": 8,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 7,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 9,
+          "evidence": [
+            "cliente/ruptura concreta: Consigues un contrato de $500,000 al año con una empresa de tecnología que neces",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: El primer contrato de $500,000 asegura ingresos estables y valida tu modelo de n",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Las empresas buscan soluciones de alquiler de coches flexibles y a buen precio para sus em",
+            "growth_mechanism: Expansión a través de asociaciones con empresas locales en cada nuevo país que ingresas.",
+            "first_proof: El primer contrato de $500,000 asegura ingresos estables y valida tu modelo de negocio.",
+            "major_threat: Una multinacional de renting de coches reduce sus precios en un 30% para ganar cuota de me",
+            "big_decision: Decidir si invertir en marketing agresivo o bajar precios para competir."
+          ]
+        },
+        "aspirational_strength": {
+          "score": 10,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "amenaza competitiva de escala",
+            "escalation_ladder con 8 niveles",
+            "scale_ceiling=national",
+            "fantasía de ownership/control",
+            "life_progression con 5 etapas"
+          ]
+        },
+        "life_transformation": {
+          "score": 9,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 8,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=8"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 7,
+          "evidence": [
+            "partial hint fantasy_strength=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.7,
+      "rank_score": 8.7915,
+      "story_category": "logística",
+      "one_line_fantasy": "Construyes un imperio de renting de coches, obteniendo contratos millonarios mientras enfrentas retos internacionales.",
+      "starting_state": "Adquieres una pequeña empresa de renting con 50 coches en tu ciudad.",
+      "end_state": "A los 10 años, gestionas una flota de 1,000 coches en 4 países, con ingresos anuales de $10 millones y 100 empleados.",
+      "core_transformation": "Pasas de ser un pequeño empresario local a un líder en el mercado de renting de coches a nivel internacional.",
+      "ending_direction": "Éxito a gran escala o lucha por la supervivencia ante competidores más grandes.",
+      "specificity_score": 9,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Adquieres una flota de coches y la conviertes en un imperio",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Empiezas un negocio de renting de coches y desafías a los gigantes",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Heredas una empresa de renting y la transformas en un éxito internacional",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Modelo de renting corporativo con contratos anuales y precios competitivos.",
+      "business_fantasy_eval": {
+        "score": 7,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "amenaza competitiva de escala",
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=national",
+          "fantasía de ownership/control"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 7,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Construyes un software educativo que transforma la enseñanza",
+      "premise": "Desarrollas un software de educación personalizada y captas 1 millón de usuarios en 2 años; escalas globalmente.",
+      "story_engine": {
+        "specific_opportunity": "Los estudiantes necesitan un enfoque educativo adaptado a sus estilos de aprendizaje individuales.",
+        "why_protagonist_notices_it": "Recibes comentarios de estudiantes que se sienten frustrados con los métodos tradicionales de enseñanza.",
+        "initial_action": "Creas un prototipo del software en 6 meses utilizando técnicas de aprendizaje automático.",
+        "first_customer_or_break": "Una escuela local adopta el software y reporta una mejora del 30% en los resultados académicos.",
+        "business_or_progress_mechanism": "Modelo de suscripción anual por $120 por estudiante.",
+        "why_it_works": "El costo es menor que las tutorías privadas y ofrece un aprendizaje más efectivo.",
+        "growth_mechanism": "Colaboraciones con escuelas y universidades que recomiendan el software a sus estudiantes.",
+        "first_proof": "Captas 10.000 usuarios en los primeros 3 meses tras la implementación en la primera escuela.",
+        "first_major_reward": "Suficiente ingreso recurrente mensual para expandir el equipo y mejorar el software.",
+        "primary_opposition": "Las plataformas educativas tradicionales que tienen contratos a largo plazo con colegios.",
+        "mid_story_complication": "Un informe revela fallos en el software que afectan a la experiencia de algunos usuarios.",
+        "major_threat": "Una gran empresa de tecnología lanza una solución similar con un presupuesto de marketing masivo.",
+        "big_decision": "Decidir si invertir en publicidad agresiva o mejorar el producto antes de escalar.",
+        "stakes": "La viabilidad de tu negocio depende de mantener a tus usuarios satisfechos mientras enfrentas a competidores grandes.",
+        "possible_cost": "Perder la confianza de los usuarios si no solucionas los problemas rápidamente.",
+        "escalation_path": "10.000 usuarios → 100.000 → 500.000 → 1 millón → expansión internacional.",
+        "endgame": "Convertirte en la plataforma líder de educación personalizada a nivel mundial, con millones de usuarios satisfechos."
+      },
+      "escalation_ladder": [
+        "000 usuarios",
+        "000 usuarios",
+        "000 usuarios",
+        "1 millón de usuarios",
+        "Expansión internacional",
+        "Liderazgo en el mercado educativo",
+        "Presencia en 20 países",
+        "Venta a un gigante tecnológico"
+      ],
+      "life_progression": {
+        "start": [
+          "Sin ingresos",
+          "Trabajas desde casa",
+          "Falta de recursos"
+        ],
+        "early_reward": [
+          "Primeros ingresos recurrentes",
+          "Reclutas a tu primer empleado",
+          "Mejora en la calidad del software"
+        ],
+        "mid_reward": [
+          "Crecimiento acelerado de usuarios",
+          "Reconocimiento en medios",
+          "Alianzas estratégicas con instituciones"
+        ],
+        "major_reward": [
+          "Valuación de $50 millones",
+          "Equipo de 50 empleados",
+          "Expansión a 5 países"
+        ],
+        "late_state": [
+          "Valoración de $100 millones",
+          "500 empleados",
+          "Presencia en 10 países",
+          "Tiempo libre para disfrutar con la familia"
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Valuación de la empresa de $100 millones.",
+          "story_beat": "Lograste superar las expectativas de crecimiento."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Libertad para viajar y trabajar desde cualquier lugar.",
+          "story_beat": "Disfrutas de la vida mientras tu empresa crece."
+        },
+        {
+          "type": "status",
+          "description": "Reconocimiento como líder en el sector educativo.",
+          "story_beat": "Recibes premios y reconocimientos por tu innovación."
+        }
+      ],
+      "scale_ceiling": "international",
+      "start_end_contrast": {
+        "start": "Tienes una idea y un prototipo sin usuarios.",
+        "end": "Eres el fundador de una empresa valorada en $100 millones con millones de usuarios.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 4,
+        "evidence": [
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=international"
+        ]
+      },
+      "life_fantasy": {
+        "score": 7,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo superarás la competencia y asegurarás la satisfacción de tus usuarios?",
+      "open_loops": [
+        "¿Cómo atraerás a tus primeros 10.000 usuarios?",
+        "¿Qué harás cuando una gran empresa de tecnología intente copiar tu modelo?",
+        "¿Cómo mantendrás la calidad del servicio mientras escalas?",
+        "¿Qué estrategias usarás para internacionalizar tu producto?"
+      ],
+      "hook": "Desarrollas un software de educación personalizada que transforma la forma en que los estudiantes aprenden. En solo 2 años, captas 1 millón de usuarios y tu empresa se convierte en una referencia global en educación. ¿Cómo lograrás mantener la calidad mientras escalas?",
+      "thumbnail_concept": {
+        "main_visual": "Un emprendedor frente a una pizarra llena de ideas innovadoras.",
+        "protagonist_state": "",
+        "environment": "",
+        "central_contrast": "El contraste entre el caos inicial y el éxito posterior.",
+        "emotion": "",
+        "key_object": "Un prototipo de software en una laptop.",
+        "composition": "",
+        "camera": "",
+        "lighting": "",
+        "background": "",
+        "text_if_any": "",
+        "thumbnail_prompt": "An entrepreneur brainstorming innovative ideas for educational software."
+      },
+      "world_seeds": {
+        "starting_age": 25,
+        "starting_cash": "$5,000",
+        "starting_location": "España",
+        "starting_status": "Emprendedor en solitario",
+        "target_outcome": "Liderar el mercado educativo global",
+        "business_or_career_type": "Tecnología educativa",
+        "timeline_scale": "2 años"
+      },
+      "aspirational_score": 8.65,
+      "aspirational_evidence": [
+        "escalation_ladder con 8 niveles",
+        "scale_ceiling=international",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, lifestyle, status",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 4,
+          "evidence": [
+            "escalation_ladder con 8 niveles",
+            "scale_ceiling=international"
+          ]
+        },
+        "life_fantasy": {
+          "score": 7,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 8.65,
+        "aspirational_evidence": [
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=international",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 8,
+        "life_transformation": 9,
+        "scale_potential": 9,
+        "reward_density": 9,
+        "scale_ceiling": "international",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "000 usuarios",
+            "000 usuarios",
+            "000 usuarios",
+            "1 millón de usuarios",
+            "Expansión internacional",
+            "Liderazgo en el mercado educativo",
+            "Presencia en 20 países",
+            "Venta a un gigante tecnológico"
+          ],
+          "life_progression": {
+            "start": [
+              "Sin ingresos",
+              "Trabajas desde casa",
+              "Falta de recursos"
+            ],
+            "early_reward": [
+              "Primeros ingresos recurrentes",
+              "Reclutas a tu primer empleado",
+              "Mejora en la calidad del software"
+            ],
+            "mid_reward": [
+              "Crecimiento acelerado de usuarios",
+              "Reconocimiento en medios",
+              "Alianzas estratégicas con instituciones"
+            ],
+            "major_reward": [
+              "Valuación de $50 millones",
+              "Equipo de 50 empleados",
+              "Expansión a 5 países"
+            ],
+            "late_state": [
+              "Valoración de $100 millones",
+              "500 empleados",
+              "Presencia en 10 países",
+              "Tiempo libre para disfrutar con la familia"
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Valuación de la empresa de $100 millones.",
+              "story_beat": "Lograste superar las expectativas de crecimiento."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Libertad para viajar y trabajar desde cualquier lugar.",
+              "story_beat": "Disfrutas de la vida mientras tu empresa crece."
+            },
+            {
+              "type": "status",
+              "description": "Reconocimiento como líder en el sector educativo.",
+              "story_beat": "Recibes premios y reconocimientos por tu innovación."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Tienes una idea y un prototipo sin usuarios.",
+            "end": "Eres el fundador de una empresa valorada en $100 millones con millones de usuarios.",
+            "one_line": ""
+          },
+          "scale_ceiling": "international"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 8,
+        "life_transformation": 9,
+        "scale_potential": 9,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 7,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Una escuela local adopta el software y reporta una mejora del 30% en los resulta",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Captas 10.000 usuarios en los primeros 3 meses tras la implementación en la prim",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Los estudiantes necesitan un enfoque educativo adaptado a sus estilos de aprendizaje indiv",
+            "growth_mechanism: Colaboraciones con escuelas y universidades que recomiendan el software a sus estudiantes.",
+            "first_proof: Captas 10.000 usuarios en los primeros 3 meses tras la implementación en la primera escuel",
+            "major_threat: Una gran empresa de tecnología lanza una solución similar con un presupuesto de marketing ",
+            "big_decision: Decidir si invertir en publicidad agresiva o mejorar el producto antes de escalar."
+          ]
+        },
+        "aspirational_strength": {
+          "score": 8,
+          "evidence": [
+            "escalation_ladder con 8 niveles",
+            "scale_ceiling=international",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas",
+            "tipos de reward: financial, lifestyle, status",
+            "start_end_contrast presente"
+          ]
+        },
+        "life_transformation": {
+          "score": 9,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 9,
+          "evidence": [
+            "scale_ceiling=international",
+            "ladder_n=8"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 7,
+          "evidence": [
+            "partial hint fantasy_strength=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.65,
+      "rank_score": 8.7365,
+      "story_category": "tecnología",
+      "one_line_fantasy": "Construyes un imperio educativo que impacta a millones de estudiantes en todo el mundo.",
+      "starting_state": "Tienes una idea y un prototipo de software, pero sin usuarios ni ingresos.",
+      "end_state": "A los 35 años, tu empresa tiene un valor de $100 millones, 500 empleados y presencia en 10 países.",
+      "core_transformation": "Pasas de ser un emprendedor solitario a liderar una empresa educativa global.",
+      "ending_direction": "La empresa se convierte en líder mundial en educación personalizada.",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Desarrollas un software educativo que escala globalmente",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Creas la plataforma educativa del futuro",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Conquistas el mundo de la educación con tu software",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Modelo de suscripción anual por $120 por estudiante.",
+      "business_fantasy_eval": {
+        "score": 4,
+        "evidence": [
+          "escalation_ladder con 8 niveles",
+          "scale_ceiling=international"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 7,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    },
+    {
+      "title": "POV: Comienzas un servicio de logística con motos desechadas",
+      "premise": "Recoges 100 motos desechadas y creas un servicio de logística urgente; transformas el barrio en un hub nacional.",
+      "story_engine": {
+        "specific_opportunity": "Las motos desechadas están por todas partes y nadie las utiliza para logística.",
+        "why_protagonist_notices_it": "Ves cómo las motos abandonadas generan problemas de espacio y son un recurso desperdiciado.",
+        "initial_action": "Recoges 100 motos desechadas en un solo fin de semana y las reparas.",
+        "first_customer_or_break": "Un restaurante local te contrata para entregar sus pedidos, lo que te genera $500 en el primer mes.",
+        "business_or_progress_mechanism": "Servicio de logística urgente utilizando motos reparadas para entregas rápidas.",
+        "why_it_works": "El costo de entrega es un 30% menor que los servicios de mensajería tradicionales.",
+        "growth_mechanism": "Expansión a través de asociaciones con restaurantes y tiendas locales, aumentando la visibilidad del servicio.",
+        "first_proof": "Consigues contratos con 10 negocios en el primer mes.",
+        "first_major_reward": "Logras $5,000 de ingresos recurrentes mensuales en el tercer mes.",
+        "primary_opposition": "Una empresa de mensajería establecida que empieza a ofrecer precios competitivos.",
+        "mid_story_complication": "Un fallo en el sistema de pedidos provoca retrasos y quejas de los clientes.",
+        "major_threat": "Un competidor grande lanza una campaña publicitaria que promete entregas más rápidas y a mejor precio.",
+        "big_decision": "Decidir entre invertir en publicidad para competir o mejorar la calidad del servicio.",
+        "stakes": "Perder la reputación y los contratos de clientes importantes si no logras resolver los problemas.",
+        "possible_cost": "Podrías perder hasta $20,000 en ingresos si decides no invertir en mejoras.",
+        "escalation_path": "1 restaurante → 10 restaurantes → 50 negocios → competencia nacional → competencia internacional.",
+        "endgame": "Convertirte en el líder del mercado de logística urgente en motos o ser absorbido por una empresa más grande."
+      },
+      "escalation_ladder": [
+        "1 restaurante",
+        "10 restaurantes",
+        "50 negocios",
+        "competencia nacional",
+        "competencia internacional"
+      ],
+      "life_progression": {
+        "start": [
+          "Tienes un taller mecánico pequeño",
+          "Pocas ventas y clientes",
+          "Sin recursos para expandirte"
+        ],
+        "early_reward": [
+          "Logras tu primer contrato con un restaurante",
+          "Generas $500 en el primer mes",
+          "Comienzas a reparar motos"
+        ],
+        "mid_reward": [
+          "Consolidación de contratos con 10 negocios",
+          "Alcanza $5,000 en ingresos recurrentes mensuales",
+          "Reconocimiento local"
+        ],
+        "major_reward": [
+          "Expansión a nuevas ciudades",
+          "Incremento de ingresos a $500,000 anuales",
+          "Creación de una marca confiable"
+        ],
+        "late_state": [
+          "Controlas el 30% del mercado nacional",
+          "Flota de 500 motos y 50 empleados",
+          "Estableces una sólida reputación en el sector"
+        ]
+      },
+      "rewards": [
+        {
+          "type": "financial",
+          "description": "Generas ingresos de $2 millones anuales",
+          "story_beat": "Logras un crecimiento exponencial en tus finanzas."
+        },
+        {
+          "type": "lifestyle",
+          "description": "Vives en un hogar cómodo y seguro para tu familia",
+          "story_beat": "Disfrutas de la estabilidad financiera y familiar."
+        },
+        {
+          "type": "status",
+          "description": "Te conviertes en un referente en la industria de logística",
+          "story_beat": "Tu marca es reconocida y respetada en el mercado."
+        }
+      ],
+      "scale_ceiling": "national",
+      "start_end_contrast": {
+        "start": "Tienes un taller mecánico pequeño con problemas financieros.",
+        "end": "Eres el líder del mercado de logística, con una flota amplia y un negocio rentable.",
+        "one_line": ""
+      },
+      "business_fantasy": {
+        "score": 5,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy": {
+        "score": 7,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      },
+      "central_story_question": "¿Cómo puedes mantener y escalar tu negocio frente a la competencia que intenta replicar tu modelo?",
+      "open_loops": [
+        "¿Lograrás convencer a los mecánicos locales de trabajar contigo?",
+        "¿Qué pasará cuando un competidor mayor intente entrar en tu mercado?",
+        "¿Podrás mantener la calidad del servicio a medida que creces?",
+        "¿Cómo manejarás la logística de un flujo creciente de motos?",
+        "¿Conseguirás establecer tu marca como la más confiable del país?"
+      ],
+      "hook": "Recoges 100 motos desechadas y creas un servicio de logística urgente. Transformas tu barrio en un hub nacional de entregas rápidas, mientras enfrentas la competencia y luchas por mantener la calidad de tu servicio.",
+      "thumbnail_concept": {
+        "main_visual": "Una moto reparada en un taller con herramientas alrededor.",
+        "protagonist_state": "Mecánico sonriente con un casco en la mano.",
+        "environment": "Taller mecánico con motos en el fondo.",
+        "central_contrast": "La transformación de motos desechadas a motos en uso.",
+        "emotion": "Determinación y entusiasmo.",
+        "key_object": "Una moto brillante y reparada.",
+        "composition": "Protagonista en el centro, motos en el fondo.",
+        "camera": "Plano medio.",
+        "lighting": "Iluminación brillante y positiva.",
+        "background": "Un taller mecánico con motos.",
+        "text_if_any": "¡Transforma tu barrio!",
+        "thumbnail_prompt": "A mechanic smiling next to a repaired motorcycle in a busy workshop."
+      },
+      "world_seeds": {
+        "starting_age": 30,
+        "starting_cash": "$1000",
+        "starting_location": "un barrio de clase media",
+        "starting_status": "mecánico con pocos recursos",
+        "target_outcome": "liderar el mercado de logística nacional",
+        "business_or_career_type": "logística",
+        "timeline_scale": "5 años"
+      },
+      "aspirational_score": 8.6,
+      "aspirational_evidence": [
+        "mecanismo de crecimiento concreto",
+        "escalation_ladder con 5 niveles",
+        "scale_ceiling=national",
+        "life_progression con 5 etapas",
+        "3 recompensas tipadas",
+        "tipos de reward: financial, lifestyle, status",
+        "start_end_contrast presente",
+        "end_state concreto"
+      ],
+      "aspirational": {
+        "business_fantasy": {
+          "score": 5,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national"
+          ]
+        },
+        "life_fantasy": {
+          "score": 7,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "aspirational_score": 8.6,
+        "aspirational_evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national",
+          "life_progression con 5 etapas",
+          "3 recompensas tipadas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ],
+        "aspirational_strength": 9,
+        "life_transformation": 9,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "scale_ceiling": "national",
+        "would_press_button": true,
+        "gates": {
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "normalized": {
+          "escalation_ladder": [
+            "1 restaurante",
+            "10 restaurantes",
+            "50 negocios",
+            "competencia nacional",
+            "competencia internacional"
+          ],
+          "life_progression": {
+            "start": [
+              "Tienes un taller mecánico pequeño",
+              "Pocas ventas y clientes",
+              "Sin recursos para expandirte"
+            ],
+            "early_reward": [
+              "Logras tu primer contrato con un restaurante",
+              "Generas $500 en el primer mes",
+              "Comienzas a reparar motos"
+            ],
+            "mid_reward": [
+              "Consolidación de contratos con 10 negocios",
+              "Alcanza $5,000 en ingresos recurrentes mensuales",
+              "Reconocimiento local"
+            ],
+            "major_reward": [
+              "Expansión a nuevas ciudades",
+              "Incremento de ingresos a $500,000 anuales",
+              "Creación de una marca confiable"
+            ],
+            "late_state": [
+              "Controlas el 30% del mercado nacional",
+              "Flota de 500 motos y 50 empleados",
+              "Estableces una sólida reputación en el sector"
+            ]
+          },
+          "rewards": [
+            {
+              "type": "financial",
+              "description": "Generas ingresos de $2 millones anuales",
+              "story_beat": "Logras un crecimiento exponencial en tus finanzas."
+            },
+            {
+              "type": "lifestyle",
+              "description": "Vives en un hogar cómodo y seguro para tu familia",
+              "story_beat": "Disfrutas de la estabilidad financiera y familiar."
+            },
+            {
+              "type": "status",
+              "description": "Te conviertes en un referente en la industria de logística",
+              "story_beat": "Tu marca es reconocida y respetada en el mercado."
+            }
+          ],
+          "start_end_contrast": {
+            "start": "Tienes un taller mecánico pequeño con problemas financieros.",
+            "end": "Eres el líder del mercado de logística, con una flota amplia y un negocio rentable.",
+            "one_line": ""
+          },
+          "scale_ceiling": "national"
+        },
+        "is_local_turnaround": false
+      },
+      "scores": {
+        "specificity": 10,
+        "story_engine_strength": 10,
+        "aspirational_strength": 9,
+        "life_transformation": 9,
+        "scale_potential": 7,
+        "reward_density": 9,
+        "curiosity": 9,
+        "fantasy_strength": 7,
+        "filmability": 8,
+        "thumbnail_potential": 6,
+        "originality": 7
+      },
+      "score_evidence": {
+        "specificity": {
+          "score": 10,
+          "evidence": [
+            "industria/modelo de negocio nombrado",
+            "cliente/ruptura concreta: Un restaurante local te contrata para entregar sus pedidos, lo que te genera $50",
+            "problema/oportunidad concreta",
+            "transacción/precio concreto",
+            "mecanismo de crecimiento concreto",
+            "competidor/amenaza concreta",
+            "primera prueba: Consigues contratos con 10 negocios en el primer mes.",
+            "primera recompensa tangible",
+            "decisión con consecuencias"
+          ]
+        },
+        "story_engine_strength": {
+          "score": 10,
+          "evidence": [
+            "specific_opportunity: Las motos desechadas están por todas partes y nadie las utiliza para logística.",
+            "growth_mechanism: Expansión a través de asociaciones con restaurantes y tiendas locales, aumentando la visib",
+            "first_proof: Consigues contratos con 10 negocios en el primer mes.",
+            "major_threat: Un competidor grande lanza una campaña publicitaria que promete entregas más rápidas y a m",
+            "big_decision: Decidir entre invertir en publicidad para competir o mejorar la calidad del servicio."
+          ]
+        },
+        "aspirational_strength": {
+          "score": 9,
+          "evidence": [
+            "mecanismo de crecimiento concreto",
+            "escalation_ladder con 5 niveles",
+            "scale_ceiling=national",
+            "life_progression con 5 etapas",
+            "3 recompensas tipadas",
+            "tipos de reward: financial, lifestyle, status"
+          ]
+        },
+        "life_transformation": {
+          "score": 9,
+          "evidence": [
+            "life_progression con 5 etapas",
+            "tipos de reward: financial, lifestyle, status",
+            "start_end_contrast presente",
+            "end_state concreto"
+          ]
+        },
+        "scale_potential": {
+          "score": 7,
+          "evidence": [
+            "scale_ceiling=national",
+            "ladder_n=5"
+          ]
+        },
+        "reward_density": {
+          "score": 9,
+          "evidence": [
+            "3 rewards"
+          ]
+        },
+        "filmability": {
+          "score": 8,
+          "evidence": [
+            "17 concrete story_engine beats",
+            "multiple status/crisis beats",
+            "distinct escalation language across beats"
+          ]
+        },
+        "originality": {
+          "score": 7,
+          "evidence": [
+            "sin cliché mayor"
+          ]
+        },
+        "curiosity": {
+          "score": 9,
+          "evidence": [
+            "partial hint curiosity=9"
+          ]
+        },
+        "fantasy_strength": {
+          "score": 7,
+          "evidence": [
+            "partial hint fantasy_strength=7"
+          ]
+        },
+        "thumbnail_potential": {
+          "score": 6,
+          "evidence": [
+            "partial hint thumbnail_potential=6"
+          ]
+        }
+      },
+      "eligibility": {
+        "eligible": true,
+        "gates": {
+          "has_specific_opportunity": true,
+          "has_specific_mechanism": true,
+          "has_growth_engine": true,
+          "has_major_threat": true,
+          "has_stakes": true,
+          "has_story_question": true,
+          "has_valid_hook": true,
+          "has_valid_world_seeds": true,
+          "category_matches": true,
+          "coherence_pass": true,
+          "has_story_engine": true,
+          "specificity_ok": true,
+          "thumbnail_concrete": true,
+          "has_aspirational_transformation": true,
+          "has_life_progression": true,
+          "has_scale_progression": true,
+          "has_visible_rewards": true
+        },
+        "failed_gates": [],
+        "reasons": []
+      },
+      "overall_score": 8.57,
+      "rank_score": 8.656,
+      "story_category": "logística",
+      "one_line_fantasy": "Construyes un imperio logístico a partir de motos desechadas, convirtiéndote en el líder del mercado nacional.",
+      "starting_state": "Tienes 100 motos desechadas y un taller mecánico pequeño con pocos recursos.",
+      "end_state": "A los 5 años, tienes una flota de 500 motos, 50 empleados, ingresos anuales de $2 millones, presencia en 10 ciudades y un hogar cómodo para tu familia.",
+      "core_transformation": "De mecánico a empresario exitoso en logística, transformando un recurso desperdiciado en un negocio rentable y sostenible.",
+      "ending_direction": "expansión y adaptación ante la competencia",
+      "specificity_score": 10,
+      "filmability": 8,
+      "title_options": [
+        {
+          "text": "POV: Transformas motos desechadas en un negocio de logística",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Creas un hub nacional de logística urgente con motos",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        },
+        {
+          "text": "POV: Recoges motos y construyes un imperio logístico",
+          "scores": {
+            "clarity": 5,
+            "curiosity": 5,
+            "fantasy": 5,
+            "scale": 5,
+            "instant_understanding": 5,
+            "promise_match": 5
+          },
+          "overall_score": 5.0
+        }
+      ],
+      "eligible": true,
+      "language": "es",
+      "content_language": "es",
+      "diversity_note": null,
+      "specific_mechanism": "Servicio de logística urgente utilizando motos reparadas para entregas rápidas.",
+      "business_fantasy_eval": {
+        "score": 5,
+        "evidence": [
+          "mecanismo de crecimiento concreto",
+          "escalation_ladder con 5 niveles",
+          "scale_ceiling=national"
+        ]
+      },
+      "life_fantasy_eval": {
+        "score": 7,
+        "evidence": [
+          "life_progression con 5 etapas",
+          "tipos de reward: financial, lifestyle, status",
+          "start_end_contrast presente",
+          "end_state concreto"
+        ]
+      }
+    }
+  ]
+}
