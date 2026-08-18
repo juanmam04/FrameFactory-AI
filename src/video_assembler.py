@@ -385,7 +385,13 @@ def _encode_one_still(
         "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(part),
     ]
-    limit = 12 if width <= 1280 else 22
+    # 4K Ken Burns needs minutes on some machines; 1080p usually <30s.
+    if width <= 1280:
+        limit = 20
+    elif width <= 1920:
+        limit = 60
+    else:
+        limit = 180
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=limit)
     if r.returncode != 0 or not mp4_is_complete(part):
         part.unlink(missing_ok=True)

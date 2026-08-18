@@ -43,6 +43,15 @@ def set_render_state(
             flag.unlink(missing_ok=True)
         except Exception:
             pass
+        # Stale cancel.flag in Supabase used to re-cancel every new render on Vercel.
+        try:
+            from src.documentary import cloud_sync
+
+            pid = str(project.get("id") or "")
+            if pid and cloud_sync.configured():
+                cloud_sync.delete_paths(pid, ["render/cancel.flag"])
+        except Exception:
+            pass
     elif state == "done":
         rec["finished_at"] = now
         rec["error"] = ""
@@ -872,10 +881,16 @@ def _encode_profile(
     vercel: bool,
     duration_sec: float = 0,
 ) -> tuple[int, int, int, int, str, tuple[int, int] | None, str]:
-    """Cloud: Full HD Ken Burns in one pass (no 720→1080 upscale). Local Mac: 4K."""
+    """Full HD by default (YouTube-ready). Opt into 4K with FF_RENDER_4K=1."""
+    import os
+
+    want_4k = (os.getenv("FF_RENDER_4K") or "").strip().lower() in ("1", "true", "yes")
+    if want_4k and not vercel:
+        return 3840, 2160, 24, 16, "medium", None, "4K"
+    # Vercel needs ultrafast to finish chunks; local can spend a bit more quality.
     if vercel:
         return 1920, 1080, 24, 20, "ultrafast", None, "Full HD 1080p"
-    return 3840, 2160, 24, 16, "medium", None, "4K"
+    return 1920, 1080, 24, 18, "veryfast", None, "Full HD 1080p"
 
 
 def assemble_preview_clip(project: dict[str, Any]) -> Path:

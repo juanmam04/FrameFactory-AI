@@ -120,6 +120,9 @@ def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, 
     skipped = 0
     with _connect() as conn:
         with conn.cursor() as cur:
+            # Large episode mp4s (~150–300MB) need far more than the default ~60s.
+            cur.execute("SET statement_timeout = '900s'")
+            cur.execute("SET idle_in_transaction_session_timeout = '900s'")
             for path in files:
                 rel = path.relative_to(root).as_posix()
                 data = path.read_bytes()
@@ -143,8 +146,9 @@ def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, 
                     """,
                     (project_id, rel, digest, data),
                 )
+                # Commit each file so a timeout mid-batch doesn't lose smaller files.
+                conn.commit()
                 uploaded += 1
-        conn.commit()
     return uploaded, skipped
 
 

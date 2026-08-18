@@ -242,7 +242,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260816-hq",
+            "build": "20260818-final-fix",
         }
 
     @app.get("/api/ping")
@@ -253,7 +253,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260816-hq",
+            "build": "20260818-final-fix",
         }
 
     # ── channel / home ──────────────────────────────────────────────
@@ -922,8 +922,15 @@ def create_app() -> FastAPI:
         ready = mp4_is_complete(local)
         captions = mp4_is_complete(cap)
         preview = mp4_is_complete(prev)
-        # Prefer local project.json. Soft-pull only when missing (Vercel cold start).
+        # Prefer fresh project.json from cloud (warm lambdas otherwise keep a stale cancel/running).
         try:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                try:
+                    cloud_sync.pull_one(project_id, "project.json", force=True)
+                except Exception:
+                    pass
             proj = load_project(project_id)
         except Exception:
             proj = None
@@ -931,7 +938,7 @@ def create_app() -> FastAPI:
 
             if cloud_sync.configured():
                 try:
-                    cloud_sync.pull_one(project_id, "project.json", force=False)
+                    cloud_sync.pull_one(project_id, "project.json", force=True)
                     proj = load_project(project_id)
                 except Exception:
                     proj = None
@@ -1072,12 +1079,25 @@ def create_app() -> FastAPI:
                     need_continue = True
             except Exception:
                 pass
-        if rec.get("cancelled") and state != "running":
-            state = "idle"
-            message = message or "Frenaste el render."
-        elif ready and state != "running":
+        if ready and state != "running":
             state = "done"
             message = message or "Terminado. Ya lo podés descargar."
+            # A finished episode must not stay stuck on "Frenaste el render."
+            if rec.get("cancelled"):
+                try:
+                    from src.documentary.project import save_project
+
+                    rec["cancelled"] = False
+                    rec["state"] = "done"
+                    rec["message"] = message
+                    if proj is not None:
+                        proj["render"] = rec
+                        save_project(proj)
+                except Exception:
+                    pass
+        elif rec.get("cancelled") and state != "running":
+            state = "idle"
+            message = message or "Frenaste el render."
         labels = {
             "idle": "Frenado" if rec.get("cancelled") else "No iniciado",
             "running": "En curso",
