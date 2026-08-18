@@ -71,3 +71,8 @@
 2026-08-18T18:03:03Z captions burn skip: No se pudieron quemar los subtítulos: [out#0/mp4 @ 000001cddeacf100] Error muxing a packet | [out#0/mp4 @ 000001cddeacf100] Task finished with error code: -28 (No space left on device) | [out#0/mp4 @ 000001cddeacf100] Error writing trailer: No space left on device | [out#0/mp4 @ 000001cddeacf100] Error closing file: No space left on device
 2026-08-18T18:03:04Z render ok → C:\Users\JuanManuelMartinezTr\FrameFactory-AI\projects\001-the-47-billion-company-that-almost-collapsed-ove\render\final.mp4 Full HD 1080p captions=False
 2026-08-18T18:06:07Z captions burned into final.mp4
+2026-08-18T18:42:55Z still reuse method=ai gaps=42 filled=42 needed=73 unique=48
+2026-08-18T18:43:26Z still reuse method=heuristic gaps=42 filled=42 needed=73 unique=44
+2026-08-18T19:00:18Z captions burned into final.mp4
+2026-08-18T19:00:18Z render ok → C:\Users\JuanManuelMartinezTr\FrameFactory-AI\projects\001-the-47-billion-company-that-almost-collapsed-ove\render\final.mp4 Full HD 1080p captions=True
+2026-08-18T19:02:31Z captions burned into final.mp4
