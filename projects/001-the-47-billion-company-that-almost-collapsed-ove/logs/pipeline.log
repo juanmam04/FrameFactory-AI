@@ -62,3 +62,12 @@
 2026-08-14T18:45:55Z preview captions whisper window=22s cues=4
 2026-08-14T18:48:09Z preview captions whisper window=22s cues=4
 2026-08-14T18:48:30Z render preview ok 20s same-engine start-of-episode captions=1 stills=4/73 reuse=ai audio_sha=cca211a4
+2026-08-18T17:40:39Z still reuse method=ai gaps=42 filled=42 needed=73
+2026-08-18T17:41:00Z captions aligned via whisper cues=99
+2026-08-18T17:41:00Z captions srt cues=99 source=whisper
+2026-08-18T17:41:00Z captions srt ready source=whisper
+2026-08-18T17:43:55Z render FAIL: Command '['C:\\Users\\JuanManuelMartinezTr\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.0.1-full_build\\bin\\ffmpeg.EXE', '-hide_banner', '-loglevel', 'error', '-y', '-loop', '1', '-i', 'C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\projects\\001-the-47-billion-company-that-almost-collapsed-ove\\images\\005.jpg', '-vf', "scale=4376:2462:force_original_aspect_ratio=increase,crop=4376:2462,zoompan=z='if(eq(on,1),1.07000,max(1.0,zoom-0.000490))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=144:s=3840x2160:fps=24,fade=t=in:st=0:d=0.28,fade=t=out:st=5.71:d=0.28,format=yuv420p,setsar=1", '-frames:v', '144', '-t', '5.986', '-c:v', 'libx264', '-preset', 'medium', '-tune', 'stillimage', '-crf', '16', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', 'C:\\Users\\JuanManuelMartinezTr\\FrameFactory-AI\\projects\\001-the-47-billion-company-that-almost-collapsed-ove\\render\\clips\\87491749e575bb8d3294.part.mp4']' timed out after 22 seconds
+2026-08-18T17:44:46Z still reuse method=ai gaps=42 filled=42 needed=73
+2026-08-18T18:03:03Z captions burn skip: No se pudieron quemar los subtítulos: [out#0/mp4 @ 000001cddeacf100] Error muxing a packet | [out#0/mp4 @ 000001cddeacf100] Task finished with error code: -28 (No space left on device) | [out#0/mp4 @ 000001cddeacf100] Error writing trailer: No space left on device | [out#0/mp4 @ 000001cddeacf100] Error closing file: No space left on device
+2026-08-18T18:03:04Z render ok → C:\Users\JuanManuelMartinezTr\FrameFactory-AI\projects\001-the-47-billion-company-that-almost-collapsed-ove\render\final.mp4 Full HD 1080p captions=False
+2026-08-18T18:06:07Z captions burned into final.mp4
