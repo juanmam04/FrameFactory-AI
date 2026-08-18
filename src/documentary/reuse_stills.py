@@ -72,13 +72,18 @@ def plan_still_timeline(
     for i, num in enumerate(merged):
         if not num:
             merged[i] = _heuristic_one(catalog, slots[i], merged, i)
+    # AI/heuristic often dump one still across the tail — force a spread.
+    merged = _sanitize_sequence(merged, catalog, slots)
     seq = _paths_from_nums(merged, catalog)
     if not seq:
-        seq = [row["path"] for row in catalog.values()]
-        seq = [seq[i % len(seq)] for i in range(n_needed)]
+        nums = list(catalog)
+        seq = [catalog[nums[i % len(nums)]]["path"] for i in range(n_needed)]
     sec = (dur / len(seq)) if dur > 0 else min(max_sec, 6.0)
-    info.update({"method": method, "filled": used})
-    append_log(pid, f"still reuse method={method} gaps={len(gaps)} filled={used} needed={n_needed}")
+    info.update({"method": method, "filled": used, "unique": len({int(n) for n in merged if n})})
+    append_log(
+        pid,
+        f"still reuse method={method} gaps={len(gaps)} filled={used} needed={n_needed} unique={info['unique']}",
+    )
     return seq, min(max_sec, max(2.8, sec)), info
 
 
@@ -233,8 +238,10 @@ def _ask_openai(
         "- Never put collapse/aftermath stills on rise/peak hope beats.\n"
         "- Never put celebratory rise stills on collapse/aftermath.\n"
         "- Match people, places, objects in the VO to the still description.\n"
-        "- Do not repeat the same image in consecutive slots if another fit exists.\n"
-        "- Spread reuses; do not dump one photo across the whole gap.\n"
+        "- NEVER repeat the same image in consecutive slots.\n"
+        "- Cap: no image more than twice if another unused/less-used image can fit.\n"
+        "- Spread reuses across the WHOLE catalog; never dump one photo across the tail.\n"
+        "- Prefer round-robin through least-used stills for late slots.\n"
         "- If nothing is perfect, pick the least-wrong still from a neighboring moment."
     )
     user = json.dumps(
@@ -293,11 +300,13 @@ def _heuristic_one(
     want = str(gap.get("moment") or "rise")
     ok = _MOMENT_OK.get(want, (want,))
     prev = merged[index - 1] if index > 0 else 0
+    nxt = merged[index + 1] if index + 1 < len(merged) else 0
     need_tok = _tokens(f"{gap.get('prompt') or ''} {gap.get('vo') or ''}")
     used: dict[int, int] = {}
     for n in merged:
         if n:
             used[n] = used.get(n, 0) + 1
+    max_uses = max(2, int(math.ceil(len(merged) / max(1, len(catalog)))))
     best = 0
     best_score = -10_000.0
     for n, row in catalog.items():
@@ -310,9 +319,12 @@ def _heuristic_one(
         else:
             score -= 8
         score += 2.0 * len(need_tok & _tokens(f"{row['prompt']} {row['vo']}"))
-        score -= used.get(n, 0) * 1.5
-        if n == prev:
-            score -= 5
+        uses = used.get(n, 0)
+        score -= uses * 4.0
+        if uses >= max_uses:
+            score -= 20
+        if n == prev or n == nxt:
+            score -= 25
         if score > best_score:
             best_score = score
             best = n
@@ -320,6 +332,61 @@ def _heuristic_one(
         return best
     nums = list(catalog)
     return nums[index % len(nums)]
+
+
+def _sanitize_sequence(
+    merged: list[int],
+    catalog: dict[int, dict[str, Any]],
+    slots: list[dict[str, Any]],
+) -> list[int]:
+    """Break consecutive duplicates and hard-cap overused stills."""
+    if not merged or not catalog:
+        return merged
+    out = list(merged)
+    n_cat = max(1, len(catalog))
+    max_uses = max(2, int(math.ceil(len(out) / n_cat)) + 1)
+
+    def _counts() -> dict[int, int]:
+        c: dict[int, int] = {}
+        for n in out:
+            if n:
+                c[n] = c.get(n, 0) + 1
+        return c
+
+    # Pass 1: no identical neighbors.
+    for i in range(len(out)):
+        prev = out[i - 1] if i else 0
+        if out[i] and out[i] != prev:
+            continue
+        gap = slots[i] if i < len(slots) else {"moment": "rise", "prompt": "", "vo": ""}
+        out[i] = _heuristic_one(catalog, gap, out, i)
+
+    # Pass 2: redistribute anything over the cap.
+    for _ in range(3):
+        counts = _counts()
+        over = [n for n, c in counts.items() if c > max_uses]
+        if not over:
+            break
+        for heavy in over:
+            idxs = [i for i, n in enumerate(out) if n == heavy]
+            # Keep first max_uses occurrences; replace the rest.
+            for i in idxs[max_uses:]:
+                gap = slots[i] if i < len(slots) else {"moment": "rise", "prompt": "", "vo": ""}
+                # Temporarily clear so heuristic doesn't prefer itself.
+                out[i] = 0
+                out[i] = _heuristic_one(catalog, gap, out, i) or out[i]
+
+    # Pass 3: final neighbor pass after redistribution.
+    for i in range(1, len(out)):
+        if out[i] and out[i] == out[i - 1]:
+            gap = slots[i] if i < len(slots) else {"moment": "rise", "prompt": "", "vo": ""}
+            out[i] = 0
+            pick = _heuristic_one(catalog, gap, out, i)
+            if pick == out[i - 1]:
+                nums = [n for n in catalog if n != out[i - 1]]
+                pick = nums[i % len(nums)] if nums else pick
+            out[i] = pick
+    return out
 
 
 def _paths_from_nums(nums: list[int], catalog: dict[int, dict[str, Any]]) -> list[Path]:
