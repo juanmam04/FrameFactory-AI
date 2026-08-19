@@ -1,0 +1,12 @@
+LOC_003
+Name: Túnel del Gimnasio
+
+Description:
+Un túnel oscuro y húmedo que conecta el vestuario con la cancha, donde se siente la historia del equipo.
+
+Generate reference image:
+Paredes de ladrillo expuesto, goteras y una atmósfera de abandono.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

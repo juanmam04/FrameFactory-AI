@@ -1,0 +1,12 @@
+LOC_LOCKER
+Name: Halcones locker room
+
+Description:
+Same locker room throughout: old green metal lockers early, later a cleaner coat of paint and better lighting but the same room geometry.
+
+Generate reference image:
+old municipal locker room that slowly improves, same room
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

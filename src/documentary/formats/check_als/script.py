@@ -25,7 +25,7 @@ VOSEO_FIXES = (
     ("mudás", "mudas"),
     ("trabajás", "trabajas"),
     ("vivís", "vives"),
-    ("sos ", "eres "),
+    ("sos", "eres"),
     ("estás viviendo", "estás viviendo"),
     ("andá ", "ve "),
     ("decís", "dices"),
@@ -36,12 +36,10 @@ VOSEO_FIXES = (
     ("comprás", "compras"),
     ("pagás", "pagas"),
     ("dejás", "dejas"),
-    ("llegás", "legas"),
-    ("tenés", "tienes"),
+    ("llegás", "llegas"),
 )
 
-# Accidental leftover from map
-VOSEO_FIXES = tuple((a, b) for a, b in VOSEO_FIXES if a != b)
+VOSEO_FIXES = tuple((a, b) for a, b in VOSEO_FIXES if a.lower() != b.lower())
 
 BANNED_OPENERS = (
     "¿te imaginas",
@@ -72,8 +70,13 @@ BANNED_CTA = (
 )
 BANNED_FLUFF = (
     "tu corazón late",
+    "el corazón te late",
+    "el corazón latiendo",
     "la emoción es indescriptible",
+    "la emoción es palpable",
     "te llenas de orgullo",
+    "sientes orgullo",
+    "te sientes orgulloso",
     "todo tu esfuerzo vale la pena",
     "emoción palpable",
     "camino de rosas",
@@ -251,6 +254,33 @@ def locked_story_facts(arch: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+EXPAND_SYSTEM = """Eres guionista de Check. El guion está CORTO.
+
+Expandí con ESCENAS concretas del state (no relleno, no moraleja, no inventario).
+Más momentos: reunión de compra, utilero, mal arranque, inyección, un partido, playoffs, sold out, renuncia, mudanza, familia, millonario-en-papel, final del teléfono.
+Tú/te. Nunca vos. Conservá TODOS los números y records. championships=0.
+Target 2050–2250 palabras. Devolvé el guion completo, no un parche.
+Solo el texto del guion."""
+
+
+def facts_for_llm(facts: dict[str, Any]) -> dict[str, Any]:
+    out = dict(facts)
+    beats = []
+    for b in (facts.get("beats") or [])[:40]:
+        if not isinstance(b, dict):
+            continue
+        beats.append(
+            {
+                "id": b.get("beat_id"),
+                "time": b.get("time"),
+                "event": b.get("event"),
+                "purpose": b.get("story_purpose"),
+            }
+        )
+    out["beats"] = beats
+    return out
+
+
 def _norm(text: str) -> str:
     return (text or "").lower().replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
 
@@ -269,8 +299,7 @@ def strip_script_chrome(script: str) -> str:
 def apply_tuteo_fixes(script: str) -> str:
     out = script
     for src, dst in VOSEO_FIXES:
-        out = re.sub(re.escape(src), dst, out, flags=re.IGNORECASE)
-        out = re.sub(re.escape(src.capitalize()), dst.capitalize(), out)
+        out = re.sub(rf"\b{re.escape(src)}\b", dst, out, flags=re.IGNORECASE)
     out = re.sub(r"\b[Vv]os\b", "tú", out)
     return out
 
@@ -328,7 +357,7 @@ def validate_check_script(
 
     champs = int(facts.get("championships") or 0)
     if champs == 0:
-        if re.search(r"\b(ganaste|ganaron|son|eres)\s+campeon", low) or re.search(r"\bel anillo\b", low):
+        if re.search(r"\b(ganaste|ganaron|son|eres)\s+(el\s+)?campeon", low) or re.search(r"\bel anillo\b", low):
             hard.append("contradice championships=0 (no inventar campeonato)")
 
     end_nw = (facts.get("life_end") or {}).get("net_worth")
@@ -344,9 +373,8 @@ def validate_check_script(
             hard.append(f"largo: {wc} palabras (target {lo}–{hi})")
         elif wc > hi:
             warn.append(f"un poco largo: {wc} palabras")
-    else:
-        if wc < 400:
-            hard.append(f"demasiado corto para un draft: {wc} palabras")
+    elif wc < 80:
+        warn.append(f"draft corto: {wc} palabras")
 
     if "oferta" not in low and "comprarte" not in low:
         warn.append("el final de la oferta de adquisición puede faltar")
@@ -510,48 +538,83 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
 
         client = OpenAI(api_key=key)
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        slim = facts_for_llm(facts)
         user = json.dumps(
             {
-                "instruction": f"Escribí el guion completo. {target} palabras (±150). Solo texto.",
-                "locked_facts": facts,
+                "instruction": (
+                    f"Escribí el guion COMPLETO de YouTube. OBLIGATORIO: {target} palabras "
+                    f"(mínimo {WORD_RANGE[0]}, máximo {WORD_RANGE[1]}). "
+                    "Escenas, no resumen. Solo texto del VO."
+                ),
+                "locked_facts": slim,
             },
             ensure_ascii=False,
         )
-        script = _chat_text(client, model, SCRIPT_SYSTEM, user, temperature=0.7)
+        script = _chat_text(client, model, SCRIPT_SYSTEM, user, temperature=0.7, max_tokens=9000)
         script = apply_tuteo_fixes(script)
-        ok, hard, warn = validate_check_script(script, facts, strict_length=True)
         wc = count_words(script)
-        if (not ok) or wc < WORD_RANGE[0] or wc > WORD_RANGE[1] + 80:
-            note = (
-                f"Reescribí el guion. Palabras actuales: {wc}. Hard: {hard}. Warnings: {warn}. "
-                f"Quedate en {WORD_RANGE[0]}–{WORD_RANGE[1]} palabras. Conservá hechos. Tú/te."
-            )
+        if wc < WORD_RANGE[0]:
             script = _chat_text(
                 client,
                 model,
-                RETENTION_SYSTEM,
-                json.dumps({"note": note, "script": script, "locked_facts": facts}, ensure_ascii=False),
-                temperature=0.4,
+                EXPAND_SYSTEM,
+                json.dumps(
+                    {
+                        "note": f"Tiene {wc} palabras. Llevalo a {target}. No inventes campeonato.",
+                        "script": script,
+                        "locked_facts": slim,
+                    },
+                    ensure_ascii=False,
+                ),
+                temperature=0.55,
+                max_tokens=9000,
             )
             script = apply_tuteo_fixes(script)
             quality["revised"] = True
-        # Retention pass always once if the draft is in range
-        script = _chat_text(
-            client,
-            model,
-            RETENTION_SYSTEM,
-            json.dumps(
-                {
-                    "note": "Pasada de retención. Recortar sin relleno. Conservar cold open, compra, final.",
-                    "script": script,
-                    "locked_facts": {k: facts[k] for k in facts if k != "beats"},
-                },
-                ensure_ascii=False,
-            ),
-            temperature=0.35,
-        )
-        script = apply_tuteo_fixes(script)
-        quality["retention_pass"] = True
+        wc = count_words(script)
+        if wc >= 1600:
+            kept = script
+            revised = _chat_text(
+                client,
+                model,
+                RETENTION_SYSTEM + f"\nNO bajes de {WORD_RANGE[0]} palabras. Si recortás, reemplazá con otra escena real.",
+                json.dumps(
+                    {
+                        "note": f"Pasada de retención. Palabras actuales: {count_words(script)}. Piso {WORD_RANGE[0]}.",
+                        "script": script,
+                        "locked_facts": {k: slim[k] for k in slim if k != "beats"},
+                    },
+                    ensure_ascii=False,
+                ),
+                temperature=0.3,
+                max_tokens=9000,
+            )
+            revised = apply_tuteo_fixes(revised)
+            if count_words(revised) >= WORD_RANGE[0]:
+                script = revised
+                quality["retention_pass"] = True
+            else:
+                script = kept
+                quality["retention_discarded_shrink"] = True
+        wc = count_words(script)
+        if wc < WORD_RANGE[0]:
+            script = _chat_text(
+                client,
+                model,
+                EXPAND_SYSTEM,
+                json.dumps(
+                    {
+                        "note": f"Todavía corto ({wc}). Target {target}. Más escenas del state.",
+                        "script": script,
+                        "locked_facts": slim,
+                    },
+                    ensure_ascii=False,
+                ),
+                temperature=0.5,
+                max_tokens=9000,
+            )
+            script = apply_tuteo_fixes(script)
+            quality["expanded_twice"] = True
     else:
         script = apply_tuteo_fixes(_mock_check_script(facts))
 

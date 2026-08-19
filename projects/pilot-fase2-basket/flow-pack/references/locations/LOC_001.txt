@@ -1,0 +1,12 @@
+LOC_001
+Name: Gimnasio de los Halcones
+
+Description:
+Un gimnasio que solía ser vibrante, ahora en decadencia, con un ambiente de humedad y gradas vacías.
+
+Generate reference image:
+Estructura vacía con butacas rotas, un piso de cancha manchado y un vestuario descuidado.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

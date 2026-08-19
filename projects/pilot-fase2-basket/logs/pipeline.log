@@ -5,3 +5,17 @@
 2026-08-19T06:15:01Z check_story architecture beats=53 words=904
 2026-08-19T06:16:33Z check_story architecture beats=53 words=756
 2026-08-19T06:17:06Z check_story architecture beats=53 words=926
+2026-08-19T20:10:31Z check_story APPROVED — script unlocked (no voice/render yet)
+2026-08-19T20:11:23Z check_script REJECTED: corto: 1125 palabras (target 1900–2300)
+2026-08-19T20:13:07Z check_script REJECTED: corto: 745 palabras (target 1900–2300)
+2026-08-19T20:17:16Z check_script edited words=1904
+2026-08-19T20:17:16Z script APPROVED
+2026-08-19T20:21:37Z visual analysis shots=80
+2026-08-19T20:21:37Z visual_plan visuals=80 flow=80 batches=9
+2026-08-19T20:21:42Z flow pack exported visuals=80 flow=80 batches=9
+2026-08-19T20:27:54Z visual analysis shots=100
+2026-08-19T20:27:54Z visual_plan visuals=100 flow=100 batches=11
+2026-08-19T20:27:59Z flow pack exported visuals=100 flow=100 batches=11
+2026-08-19T20:37:49Z check visual QC final shots=100 (no image gen)
+2026-08-19T20:38:28Z check visual QC final shots=100 (no image gen)
+2026-08-19T20:39:10Z check visual QC final shots=100 (no image gen)

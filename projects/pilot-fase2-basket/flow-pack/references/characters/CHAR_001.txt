@@ -1,0 +1,12 @@
+CHAR_001
+Name: El Joven Propietario
+
+Description:
+Un joven de 22 años que sueña con tener un equipo de baloncesto y se convierte en propietario de uno en crisis.
+
+Generate reference image:
+Rostro decidido, cabello corto y desordenado, viste ropa casual y cómoda, a menudo con una camiseta de baloncesto.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

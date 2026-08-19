@@ -1,0 +1,12 @@
+LOC_NEW_APT
+Name: own apartment near arena
+
+Description:
+Simple one-bedroom of his own, four blocks from the arena: moving boxes, a window that can see arena lights at night. Modest upgrade, not a penthouse.
+
+Generate reference image:
+Simple one-bedroom of his own, four blocks from the arena: moving boxes, a window that can see arena lights at night. Modest upgrade, not a penthouse.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

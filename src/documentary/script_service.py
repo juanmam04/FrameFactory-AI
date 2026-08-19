@@ -93,10 +93,9 @@ def log_pre_generation_debug(project: dict[str, Any], *, target: int, research_c
 def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True) -> dict[str, Any]:
     """Generate script from approved Story Plan. Does not auto-approve."""
     if str(project.get("content_format") or project.get("mode") or "") == "check_als":
-        raise ValueError(
-            "Check Fase 2: el pipeline se detiene en la revisión humana de la historia. "
-            "El script todavía no está habilitado."
-        )
+        from src.documentary.formats.check_als.script import generate_check_script
+
+        return generate_check_script(project, use_llm=use_llm)
     topic = str(project.get("topic") or "").strip()
     if not topic:
         raise ValueError("Choose a topic before generating a script.")
@@ -242,6 +241,10 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
 
 
 def save_edited_script(project: dict[str, Any], script: str) -> dict[str, Any]:
+    if str(project.get("content_format") or project.get("mode") or "") == "check_als":
+        from src.documentary.formats.check_als.script import save_check_script
+
+        return save_check_script(project, script)
     script = strip_essay_tail(strip_metadata_leaks((script or "").strip()))
     if not script:
         raise ValueError("Script is empty.")

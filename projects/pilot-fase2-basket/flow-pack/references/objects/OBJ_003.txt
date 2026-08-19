@@ -1,0 +1,12 @@
+OBJ_003
+Name: Camiseta de los Halcones
+
+Description:
+Una camiseta desteñida que simboliza la historia y el legado del equipo.
+
+Generate reference image:
+Una camiseta verde y cobre, colgada de un gancho, con signos de desgaste.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

@@ -1,0 +1,12 @@
+CHAR_COACH
+Name: head coach
+
+Description:
+Head coach, early 50s, short gray-brown hair, sideline jacket, clipboard. Same man once hired. Interim coach (if shown earlier) is a different, older, less sharp staffer.
+
+Generate reference image:
+Head coach, early 50s, short gray-brown hair, sideline jacket, clipboard. Same man once hired. Interim coach (if shown earlier) is a different, older, less sharp staffer.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

@@ -1,0 +1,30 @@
+VISUAL 031
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 031.png
+STORY BEAT: 
+DURATION TARGET: 10s
+KEN BURNS: slow_push
+
+NARRATION:
+Hay una noche, a mitad de año, en la que el silbato te da la primera victoria que cuentas como tuya. El vestuario grita.
+
+DESCRIPTION:
+Hay una noche, a mitad de año, en la que el silbato te da la primera victoria que cuentas como tuya
+
+REFERENCES:
+(none)
+
+PROMPT:
+2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.
+STYLE LOCK (Check): 2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism.
+EXACT CHARACTER: Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face. Age now: 22. State: first-year owner in playoffs. Wardrobe matches age/state from the protagonist bible.
+EXACT ACTION: faded Halcones jersey on a hook; empty locker room. Beat: in the Halcones locker room / tunnel threshold: Hay una noche, a mitad de año, en la que el silbato te da la primera victoria que cuentas como tuya. El vestuario grita.
+EXACT ENVIRONMENT: Halcones locker room. Los Halcones de la Ciudad: dark green and copper-gold, hawk mark on jerseys. Worn kits early, cleaner later. Same uniform identity across years.
+STORY TIME: AGE 22 · season 1
+CAMERA: static insert
+COMPOSITION: 16:9 widescreen, strong foreground/midground/background, one clear subject Foreground: worn jersey. Background: green lockers.
+LIGHTING: empty-arena practicals, long shadows, quiet night
+IMPORTANT OBJECTS: story-specific props only
+CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. Wardrobe matches age/state from the protagonist bible. Do not invent a new man or a new building.
+AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks.

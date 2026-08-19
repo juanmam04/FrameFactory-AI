@@ -1,0 +1,12 @@
+LOC_002
+Name: Sala de Reuniones
+
+Description:
+Una sala que ya no se usa, donde se lleva a cabo la reunión de compra del equipo.
+
+Generate reference image:
+Muebles viejos y polvorientos, una mesa grande con un contrato y carpetas desordenadas.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

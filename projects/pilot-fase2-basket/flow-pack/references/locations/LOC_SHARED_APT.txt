@@ -1,0 +1,12 @@
+LOC_SHARED_APT
+Name: shared apartment
+
+Description:
+Small shared apartment: two roommates' clutter, cheap furniture, a basketball poster, city night through a small window. Modest, lived-in, not luxury.
+
+Generate reference image:
+Small shared apartment: two roommates' clutter, cheap furniture, a basketball poster, city night through a small window. Modest, lived-in, not luxury.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

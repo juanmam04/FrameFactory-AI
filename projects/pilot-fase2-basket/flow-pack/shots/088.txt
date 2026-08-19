@@ -1,0 +1,30 @@
+VISUAL 088
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 088.png
+STORY BEAT: 
+DURATION TARGET: 5s
+KEN BURNS: pan_left
+
+NARRATION:
+Ahora es sold out, finalista, caja del club con casi veintinueve millones, deuda de unos quinientos ocho mil. Ya no puede matarlo.
+
+DESCRIPTION:
+Ahora es sold out, finalista, caja del club con casi veintinueve millones, deuda de unos quinientos ocho mil
+
+REFERENCES:
+(none)
+
+PROMPT:
+2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.
+STYLE LOCK (Check): 2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism.
+EXACT CHARACTER: Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face. Age now: 26. State: full-time owner, sold-out arena. Wardrobe matches age/state from the protagonist bible.
+EXACT ACTION: climbing a few aisle steps in profile. Beat: in the same municipal Halcones arena: Ahora es sold out, finalista, caja del club con casi veintinueve millones, deuda de unos quinientos ocho mil. Ya no pued
+EXACT ENVIRONMENT: Same Halcones municipal arena now packed toward 4800 capacity, stronger lights, same architecture. Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena. Aisle of the same arena.
+STORY TIME: AGE 26 · season 5
+CAMERA: side angle from aisle stairs
+COMPOSITION: 16:9 widescreen, strong foreground/midground/background, one clear subject Foreground: stair rail. Background: bowl curve.
+LIGHTING: harder game lights, crowd glow
+IMPORTANT OBJECTS: Halcones hawk mark
+CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. Wardrobe matches age/state from the protagonist bible. Do not invent a new man or a new building.
+AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks.

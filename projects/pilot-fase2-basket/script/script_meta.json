@@ -1,0 +1,126 @@
+{
+  "word_count": 1904,
+  "target_words": 2100,
+  "target_range": [
+    1900,
+    2300
+  ],
+  "estimated_duration_min": 12.69,
+  "template": "check_als_es",
+  "language": "es",
+  "workflow": "check_als",
+  "pov": "second_person",
+  "factuality": "fiction",
+  "sections": [
+    {
+      "id": "cold_open",
+      "hit": "Tienes 22 años."
+    },
+    {
+      "id": "purchase",
+      "hit": "Tú pones quince mil de tus veinte. Te quedas con el cincuenta y uno por ciento."
+    },
+    {
+      "id": "first_owner",
+      "hit": "En el auto de un inversor, de vuelta, alguien dice “ahora eres dueño”. No lo corrige nadie. Tú miras por la ventana el estadio de lejos: un ladrillo apagado al "
+    },
+    {
+      "id": "season_grind",
+      "hit": "La Temporada 1 no espera."
+    },
+    {
+      "id": "life_change",
+      "hit": "Trabajas en una oficina. Cubículo gris, luz blanca, un badge que se te engancha en la camisa cada mañana. A las seis y pico tomas el colectivo con la misma gent"
+    },
+    {
+      "id": "paper_millionaire",
+      "hit": "La cuenta personal queda en cero."
+    },
+    {
+      "id": "ending",
+      "hit": "Después del partido caminas las cuatro cuadras a casa. El estadio a tus espaldas sigue con las luces. En el bolsillo, el teléfono. En el banco personal, casi na"
+    },
+    {
+      "id": "paragraphs",
+      "count": 114
+    }
+  ],
+  "retention_flags": [
+    "tramo ~0-90 palabras sin giro evidente",
+    "tramo ~90-180 palabras sin giro evidente",
+    "tramo ~180-270 palabras sin giro evidente",
+    "tramo ~270-360 palabras sin giro evidente",
+    "tramo ~450-540 palabras sin giro evidente",
+    "tramo ~540-630 palabras sin giro evidente",
+    "tramo ~720-810 palabras sin giro evidente",
+    "tramo ~810-900 palabras sin giro evidente"
+  ],
+  "validation_hard": [],
+  "validation_warnings": [],
+  "quality": {},
+  "locked_numbers": {
+    "acquisition": {
+      "asking_price": 1,
+      "debt_assumed": 650000,
+      "your_cash_contribution": 15000,
+      "local_investors_cash": 85000,
+      "seller_financing": 200000,
+      "your_ownership": 51.0,
+      "investor_ownership": 39.0,
+      "seller_retained": 10.0,
+      "summary": "$1 de precio + asunción de $650,000 de deuda. Vos ponés $15,000 y te quedás 51%. Inversores locales ponen $85,000 por 39%. El vendedor retiene 10% y financia $200,000."
+    },
+    "championships": 0,
+    "life_end": {
+      "age": 27,
+      "job": "dueño del equipo",
+      "home": "departamento propio a cuatro cuadras de la arena",
+      "personal_cash": 0,
+      "net_worth": 45889800
+    },
+    "season_history": [
+      {
+        "season": 1,
+        "record": "14-18",
+        "playoff_result": "final — derrota",
+        "attendance_avg": 3456,
+        "team_value": 6433000
+      },
+      {
+        "season": 2,
+        "record": "14-18",
+        "playoff_result": "eliminado",
+        "attendance_avg": 4266,
+        "team_value": 20664000
+      },
+      {
+        "season": 3,
+        "record": "14-18",
+        "playoff_result": "final — derrota",
+        "attendance_avg": 4800,
+        "team_value": 35989000
+      },
+      {
+        "season": 4,
+        "record": "19-13",
+        "playoff_result": "final — derrota",
+        "attendance_avg": 4800,
+        "team_value": 54256000
+      },
+      {
+        "season": 5,
+        "record": "15-17",
+        "playoff_result": "playoffs · first_round",
+        "attendance_avg": 4800,
+        "team_value": 70045000
+      },
+      {
+        "season": 6,
+        "record": "15-17",
+        "playoff_result": "final — derrota",
+        "attendance_avg": 4800,
+        "team_value": 90500000
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+LOC_005
+Name: Departamento del Joven
+
+Description:
+Un pequeño departamento compartido que refleja la vida del joven antes de convertirse en propietario.
+
+Generate reference image:
+Espacio reducido con un colchón en el suelo, un poster de baloncesto en la pared y una cocina desordenada.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

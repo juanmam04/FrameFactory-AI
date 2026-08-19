@@ -1,0 +1,12 @@
+LOC_OFFICE
+Name: corporate cubicle office
+
+Description:
+Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. Not WeWork, not glass startup HQ.
+
+Generate reference image:
+Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. Not WeWork, not glass startup HQ.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

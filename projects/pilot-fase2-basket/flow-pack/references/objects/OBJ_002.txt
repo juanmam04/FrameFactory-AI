@@ -1,0 +1,12 @@
+OBJ_002
+Name: Llaves del Gimnasio
+
+Description:
+Un manojo de llaves que representa la propiedad y la responsabilidad del equipo.
+
+Generate reference image:
+Llaves pesadas y metálicas, que brillan ligeramente bajo la luz del túnel.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

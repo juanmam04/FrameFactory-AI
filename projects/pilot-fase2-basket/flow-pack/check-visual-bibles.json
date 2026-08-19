@@ -1,0 +1,13 @@
+{
+  "protagonist_visual_bible": "Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face.",
+  "arena_visual_bible": "Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena.",
+  "office_visual_bible": "Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. Not WeWork, not glass startup HQ.",
+  "shared_apartment_visual_bible": "Small shared apartment: two roommates' clutter, cheap furniture, a basketball poster, city night through a small window. Modest, lived-in, not luxury.",
+  "new_apartment_visual_bible": "Simple one-bedroom of his own, four blocks from the arena: moving boxes, a window that can see arena lights at night. Modest upgrade, not a penthouse.",
+  "team_visual_bible": "Los Halcones de la Ciudad: dark green and copper-gold, hawk mark on jerseys. Worn kits early, cleaner later. Same uniform identity across years.",
+  "coach_visual_bible": "Head coach, early 50s, short gray-brown hair, sideline jacket, clipboard. Same man once hired. Interim coach (if shown earlier) is a different, older, less sharp staffer.",
+  "utilero_visual_bible": "Older stadium equipment man, about 60, keys on a ring, faded staff polo, practical shoes. Recurring extra.",
+  "style": "2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.",
+  "style_id": "check_2d_cinematic",
+  "visual_direction": "2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism."
+}

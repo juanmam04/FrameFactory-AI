@@ -1,0 +1,12 @@
+LOC_004
+Name: Café de Inversores
+
+Description:
+Un café que cierra tarde, donde se lleva a cabo la reunión crucial con los inversores.
+
+Generate reference image:
+Mesas vacías con sillas desordenadas, luces tenues y un ambiente de tensión.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

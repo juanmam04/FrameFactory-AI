@@ -1,0 +1,30 @@
+VISUAL 042
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 042.png
+STORY BEAT: 
+DURATION TARGET: 7s
+KEN BURNS: slow_pull
+
+NARRATION:
+Los lunes abres el Excel del club en el almuerzo. Los martes un acreedor llama al número del estadio.
+
+DESCRIPTION:
+Los lunes abres el Excel del club en el almuerzo
+
+REFERENCES:
+(none)
+
+PROMPT:
+2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.
+STYLE LOCK (Check): 2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism.
+EXACT CHARACTER: Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face. Age now: 22. State: first-year owner in playoffs. Wardrobe matches age/state from the protagonist bible.
+EXACT ACTION: street-level brick facade; protagonist small or absent. Beat: in the cubicle farm: Los lunes abres el Excel del club en el almuerzo. Los martes un acreedor llama al número del estadio.
+EXACT ENVIRONMENT: Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. Not WeWork, not glass startup HQ. Same exterior all years.
+STORY TIME: AGE 22 · season 1
+CAMERA: insert of faded Halcones brick exterior
+COMPOSITION: 16:9 widescreen, strong foreground/midground/background, one clear subject Foreground: faded Halcones lettering. Background: municipal brick.
+LIGHTING: cinematic motivated light, strong depth
+IMPORTANT OBJECTS: Halcones hawk mark
+CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. Wardrobe matches age/state from the protagonist bible. Do not invent a new man or a new building.
+AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks.

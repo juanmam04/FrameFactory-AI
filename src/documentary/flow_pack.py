@@ -28,7 +28,8 @@ def export_flow_pack(
     plan_path = fp / "visual-plan.json"
 
     if rebuild_visuals or not plan_path.exists():
-        plan = build_visual_plan(project, use_llm=use_llm, target_visuals=80)
+        target = 100 if str(project.get("content_format") or project.get("mode") or "") == "check_als" else 80
+        plan = build_visual_plan(project, use_llm=use_llm, target_visuals=target)
         from src.documentary.project import load_project
 
         project = load_project(str(project["id"]))

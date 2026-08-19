@@ -1,0 +1,12 @@
+CHAR_UTILERO
+Name: equipment manager
+
+Description:
+Older stadium equipment man, about 60, keys on a ring, faded staff polo, practical shoes. Recurring extra.
+
+Generate reference image:
+Older stadium equipment man, about 60, keys on a ring, faded staff polo, practical shoes. Recurring extra.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

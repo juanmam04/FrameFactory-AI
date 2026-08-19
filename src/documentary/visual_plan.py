@@ -109,9 +109,16 @@ def build_visual_plan(
     visuals = [_enrich_visual(i, shot, beats) for i, shot in enumerate(raw_shots, start=1)]
     bible = _upgrade_bible(bible_raw, visuals, story)
     _purge_stock_locations(bible)
-    _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm)
+    is_check = str(project.get("content_format") or project.get("mode") or "") == "check_als"
+    _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm and not is_check)
     visuals = _assign_camera_variety(visuals)
     visuals = _assign_durations(visuals)
+
+    if is_check:
+        from src.documentary.formats.check_als.editorial import VISUAL_DIRECTION as CHECK_DIR
+
+        bible["global_style"] = CHECK_DIR
+        bible["format"] = "check_als"
 
     masters = select_master_references(bible, visuals)
     # Attach flow prompts with master hints
@@ -138,6 +145,13 @@ def build_visual_plan(
         "coverage": coverage,
         "stats": stats,
     }
+    if is_check:
+        from src.documentary.formats.check_als.visuals import apply_check_visual_layer
+
+        plan = apply_check_visual_layer(project, plan)
+        visuals = plan.get("visuals") or visuals
+        bible = plan.get("visual_bible") or bible
+        stats = plan.get("stats") or stats
 
     root = project_dir(str(project["id"]))
     fp = root / "flow-pack"
@@ -157,7 +171,7 @@ def build_visual_plan(
     save_project(project)
     append_log(
         str(project["id"]),
-        f"visual_plan visuals={len(visuals)} flow={stats['flow']} batches={len(flow_batches)}",
+        f"visual_plan visuals={len(visuals)} flow={stats.get('flow')} batches={len(flow_batches)}",
     )
     return plan
 
@@ -817,6 +831,10 @@ def format_single_prompt(
     bible: dict[str, Any],
     masters: list[dict[str, Any]] | None = None,
 ) -> str:
+    if str((bible or {}).get("format") or "") == "check_als":
+        from src.documentary.formats.check_als.visuals import format_check_prompt
+
+        return str(visual.get("image_prompt") or format_check_prompt(visual, bible))
     return (
         "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\n"
         "Photoreal. No collage. No crowded office stock.\n"

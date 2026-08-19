@@ -1,0 +1,30 @@
+VISUAL 028
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 028.png
+STORY BEAT: 
+DURATION TARGET: 5s
+KEN BURNS: pan_left
+
+NARRATION:
+Un viernes, después de tres derrotas seguidas, miras la caja del equipo y la cuota de la deuda en la misma pantalla.
+
+DESCRIPTION:
+stares at the equipment box
+
+REFERENCES:
+(none)
+
+PROMPT:
+2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.
+STYLE LOCK (Check): 2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism.
+EXACT CHARACTER: Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face. Age now: 22. State: office employee, shared apartment. Wardrobe matches age/state from the protagonist bible.
+EXACT ACTION: in this story world: Un viernes, después de tres derrotas seguidas, miras la caja del equipo y la cuota de la deuda en la misma pantalla.
+EXACT ENVIRONMENT: Night streets of a mid-size fictional city near the municipal arena.
+STORY TIME: AGE 22 · season 1
+CAMERA: side tracking
+COMPOSITION: 16:9 widescreen, strong foreground/midground/background, one clear subject Foreground: a distinct near-plane object for this beat. Background: deep environment, different depth than the previous still.
+LIGHTING: cinematic motivated light, strong depth
+IMPORTANT OBJECTS: story-specific props only
+CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. Wardrobe matches age/state from the protagonist bible. Do not invent a new man or a new building.
+AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks.

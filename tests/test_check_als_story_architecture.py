@@ -371,13 +371,17 @@ def test_persist_and_human_gate_stop(tmp_projects):
     assert arch["beats"][2]["world_state_after"]["team"]["ownership_percentage"] == 51
     approved = approve_check_story(load_project(out["id"]))
     assert approved["check_story_approved"] is True
-    assert approved["ui_step"] == "story"
+    assert approved["ui_step"] == "script"
     assert approved["story_plan_approved"] is False
     prog = derive_progress(approved)
-    assert prog["current"] == "story"
+    assert prog["current"] == "script"
     assert prog["flags"]["script"] is False
-    with pytest.raises(ValueError, match="Fase 2"):
-        generate_documentary_script(approved, use_llm=True)
+    with pytest.raises(ValueError, match="Aprobá la Story Architecture"):
+        generate_documentary_script({**approved, "check_story_approved": False}, use_llm=False)
+    generated = generate_documentary_script(load_project(out["id"]), use_llm=False)
+    assert generated.get("script")
+    assert "tienes" in generated["script"].lower()
+    assert "vos" not in generated["script"].lower()
 
 
 def test_quality_on_causal_chain():

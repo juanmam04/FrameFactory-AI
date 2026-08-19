@@ -413,14 +413,24 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
         "done": bool((project.get("youtube") or {}).get("title")),
     }
     if str(project.get("content_format") or project.get("mode") or "") == "check_als":
-        # Fase 2: pipeline stops at human story review. Script+ is locked.
         flags["research"] = True
         flags["story"] = bool(
-            (project.get("check_story") or {}).get("generated")
-            or project.get("check_story_approved")
+            project.get("check_story_approved")
+            or (project.get("check_story") or {}).get("generated")
+            or (project.get("check_story") or {}).get("approved")
         )
-        flags["script"] = False
-        return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": "story"}
+        if not project.get("check_story_approved"):
+            flags["script"] = False
+            flags["flow"] = False
+            flags["images"] = False
+            flags["voice"] = False
+            flags["music"] = False
+            flags["render"] = False
+            return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": "story"}
+        flags["story"] = True
+        flags["script"] = has_script and approved
+        current = "script" if not (has_script and approved) else "flow"
+        return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": current}
     current = "done"
     for step in PROGRESS_STEPS:
         if step == "done":

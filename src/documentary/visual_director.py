@@ -26,10 +26,17 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
 
     snap = project.get("creative_profile_snapshot") if isinstance(project.get("creative_profile_snapshot"), dict) else {}
     style_hint = visual_style_from_profile(snap or None) or VISUAL_DIRECTION
+    if str(project.get("content_format") or project.get("mode") or "") == "check_als":
+        from src.documentary.formats.check_als.editorial import VISUAL_DIRECTION as CHECK_DIR
 
-    # ~22–28 words/scene → ~50–80 stills for 1300–1800 words
+        style_hint = CHECK_DIR
+
     words = max(1, len(script.split()))
-    target_shots = int(max(50, min(max_shots, round(words / 24))))
+    is_check = str(project.get("content_format") or project.get("mode") or "") == "check_als"
+    if is_check:
+        target_shots = int(max(70, min(max_shots, round(words / 19))))
+    else:
+        target_shots = int(max(50, min(max_shots, round(words / 24))))
     # segundos_por_imagen drives palabras_por_escena ≈ seg*3.5
     seg = max(4.0, min(12.0, words / max(1, target_shots) / 2.3))
 
@@ -38,9 +45,18 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
         os.environ["VISUAL_BEATS_LLM_DISABLED"] = "1"
     try:
         escenas = dividir_en_escenas(script, segundos_por_imagen=seg)
-        # Cap scenes if too many
+        # Cap scenes if too many — Check must keep the ending, not slice it off.
         if len(escenas) > max_shots:
-            escenas = escenas[:max_shots]
+            if is_check and max_shots > 2:
+                idxs = sorted(
+                    {
+                        round(i * (len(escenas) - 1) / (max_shots - 1))
+                        for i in range(max_shots)
+                    }
+                )
+                escenas = [escenas[i] for i in idxs]
+            else:
+                escenas = escenas[:max_shots]
         story = project.get("story_plan") if isinstance(project.get("story_plan"), dict) else {}
         protagonists = [
             str(c.get("name") or "").strip()

@@ -400,10 +400,10 @@ def approve_check_story(project: dict[str, Any]) -> dict[str, Any]:
     summary = dict(project.get("check_story") or {})
     summary["approved"] = True
     project["check_story"] = summary
-    project["ui_step"] = "story"
+    project["ui_step"] = "script"
     project["story_plan_approved"] = False
     save_project(project)
-    append_log(str(project.get("id") or ""), "check_story APPROVED (pipeline STOP — no script)")
+    append_log(str(project.get("id") or ""), "check_story APPROVED — script unlocked (no voice/render yet)")
     return project
 
 
@@ -788,6 +788,10 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
         "review": review,
         "final_world": arch.get("final_world") or {},
         "final_progression": arch.get("final_progression") or {},
-        "pipeline_stop": "human_review",
-        "next_locked": ["script", "visuals", "voice", "render"],
+        "pipeline_stop": "script_visuals" if (arch.get("approved") or project.get("check_story_approved")) else "human_review",
+        "next_locked": (
+            ["voice", "music", "render"]
+            if (arch.get("approved") or project.get("check_story_approved"))
+            else ["script", "visuals", "voice", "render"]
+        ),
     }

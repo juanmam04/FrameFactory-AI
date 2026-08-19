@@ -1,0 +1,12 @@
+LOC_ARENA
+Name: Halcones municipal arena
+
+Description:
+Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena.
+
+Generate reference image:
+Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena.
+
+Strategy: FLOW_REENACTMENT
+Instructions: Generate ONE clear master reference. Reuse this look in later shots.
+Treat as reconstruction reference — not a claim of an archival photograph.

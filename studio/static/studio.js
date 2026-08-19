@@ -1374,9 +1374,12 @@ function renderProject() {
       };
     });
   const ws = $("#ws");
-  if (isCheck && step !== "topic" && step !== "story") {
-    return paintCheckLocked(ws, p, step);
-  }
+    if (isCheck && ["voice", "music", "preview", "render"].includes(step)) {
+      return paintCheckLocked(ws, p, step, "Revisá el guion y los prompts. Todavía no voz ni render.");
+    }
+    if (isCheck && !p.check_story_approved && step !== "topic" && step !== "story") {
+      return paintCheckLocked(ws, p, step);
+    }
   if (step === "topic") return paintStory(ws, p);
   if (step === "research") return paintResearch(ws, p);
   if (step === "story") return isCheck ? paintCheckStory(ws, p) : paintStoryPlan(ws, p);
@@ -1464,11 +1467,12 @@ function paintResearch(ws, p) {
   $("#skip-research").onclick = () => save(true);
 }
 
-function paintCheckLocked(ws, p, step) {
+function paintCheckLocked(ws, p, step, extra) {
+  const msg = extra || `Fase 2 se detiene en la revisión humana de la HISTORIA. ${step} todavía no está habilitado.`;
   ws.innerHTML = `
     <div class="panel workspace">
-      <div class="notice">Fase 2 se detiene en la revisión humana de la HISTORIA. ${esc(step)} todavía no está habilitado.</div>
-      <p class="lead">Después de que apruebes la Story Architecture iremos a Script → Visuals → Assets → Voice → Render. No antes.</p>
+      <div class="notice">${esc(msg)}</div>
+      <p class="lead">Historia aprobada desbloquea Guion + Imágenes (prompts). Voz y render siguen después de tu revisión.</p>
       <div class="actions">
         <button class="btn btn-primary" id="go-story">Volver a Historia</button>
       </div>
@@ -1557,8 +1561,8 @@ function paintCheckStory(ws, p) {
 
   ws.innerHTML = `
     <div class="panel workspace">
-      ${approved ? `<div class="notice ok">Historia aprobada. El pipeline se DETIENE aquí — todavía no hay script.</div>` : ""}
-      ${generated && !approved ? `<div class="notice">Revisá la película. Approve Story no desbloquea el script todavía.</div>` : ""}
+      ${approved ? `<div class="notice ok">Historia aprobada. Ya podés ir a Guion. Todavía no hay voz ni render.</div>` : ""}
+      ${generated && !approved ? `<div class="notice">Revisá la película. Approve Story desbloquea el guion.</div>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="gen-check-story">${generated ? "Regenerate Story" : "Generate Story Architecture"}</button>
         ${generated && !hard.length ? `<button class="btn btn-primary" id="approve-check-story">Approve Story</button>` : ""}
@@ -1629,7 +1633,7 @@ function paintCheckStory(ws, p) {
     try {
       const data = await api(`/api/projects/${encodeURIComponent(p.id)}/story/approve`, { method: "POST" });
       state.project = data.project;
-      toast("Historia aprobada. Stop — no script.");
+      toast("Historia aprobada. Siguiente: Guion.");
       renderProject();
     } catch (e) {
       toast(e.message);
@@ -1739,7 +1743,8 @@ function paintScript(ws, p) {
   const tw = Number(p.target_words) || 2000;
   const plan = p.story_plan || {};
   const planReady = Boolean(plan.central_story) && Array.isArray(plan.beats) && plan.beats.length > 0;
-  if (!p.story_plan_approved) {
+  const checkApproved = (p.content_format === "check_als" || p.mode === "check_als") && p.check_story_approved;
+  if (!p.story_plan_approved && !checkApproved) {
     ws.innerHTML = `
       <div class="panel workspace">
         <div class="notice">Falta marcar el Story Plan como aprobado (no es lo mismo que guardar Research).</div>
@@ -1867,6 +1872,7 @@ async function paintFlow(ws, p) {
   const batches = (plan && plan.flow_batches) || (shots && shots.flow_batches) || [];
   const visuals = (plan && plan.visuals) || (shots && shots.shots) || [];
   const total = stats.total || visuals.length || 0;
+  const isCheckFlow = p.content_format === "check_als" || p.mode === "check_als";
 
   ws.innerHTML = `
     <div class="panel workspace">
@@ -1882,11 +1888,11 @@ async function paintFlow(ws, p) {
         </p>
       </div>
 
-      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena.</p>
+      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. ${isCheckFlow ? "Revisá los prompts. Todavía no generes voz. Los stills van después de tu OK." : "Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena."}</p>
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
-        <button class="btn btn-primary" id="to-voice">Seguir a la voz</button>
+        ${isCheckFlow ? "" : `<button class="btn btn-primary" id="to-voice">Seguir a la voz</button>`}
       </div>
 
       <h2 style="margin-top:1.6rem">A) Caras que se repiten</h2>
@@ -1900,18 +1906,21 @@ async function paintFlow(ws, p) {
     </div>`;
 
   $("#rebuild").onclick = () => rebuildFlow();
-  $("#to-voice").onclick = async () => {
-    try {
-      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
-        method: "PATCH",
-        body: JSON.stringify({ step: "voice" }),
-      });
-      state.project = data.project;
-      renderProject();
-    } catch (e) {
-      toast(e.message);
-    }
-  };
+  const toVoice = $("#to-voice");
+  if (toVoice) {
+    toVoice.onclick = async () => {
+      try {
+        const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+          method: "PATCH",
+          body: JSON.stringify({ step: "voice" }),
+        });
+        state.project = data.project;
+        renderProject();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  }
 
   $("#masters").innerHTML = masters.length
     ? masters.map((m) => masterCard(m, p.id)).join("")

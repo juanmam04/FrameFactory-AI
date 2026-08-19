@@ -1,0 +1,41 @@
+{
+  "stop": "SCRIPT + VISUAL PLAN + IMAGE PROMPTS. No voice. No music. No render. No captions.",
+  "script": {
+    "words": 1904,
+    "estimated_duration_min": 12.69,
+    "sections": [
+      "cold_open",
+      "purchase_payoff",
+      "first_owner_keys",
+      "season_1_to_6",
+      "quit_move_sponsor",
+      "paper_millionaire",
+      "ending_offer"
+    ],
+    "retention_flags": [
+      "Some office-to-debt stretches are quiet on purpose (pressure, not twist).",
+      "Purchase payoff is early (not delayed 5 minutes)."
+    ]
+  },
+  "visual_plan_summary": {
+    "scene_count": 100,
+    "unique_locations": ["arena", "city", "locker", "meeting", "new_apt", "office", "shared_apt"],
+    "characters": ["YOU", "equipment manager", "head coach", "local businessman", "parents"],
+    "timeline": ["AGE 22", "AGE 22 · S1", "AGE 23", "AGE 25", "AGE 26", "AGE 27"]
+  },
+  "qc": {
+    "script_continuity": "Aligned to approved season_history; championships=0; 51/39/10; $1+$650k+$15k.",
+    "numbers": "spoken Spanish + display $1 / $650,000 / $15,000 / 51%",
+    "pov": "tú/te (no vos)",
+    "visual_continuity_preparation": "Locked bibles in flow-pack/check-visual-bibles.json",
+    "repeated_scenes": "Even sample of 149 script beats → 100 stills; some adjacent VO lines share location.",
+    "missing_visual_coverage": "Early office stills may be tagged AGE 23 because 'badge' leaks quit-job inference — review shots 1–8 ages before generating stills."
+  },
+  "paths": {
+    "script": "projects/pilot-fase2-basket/script/script.txt",
+    "script_meta": "projects/pilot-fase2-basket/script/script_meta.json",
+    "visual_plan": "projects/pilot-fase2-basket/flow-pack/visual-plan.json",
+    "image_prompts": "projects/pilot-fase2-basket/flow-pack/image-prompts.json",
+    "shot_list": "projects/pilot-fase2-basket/flow-pack/shot-list.json"
+  }
+}

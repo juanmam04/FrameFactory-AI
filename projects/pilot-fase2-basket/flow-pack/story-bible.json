@@ -1,0 +1,216 @@
+{
+  "global_style": "2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.",
+  "characters": [
+    {
+      "id": "CHAR_YOU",
+      "name": "YOU",
+      "description": "Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face.",
+      "visual_description": "Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face.",
+      "reference_required": true
+    },
+    {
+      "id": "CHAR_UTILERO",
+      "name": "equipment manager",
+      "description": "Older stadium equipment man, about 60, keys on a ring, faded staff polo, practical shoes. Recurring extra.",
+      "visual_description": "Older stadium equipment man, about 60, keys on a ring, faded staff polo, practical shoes. Recurring extra.",
+      "reference_required": true
+    },
+    {
+      "id": "CHAR_COACH",
+      "name": "head coach",
+      "description": "Head coach, early 50s, short gray-brown hair, sideline jacket, clipboard. Same man once hired. Interim coach (if shown earlier) is a different, older, less sharp staffer.",
+      "visual_description": "Head coach, early 50s, short gray-brown hair, sideline jacket, clipboard. Same man once hired. Interim coach (if shown earlier) is a different, older, less sharp staffer.",
+      "reference_required": true
+    },
+    {
+      "id": "CHAR_001",
+      "name": "El Joven Propietario",
+      "description": "Un joven de 22 años que sueña con tener un equipo de baloncesto y se convierte en propietario de uno en crisis.",
+      "visual_description": "Rostro decidido, cabello corto y desordenado, viste ropa casual y cómoda, a menudo con una camiseta de baloncesto.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "CHAR_001.png",
+      "periods": []
+    }
+  ],
+  "locations": [
+    {
+      "id": "LOC_OFFICE",
+      "name": "corporate cubicle office",
+      "description": "Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. Not WeWork, not glass startup HQ.",
+      "visual_description": "Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. Not WeWork, not glass startup HQ.",
+      "reference_required": true
+    },
+    {
+      "id": "LOC_SHARED_APT",
+      "name": "shared apartment",
+      "description": "Small shared apartment: two roommates' clutter, cheap furniture, a basketball poster, city night through a small window. Modest, lived-in, not luxury.",
+      "visual_description": "Small shared apartment: two roommates' clutter, cheap furniture, a basketball poster, city night through a small window. Modest, lived-in, not luxury.",
+      "reference_required": true
+    },
+    {
+      "id": "LOC_ARENA",
+      "name": "Halcones municipal arena",
+      "description": "Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena.",
+      "visual_description": "Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena.",
+      "reference_required": true
+    },
+    {
+      "id": "LOC_NEW_APT",
+      "name": "own apartment near arena",
+      "description": "Simple one-bedroom of his own, four blocks from the arena: moving boxes, a window that can see arena lights at night. Modest upgrade, not a penthouse.",
+      "visual_description": "Simple one-bedroom of his own, four blocks from the arena: moving boxes, a window that can see arena lights at night. Modest upgrade, not a penthouse.",
+      "reference_required": true
+    },
+    {
+      "id": "LOC_LOCKER",
+      "name": "Halcones locker room",
+      "description": "Same locker room throughout: old green metal lockers early, later a cleaner coat of paint and better lighting but the same room geometry.",
+      "visual_description": "old municipal locker room that slowly improves, same room",
+      "reference_required": true
+    },
+    {
+      "id": "LOC_001",
+      "name": "Gimnasio de los Halcones",
+      "description": "Un gimnasio que solía ser vibrante, ahora en decadencia, con un ambiente de humedad y gradas vacías.",
+      "visual_description": "Estructura vacía con butacas rotas, un piso de cancha manchado y un vestuario descuidado.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "LOC_001.png",
+      "periods": []
+    },
+    {
+      "id": "LOC_002",
+      "name": "Sala de Reuniones",
+      "description": "Una sala que ya no se usa, donde se lleva a cabo la reunión de compra del equipo.",
+      "visual_description": "Muebles viejos y polvorientos, una mesa grande con un contrato y carpetas desordenadas.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "LOC_002.png",
+      "periods": []
+    },
+    {
+      "id": "LOC_003",
+      "name": "Túnel del Gimnasio",
+      "description": "Un túnel oscuro y húmedo que conecta el vestuario con la cancha, donde se siente la historia del equipo.",
+      "visual_description": "Paredes de ladrillo expuesto, goteras y una atmósfera de abandono.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "LOC_003.png",
+      "periods": []
+    },
+    {
+      "id": "LOC_004",
+      "name": "Café de Inversores",
+      "description": "Un café que cierra tarde, donde se lleva a cabo la reunión crucial con los inversores.",
+      "visual_description": "Mesas vacías con sillas desordenadas, luces tenues y un ambiente de tensión.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "LOC_004.png",
+      "periods": []
+    },
+    {
+      "id": "LOC_005",
+      "name": "Departamento del Joven",
+      "description": "Un pequeño departamento compartido que refleja la vida del joven antes de convertirse en propietario.",
+      "visual_description": "Espacio reducido con un colchón en el suelo, un poster de baloncesto en la pared y una cocina desordenada.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "LOC_005.png",
+      "periods": []
+    }
+  ],
+  "important_objects": [
+    {
+      "id": "OBJ_001",
+      "name": "Contrato de Compra",
+      "description": "El contrato que formaliza la compra del equipo de baloncesto por un dólar.",
+      "visual_description": "Un documento impreso en papel fino, con firmas y sellos, que simboliza un nuevo comienzo.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "OBJ_001.png",
+      "periods": []
+    },
+    {
+      "id": "OBJ_002",
+      "name": "Llaves del Gimnasio",
+      "description": "Un manojo de llaves que representa la propiedad y la responsabilidad del equipo.",
+      "visual_description": "Llaves pesadas y metálicas, que brillan ligeramente bajo la luz del túnel.",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "OBJ_002.png",
+      "periods": []
+    },
+    {
+      "id": "OBJ_003",
+      "name": "Camiseta de los Halcones",
+      "description": "Una camiseta desteñida que simboliza la historia y el legado del equipo.",
+      "visual_description": "Una camiseta verde y cobre, colgada de un gancho, con signos de desgaste.",
+      "appears_in_shots": [
+        23
+      ],
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "OBJ_003.png",
+      "periods": []
+    }
+  ],
+  "timeline_periods": [
+    {
+      "id": "TIME_001",
+      "name": "Inicio de la Aventura",
+      "description": "El joven descubre la oportunidad de comprar el equipo y toma la decisión de hacerlo.",
+      "visual_description": "Momentos de reflexión y decisiones importantes en su vida."
+    },
+    {
+      "id": "TIME_002",
+      "name": "Temporada 1",
+      "description": "La primera temporada como propietario, llena de desafíos y aprendizajes.",
+      "visual_description": "Partidos intensos y la lucha por mantener el equipo a flote."
+    },
+    {
+      "id": "TIME_003",
+      "name": "Temporada 2",
+      "description": "Un año difícil con más desafíos, pero el público sigue apoyando al equipo.",
+      "visual_description": "La conexión creciente entre el equipo y la comunidad."
+    },
+    {
+      "id": "TIME_004",
+      "name": "Temporada 3",
+      "description": "El equipo comienza a ganar popularidad y asistencia, pero aún enfrenta dificultades.",
+      "visual_description": "El estadio lleno de aficionados, vibrando con energía."
+    },
+    {
+      "id": "TIME_005",
+      "name": "Temporada 4",
+      "description": "Un récord ganador, pero la lucha por el campeonato continúa.",
+      "visual_description": "Celebraciones en el vestuario y la presión de las finales."
+    },
+    {
+      "id": "TIME_006",
+      "name": "Temporada 5",
+      "description": "El primer contrato de patrocinio y un paso hacia la estabilidad financiera.",
+      "visual_description": "Momentos de negociación y crecimiento en el club."
+    },
+    {
+      "id": "TIME_007",
+      "name": "Temporada 6",
+      "description": "El equipo alcanza un nuevo nivel, pero la deuda sigue siendo una preocupación.",
+      "visual_description": "El estadio lleno y la tensión de las finales."
+    },
+    {
+      "id": "TIME_008",
+      "name": "El Correo de la Oferta",
+      "description": "El momento decisivo en el que el joven recibe una oferta para vender el equipo.",
+      "visual_description": "La soledad del estadio vacío después del partido, con un correo que cambia todo."
+    }
+  ],
+  "visual_style": "{'tone': 'inspirational', 'theme': 'resilience and ambition', 'visual_style': 'gritty realism with moments of triumph'}",
+  "period_rules": [],
+  "format": "check_als",
+  "style_id": "check_2d_cinematic",
+  "check_bibles": {
+    "protagonist_visual_bible": "Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face.",
+    "arena_visual_bible": "Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena.",
+    "office_visual_bible": "Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. Not WeWork, not glass startup HQ.",
+    "shared_apartment_visual_bible": "Small shared apartment: two roommates' clutter, cheap furniture, a basketball poster, city night through a small window. Modest, lived-in, not luxury.",
+    "new_apartment_visual_bible": "Simple one-bedroom of his own, four blocks from the arena: moving boxes, a window that can see arena lights at night. Modest upgrade, not a penthouse.",
+    "team_visual_bible": "Los Halcones de la Ciudad: dark green and copper-gold, hawk mark on jerseys. Worn kits early, cleaner later. Same uniform identity across years.",
+    "coach_visual_bible": "Head coach, early 50s, short gray-brown hair, sideline jacket, clipboard. Same man once hired. Interim coach (if shown earlier) is a different, older, less sharp staffer.",
+    "utilero_visual_bible": "Older stadium equipment man, about 60, keys on a ring, faded staff polo, practical shoes. Recurring extra.",
+    "style": "2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.",
+    "style_id": "check_2d_cinematic",
+    "visual_direction": "2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism."
+  }
+}

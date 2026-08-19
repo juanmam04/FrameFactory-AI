@@ -1,0 +1,30 @@
+VISUAL 047
+
+TYPE: FLOW_REENACTMENT
+EXPECTED FILE: 047.png
+STORY BEAT: 
+DURATION TARGET: 7s
+KEN BURNS: slow_pull
+
+NARRATION:
+Después no llama dos meses. El utilero, al pasar, dice que a ese hombre lo vio en otros tres clubes muertos.
+
+DESCRIPTION:
+Después no llama dos meses
+
+REFERENCES:
+(none)
+
+PROMPT:
+2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.
+STYLE LOCK (Check): 2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism.
+EXACT CHARACTER: Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face. Age now: 23. State: quitting the office job. Wardrobe matches age/state from the protagonist bible.
+EXACT ACTION: equipment manager in the doorway with keys; protagonist just inside. Beat: in the Halcones locker room / tunnel threshold: Después no llama dos meses. El utilero, al pasar, dice que a ese hombre lo vio en otros tres clubes muertos.
+EXACT ENVIRONMENT: Halcones locker room. Los Halcones de la Ciudad: dark green and copper-gold, hawk mark on jerseys. Worn kits early, cleaner later. Same uniform identity across years.
+STORY TIME: AGE 23 · season 3
+CAMERA: from inside looking at the doorway
+COMPOSITION: 16:9 widescreen, strong foreground/midground/background, one clear subject Foreground: green locker edge. Background: tunnel light.
+LIGHTING: cinematic motivated light, strong depth
+IMPORTANT OBJECTS: story-specific props only
+CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. Wardrobe matches age/state from the protagonist bible. Do not invent a new man or a new building.
+AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks.
