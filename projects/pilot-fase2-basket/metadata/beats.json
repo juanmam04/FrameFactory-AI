@@ -1,0 +1,3610 @@
+{
+  "initial_world": {
+    "time": {
+      "protagonist_age": 22,
+      "date_or_period": "",
+      "elapsed_days": 0,
+      "label": "DAY 1",
+      "age_at_start": 22
+    },
+    "personal": {
+      "cash": 20000,
+      "net_worth": 20000,
+      "income_monthly": 900,
+      "debt": 0,
+      "living_situation": "departamento compartido",
+      "working_status": "empleado de oficina",
+      "free_time": ""
+    },
+    "team": {
+      "name": "Los Halcones de la Ciudad",
+      "league": "Liga Profesional de Básquet",
+      "city": "Ciudad Central",
+      "ownership_percentage": 0.0,
+      "valuation": 180000,
+      "debt": 650000,
+      "cash": 0,
+      "revenue_monthly": 14583,
+      "expenses_monthly": 29333,
+      "attendance": 620,
+      "capacity": 4800,
+      "season_record": {
+        "wins": 0,
+        "losses": 0
+      },
+      "league_position": "",
+      "employees": 0,
+      "roster_quality": 2,
+      "facilities_quality": 0,
+      "fanbase": 0,
+      "sponsors": 0,
+      "attendance_interest": 0,
+      "sponsorship_interest": 0,
+      "media_attention": 0
+    },
+    "assets": {
+      "properties": [],
+      "vehicles": [],
+      "investments": [],
+      "ownerships": []
+    },
+    "relationships": {
+      "family": [],
+      "business_partners": [],
+      "coach": "",
+      "key_players": [],
+      "rivals": []
+    },
+    "locations": {
+      "home": "departamento compartido",
+      "office": "",
+      "arena": "",
+      "training_facility": "",
+      "important_places": []
+    },
+    "introduced_characters": [],
+    "introduced_locations": [],
+    "ownership_ledger": {
+      "protagonist": 0.0,
+      "investors": 0.0,
+      "seller": 100.0
+    },
+    "finance": {
+      "team_cash": 0,
+      "team_debt": 650000,
+      "annual_revenue": 175000,
+      "annual_expenses": 352000,
+      "ticket_revenue": 140000,
+      "sponsorship_revenue": 20000,
+      "merch_revenue": 15000,
+      "media_revenue": 0,
+      "payroll": 210000,
+      "facility_costs": 90000,
+      "debt_service": 52000,
+      "debt_risk_state": "critical",
+      "credit_line": 0,
+      "overdraft_allowed": false,
+      "financing_open": false,
+      "debt": 200000
+    },
+    "sports": {
+      "current_season": 1,
+      "season": 1,
+      "season_year": 1,
+      "season_label": "Temporada 1",
+      "games_played": 0,
+      "wins": 0,
+      "losses": 0,
+      "win_pct": 0.0,
+      "win_percentage": 0.0,
+      "league_position": "fondo de tabla",
+      "regular_season_status": "preseason",
+      "playoff_status": "regular",
+      "playoff_round": "",
+      "championships": 0,
+      "coach": "interino",
+      "coach_quality": 2,
+      "roster_quality": 2,
+      "star_players": [],
+      "injuries": [],
+      "team_morale": 4,
+      "recent_form": "",
+      "season_history": [],
+      "playoff_history": [],
+      "historical_records": [],
+      "record": "0-0"
+    },
+    "life": {
+      "home": "departamento compartido",
+      "job": "empleado de oficina",
+      "salary": 10800,
+      "personal_cash": 20000,
+      "personal_net_worth": 20000,
+      "weekly_work_hours": 45,
+      "freedom": 2,
+      "family_support": 5,
+      "status": 1,
+      "network": 2,
+      "transport": "colectivo y a pie",
+      "lifestyle": "vida normal, básquet los fines de semana"
+    },
+    "acquisition": {
+      "asking_price": 500000,
+      "debt_assumed": 200000,
+      "your_cash_contribution": 50000,
+      "local_investors_cash": 100000,
+      "seller_financing": 250000,
+      "existing_liabilities_assumed": 200000,
+      "your_ownership": 0,
+      "investor_ownership": 30,
+      "seller_retained": 10,
+      "closed": false,
+      "summary": ""
+    },
+    "milestones": [],
+    "equity_events": [],
+    "financial_events": [],
+    "debt_risk_history": [],
+    "team_name": "Los Halcones de la Ciudad",
+    "capacity": 600,
+    "attendance": 400
+  },
+  "initial_story": {
+    "current_goal": "",
+    "current_problem": "",
+    "current_stakes": "",
+    "active_conflicts": [],
+    "open_loops": [
+      {
+        "id": "buy",
+        "question": "¿realmente podrás comprarlo?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "adquisición"
+      },
+      {
+        "id": "save_team",
+        "question": "¿podrás evitar que cierre?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "año 1"
+      },
+      {
+        "id": "debt",
+        "question": "¿podrás hacer que el equipo sea lo suficientemente sano como para que la deuda deje de amenazar su existencia?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "año 2-4"
+      },
+      {
+        "id": "coach",
+        "question": "¿funcionará el nuevo entrenador?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "primera temporada seria"
+      },
+      {
+        "id": "compete",
+        "question": "¿puede este equipo competir de verdad?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "playoffs/final"
+      },
+      {
+        "id": "how_far",
+        "question": "¿qué tan lejos puede llegar?",
+        "opened_at": "start",
+        "status": "open",
+        "important": false,
+        "intentional_unresolved": true,
+        "expected_payoff_window": "futuro"
+      }
+    ],
+    "promises_to_viewer": [],
+    "pending_decisions": [],
+    "threats": [],
+    "opportunities": [],
+    "relationships_in_tension": [],
+    "information_protagonist_knows": [],
+    "information_viewer_knows": [],
+    "emotional_state": "",
+    "momentum": ""
+  },
+  "initial_progression": {
+    "wealth_level": 0,
+    "ownership_level": 0,
+    "business_scale": 0,
+    "status_level": 0,
+    "freedom_level": 0,
+    "lifestyle_level": 0,
+    "family_impact": 0,
+    "environment_level": 0,
+    "network_level": 0,
+    "power_level": 0
+  },
+  "beats": [
+    {
+      "beat_id": "b01",
+      "time": "AGE 22 · DAY 1",
+      "duration_target_s": 15,
+      "cause": "Anuncio de venta del equipo.",
+      "event": "Descubres que 'Los Halcones de la Ciudad' están en venta.",
+      "consequence": "Te entusiasmas con la idea de comprar un equipo de baloncesto.",
+      "story_purpose": "opening",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "advance_time",
+          "months": 1
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir que tienes una oportunidad única.",
+      "viewer_question": "",
+      "open_loop_action": {},
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Un cartel de 'Se Vende' en la puerta del estadio.",
+      "transition_to_next": "Te decides a investigar más sobre la compra.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 20000,
+        "net_worth": 20000,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 0.0,
+        "ledger": {
+          "protagonist": 0.0,
+          "investors": 0.0,
+          "seller": 100.0
+        },
+        "team_value": 180000,
+        "team_debt": 650000,
+        "team_cash": 0,
+        "revenue": 175000,
+        "attendance": 620,
+        "record": "0-0",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "critical",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "new information"
+    },
+    {
+      "beat_id": "b02",
+      "time": "AGE 22 · DAY 30",
+      "duration_target_s": 16,
+      "cause": "Reunión con el vendedor.",
+      "event": "Asistes a una reunión con el vendedor de 'Los Halcones'.",
+      "consequence": "Te presentas como potencial comprador y comienzas a negociar.",
+      "story_purpose": "inciting_incident",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "advance_time",
+          "months": 1
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentirte confiado en tu capacidad para negociar.",
+      "viewer_question": "",
+      "open_loop_action": {},
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Una sala de conferencias con el logo del equipo en la pared.",
+      "transition_to_next": "La negociación avanza hacia la obtención de financiamiento.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 20000,
+        "net_worth": 20000,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 0.0,
+        "ledger": {
+          "protagonist": 0.0,
+          "investors": 0.0,
+          "seller": 100.0
+        },
+        "team_value": 180000,
+        "team_debt": 650000,
+        "team_cash": 0,
+        "revenue": 175000,
+        "attendance": 620,
+        "record": "0-0",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "critical",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b03",
+      "time": "AGE 22 · DAY 60",
+      "duration_target_s": 18,
+      "cause": "Apoyo de inversores locales.",
+      "event": "Consigues el apoyo de inversores locales para la compra.",
+      "consequence": "Aumentas tu capacidad financiera para adquirir el equipo.",
+      "story_purpose": "first_commitment",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "acquire_team"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir que estás construyendo una comunidad a tu alrededor.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:owns_team",
+      "metric_reveal": [],
+      "visual_opportunity": "Una reunión con inversores en un café local.",
+      "transition_to_next": "La compra del equipo se formaliza.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 199820,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 382000,
+        "team_debt": 650000,
+        "team_cash": 99999,
+        "revenue": 175000,
+        "attendance": 620,
+        "record": "0-0",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "dangerous",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "owns_team",
+          "scene": "Entras por primera vez a TU estadio. El utilero te llama dueño. Los Halcones de la Ciudad es tuyo."
+        }
+      ],
+      "contribution": "decision"
+    },
+    {
+      "beat_id": "b04",
+      "time": "AGE 22 · DAY 90",
+      "duration_target_s": 14,
+      "cause": "Cierre de la compra del equipo.",
+      "event": "Adquieres oficialmente 'Los Halcones de la Ciudad'.",
+      "consequence": "Te conviertes en el dueño del equipo y realizas una rueda de prensa.",
+      "story_purpose": "first_proof",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "sign_player",
+          "player_signed": "nuevo entrenador"
+        },
+        {
+          "op": "media_deal"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir que has alcanzado un sueño.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: Rueda de prensa exitosa.",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Un escenario con los colores del equipo y tu familia aplaudiendo.",
+      "transition_to_next": "Inviertes en mejoras para el equipo.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 456350,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 885000,
+        "team_debt": 650000,
+        "team_cash": 131999,
+        "revenue": 295000,
+        "attendance": 620,
+        "record": "0-0",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "dangerous",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "media",
+          "scene": "Te llaman de una radio que antes solo oías yendo al trabajo."
+        },
+        {
+          "id": "valuation_jump",
+          "scene": "Los Halcones de la Ciudad ya no vale una miseria. El número cambió de verdad."
+        }
+      ],
+      "contribution": "reward"
+    },
+    {
+      "beat_id": "b05",
+      "time": "AGE 22 · DAY 120",
+      "duration_target_s": 17,
+      "cause": "Inversión en mejoras del equipo.",
+      "event": "Decides invertir en mejoras para el equipo y el estadio.",
+      "consequence": "Aumenta la asistencia a los partidos y la moral del equipo.",
+      "story_purpose": "escalation",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "facility_upgrade"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir que estás construyendo un legado.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:arena",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Trabajadores renovando el estadio y nuevos asientos.",
+      "transition_to_next": "La temporada comienza con grandes expectativas.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 599150,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 1165000,
+        "team_debt": 650000,
+        "team_cash": 51999,
+        "revenue": 295000,
+        "attendance": 620,
+        "record": "0-0",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "critical",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "arena",
+          "scene": "La arena ya no parece un galpón. Hay luz nueva y un pasillo que es tuyo."
+        },
+        {
+          "id": "valuation_million",
+          "scene": "El equipo ahora vale una cifra que nunca habías visto junta."
+        }
+      ],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b06",
+      "time": "AGE 22 · DAY 150",
+      "duration_target_s": 15,
+      "cause": "Inicio de la temporada.",
+      "event": "Comienza la temporada, pero el equipo tiene un mal desempeño.",
+      "consequence": "El equipo empieza con varias derrotas.",
+      "story_purpose": "major_reversal",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_lost"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        },
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir la presión de ser dueño del equipo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback: Inicio de temporada difícil.",
+      "metric_reveal": [],
+      "visual_opportunity": "El estadio vacío tras una derrota.",
+      "transition_to_next": "Decides buscar financiamiento adicional.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 602210,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 1171000,
+        "team_debt": 641453,
+        "team_cash": 37887,
+        "revenue": 312475,
+        "attendance": 570,
+        "record": "0-2",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "critical",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback"
+    },
+    {
+      "beat_id": "b07",
+      "time": "AGE 22 · DAY 180",
+      "duration_target_s": 16,
+      "cause": "Decisión de buscar financiamiento adicional.",
+      "event": "Buscas financiamiento adicional para cubrir gastos operativos.",
+      "consequence": "Te enfrentas a la realidad de la deuda del equipo.",
+      "story_purpose": "crisis",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "loan"
+        },
+        {
+          "op": "advance_time",
+          "months": 3
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentirte abrumado por las deudas.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Revisando documentos financieros en tu oficina.",
+      "transition_to_next": "El equipo comienza a mejorar en el rendimiento.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 593030,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 1153000,
+        "team_debt": 707222,
+        "team_cash": 82815,
+        "revenue": 312475,
+        "attendance": 570,
+        "record": "0-2",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "dangerous",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "threat"
+    },
+    {
+      "beat_id": "b08",
+      "time": "AGE 22 · DAY 210",
+      "duration_target_s": 19,
+      "cause": "Mejora en el rendimiento del equipo.",
+      "event": "El equipo comienza a ganar partidos después de las dificultades iniciales.",
+      "consequence": "La moral del equipo y la asistencia aumentan.",
+      "story_purpose": "midpoint",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir que el esfuerzo está dando frutos.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:first_win",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Celebración en el vestuario tras una victoria.",
+      "transition_to_next": "El equipo clasifica a los playoffs.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 605270,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 1177000,
+        "team_debt": 707222,
+        "team_cash": 91251,
+        "revenue": 330175,
+        "attendance": 635,
+        "record": "1-3",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 1",
+        "debt_risk_state": "dangerous",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "first_win",
+          "scene": "El primer silbato a favor. El vestuario grita y alguien te busca con los ojos."
+        }
+      ],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b09",
+      "time": "AGE 22 · DAY 240",
+      "duration_target_s": 15,
+      "cause": "Clasificación a los playoffs.",
+      "event": "El equipo clasifica a los playoffs tras una buena racha de victorias.",
+      "consequence": "La comunidad comienza a apoyarte más.",
+      "story_purpose": "major_success",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "playoffs_qualified"
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir el apoyo de la comunidad.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: Apoyo de la comunidad.",
+      "metric_reveal": [],
+      "visual_opportunity": "Una multitud animando en el estadio durante un partido.",
+      "transition_to_next": "Preparativos para los playoffs.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 2980340,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 5834000,
+        "team_debt": 707222,
+        "team_cash": 375677,
+        "revenue": 926875,
+        "attendance": 3456,
+        "record": "14-18",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 1",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "playoffs",
+          "scene": "Entras al vestuario antes de playoffs. El pizarrón tiene tu temporada escrita."
+        },
+        {
+          "id": "valuation_jump",
+          "scene": "Los Halcones de la Ciudad ya no vale una miseria. El número cambió de verdad."
+        }
+      ],
+      "contribution": "reward"
+    },
+    {
+      "beat_id": "b10",
+      "time": "AGE 22 · DAY 300",
+      "duration_target_s": 16,
+      "cause": "Preparativos para los playoffs.",
+      "event": "Te preparas para la primera ronda de playoffs.",
+      "consequence": "La presión aumenta, pero la moral del equipo es alta.",
+      "story_purpose": "escalation",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir la emoción de los playoffs.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Entrenamientos intensos en el gimnasio.",
+      "transition_to_next": "El equipo avanza a la final.",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 2993090,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 5859000,
+        "team_debt": 707222,
+        "team_cash": 375677,
+        "revenue": 926875,
+        "attendance": 3456,
+        "record": "14-18",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 1",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b11",
+      "time": "AGE 22 · DAY 365",
+      "duration_target_s": 20,
+      "cause": "Avance a la final de playoffs.",
+      "event": "El equipo avanza a la ronda final de los playoffs, aunque no gana el temporada regular.",
+      "consequence": "Te sientes orgulloso del equipo y su rendimiento.",
+      "story_purpose": "ending",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "final_reached"
+        },
+        {
+          "op": "playoff_berth"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir que has logrado algo grande.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: Orgullo por el equipo.",
+      "metric_reveal": [],
+      "visual_opportunity": "Celebración en el vestuario tras el último partido de playoffs.",
+      "transition_to_next": "",
+      "world_snapshot": {
+        "age": 22,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 3129770,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 6127000,
+        "team_debt": 697735,
+        "team_cash": 452353,
+        "revenue": 926875,
+        "attendance": 3456,
+        "record": "14-18",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 1",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "finals",
+          "scene": "finals"
+        }
+      ],
+      "contribution": "reward"
+    },
+    {
+      "beat_id": "b12",
+      "time": "AGE 22 · DAY 365",
+      "duration_target_s": 15,
+      "cause": "Finaliza la temporada con un récord mejorado.",
+      "event": "Cierras la Temporada 1 con un récord de 1-1 y un promedio de asistencia de 635.",
+      "consequence": "El equipo muestra señales de mejora y se establece como un contendiente en la liga.",
+      "story_purpose": "ending",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch"
+        },
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Reflejar el crecimiento del equipo y tu papel como dueño.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Estadio lleno con fans animando en la última jornada de la temporada.",
+      "transition_to_next": "El equipo se prepara para la nueva temporada.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 3020630,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 5913000,
+        "team_debt": 697735,
+        "team_cash": 477063,
+        "revenue": 978715,
+        "attendance": 3456,
+        "record": "14-18 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 2",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b13",
+      "time": "AGE 22 · DAY 365",
+      "duration_target_s": 18,
+      "cause": "Tomas decisiones estratégicas para la próxima temporada.",
+      "event": "Decides contratar un nuevo entrenador para mejorar el rendimiento del equipo.",
+      "consequence": "La moral del equipo aumenta y se esperan mejores resultados para la próxima temporada.",
+      "story_purpose": "first_commitment",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "hire_coach"
+        },
+        {
+          "op": "advance_time",
+          "months": 3
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Aumentar la esperanza y expectativa para la nueva temporada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Sala de reuniones donde se discuten las nuevas estrategias con el nuevo entrenador.",
+      "transition_to_next": "El equipo inicia la pretemporada con nuevas metas.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 3000740,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 5874000,
+        "team_debt": 683504,
+        "team_cash": 584229,
+        "revenue": 978715,
+        "attendance": 3456,
+        "record": "14-18 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 2",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "decision"
+    },
+    {
+      "beat_id": "b14",
+      "time": "AGE 23 · Temporada 2",
+      "duration_target_s": 16,
+      "cause": "El inicio de la nueva temporada trae nuevos desafíos.",
+      "event": "Comienza la Temporada 2 con una derrota en el primer partido.",
+      "consequence": "El equipo enfrenta críticas y presión para mejorar.",
+      "story_purpose": "inciting_incident",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_lost"
+        },
+        {
+          "op": "lose_game"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        },
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir la presión y la urgencia de cambiar la situación.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback:sports",
+      "metric_reveal": [],
+      "visual_opportunity": "Vestuario tenso tras la derrota, con jugadores preocupados.",
+      "transition_to_next": "El equipo se prepara para el siguiente partido.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 3456680,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 6768000,
+        "team_debt": 674017,
+        "team_cash": 761925,
+        "revenue": 1131985,
+        "attendance": 3381,
+        "record": "0-3",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 2",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback"
+    },
+    {
+      "beat_id": "b15",
+      "time": "AGE 23 · Temporada 2",
+      "duration_target_s": 14,
+      "cause": "Se implementan nuevas tácticas en los entrenamientos.",
+      "event": "El equipo gana su primer partido de la temporada con una estrategia renovada.",
+      "consequence": "La moral del equipo mejora y los fans comienzan a mostrar apoyo.",
+      "story_purpose": "first_proof",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        },
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Celebrar la primera victoria y el retorno de la esperanza.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Celebración en la cancha con los fans vitoreando.",
+      "transition_to_next": "El equipo se enfoca en mantener la racha positiva.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 3770840,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 7384000,
+        "team_debt": 664530,
+        "team_cash": 931969,
+        "revenue": 1234015,
+        "attendance": 3446,
+        "record": "1-4",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 2",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "reward"
+    },
+    {
+      "beat_id": "b16",
+      "time": "AGE 23 · Temporada 2",
+      "duration_target_s": 15,
+      "cause": "El equipo muestra un rendimiento constante en los siguientes partidos.",
+      "event": "Logras una racha de victorias que lleva al equipo a la mitad de la tabla.",
+      "consequence": "Los Halcones comienzan a ser considerados como un contendiente serio.",
+      "story_purpose": "escalation",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir el reconocimiento de los fans y la comunidad.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Fans vitoreando en el estadio tras una victoria clave.",
+      "transition_to_next": "El equipo se prepara para la siguiente parte de la temporada.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 4413950,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 8645000,
+        "team_debt": 664530,
+        "team_cash": 1032024,
+        "revenue": 1443925,
+        "attendance": 3576,
+        "record": "3-6",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 2",
+        "debt_risk_state": "manageable",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b17",
+      "time": "AGE 23 · Temporada 2",
+      "duration_target_s": 17,
+      "cause": "La presión aumenta a medida que se acercan los playoffs.",
+      "event": "El equipo clasifica a los playoffs tras una emocionante racha final.",
+      "consequence": "Los Halcones ganan el respeto y apoyo de la comunidad.",
+      "story_purpose": "major_success",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "playoffs_qualified"
+        },
+        {
+          "op": "final_reached"
+        },
+        {
+          "op": "win_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir el orgullo de haber llevado al equipo a los playoffs.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:valuation_jump",
+      "metric_reveal": [],
+      "visual_opportunity": "Celebración en la ciudad tras la clasificación a los playoffs.",
+      "transition_to_next": "Los Halcones se preparan para la primera ronda de playoffs.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 9760790,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 19129000,
+        "team_debt": 664530,
+        "team_cash": 1825070,
+        "revenue": 3107665,
+        "attendance": 4266,
+        "record": "14-18",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 2",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "valuation_jump",
+          "scene": "Los Halcones de la Ciudad ya no vale una miseria. El número cambió de verdad."
+        }
+      ],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b18",
+      "time": "AGE 23 · Temporada 2",
+      "duration_target_s": 16,
+      "cause": "Los playoffs traen nuevas expectativas.",
+      "event": "El equipo gana la primera ronda de playoffs con un rendimiento sobresaliente.",
+      "consequence": "La ciudad entera se une en apoyo al equipo.",
+      "story_purpose": "major_success",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "playoff_round_won"
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir la euforia de la victoria en playoffs.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Estadio lleno, con fuegos artificiales tras la victoria en playoffs.",
+      "transition_to_next": "El equipo avanza a la siguiente ronda.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 10158590,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 19909000,
+        "team_debt": 664530,
+        "team_cash": 1886072,
+        "revenue": 3235645,
+        "attendance": 4266,
+        "record": "14-18",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 2",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "reward"
+    },
+    {
+      "beat_id": "b19",
+      "time": "AGE 23 · Temporada 2",
+      "duration_target_s": 15,
+      "cause": "La presión aumenta en la segunda ronda de playoffs.",
+      "event": "El equipo pierde en la segunda ronda de playoffs tras un emocionante partido.",
+      "consequence": "A pesar de la derrota, el equipo es elogiado por su esfuerzo y crecimiento.",
+      "story_purpose": "major_reversal",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_lost"
+        },
+        {
+          "op": "playoff_eliminated"
+        },
+        {
+          "op": "advance_time",
+          "months": 3
+        },
+        {
+          "op": "playoff_berth"
+        },
+        {
+          "op": "lose_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir la decepción pero también el orgullo por el esfuerzo realizado.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback:sports",
+      "metric_reveal": [],
+      "visual_opportunity": "Vestuario con jugadores reflexionando tras la eliminación.",
+      "transition_to_next": "El equipo reflexiona sobre la temporada y planea el futuro.",
+      "world_snapshot": {
+        "age": 23,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 10628300,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 20830000,
+        "team_debt": 650299,
+        "team_cash": 2684801,
+        "revenue": 3427615,
+        "attendance": 4266,
+        "record": "14-18",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 2",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback"
+    },
+    {
+      "beat_id": "b20",
+      "time": "AGE 23 · Temporada 2",
+      "duration_target_s": 14,
+      "cause": "Se analiza el rendimiento de la temporada.",
+      "event": "El equipo recibe reconocimiento por su crecimiento y mejora a lo largo de la temporada.",
+      "consequence": "La comunidad muestra un fuerte apoyo y expectativas para el futuro.",
+      "story_purpose": "ending",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir el orgullo y la esperanza para la próxima temporada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Celebración en la ciudad por el crecimiento del equipo.",
+      "transition_to_next": "El equipo se prepara para la próxima temporada.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 10629830,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 20833000,
+        "team_debt": 640812,
+        "team_cash": 3166804,
+        "revenue": 3427615,
+        "attendance": 4266,
+        "record": "14-18",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 2",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b21",
+      "time": "AGE 23 · cierre de temporada",
+      "duration_target_s": 12,
+      "cause": "se acaba el fixture",
+      "event": "La temporada queda escrita en el pizarrón. Empieza el receso.",
+      "consequence": "el record pasa a season_history y el W-L se resetea",
+      "story_purpose": "texture",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [
+        "RECORD"
+      ],
+      "visual_opportunity": "pizarrón del vestuario con el record final",
+      "transition_to_next": "offseason",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 10487030,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 20553000,
+        "team_debt": 640812,
+        "team_cash": 3166804,
+        "revenue": 3427615,
+        "attendance": 4266,
+        "record": "14-18 (offseason)",
+        "sports_status": "eliminado",
+        "sporting_status": "eliminado",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "world change"
+    },
+    {
+      "beat_id": "b22",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 15,
+      "cause": "Decides invertir más en el equipo y las instalaciones para mejorar el rendimiento.",
+      "event": "Anuncias una inversión significativa en mejoras para el equipo y el estadio.",
+      "consequence": "Aumenta la moral del equipo y la expectativa de los aficionados.",
+      "story_purpose": "first_commitment",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "facility_upgrade"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Aumentar la confianza en el equipo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "El estadio lleno de aficionados animando la inversión.",
+      "transition_to_next": "El equipo comienza la temporada con una nueva energía.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 10522730,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 20623000,
+        "team_debt": 640812,
+        "team_cash": 3086804,
+        "revenue": 3427615,
+        "attendance": 4266,
+        "record": "14-18 (offseason)",
+        "sports_status": "eliminado",
+        "sporting_status": "eliminado",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b23",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 18,
+      "cause": "A pesar de la inversión, el equipo no logra un buen inicio en la temporada.",
+      "event": "El equipo comienza la temporada con una racha de derrotas.",
+      "consequence": "La presión sobre el equipo y la dirección aumenta.",
+      "story_purpose": "escalation",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played",
+          "months": 2
+        },
+        {
+          "op": "game_lost",
+          "months": 2
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Mantener la fe en el equipo a pesar de los reveses.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback: Racha de derrotas.",
+      "metric_reveal": [],
+      "visual_opportunity": "El vestuario tenso después de una derrota.",
+      "transition_to_next": "La presión empieza a afectar la moral del equipo.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 10901150,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 21365000,
+        "team_debt": 631325,
+        "team_cash": 3650127,
+        "revenue": 3554470,
+        "attendance": 4216,
+        "record": "0-2",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback"
+    },
+    {
+      "beat_id": "b24",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 16,
+      "cause": "La situación financiera se vuelve crítica debido a los gastos y la falta de victorias.",
+      "event": "Enfrentas una crisis de propiedad por los altos costos y la baja asistencia.",
+      "consequence": "Debes considerar opciones difíciles para mantener el equipo a flote.",
+      "story_purpose": "crisis",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "owner_crisis"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Buscar soluciones para evitar la venta del equipo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback: Crisis de propiedad.",
+      "metric_reveal": [],
+      "visual_opportunity": "Reunión de emergencia con los inversores.",
+      "transition_to_next": "Debes decidir si inyectar más capital o buscar alternativas.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 5000,
+        "net_worth": 10901150,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 21365000,
+        "team_debt": 631325,
+        "team_cash": 3650127,
+        "revenue": 3554470,
+        "attendance": 4216,
+        "record": "0-2",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback"
+    },
+    {
+      "beat_id": "b25",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 15,
+      "cause": "Decides inyectar capital adicional para salvar el equipo.",
+      "event": "Anuncias una inyección de capital personal para estabilizar la situación.",
+      "consequence": "Se genera un nuevo aire y esperanza entre los jugadores y aficionados.",
+      "story_purpose": "decision",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "owner_injection"
+        },
+        {
+          "op": "advance_time",
+          "months": 3
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Reafirmar tu compromiso con el equipo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "El anuncio en una conferencia de prensa.",
+      "transition_to_next": "El equipo muestra signos de mejora en el rendimiento.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 10898190,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 21369000,
+        "team_debt": 617094,
+        "team_cash": 4409410,
+        "revenue": 3554470,
+        "attendance": 4216,
+        "record": "0-2",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "decision"
+    },
+    {
+      "beat_id": "b26",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 17,
+      "cause": "Con la nueva inyección de capital, el equipo comienza a mejorar.",
+      "event": "El equipo gana varios partidos consecutivos.",
+      "consequence": "La moral del equipo y la asistencia al estadio aumentan.",
+      "story_purpose": "major_success",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played",
+          "months": 3
+        },
+        {
+          "op": "game_won",
+          "months": 3
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir el apoyo de los aficionados y la comunidad.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: Racha de victorias.",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Aficionados celebrando en las gradas.",
+      "transition_to_next": "El equipo se encuentra en la lucha por los playoffs.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 11286300,
+        "job": "empleado de oficina",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 22130000,
+        "team_debt": 617094,
+        "team_cash": 4469984,
+        "revenue": 3681550,
+        "attendance": 4281,
+        "record": "1-3",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b27",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 14,
+      "cause": "El equipo clasifica para los playoffs tras una emocionante racha final.",
+      "event": "El equipo asegura su lugar en los playoffs.",
+      "consequence": "La ciudad se llena de entusiasmo y apoyo.",
+      "story_purpose": "playoffs_qualified",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "playoffs_qualified"
+        },
+        {
+          "op": "quit_job"
+        },
+        {
+          "op": "final_reached"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir el orgullo de la comunidad.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: Clasificación a los playoffs.",
+      "metric_reveal": [],
+      "visual_opportunity": "Celebraciones en la ciudad.",
+      "transition_to_next": "El equipo se prepara para la primera ronda de playoffs.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 17919870,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 35137000,
+        "team_debt": 617094,
+        "team_cash": 5465264,
+        "revenue": 5769550,
+        "attendance": 4800,
+        "record": "14-18",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "sold_out",
+          "scene": "Hay fila dando la vuelta. Por primera vez no entra más gente."
+        },
+        {
+          "id": "quit_job",
+          "scene": "Entregas la renuncia. El badge de la oficina queda sobre el escritorio."
+        }
+      ],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b28",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 15,
+      "cause": "El equipo avanza a la primera ronda de playoffs.",
+      "event": "El equipo gana su primer partido de playoffs.",
+      "consequence": "La emoción y la esperanza crecen entre los aficionados.",
+      "story_purpose": "playoff_round_won",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "playoff_round_won"
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentir la euforia de la victoria.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: Primera victoria en playoffs.",
+      "metric_reveal": [],
+      "visual_opportunity": "El equipo celebrando en la cancha.",
+      "transition_to_next": "El equipo se prepara para la siguiente ronda.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 17919870,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 35137000,
+        "team_debt": 617094,
+        "team_cash": 5465264,
+        "revenue": 5769550,
+        "attendance": 4800,
+        "record": "14-18",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b29",
+      "time": "AGE 23 · Temporada 3",
+      "duration_target_s": 16,
+      "cause": "El equipo se enfrenta a un rival fuerte en la segunda ronda.",
+      "event": "El equipo pierde en un emocionante partido de playoffs.",
+      "consequence": "La temporada termina, pero el equipo se siente orgulloso de su desempeño.",
+      "story_purpose": "major_reversal",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played",
+          "months": 2
+        },
+        {
+          "op": "game_lost",
+          "months": 2
+        },
+        {
+          "op": "playoff_berth"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Reflexionar sobre el crecimiento de la temporada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback: Eliminación de playoffs.",
+      "metric_reveal": [],
+      "visual_opportunity": "El vestuario tras la derrota.",
+      "transition_to_next": "El equipo se reúne para planear el futuro.",
+      "world_snapshot": {
+        "age": 24,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 18354390,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 35989000,
+        "team_debt": 607607,
+        "team_cash": 6424554,
+        "revenue": 5913550,
+        "attendance": 4800,
+        "record": "14-18",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 3",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback"
+    },
+    {
+      "beat_id": "b30",
+      "time": "AGE 23 · cierre de temporada",
+      "duration_target_s": 15,
+      "cause": "La temporada llega a su fin.",
+      "event": "Cierras la temporada con un récord positivo y una base de aficionados en crecimiento.",
+      "consequence": "El equipo se siente optimista sobre el futuro.",
+      "story_purpose": "ending",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Celebrar los logros alcanzados.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: Base de aficionados creciente.",
+      "metric_reveal": [],
+      "visual_opportunity": "Celebraciones en el estadio al final de la temporada.",
+      "transition_to_next": "Prepararse para la próxima temporada con nuevas metas.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 18089190,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 35469000,
+        "team_debt": 607607,
+        "team_cash": 6424554,
+        "revenue": 5913550,
+        "attendance": 4800,
+        "record": "14-18 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b31",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 15,
+      "cause": "Inversores locales apoyan el equipo.",
+      "event": "Los Halcones de la Ciudad comienzan la temporada con un nuevo enfoque y un roster mejorado.",
+      "consequence": "La moral del equipo aumenta y la asistencia comienza a crecer.",
+      "story_purpose": "opening",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Esperanza renovada en la comunidad.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Estadio lleno, aficionados animando.",
+      "transition_to_next": "El equipo se prepara para el primer partido de la temporada.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 18090210,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 35471000,
+        "team_debt": 598120,
+        "team_cash": 7315204,
+        "revenue": 5913550,
+        "attendance": 4800,
+        "record": "14-18 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b32",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 18,
+      "cause": "El equipo ha mejorado su rendimiento.",
+      "event": "Los Halcones logran su primera victoria de la temporada.",
+      "consequence": "La asistencia al estadio aumenta considerablemente.",
+      "story_purpose": "first_commitment",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "win_game"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentimiento de pertenencia y orgullo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Celebración en el vestuario tras la victoria.",
+      "transition_to_next": "El equipo continúa su racha ganadora.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 18740460,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 36746000,
+        "team_debt": 588633,
+        "team_cash": 8344080,
+        "revenue": 6129175,
+        "attendance": 4800,
+        "record": "2-1",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "reward: La comunidad empieza a creer en el equipo."
+    },
+    {
+      "beat_id": "b33",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 16,
+      "cause": "El equipo mantiene una buena racha.",
+      "event": "Los Halcones ganan varios partidos consecutivos.",
+      "consequence": "El equipo se posiciona entre los primeros de la liga.",
+      "story_purpose": "major_success",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "win_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Euforia en la comunidad.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Aficionados celebrando en las gradas.",
+      "transition_to_next": "La prensa comienza a cubrir al equipo más frecuentemente.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 20253630,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 39713000,
+        "team_debt": 588633,
+        "team_cash": 8583783,
+        "revenue": 6632050,
+        "attendance": 4800,
+        "record": "6-4",
+        "sports_status": "regular",
+        "sporting_status": "regular",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "reward: La ciudad comienza a llenar el estadio."
+    },
+    {
+      "beat_id": "b34",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 14,
+      "cause": "El equipo clasifica a los playoffs.",
+      "event": "Los Halcones aseguran su lugar en los playoffs.",
+      "consequence": "La ciudad se llena de entusiasmo por los playoffs.",
+      "story_purpose": "playoffs_qualified",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch",
+          "wins": 15,
+          "losses": 11
+        },
+        {
+          "op": "season_stretch",
+          "wins": 15,
+          "losses": 11
+        },
+        {
+          "op": "season_stretch",
+          "wins": 15,
+          "losses": 11
+        },
+        {
+          "op": "playoffs_qualified"
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Expectativa y emoción por el futuro.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Carteles de playoffs en la ciudad.",
+      "transition_to_next": "El equipo se prepara para la primera ronda de playoffs.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 25595880,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 50188000,
+        "team_debt": 588633,
+        "team_cash": 9407463,
+        "revenue": 8360050,
+        "attendance": 4800,
+        "record": "19-13",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b35",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 15,
+      "cause": "El equipo se enfrenta a un rival fuerte en los playoffs.",
+      "event": "Los Halcones ganan su primer partido de playoffs.",
+      "consequence": "La comunidad se une más en apoyo al equipo.",
+      "story_purpose": "playoff_round_won",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "playoff_berth"
+        },
+        {
+          "op": "win_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentimiento de unidad y orgullo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:playoffs",
+      "metric_reveal": [],
+      "visual_opportunity": "Aficionados celebrando en la plaza central.",
+      "transition_to_next": "El equipo se prepara para la siguiente ronda.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 26246130,
+        "job": "dueño del equipo",
+        "home": "departamento compartido",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 51463000,
+        "team_debt": 588633,
+        "team_cash": 9510423,
+        "revenue": 8576050,
+        "attendance": 4800,
+        "record": "19-13",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "reward: La ciudad celebra la victoria en las calles."
+    },
+    {
+      "beat_id": "b36",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 17,
+      "cause": "El equipo avanza a la siguiente ronda de playoffs.",
+      "event": "Los Halcones ganan el segundo partido de playoffs.",
+      "consequence": "La expectativa por el clasificación a playoffs crece.",
+      "story_purpose": "playoff_round_won",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "move_home",
+          "home": "departamento propio a cuatro cuadras de la arena",
+          "cost": 4500
+        },
+        {
+          "op": "playoff_berth"
+        },
+        {
+          "op": "win_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Euforia y esperanza por el campeonato.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:move_home",
+      "metric_reveal": [],
+      "visual_opportunity": "Prensa cubriendo el partido en el estadio.",
+      "transition_to_next": "El equipo se prepara para la final de playoffs.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 26895870,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 52737000,
+        "team_debt": 588633,
+        "team_cash": 9613383,
+        "revenue": 8792050,
+        "attendance": 4800,
+        "record": "19-13",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "move_home",
+          "scene": "Mudás las cajas. El departamento viejo queda vacío a las 11 de la noche."
+        }
+      ],
+      "contribution": "reward: Mayor cobertura mediática y apoyo de la comunidad."
+    },
+    {
+      "beat_id": "b37",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 19,
+      "cause": "El equipo llega a la final de playoffs.",
+      "event": "Los Halcones juegan en la final de playoffs.",
+      "consequence": "La ciudad se paraliza por el evento.",
+      "story_purpose": "final_reached",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "advance_time",
+          "months": 3
+        },
+        {
+          "op": "final_reached"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Tensión y emoción en el aire.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:finals",
+      "metric_reveal": [],
+      "visual_opportunity": "Estadio lleno, afición enardecida.",
+      "transition_to_next": "El partido se define en los últimos minutos.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 27237060,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 53406000,
+        "team_debt": 574402,
+        "team_cash": 11711198,
+        "revenue": 8864050,
+        "attendance": 4800,
+        "record": "19-13",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b38",
+      "time": "AGE 25 · Temporada 4",
+      "duration_target_s": 20,
+      "cause": "El equipo lucha hasta el final en la final.",
+      "event": "Los Halcones pierden en un emocionante partido de la final.",
+      "consequence": "A pesar de la derrota, el equipo gana respeto y admiración.",
+      "story_purpose": "major_reversal",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_lost"
+        },
+        {
+          "op": "lose_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentimientos encontrados de tristeza y orgullo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback:sports",
+      "metric_reveal": [],
+      "visual_opportunity": "Aficionados con lágrimas pero aplaudiendo al equipo.",
+      "transition_to_next": "El equipo se reúne para reflexionar sobre la temporada.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 27670560,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 54256000,
+        "team_debt": 574402,
+        "team_cash": 11779838,
+        "revenue": 9008050,
+        "attendance": 4800,
+        "record": "19-13",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 4",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback: La comunidad se siente triste pero orgullosa."
+    },
+    {
+      "beat_id": "b39",
+      "time": "AGE 26 · Temporada 5",
+      "duration_target_s": 15,
+      "cause": "Reflexiones sobre la temporada anterior.",
+      "event": "El equipo se compromete a mejorar y seguir creciendo.",
+      "consequence": "Se establecen nuevos objetivos para la próxima temporada.",
+      "story_purpose": "decision",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Determinación renovada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Reunión del equipo en el vestuario.",
+      "transition_to_next": "El equipo comienza la pretemporada con nuevos fichajes.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 27405360,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 53736000,
+        "team_debt": 574402,
+        "team_cash": 11779838,
+        "revenue": 9008050,
+        "attendance": 4800,
+        "record": "19-13 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 5",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b40",
+      "time": "AGE 26 · Temporada 5",
+      "duration_target_s": 18,
+      "cause": "Se realizan mejoras en el equipo.",
+      "event": "Se firman nuevos jugadores para reforzar el equipo.",
+      "consequence": "La calidad del roster mejora significativamente.",
+      "story_purpose": "player_signed",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "player_signed"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Expectativa por la nueva temporada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Los nuevos jugadores llegan al entrenamiento.",
+      "transition_to_next": "El equipo se prepara para la nueva temporada.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 27357930,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 53643000,
+        "team_debt": 574402,
+        "team_cash": 11751838,
+        "revenue": 9008050,
+        "attendance": 4800,
+        "record": "19-13 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 5",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b41",
+      "time": "AGE 26 · Temporada 5",
+      "duration_target_s": 16,
+      "cause": "Se busca estabilizar las finanzas del equipo.",
+      "event": "Se negocia un nuevo acuerdo de patrocinio.",
+      "consequence": "El flujo de ingresos mejora y la deuda se vuelve manejable.",
+      "story_purpose": "sponsor_deal",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "sponsor_deal"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Alivio financiero y estabilidad.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward:first_sponsor",
+      "metric_reveal": [],
+      "visual_opportunity": "Reunión con patrocinadores en el estadio.",
+      "transition_to_next": "El equipo inicia la temporada con optimismo.",
+      "world_snapshot": {
+        "age": 25,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 27559380,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 54038000,
+        "team_debt": 574402,
+        "team_cash": 11799838,
+        "revenue": 9056050,
+        "attendance": 4800,
+        "record": "19-13 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 5",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [
+        {
+          "id": "first_sponsor",
+          "scene": "Un local pone su nombre en la camiseta. Hay plata que no salió de tu bolsillo."
+        }
+      ],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b42",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 15,
+      "cause": "El equipo comienza a ganar partidos.",
+      "event": "Los Halcones tienen un inicio exitoso en la temporada.",
+      "consequence": "La moral del equipo y la asistencia aumentan.",
+      "story_purpose": "season_stretch",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Euforia por el buen comienzo de la temporada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [
+        "ATTENDANCE"
+      ],
+      "visual_opportunity": "Aficionados llenando el estadio en cada partido.",
+      "transition_to_next": "El equipo se prepara para la mitad de la temporada.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 27777660,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 54466000,
+        "team_debt": 564915,
+        "team_cash": 13245821,
+        "revenue": 9128050,
+        "attendance": 4800,
+        "record": "19-13 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 5",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b43",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 17,
+      "cause": "El equipo mantiene un buen rendimiento.",
+      "event": "Los Halcones están en la lucha por los playoffs.",
+      "consequence": "La ciudad se une en apoyo al equipo.",
+      "story_purpose": "playoffs_qualified",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "playoffs_qualified"
+        },
+        {
+          "op": "advance_time",
+          "months": 3
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Sentimiento de comunidad y apoyo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Aficionados en las calles apoyando al equipo.",
+      "transition_to_next": "El equipo se prepara para los playoffs.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 35071680,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 68768000,
+        "team_debt": 550684,
+        "team_cash": 17081739,
+        "revenue": 11504050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 5",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b44",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 18,
+      "cause": "El equipo avanza a los playoffs nuevamente.",
+      "event": "Los Halcones logran clasificar a los playoffs.",
+      "consequence": "La ciudad se llena de entusiasmo y expectativa.",
+      "story_purpose": "playoffs_qualified",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "playoffs_qualified"
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "Euforia por la clasificación.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "Celebraciones en la ciudad por la clasificación a playoffs.",
+      "transition_to_next": "El equipo se prepara para la primera ronda de playoffs.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 35071680,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 68768000,
+        "team_debt": 550684,
+        "team_cash": 17081739,
+        "revenue": 11504050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 5",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b45",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 12,
+      "cause": "Comienzo de la nueva temporada.",
+      "event": "Los Halcones inician su temporada con una victoria contundente.",
+      "consequence": "El equipo gana confianza y mejora su moral.",
+      "story_purpose": "first_commitment",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "win_game"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        },
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse optimista sobre el futuro de la temporada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: victoria en el primer partido de la temporada.",
+      "metric_reveal": [],
+      "visual_opportunity": "celebración en el vestuario tras la victoria.",
+      "transition_to_next": "Los Halcones buscan mantener el impulso en el siguiente partido.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 35580150,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 69765000,
+        "team_debt": 541197,
+        "team_cash": 19022444,
+        "revenue": 11720050,
+        "attendance": 4800,
+        "record": "15-17 (offseason)",
+        "sports_status": "playoffs · first_round",
+        "sporting_status": "playoffs · first_round",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b46",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 15,
+      "cause": "Racha de victorias.",
+      "event": "Los Halcones logran una serie de cuatro victorias consecutivas.",
+      "consequence": "El equipo se coloca en una buena posición para los playoffs.",
+      "story_purpose": "major_success",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "season_stretch",
+          "wins": 12,
+          "losses": 14
+        },
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse orgulloso del desempeño del equipo.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: racha de victorias.",
+      "metric_reveal": [],
+      "visual_opportunity": "jugadores celebrando en la cancha tras cada victoria.",
+      "transition_to_next": "La presión aumenta mientras se acercan los playoffs.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 43955370,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 86187000,
+        "team_debt": 541197,
+        "team_cash": 20326604,
+        "revenue": 14456050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b47",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 14,
+      "cause": "Calificación para los playoffs.",
+      "event": "Los Halcones aseguran su lugar en los playoffs.",
+      "consequence": "El equipo se prepara para la fase eliminatoria.",
+      "story_purpose": "playoffs_qualified",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "playoffs_qualified"
+        },
+        {
+          "op": "playoff_berth"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse emocionado por la oportunidad de competir por el campeonato.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: clasificación a los playoffs.",
+      "metric_reveal": [],
+      "visual_opportunity": "anuncio de la clasificación en el estadio, con los aficionados celebrando.",
+      "transition_to_next": "El equipo inicia su preparación para los playoffs.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 43955370,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 86187000,
+        "team_debt": 541197,
+        "team_cash": 20326604,
+        "revenue": 14456050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b48",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 16,
+      "cause": "Inicio de los playoffs.",
+      "event": "Los Halcones ganan su primer partido de playoffs.",
+      "consequence": "El equipo avanza a la siguiente ronda.",
+      "story_purpose": "playoff_round_won",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "playoff_berth"
+        },
+        {
+          "op": "win_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse esperanzado por el futuro en los playoffs.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: victoria en el primer partido de playoffs.",
+      "metric_reveal": [],
+      "visual_opportunity": "la euforia de los aficionados tras la victoria.",
+      "transition_to_next": "El equipo se prepara para el siguiente desafío en los playoffs.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 44605620,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 87462000,
+        "team_debt": 541197,
+        "team_cash": 20429564,
+        "revenue": 14672050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "playoffs",
+        "sporting_status": "playoffs",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b49",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 18,
+      "cause": "Avance en los playoffs.",
+      "event": "Los Halcones ganan su segundo partido de playoffs.",
+      "consequence": "El equipo se clasifica para la final de la conferencia.",
+      "story_purpose": "playoff_round_won",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_won"
+        },
+        {
+          "op": "advance_time",
+          "months": 3
+        },
+        {
+          "op": "final_reached"
+        },
+        {
+          "op": "win_game"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse invencible tras las victorias consecutivas.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: avance a la final de la conferencia.",
+      "metric_reveal": [],
+      "visual_opportunity": "jugadores abrazándose tras la victoria.",
+      "transition_to_next": "La atención se centra en la final de la conferencia.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 45379800,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 88980000,
+        "team_debt": 526966,
+        "team_cash": 24052539,
+        "revenue": 14888050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b50",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 20,
+      "cause": "Final de conferencia.",
+      "event": "Los Halcones juegan en la final de la conferencia.",
+      "consequence": "El equipo se enfrenta a su mayor desafío hasta ahora.",
+      "story_purpose": "climax",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse nervioso pero emocionado por la oportunidad de ganar.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "la tensión en el estadio antes del inicio del partido.",
+      "transition_to_next": "El resultado del partido determinará el futuro del equipo.",
+      "world_snapshot": {
+        "age": 26,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 45596550,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 89405000,
+        "team_debt": 526966,
+        "team_cash": 24086859,
+        "revenue": 14960050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "new information"
+    },
+    {
+      "beat_id": "b51",
+      "time": "AGE 27 · Temporada 6",
+      "duration_target_s": 16,
+      "cause": "Resultado de la final de conferencia.",
+      "event": "Los Halcones pierden en un emocionante partido de la final.",
+      "consequence": "El equipo queda eliminado de los playoffs y reflexiona sobre la temporada.",
+      "story_purpose": "crisis",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "game_played"
+        },
+        {
+          "op": "game_lost"
+        },
+        {
+          "op": "final_reached"
+        },
+        {
+          "op": "lose_game"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse decepcionado pero motivado para el futuro.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "setback: eliminación de los playoffs.",
+      "metric_reveal": [],
+      "visual_opportunity": "jugadores abatidos en el vestuario tras la derrota.",
+      "transition_to_next": "El equipo se prepara para la próxima temporada.",
+      "world_snapshot": {
+        "age": 27,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 46247820,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 90682000,
+        "team_debt": 517479,
+        "team_cash": 26595674,
+        "revenue": 15176050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "setback"
+    },
+    {
+      "beat_id": "b52",
+      "time": "AGE 28 · Temporada 7",
+      "duration_target_s": 14,
+      "cause": "Refuerzo del equipo.",
+      "event": "Se firman nuevos jugadores para mejorar el equipo.",
+      "consequence": "El equipo se siente más fuerte y preparado para la próxima temporada.",
+      "story_purpose": "first_commitment",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "player_signed"
+        },
+        {
+          "op": "player_signed"
+        },
+        {
+          "op": "advance_time",
+          "months": 2
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse optimista sobre las nuevas incorporaciones.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "reward: fortalecimiento del equipo.",
+      "metric_reveal": [],
+      "visual_opportunity": "la presentación de los nuevos jugadores en una conferencia de prensa.",
+      "transition_to_next": "El equipo se prepara para el inicio de la nueva temporada.",
+      "world_snapshot": {
+        "age": 27,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 46155000,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 90500000,
+        "team_debt": 507992,
+        "team_cash": 28930735,
+        "revenue": 15176050,
+        "attendance": 4800,
+        "record": "15-17",
+        "sports_status": "finals",
+        "sporting_status": "finals",
+        "season": "Temporada 6",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    },
+    {
+      "beat_id": "b53",
+      "time": "AGE 28 · Temporada 7",
+      "duration_target_s": 15,
+      "cause": "Inicio de la nueva temporada.",
+      "event": "Los Halcones comienzan la temporada con un nuevo enfoque.",
+      "consequence": "El equipo busca mejorar su récord del año anterior.",
+      "story_purpose": "new_season",
+      "world_delta": {},
+      "ops": [
+        {
+          "op": "new_season"
+        }
+      ],
+      "story_delta": {},
+      "progression_delta": {},
+      "emotional_goal": "sentirse emocionado por el potencial de la nueva temporada.",
+      "viewer_question": "",
+      "open_loop_action": {
+        "action": "pay",
+        "loop_id": "buy",
+        "question": "¿realmente podrás comprarlo?"
+      },
+      "reward_or_setback": "",
+      "metric_reveal": [],
+      "visual_opportunity": "la afición llena el estadio en el primer partido de la temporada.",
+      "transition_to_next": "El equipo busca establecer un buen inicio en la temporada.",
+      "world_snapshot": {
+        "age": 27,
+        "time": "DAY 1",
+        "cash": 0,
+        "net_worth": 45889800,
+        "job": "dueño del equipo",
+        "home": "departamento propio a cuatro cuadras de la arena",
+        "ownership": 51.0,
+        "ledger": {
+          "protagonist": 51.0,
+          "investors": 39.0,
+          "seller": 10.0
+        },
+        "team_value": 89980000,
+        "team_debt": 507992,
+        "team_cash": 28930735,
+        "revenue": 15176050,
+        "attendance": 4800,
+        "record": "15-17 (offseason)",
+        "sports_status": "final — derrota",
+        "sporting_status": "final — derrota",
+        "season": "Temporada 7",
+        "debt_risk_state": "healthy",
+        "championships": 0
+      },
+      "aspirational_payoffs": [],
+      "contribution": "progress"
+    }
+  ]
+}

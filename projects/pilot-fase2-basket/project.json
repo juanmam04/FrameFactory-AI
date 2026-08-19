@@ -1,0 +1,68 @@
+{
+  "id": "pilot-fase2-basket",
+  "slug": "pov-compras-un-equipo-de-b-squet-al-borde-de-la-",
+  "mode": "check_als",
+  "content_format": "check_als",
+  "title": "POV: Compras un equipo de básquet al borde de la quiebra",
+  "topic": "Eres joven. Tienes una vida normal. Sueñas con tener un equipo. Aparece la oportunidad de adquirir uno casi quebrado. Te conviertes en propietario. Intentas reconstruirlo. El equipo y tu vida evolucionan.",
+  "language": "es",
+  "target_words": 2200,
+  "target_duration_min": [
+    12,
+    18
+  ],
+  "research_notes": "",
+  "sources": [],
+  "research_skipped": true,
+  "script": "",
+  "fact_check_status": "pending",
+  "script_approved": false,
+  "story_plan": {},
+  "story_plan_approved": false,
+  "check_story": {
+    "generated": true,
+    "beat_count": 53,
+    "synopsis_words": 926,
+    "approved": false,
+    "title": "Los Halcones de la Ciudad"
+  },
+  "check_story_approved": false,
+  "voice_speed": 1.2,
+  "music_path": "",
+  "music_volume": 0.08,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "session_id": "",
+  "episode_number": 106,
+  "idea": {},
+  "concept": {
+    "title": "POV: Compras un equipo de básquet al borde de la quiebra",
+    "premise": "Eres joven. Tienes una vida normal. Sueñas con tener un equipo. Aparece la oportunidad de adquirir uno casi quebrado. Te conviertes en propietario. Intentas reconstruirlo. El equipo y tu vida evolucionan.",
+    "one_line_fantasy": "Comprar un equipo de básquet al borde de la quiebra y reconstruirlo",
+    "starting_state": "22 años, trabajo de oficina, ahorros modestos, fanático del básquet",
+    "end_state": "propietario de un equipo vivo, vida distinta, sin moraleja",
+    "story_core_id": "del-basket-a-la-primera",
+    "story_engine": {
+      "note": "NO reutilizar un spine previo. Conservar solo la fantasía central."
+    }
+  },
+  "creative_profile_snapshot": {},
+  "ui_step": "story",
+  "checkpoints": {
+    "script_ready": false,
+    "flow_pack_ready": false,
+    "images_imported": false,
+    "voice_ready": false,
+    "assembly_ready": false,
+    "render_ready": false,
+    "captions_ready": false
+  },
+  "import_report": {},
+  "youtube": {},
+  "preview": {},
+  "errors": [],
+  "created_at": "2026-08-19T05:01:09Z",
+  "updated_at": "2026-08-19T06:17:06Z"
+}

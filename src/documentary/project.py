@@ -84,6 +84,8 @@ DEFAULT_PROJECT: dict[str, Any] = {
     "script_approved": False,
     "story_plan": {},
     "story_plan_approved": False,
+    "check_story": {},
+    "check_story_approved": False,
     "voice_speed": 1.2,
     "music_path": "",
     "music_volume": 0.08,
@@ -410,6 +412,15 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
         "publish": bool((project.get("youtube") or {}).get("title")),
         "done": bool((project.get("youtube") or {}).get("title")),
     }
+    if str(project.get("content_format") or project.get("mode") or "") == "check_als":
+        # Fase 2: pipeline stops at human story review. Script+ is locked.
+        flags["research"] = True
+        flags["story"] = bool(
+            (project.get("check_story") or {}).get("generated")
+            or project.get("check_story_approved")
+        )
+        flags["script"] = False
+        return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": "story"}
     current = "done"
     for step in PROGRESS_STEPS:
         if step == "done":

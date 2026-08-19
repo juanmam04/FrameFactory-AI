@@ -1,0 +1,26 @@
+{
+  "initial": {
+    "wealth_level": 0,
+    "ownership_level": 0,
+    "business_scale": 0,
+    "status_level": 0,
+    "freedom_level": 0,
+    "lifestyle_level": 0,
+    "family_impact": 0,
+    "environment_level": 0,
+    "network_level": 0,
+    "power_level": 0
+  },
+  "final": {
+    "wealth_level": 0,
+    "ownership_level": 0,
+    "business_scale": 0,
+    "status_level": 0,
+    "freedom_level": 0,
+    "lifestyle_level": 0,
+    "family_impact": 0,
+    "environment_level": 0,
+    "network_level": 0,
+    "power_level": 0
+  }
+}

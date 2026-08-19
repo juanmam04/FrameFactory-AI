@@ -1,0 +1,11 @@
+{
+  "title": "POV: Compras un equipo de básquet al borde de la quiebra",
+  "premise": "Eres joven. Tienes una vida normal. Sueñas con tener un equipo. Aparece la oportunidad de adquirir uno casi quebrado. Te conviertes en propietario. Intentas reconstruirlo. El equipo y tu vida evolucionan.",
+  "one_line_fantasy": "Comprar un equipo de básquet al borde de la quiebra y reconstruirlo",
+  "starting_state": "22 años, trabajo de oficina, ahorros modestos, fanático del básquet",
+  "end_state": "propietario de un equipo vivo, vida distinta, sin moraleja",
+  "story_core_id": "del-basket-a-la-primera",
+  "story_engine": {
+    "note": "NO reutilizar un spine previo. Conservar solo la fantasía central."
+  }
+}

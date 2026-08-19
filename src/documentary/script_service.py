@@ -92,6 +92,11 @@ def log_pre_generation_debug(project: dict[str, Any], *, target: int, research_c
 
 def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True) -> dict[str, Any]:
     """Generate script from approved Story Plan. Does not auto-approve."""
+    if str(project.get("content_format") or project.get("mode") or "") == "check_als":
+        raise ValueError(
+            "Check Fase 2: el pipeline se detiene en la revisión humana de la historia. "
+            "El script todavía no está habilitado."
+        )
     topic = str(project.get("topic") or "").strip()
     if not topic:
         raise ValueError("Choose a topic before generating a script.")

@@ -1,0 +1,75 @@
+{
+  "protagonist": {
+    "age": 22,
+    "starting_life": "empleado de oficina, departamento compartido, ahorros modestos",
+    "personality": "soñador, ambicioso, determinado",
+    "skills": "gestión de proyectos, análisis financiero, networking",
+    "weaknesses": "falta de experiencia en deportes, inseguridad ante la crítica",
+    "desire": "poseer un equipo de básquet",
+    "emotional_need": "validación personal y profesional"
+  },
+  "fantasy": {
+    "surface_desire": "comprar un equipo de básquet al borde de la quiebra",
+    "deeper_desire": "transformar la comunidad a través del deporte",
+    "promised_transformation": "de joven empleado a un propietario exitoso que impacta en su entorno"
+  },
+  "business_or_vehicle": {
+    "what_is_being_built_or_owned": "equipo de básquet en la liga local",
+    "core_mechanism": "reconstrucción del equipo y mejora de instalaciones",
+    "economic_engine": "venta de entradas, patrocinadores, merchandising",
+    "acquisition_structure": "$1 de precio + asunción de $650,000 de deuda. Vos ponés $15,000 y te quedás 51%. Inversores locales ponen $85,000 por 39%. El vendedor retiene 10% y financia $200,000.",
+    "acquisition": {
+      "asking_price": 1,
+      "debt_assumed": 650000,
+      "your_cash_contribution": 15000,
+      "local_investors_cash": 85000,
+      "seller_financing": 200000,
+      "existing_liabilities_assumed": 450000,
+      "your_ownership": 51.0,
+      "investor_ownership": 39.0,
+      "seller_retained": 10.0,
+      "closed": true,
+      "summary": "$1 de precio + asunción de $650,000 de deuda. Vos ponés $15,000 y te quedás 51%. Inversores locales ponen $85,000 por 39%. El vendedor retiene 10% y financia $200,000."
+    }
+  },
+  "fiction_world": {
+    "team_name": "Los Halcones de la Ciudad",
+    "league_name": "Liga Profesional de Básquet",
+    "city": "Ciudad Central",
+    "disclaimer": "Todo evento y personaje es ficticio"
+  },
+  "opening": {
+    "situation": "Eres un joven empleado de oficina que sueña con tener un equipo de básquet.",
+    "immediate_problem": "A pesar de tu pasión, no sabes cómo dar el primer paso.",
+    "curiosity": "Te encuentras en una conversación donde alguien menciona que el equipo local está a la venta por un precio asequible."
+  },
+  "inciting_incident": "Encuentras un anuncio de venta de 'Los Halcones de la Ciudad', un equipo en problemas, aún así, decides investigar.",
+  "first_commitment": "Te decides a asistir a una reunión con el vendedor para discutir la posibilidad de adquirir el equipo.",
+  "first_proof": "Logras asegurar una reunión con inversores locales interesados en apoyarte en la compra.",
+  "escalation": "Te enfrentas a la presión de tomar decisiones rápidas, y la compra comienza a parecer cada vez más real.",
+  "midpoint": "Adquieres el equipo y se realiza una rueda de prensa donde te presentan como el nuevo propietario.",
+  "major_success": "Inviertes en mejoras de las instalaciones y logras atraer nuevos patrocinadores, aumentando la asistencia a los partidos.",
+  "major_reversal": "El primer año de la liga es difícil; el equipo empieza mal y la deuda se vuelve preocupante.",
+  "crisis": "Debes decidir si vender parte de tu participación o buscar más financiamiento para mantener el equipo a flote.",
+  "decision": "Optas por buscar inversiones adicionales y reorganizar el equipo, creyendo en la potencial recuperación.",
+  "climax": "El equipo logra clasificar a los playoffs al final de la tercera temporada, cambiando la percepción del público.",
+  "ending": "El equipo avanza a la ronda final de los playoffs, y aunque no ganan el campeonato, los Halcones son considerados un contendiente fuerte y respetado.",
+  "final_state": "Eres reconocido en la comunidad y en el mundo del deporte, con un equipo sólido y financieramente viable.",
+  "unresolved_or_bittersweet_element": "La deuda permanece, pero ahora es manejable y el equipo está en una buena posición para el futuro.",
+  "ending_type": "triumphant",
+  "intentional_unresolved_loops": [],
+  "causal_chain": [
+    "Encuentro del anuncio de venta del equipo",
+    "Asisto a la reunión con el vendedor",
+    "Consigo el apoyo de inversores locales",
+    "Adquiero el equipo y realizo la rueda de prensa",
+    "Invierno en mejoras e inversión en el equipo",
+    "Asistencia a los partidos aumenta",
+    "Inicio de la temporada con mal desempeño",
+    "Decisión de buscar financiamiento adicional",
+    "El equipo clasifica a los playoffs",
+    "Reconocimiento de la comunidad",
+    "El equipo avanza a la final de playoffs",
+    "Se establece un futuro prometedor"
+  ]
+}

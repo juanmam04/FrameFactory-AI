@@ -1317,19 +1317,34 @@ function renderProject() {
   if (step === "images") step = "flow";
   // Subs are burned into the episode during render — no separate step.
   if (step === "subs") step = "render";
-  const steps = ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render"];
-  const stepLabel = {
-    topic: "1 Tema",
-    research: "2 Info",
-    story: "3 Historia",
-    script: "4 Guion",
-    flow: "5 Pedir imgs",
-    voice: "6 Voz",
-    music: "7 Música",
-    preview: "8 Prueba",
-    render: "9 Video",
-    done: "9 Video",
-  };
+  const isCheck = p.content_format === "check_als" || p.mode === "check_als";
+  if (isCheck && (step === "research")) step = "story";
+  const steps = isCheck
+    ? ["topic", "story", "script", "flow", "voice", "music", "preview", "render"]
+    : ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render"];
+  const stepLabel = isCheck
+    ? {
+        topic: "1 Premisa",
+        story: "2 Historia",
+        script: "3 Guion",
+        flow: "4 Imgs",
+        voice: "5 Voz",
+        music: "6 Música",
+        preview: "7 Prueba",
+        render: "8 Video",
+      }
+    : {
+        topic: "1 Tema",
+        research: "2 Info",
+        story: "3 Historia",
+        script: "4 Guion",
+        flow: "5 Pedir imgs",
+        voice: "6 Voz",
+        music: "7 Música",
+        preview: "8 Prueba",
+        render: "9 Video",
+        done: "9 Video",
+      };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
     <p class="kicker">Episodio ${String(p.episode_number).padStart(3, "0")}</p>
@@ -1359,9 +1374,12 @@ function renderProject() {
       };
     });
   const ws = $("#ws");
+  if (isCheck && step !== "topic" && step !== "story") {
+    return paintCheckLocked(ws, p, step);
+  }
   if (step === "topic") return paintStory(ws, p);
   if (step === "research") return paintResearch(ws, p);
-  if (step === "story") return paintStoryPlan(ws, p);
+  if (step === "story") return isCheck ? paintCheckStory(ws, p) : paintStoryPlan(ws, p);
   if (step === "script") return paintScript(ws, p);
   if (step === "flow" || step === "images") return paintFlow(ws, p);
   if (step === "voice") return paintVoice(ws, p);
@@ -1376,19 +1394,20 @@ function renderProject() {
 
 function paintStory(ws, p) {
   const idea = p.idea || {};
+  const isCheck = p.content_format === "check_als" || p.mode === "check_als";
   ws.innerHTML = `
     <div class="panel">
-      <p class="kicker">Topic</p>
+      <p class="kicker">${isCheck ? "Premisa" : "Topic"}</p>
       <p>${esc(idea.story || p.topic)}</p>
       <p style="margin-top:0.8rem"><strong>Hook</strong> — ${esc(idea.hook || "—")}</p>
       <div class="actions">
-        <button class="btn btn-primary" id="to-research">Continue to research</button>
+        <button class="btn btn-primary" id="to-research">${isCheck ? "Ir a Historia" : "Continue to research"}</button>
       </div>
     </div>`;
   $("#to-research").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
-      body: JSON.stringify({ step: "research" }),
+      body: JSON.stringify({ step: isCheck ? "story" : "research" }),
     });
     state.project = data.project;
     renderProject();
@@ -1443,6 +1462,179 @@ function paintResearch(ws, p) {
   };
   $("#save-research").onclick = () => save(false);
   $("#skip-research").onclick = () => save(true);
+}
+
+function paintCheckLocked(ws, p, step) {
+  ws.innerHTML = `
+    <div class="panel workspace">
+      <div class="notice">Fase 2 se detiene en la revisión humana de la HISTORIA. ${esc(step)} todavía no está habilitado.</div>
+      <p class="lead">Después de que apruebes la Story Architecture iremos a Script → Visuals → Assets → Voice → Render. No antes.</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="go-story">Volver a Historia</button>
+      </div>
+    </div>`;
+  $("#go-story").onclick = async () => {
+    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+      method: "PATCH",
+      body: JSON.stringify({ step: "story" }),
+    });
+    state.project = data.project;
+    renderProject();
+  };
+}
+
+function money(n) {
+  if (n === null || n === undefined || n === "") return "—";
+  const v = Number(n);
+  if (!Number.isFinite(v)) return esc(n);
+  const sign = v < 0 ? "-" : "";
+  const a = Math.abs(v);
+  if (a >= 1000000) return `${sign}$${(a / 1000000).toFixed(2)}M`;
+  return `${sign}$${Math.round(a).toLocaleString("en-US")}`;
+}
+
+function paintCheckStory(ws, p) {
+  const cs = p.check_story || {};
+  const review = cs.review || {};
+  const overview = review.overview || {};
+  const quality = cs.quality || {};
+  const scores = quality.scores || review.quality_scores || {};
+  const flags = quality.flags || review.quality_flags || [];
+  const loops = review.open_loops || [];
+  const timeline = review.timeline || [];
+  const major = review.major_events || [];
+  const rewards = review.rewards || [];
+  const setbacks = review.setbacks || [];
+  const ending = review.ending || {};
+  const fw = review.final_world || {};
+  const fantasy = overview.fantasy || {};
+  const vehicle = overview.vehicle || {};
+  const world = overview.world || {};
+  const prot = overview.protagonist || {};
+  const hard = quality.hard_fails || review.hard_fails || [];
+  const acq = review.acquisition || {};
+  const ledger = review.ownership_ledger || fw.ledger || {};
+  const generated = Boolean(cs.generated);
+  const approved = Boolean(p.check_story_approved || cs.approved);
+
+  const scoreBits = Object.keys(scores)
+    .map((k) => `<span class="tag ${scores[k] === "flag" ? "bad" : ""}">${esc(k)} ${esc(scores[k])}</span>`)
+    .join("");
+  const flagBits = flags.length
+    ? flags.map((f) => `<div class="notice bad">[${esc(f.code)}] ${esc(f.detail || "")} ${f.beat_id ? "· " + esc(f.beat_id) : ""}</div>`).join("")
+    : `<div class="notice ok">Sin flags de calidad.</div>`;
+  const loopBits = loops.length
+    ? loops
+        .map(
+          (l) =>
+            `<li><strong>${esc(l.id || "")}</strong> — ${esc(l.question || "")} · abre ${esc(l.opened_at || "—")} · ${esc(l.status || "open")} · cierra ${esc(l.closed_at || "—")}</li>`
+        )
+        .join("")
+    : "<li>Todavía no hay loops.</li>";
+  const timeBits = timeline
+    .map((row) => {
+      const life = row.life_change ? ` · ${esc(row.life_change)}` : "";
+      return `<tr>
+        <td>${esc(row.time || "")}</td>
+        <td>${esc(row.event || "")}</td>
+        <td>${money(row.cash)}</td>
+        <td>${esc(row.ownership ?? "—")}%</td>
+        <td>${money(row.team_value)}</td>
+        <td>${money(row.team_debt)}</td>
+        <td>${esc(row.attendance ?? "—")}</td>
+        <td>${esc(row.record || "—")}</td>
+        <td>${life}</td>
+      </tr>`;
+    })
+    .join("");
+  const majorBits = major.map((b) => `<li><strong>[${esc(b.beat_id)}] ${esc(b.purpose || "")}</strong> — ${esc(b.event || "")}</li>`).join("");
+  const rewardBits = rewards.map((b) => `<li>[${esc(b.beat_id)}] ${esc(b.event || "")}</li>`).join("") || "<li>—</li>";
+  const seasons = review.season_history || (fw.season_history) || [];
+  const seasonBits = seasons.map((s) =>
+    `<li>T${esc(s.season)} ${esc(s.record || "")} · ${esc(s.playoff_result || "")} · att ${esc(s.attendance_avg ?? "—")} · ${esc((s.major_events || []).join(", "))}</li>`
+  ).join("") || "<li>—</li>";
+  const setbackBits = setbacks.map((b) => `<li>[${esc(b.beat_id)}] <em>${esc(b.category || b.kind || "")}</em> ${esc(b.event || "")}</li>`).join("") || "<li>—</li>";
+
+  ws.innerHTML = `
+    <div class="panel workspace">
+      ${approved ? `<div class="notice ok">Historia aprobada. El pipeline se DETIENE aquí — todavía no hay script.</div>` : ""}
+      ${generated && !approved ? `<div class="notice">Revisá la película. Approve Story no desbloquea el script todavía.</div>` : ""}
+      <div class="actions">
+        <button class="btn btn-accent" id="gen-check-story">${generated ? "Regenerate Story" : "Generate Story Architecture"}</button>
+        ${generated && !hard.length ? `<button class="btn btn-primary" id="approve-check-story">Approve Story</button>` : ""}
+      </div>
+      ${hard.length ? `<div class="notice bad">No está lista para review: hay hard fails. Regenerar o reparar primero.</div>` : ""}
+      <p class="kicker">Story Overview</p>
+      <p><strong>${esc(world.team_name || p.title || "")}</strong> · ${esc(world.league_name || "")} · ${esc(world.city || "")}</p>
+      <p>${esc(fantasy.surface_desire || "")}</p>
+      <p class="muted">${esc(acq.summary || vehicle.acquisition_structure || vehicle.core_mechanism || "")}</p>
+      <p>Ledger: vos ${esc(ledger.protagonist ?? "—")}% · inversores ${esc(ledger.investors ?? "—")}% · vendedor ${esc(ledger.seller ?? "—")}%</p>
+      ${hard.length ? hard.map((f) => `<div class="notice bad">HARD [${esc(f.code)}] ${esc(f.detail || "")}</div>`).join("") : ""}
+      <p>Protagonista interno: ${esc(prot.age || "")} · ${esc(prot.starting_life || "")}</p>
+      <div class="tags">${scoreBits}</div>
+      <details ${generated ? "open" : ""}>
+        <summary>Synopsis</summary>
+        <pre class="shot" style="white-space:pre-wrap;max-height:420px;overflow:auto">${esc(cs.synopsis || "Generá la arquitectura para leer la película.")}</pre>
+      </details>
+      <details ${generated ? "open" : ""}>
+        <summary>Timeline</summary>
+        <div class="check-table-wrap">
+          <table class="check-table">
+            <thead><tr><th>Tiempo</th><th>Evento</th><th>Cash</th><th>Own</th><th>Valor</th><th>Deuda</th><th>Público</th><th>Record</th><th>Vida</th></tr></thead>
+            <tbody>${timeBits || `<tr><td colspan="9">—</td></tr>`}</tbody>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>Season history</summary>
+        <p class="muted">debt_risk: ${esc(review.debt_risk_state || fw.debt_risk_state || "—")} · championships: ${esc(fw.championships ?? fw.sports?.championships ?? "—")}</p>
+        <ul>${seasonBits}</ul>
+      </details>
+      <details>
+        <summary>Major events</summary>
+        <ul>${majorBits || "<li>—</li>"}</ul>
+      </details>
+      <div class="two-col">
+        <div><p class="kicker">Rewards</p><ul>${rewardBits}</ul></div>
+        <div><p class="kicker">Setbacks</p><ul>${setbackBits}</ul></div>
+      </div>
+      <details>
+        <summary>Open loops</summary>
+        <ul>${loopBits}</ul>
+      </details>
+      <details>
+        <summary>Ending + mundo final</summary>
+        <p>${esc(ending.scene || overview.ending || "—")}</p>
+        <p>${esc(ending.final_state || "")}</p>
+        <p class="muted">${esc(ending.unresolved || "")}</p>
+        <p>AGE ${esc(fw.age ?? "—")} · CASH ${money(fw.cash)} · OWN ${esc(fw.ownership ?? "—")}% · VAL ${money(fw.team_value)} · DEBT ${money(fw.team_debt)} · ATT ${esc(fw.attendance ?? "—")} · ${esc(fw.job || "")} · ${esc(fw.home || "")}</p>
+      </details>
+      <p class="kicker">Quality flags</p>
+      ${flagBits}
+    </div>`;
+
+  $("#gen-check-story").onclick = async () => {
+    try {
+      const data = await withBusy("Construyendo la película (blueprint + beats)…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/story/generate`, { method: "POST", timeoutMs: 720000 })
+      );
+      state.project = data.project;
+      toast("Story Architecture lista — leé la synopsis antes de aprobar");
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  $("#approve-check-story")?.addEventListener("click", async () => {
+    try {
+      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/story/approve`, { method: "POST" });
+      state.project = data.project;
+      toast("Historia aprobada. Stop — no script.");
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  });
 }
 
 function paintStoryPlan(ws, p) {

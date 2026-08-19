@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "central_story": "Edited central story for tests",
+  "central_question": "How did X convince the world — and what exposed the gap?",
+  "core_contradiction": "Extraordinary valuation vs fragile underlying economics (if research supports).",
+  "stakes": "Belief, capital, and public scrutiny.",
+  "hook": "Open on the highest-stakes public rupture, then rewind.",
+  "ending_state": "Aftermath / current consequence supported by research.",
+  "characters": [
+    {
+      "name": "X",
+      "role_in_story": "central company / founder cluster",
+      "goal_or_incentive": "scale belief",
+      "important_actions": "See research notes",
+      "relationship_to_company": "core",
+      "relevant_period": ""
+    }
+  ],
+  "timeline": [],
+  "key_events": [],
+  "turning_points": [],
+  "reveals": [],
+  "consequences": [],
+  "unknown_or_weakly_supported": [
+    "Any figure marked UNKNOWN in research"
+  ],
+  "research_gaps": {
+    "known_supported": [],
+    "uncertain": [],
+    "missing_but_important": [
+      "Early founding details",
+      "Major capital events",
+      "Post-crisis outcomes",
+      "major capital / SoftBank / Masayoshi Son relationship",
+      "public filing / S-1 details beyond a single loss figure",
+      "governance / dual-class / related-party / trademark controversies",
+      "IPO withdrawal mechanics and valuation reset",
+      "post-2019 outcome (rescue, SPAC, bankruptcy, exit)"
+    ]
+  },
+  "beats": [
+    {
+      "id": 1,
+      "event": "Cold-open rupture",
+      "why_it_matters": "Creates curiosity",
+      "new_information": "",
+      "stakes_change": "high",
+      "characters": [],
+      "time_period": "",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "peak moment",
+      "transition_question": "How did we get here?",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 2,
+      "event": "Origin desire / founding",
+      "why_it_matters": "Setup",
+      "new_information": "",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "origin",
+      "transition_question": "What did they want?",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 3,
+      "event": "Escalation / bigger bets",
+      "why_it_matters": "Raises stakes",
+      "new_information": "",
+      "stakes_change": "up",
+      "characters": [],
+      "time_period": "",
+      "priority": "strong",
+      "source_support": [],
+      "visual_potential": "expansion",
+      "transition_question": "What could go wrong?",
+      "visual_kind": "AI_REENACTMENT"
+    },
+    {
+      "id": 4,
+      "event": "Public break / reveal",
+      "why_it_matters": "Belief collapses",
+      "new_information": "",
+      "stakes_change": "down",
+      "characters": [],
+      "time_period": "",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "document/headline",
+      "transition_question": "What does it cost?",
+      "visual_kind": "DOCUMENT"
+    },
+    {
+      "id": 5,
+      "event": "Aftermath / ending state",
+      "why_it_matters": "Closes the story",
+      "new_information": "",
+      "stakes_change": "",
+      "characters": [],
+      "time_period": "",
+      "priority": "essential",
+      "source_support": [],
+      "visual_potential": "consequence",
+      "transition_question": "",
+      "visual_kind": "AI_REENACTMENT"
+    }
+  ],
+  "selected_beat_ids": [
+    1,
+    2
+  ],
+  "approved": false,
+  "warnings": [
+    "Research is thin — Story Plan may lack early years, capital events, or post-crisis outcomes.",
+    "Missing but important (do not invent): Early founding details; Major capital events; Post-crisis outcomes; major capital / SoftBank / Masayoshi Son relationship; public filing / S-1 details beyond a single loss figure; governance / dual-class / related-party / trademark controversies; IPO withdrawal mechanics and valuation reset; post-2019 outcome (rescue, SPAC, bankruptcy, exit)",
+    "Few selected story beats — script may feel thin or generalized."
+  ]
+}

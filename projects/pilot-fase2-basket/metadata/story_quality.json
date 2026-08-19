@@ -1,0 +1,125 @@
+{
+  "scores": {
+    "causality": "pass",
+    "conflict": "pass",
+    "escalation": "pass",
+    "transformation": "pass",
+    "retention": "pass",
+    "repetition": "pass",
+    "open_loops": "pass",
+    "ending": "pass",
+    "synopsis": "pass",
+    "progression": "pass",
+    "continuity": "pass"
+  },
+  "flags": [
+    {
+      "code": "location_unintroduced",
+      "beat_id": "b03",
+      "detail": "cuarto de utilería en el estadio"
+    },
+    {
+      "code": "delta_mismatch",
+      "beat_id": "b03",
+      "detail": "cash after=5000.0 reconstructed=20000.0"
+    },
+    {
+      "code": "delta_mismatch",
+      "beat_id": "b03",
+      "detail": "ownership after=51.0 reconstructed=0.0"
+    },
+    {
+      "code": "valuation_teleport",
+      "beat_id": "b09",
+      "detail": "$1.18M → $5.83M"
+    },
+    {
+      "code": "money_unexplained",
+      "beat_id": "b25",
+      "detail": "cash $5,000 → $0"
+    },
+    {
+      "code": "delta_mismatch",
+      "beat_id": "b25",
+      "detail": "cash after=0.0 reconstructed=5000.0"
+    },
+    {
+      "code": "location_unintroduced",
+      "beat_id": "b36",
+      "detail": "departamento propio a cuatro cuadras de la arena"
+    }
+  ],
+  "hard_fails": [],
+  "transformation": {
+    "ok": true,
+    "changed": [
+      "wealth",
+      "ownership",
+      "work",
+      "home",
+      "freedom",
+      "status",
+      "network",
+      "environment",
+      "responsibility"
+    ],
+    "dims": {
+      "wealth": {
+        "from": 20000.0,
+        "to": 45889800.0
+      },
+      "ownership": {
+        "from": 0.0,
+        "to": 51.0
+      },
+      "work": {
+        "from": "empleado de oficina",
+        "to": "dueño del equipo"
+      },
+      "home": {
+        "from": "departamento compartido",
+        "to": "departamento propio a cuatro cuadras de la arena"
+      },
+      "freedom": {
+        "from": 2.0,
+        "to": 6.0
+      },
+      "status": {
+        "from": 1.0,
+        "to": 5.0
+      },
+      "network": {
+        "from": 2.0,
+        "to": 4.0
+      },
+      "family": {
+        "from": 5.0,
+        "to": 5.0
+      },
+      "environment": {
+        "from": "departamento compartido",
+        "to": "departamento propio a cuatro cuadras de la arena"
+      },
+      "responsibility": {
+        "from": 45.0,
+        "to": 65.0
+      }
+    },
+    "detail": null
+  },
+  "stats": {
+    "beats": 53,
+    "rewards": 21,
+    "setbacks": 8,
+    "loop_opens": 0,
+    "loop_closes": 51,
+    "open_loops_final": 1,
+    "paid_loops": 5,
+    "metric_reveals": 10,
+    "env_changes": 18,
+    "synopsis_words": 926,
+    "max_reward_streak": 5
+  },
+  "ok": true,
+  "review_ready": true
+}

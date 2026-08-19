@@ -1,0 +1,135 @@
+{
+  "initial": {
+    "current_goal": "",
+    "current_problem": "",
+    "current_stakes": "",
+    "active_conflicts": [],
+    "open_loops": [
+      {
+        "id": "buy",
+        "question": "¿realmente podrás comprarlo?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "adquisición"
+      },
+      {
+        "id": "save_team",
+        "question": "¿podrás evitar que cierre?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "año 1"
+      },
+      {
+        "id": "debt",
+        "question": "¿podrás hacer que el equipo sea lo suficientemente sano como para que la deuda deje de amenazar su existencia?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "año 2-4"
+      },
+      {
+        "id": "coach",
+        "question": "¿funcionará el nuevo entrenador?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "primera temporada seria"
+      },
+      {
+        "id": "compete",
+        "question": "¿puede este equipo competir de verdad?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "playoffs/final"
+      },
+      {
+        "id": "how_far",
+        "question": "¿qué tan lejos puede llegar?",
+        "opened_at": "start",
+        "status": "open",
+        "important": false,
+        "intentional_unresolved": true,
+        "expected_payoff_window": "futuro"
+      }
+    ],
+    "promises_to_viewer": [],
+    "pending_decisions": [],
+    "threats": [],
+    "opportunities": [],
+    "relationships_in_tension": [],
+    "information_protagonist_knows": [],
+    "information_viewer_knows": [],
+    "emotional_state": "",
+    "momentum": ""
+  },
+  "final": {
+    "current_goal": "",
+    "current_problem": "",
+    "current_stakes": "",
+    "active_conflicts": [],
+    "open_loops": [
+      {
+        "id": "buy",
+        "question": "¿realmente podrás comprarlo?",
+        "opened_at": "start",
+        "status": "paid",
+        "important": true,
+        "expected_payoff_window": "adquisición",
+        "closed_at": "b53"
+      },
+      {
+        "id": "save_team",
+        "question": "¿podrás evitar que cierre?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "año 1"
+      },
+      {
+        "id": "debt",
+        "question": "¿podrás hacer que el equipo sea lo suficientemente sano como para que la deuda deje de amenazar su existencia?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "año 2-4"
+      },
+      {
+        "id": "coach",
+        "question": "¿funcionará el nuevo entrenador?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "primera temporada seria"
+      },
+      {
+        "id": "compete",
+        "question": "¿puede este equipo competir de verdad?",
+        "opened_at": "start",
+        "status": "open",
+        "important": true,
+        "expected_payoff_window": "playoffs/final"
+      },
+      {
+        "id": "how_far",
+        "question": "¿qué tan lejos puede llegar?",
+        "opened_at": "start",
+        "status": "open",
+        "important": false,
+        "intentional_unresolved": true,
+        "expected_payoff_window": "futuro"
+      }
+    ],
+    "promises_to_viewer": [],
+    "pending_decisions": [],
+    "threats": [],
+    "opportunities": [],
+    "relationships_in_tension": [],
+    "information_protagonist_knows": [],
+    "information_viewer_knows": [],
+    "emotional_state": "",
+    "momentum": ""
+  }
+}

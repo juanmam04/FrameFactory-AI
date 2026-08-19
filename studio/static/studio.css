@@ -944,6 +944,11 @@ label.field {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
+.tag.bad { color: var(--danger); }
+.check-table-wrap { overflow: auto; max-height: 360px; margin: 0.5rem 0 1rem; }
+.check-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.check-table th, .check-table td { text-align: left; padding: 0.35rem 0.45rem; border-bottom: 1px solid var(--line, #e5e7eb); vertical-align: top; }
+.check-table th { position: sticky; top: 0; background: var(--panel, #fff); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+

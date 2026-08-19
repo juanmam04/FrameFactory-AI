@@ -1,0 +1,567 @@
+CHECK ALS — FASE 2.2 PILOTO
+========================================================================
+
+REVIEW READY: YES
+
+## 1. STORY SYNOPSIS
+
+Tenés 22 años. Trabajás de empleado de oficina y vivís en departamento compartido. En la cuenta hay 20000. Los fines de semana jugás al básquet. Los Halcones de la Ciudad está al borde de la quiebra: el gimnasio huele a humedad y las gradas no se llenan. $1 de precio + asunción de $650,000 de deuda. Vos ponés $15,000 y te quedás 51%. Inversores locales ponen $85,000 por 39%. El vendedor retiene 10% y financia $200,000. Descubres que 'Los Halcones de la Ciudad' están en venta. Asistes a una reunión con el vendedor de 'Los Halcones'. Consigues el apoyo de inversores locales para la compra. Adquieres oficialmente 'Los Halcones de la Ciudad'. Decides invertir en mejoras para el equipo y el estadio. Comienza la temporada, pero el equipo tiene un mal desempeño. Buscas financiamiento adicional para cubrir gastos operativos. El equipo comienza a ganar partidos después de las dificultades iniciales. El equipo clasifica a los playoffs tras una buena racha de victorias. El equipo avanza a la ronda final de los playoffs, aunque no gana el temporada regular. Decides contratar un nuevo entrenador para mejorar el rendimiento del equipo. Comienza la Temporada 2 con una derrota en el primer partido. El equipo gana su primer partido de la temporada con una estrategia renovada. El equipo clasifica a los playoffs tras una emocionante racha final. El equipo gana la primera ronda de playoffs con un rendimiento sobresaliente. El equipo pierde en la segunda ronda de playoffs tras un emocionante partido. El equipo recibe reconocimiento por su crecimiento y mejora a lo largo de la temporada. Anuncias una inversión significativa en mejoras para el equipo y el estadio. El equipo comienza la temporada con una racha de derrotas. Enfrentas una crisis de propiedad por los altos costos y la baja asistencia. Anuncias una inyección de capital personal para estabilizar la situación. El equipo gana varios partidos consecutivos. El equipo asegura su lugar en los playoffs. El equipo gana su primer partido de playoffs. El equipo pierde en un emocionante partido de playoffs. Cierras la temporada con un récord positivo y una base de aficionados en crecimiento. Los Halcones de la Ciudad comienzan la temporada con un nuevo enfoque y un roster mejorado. Los Halcones logran su primera victoria de la temporada. Los Halcones ganan varios partidos consecutivos. Los Halcones ganan su primer partido de playoffs. Los Halcones ganan el segundo partido de playoffs. Los Halcones juegan en la final de playoffs. Los Halcones pierden en un emocionante partido de la final. El equipo se compromete a mejorar y seguir creciendo. Se negocia un nuevo acuerdo de patrocinio. Los Halcones inician su temporada con una victoria contundente. Los Halcones logran una serie de cuatro victorias consecutivas. Los Halcones aseguran su lugar en los playoffs. Los Halcones ganan su segundo partido de playoffs. Los Halcones juegan en la final de la conferencia. Se firman nuevos jugadores para mejorar el equipo. Temporada 1: el pizarrón cierra 14-18. Final — derrota. Asistencia media 3456. El club factura 978715 y vale 6433000. Temporada 2: el pizarrón cierra 14-18. Eliminado. Asistencia media 4266. El club factura 3363625 y vale 20664000. Temporada 3: el pizarrón cierra 14-18. Final — derrota. Asistencia media 4800. El club factura 5913550 y vale 35989000. Temporada 4: el pizarrón cierra 19-13. Final — derrota. Asistencia media 4800. El club factura 9008050 y vale 54256000. Temporada 5: el pizarrón cierra 15-17. Playoffs · first_round. Asistencia media 4800. El club factura 11720050 y vale 70045000. Temporada 6: el pizarrón cierra 15-17. Final — derrota. Asistencia media 4800. El club factura 15176050 y vale 90500000. La deuda del club queda en 507992, con caja 28930735 e ingresos 15176050. Sigue existiendo, pero ya no puede matar al equipo. Hoy tenés 27 años. Tu trabajo es dueño del equipo. Vivís en departamento propio a cuatro cuadras de la arena. En la cuenta personal hay 0; el patrimonio, en papel, es 45889800. Sos millonario en equity y seguís mirando la cuenta antes de una cena. Los Halcones de la Ciudad es tuyo en un 51.0%. Te preparas para la primera ronda de playoffs. Cierras la Temporada 1 con un récord de 1-1 y un promedio de asistencia de 635. Logras una racha de victorias que lleva al equipo a la mitad de la tabla. Se firman nuevos jugadores para reforzar el equipo. Los Halcones tienen un inicio exitoso en la temporada. Los Halcones están en la lucha por los playoffs. Los Halcones logran clasificar a los playoffs. Los Halcones comienzan la temporada con un nuevo enfoque. El primer día como dueño el utilero te alcanza las llaves del gimnasio y no sabe si tutearte. Bajás el precio de la entrada y esa noche hay más gente en la cola que asientos rotos. Renunciás al trabajo de oficina cuando el club ya puede pagarte un sueldo feo, pero tuyo. Te mudás a cuatro cuadras de la arena. El departamento viejo queda con las cajas a las once de la noche. Si hay palco, todavía no tiene tu apellido. Tus padres vienen igual y se sientan donde hay lugar. Apostás por roster e instalaciones después de una temporada decente y el mes siguiente el equipo arranca flojo. El servicio de la deuda deja de ser una amenaza de cierre: hay caja, hay público, hay ingresos. Una oferta llega al teléfono. Esta vez podés leerla mañana. El estadio, que olía a humedad, ahora tiene fila los días de partido. Seguís siendo dueño de un porcentaje y no de todo el efectivo: el paper vale millones y la cuenta, no.
+
+## 2. ACQUISITION STRUCTURE
+
+$1 de precio + asunción de $650,000 de deuda. Vos ponés $15,000 y te quedás 51%. Inversores locales ponen $85,000 por 39%. El vendedor retiene 10% y financia $200,000.
+{
+  "asking_price": 1,
+  "debt_assumed": 650000,
+  "your_cash_contribution": 15000,
+  "local_investors_cash": 85000,
+  "seller_financing": 200000,
+  "existing_liabilities_assumed": 450000,
+  "your_ownership": 51.0,
+  "investor_ownership": 39.0,
+  "seller_retained": 10.0
+}
+
+## 3. LIFE TIMELINE
+
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $199,820 | OWNERSHIP 51.0% | TEAM VALUE $382,000 | TEAM DEBT $650,000 | TEAM CASH $99,999 | REVENUE $175,000 | ATTENDANCE 620 | SPORTING 0-0 regular | LIFE oficina: cuarto de utilería en el estadio | Consigues el apoyo de inversores locales para la compra.
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $456,350 | OWNERSHIP 51.0% | TEAM VALUE $885,000 | TEAM DEBT $650,000 | TEAM CASH $131,999 | REVENUE $295,000 | ATTENDANCE 620 | SPORTING 0-0 regular  | Adquieres oficialmente 'Los Halcones de la Ciudad'.
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $599,150 | OWNERSHIP 51.0% | TEAM VALUE $1.17M | TEAM DEBT $650,000 | TEAM CASH $51,999 | REVENUE $295,000 | ATTENDANCE 620 | SPORTING 0-0 regular  | Decides invertir en mejoras para el equipo y el estadio.
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $602,210 | OWNERSHIP 51.0% | TEAM VALUE $1.17M | TEAM DEBT $641,453 | TEAM CASH $37,887 | REVENUE $312,475 | ATTENDANCE 570 | SPORTING 0-2 regular  | Comienza la temporada, pero el equipo tiene un mal desempeño.
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $593,030 | OWNERSHIP 51.0% | TEAM VALUE $1.15M | TEAM DEBT $707,222 | TEAM CASH $82,815 | REVENUE $312,475 | ATTENDANCE 570 | SPORTING 0-2 regular | LIFE Revisando documentos financieros en tu oficina. | Buscas financiamiento adicional para cubrir gastos operativos.
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $605,270 | OWNERSHIP 51.0% | TEAM VALUE $1.18M | TEAM DEBT $707,222 | TEAM CASH $91,251 | REVENUE $330,175 | ATTENDANCE 635 | SPORTING 1-3 regular  | El equipo comienza a ganar partidos después de las dificultades iniciales.
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $2.98M | OWNERSHIP 51.0% | TEAM VALUE $5.83M | TEAM DEBT $707,222 | TEAM CASH $375,677 | REVENUE $926,875 | ATTENDANCE 3456 | SPORTING 14-18 playoffs  | El equipo clasifica a los playoffs tras una buena racha de victorias.
+- AGE 22 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $3.13M | OWNERSHIP 51.0% | TEAM VALUE $6.13M | TEAM DEBT $697,735 | TEAM CASH $452,353 | REVENUE $926,875 | ATTENDANCE 3456 | SPORTING 14-18 finals  | El equipo avanza a la ronda final de los playoffs, aunque no gana el temporada regular.
+- AGE 23 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $3.02M | OWNERSHIP 51.0% | TEAM VALUE $5.91M | TEAM DEBT $697,735 | TEAM CASH $477,063 | REVENUE $978,715 | ATTENDANCE 3456 | SPORTING 14-18 (offseason) final — derrota  | Cierras la Temporada 1 con un récord de 1-1 y un promedio de asistencia de 635.
+- AGE 23 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $3.46M | OWNERSHIP 51.0% | TEAM VALUE $6.77M | TEAM DEBT $674,017 | TEAM CASH $761,925 | REVENUE $1.13M | ATTENDANCE 3381 | SPORTING 0-3 regular  | Comienza la Temporada 2 con una derrota en el primer partido.
+- AGE 23 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $9.76M | OWNERSHIP 51.0% | TEAM VALUE $19.13M | TEAM DEBT $664,530 | TEAM CASH $1.83M | REVENUE $3.11M | ATTENDANCE 4266 | SPORTING 14-18 finals  | El equipo clasifica a los playoffs tras una emocionante racha final.
+- AGE 23 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $10.63M | OWNERSHIP 51.0% | TEAM VALUE $20.83M | TEAM DEBT $650,299 | TEAM CASH $2.68M | REVENUE $3.43M | ATTENDANCE 4266 | SPORTING 14-18 playoffs  | El equipo pierde en la segunda ronda de playoffs tras un emocionante partido.
+- AGE 24 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $10.49M | OWNERSHIP 51.0% | TEAM VALUE $20.55M | TEAM DEBT $640,812 | TEAM CASH $3.17M | REVENUE $3.43M | ATTENDANCE 4266 | SPORTING 14-18 (offseason) eliminado  | La temporada queda escrita en el pizarrón. Empieza el receso.
+- AGE 24 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $10.90M | OWNERSHIP 51.0% | TEAM VALUE $21.36M | TEAM DEBT $631,325 | TEAM CASH $3.65M | REVENUE $3.55M | ATTENDANCE 4216 | SPORTING 0-2 regular  | El equipo comienza la temporada con una racha de derrotas.
+- AGE 24 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $5,000 | NET WORTH $10.90M | OWNERSHIP 51.0% | TEAM VALUE $21.36M | TEAM DEBT $631,325 | TEAM CASH $3.65M | REVENUE $3.55M | ATTENDANCE 4216 | SPORTING 0-2 regular  | Enfrentas una crisis de propiedad por los altos costos y la baja asistencia.
+- AGE 24 | JOB empleado de oficina | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $11.29M | OWNERSHIP 51.0% | TEAM VALUE $22.13M | TEAM DEBT $617,094 | TEAM CASH $4.47M | REVENUE $3.68M | ATTENDANCE 4281 | SPORTING 1-3 regular  | El equipo gana varios partidos consecutivos.
+- AGE 24 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $17.92M | OWNERSHIP 51.0% | TEAM VALUE $35.14M | TEAM DEBT $617,094 | TEAM CASH $5.47M | REVENUE $5.77M | ATTENDANCE 4800 | SPORTING 14-18 finals | LIFE dueño del equipo · dueño del equipo | El equipo asegura su lugar en los playoffs.
+- AGE 24 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $17.92M | OWNERSHIP 51.0% | TEAM VALUE $35.14M | TEAM DEBT $617,094 | TEAM CASH $5.47M | REVENUE $5.77M | ATTENDANCE 4800 | SPORTING 14-18 finals  | El equipo gana su primer partido de playoffs.
+- AGE 24 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $18.35M | OWNERSHIP 51.0% | TEAM VALUE $35.99M | TEAM DEBT $607,607 | TEAM CASH $6.42M | REVENUE $5.91M | ATTENDANCE 4800 | SPORTING 14-18 finals  | El equipo pierde en un emocionante partido de playoffs.
+- AGE 25 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $18.09M | OWNERSHIP 51.0% | TEAM VALUE $35.47M | TEAM DEBT $607,607 | TEAM CASH $6.42M | REVENUE $5.91M | ATTENDANCE 4800 | SPORTING 14-18 (offseason) final — derrota  | Cierras la temporada con un récord positivo y una base de aficionados en crecimiento.
+- AGE 25 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $18.09M | OWNERSHIP 51.0% | TEAM VALUE $35.47M | TEAM DEBT $598,120 | TEAM CASH $7.32M | REVENUE $5.91M | ATTENDANCE 4800 | SPORTING 14-18 (offseason) final — derrota  | Los Halcones de la Ciudad comienzan la temporada con un nuevo enfoque y un roster mejorado.
+- AGE 25 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $18.74M | OWNERSHIP 51.0% | TEAM VALUE $36.75M | TEAM DEBT $588,633 | TEAM CASH $8.34M | REVENUE $6.13M | ATTENDANCE 4800 | SPORTING 2-1 regular  | Los Halcones logran su primera victoria de la temporada.
+- AGE 25 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $20.25M | OWNERSHIP 51.0% | TEAM VALUE $39.71M | TEAM DEBT $588,633 | TEAM CASH $8.58M | REVENUE $6.63M | ATTENDANCE 4800 | SPORTING 6-4 regular  | Los Halcones ganan varios partidos consecutivos.
+- AGE 25 | JOB dueño del equipo | HOME departamento compartido | PERSONAL CASH $0 | NET WORTH $26.25M | OWNERSHIP 51.0% | TEAM VALUE $51.46M | TEAM DEBT $588,633 | TEAM CASH $9.51M | REVENUE $8.58M | ATTENDANCE 4800 | SPORTING 19-13 playoffs  | Los Halcones ganan su primer partido de playoffs.
+- AGE 25 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $26.90M | OWNERSHIP 51.0% | TEAM VALUE $52.74M | TEAM DEBT $588,633 | TEAM CASH $9.61M | REVENUE $8.79M | ATTENDANCE 4800 | SPORTING 19-13 playoffs | LIFE departamento propio a cuatro cuadras de la arena · casa: departamento propio a cuatro cuadras de la arena · departamento propio a cuatro cuadras de la arena | Los Halcones ganan el segundo partido de playoffs.
+- AGE 25 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $27.24M | OWNERSHIP 51.0% | TEAM VALUE $53.41M | TEAM DEBT $574,402 | TEAM CASH $11.71M | REVENUE $8.86M | ATTENDANCE 4800 | SPORTING 19-13 finals  | Los Halcones juegan en la final de playoffs.
+- AGE 25 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $27.67M | OWNERSHIP 51.0% | TEAM VALUE $54.26M | TEAM DEBT $574,402 | TEAM CASH $11.78M | REVENUE $9.01M | ATTENDANCE 4800 | SPORTING 19-13 finals  | Los Halcones pierden en un emocionante partido de la final.
+- AGE 25 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $27.56M | OWNERSHIP 51.0% | TEAM VALUE $54.04M | TEAM DEBT $574,402 | TEAM CASH $11.80M | REVENUE $9.06M | ATTENDANCE 4800 | SPORTING 19-13 (offseason) final — derrota  | Se negocia un nuevo acuerdo de patrocinio.
+- AGE 26 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $27.78M | OWNERSHIP 51.0% | TEAM VALUE $54.47M | TEAM DEBT $564,915 | TEAM CASH $13.25M | REVENUE $9.13M | ATTENDANCE 4800 | SPORTING 19-13 (offseason) final — derrota  | Los Halcones tienen un inicio exitoso en la temporada.
+- AGE 26 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $35.58M | OWNERSHIP 51.0% | TEAM VALUE $69.77M | TEAM DEBT $541,197 | TEAM CASH $19.02M | REVENUE $11.72M | ATTENDANCE 4800 | SPORTING 15-17 (offseason) playoffs · first_round  | Los Halcones inician su temporada con una victoria contundente.
+- AGE 26 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $43.96M | OWNERSHIP 51.0% | TEAM VALUE $86.19M | TEAM DEBT $541,197 | TEAM CASH $20.33M | REVENUE $14.46M | ATTENDANCE 4800 | SPORTING 15-17 playoffs  | Los Halcones logran una serie de cuatro victorias consecutivas.
+- AGE 26 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $43.96M | OWNERSHIP 51.0% | TEAM VALUE $86.19M | TEAM DEBT $541,197 | TEAM CASH $20.33M | REVENUE $14.46M | ATTENDANCE 4800 | SPORTING 15-17 playoffs  | Los Halcones aseguran su lugar en los playoffs.
+- AGE 26 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $44.61M | OWNERSHIP 51.0% | TEAM VALUE $87.46M | TEAM DEBT $541,197 | TEAM CASH $20.43M | REVENUE $14.67M | ATTENDANCE 4800 | SPORTING 15-17 playoffs  | Los Halcones ganan su primer partido de playoffs.
+- AGE 26 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $45.38M | OWNERSHIP 51.0% | TEAM VALUE $88.98M | TEAM DEBT $526,966 | TEAM CASH $24.05M | REVENUE $14.89M | ATTENDANCE 4800 | SPORTING 15-17 finals  | Los Halcones ganan su segundo partido de playoffs.
+- AGE 27 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $46.25M | OWNERSHIP 51.0% | TEAM VALUE $90.68M | TEAM DEBT $517,479 | TEAM CASH $26.60M | REVENUE $15.18M | ATTENDANCE 4800 | SPORTING 15-17 finals  | Los Halcones pierden en un emocionante partido de la final.
+- AGE 27 | JOB dueño del equipo | HOME departamento propio a cuatro cuadras de la arena | PERSONAL CASH $0 | NET WORTH $46.16M | OWNERSHIP 51.0% | TEAM VALUE $90.50M | TEAM DEBT $507,992 | TEAM CASH $28.93M | REVENUE $15.18M | ATTENDANCE 4800 | SPORTING 15-17 finals  | Se firman nuevos jugadores para mejorar el equipo.
+
+## 4. SEASON HISTORY
+
+- SEASON 1 | RECORD 14-18 | POS finalista | PLAYOFF final — derrota | CHAMPIONSHIP False | AVG ATT 3456 | TEAM VALUE $6.43M | REVENUE $978,715 | cierre de temporada
+- SEASON 2 | RECORD 14-18 | POS finalista | PLAYOFF eliminado | CHAMPIONSHIP False | AVG ATT 4266 | TEAM VALUE $20.66M | REVENUE $3.36M | eliminación, cierre de temporada
+- SEASON 3 | RECORD 14-18 | POS finalista | PLAYOFF final — derrota | CHAMPIONSHIP False | AVG ATT 4800 | TEAM VALUE $35.99M | REVENUE $5.91M | cierre de temporada
+- SEASON 4 | RECORD 19-13 | POS finalista | PLAYOFF final — derrota | CHAMPIONSHIP False | AVG ATT 4800 | TEAM VALUE $54.26M | REVENUE $9.01M | cierre de temporada
+- SEASON 5 | RECORD 15-17 | POS playoffs | PLAYOFF playoffs · first_round | CHAMPIONSHIP False | AVG ATT 4800 | TEAM VALUE $70.05M | REVENUE $11.72M | cierre de temporada
+- SEASON 6 | RECORD 15-17 | POS finalista | PLAYOFF final — derrota | CHAMPIONSHIP False | AVG ATT 4800 | TEAM VALUE $90.50M | REVENUE $15.18M | cierre de temporada
+
+## 5. OWNERSHIP LEDGER
+
+{
+  "protagonist": 51.0,
+  "investors": 39.0,
+  "seller": 10.0
+}
+- [b03] acquire_team $1 de precio + asunción de $650,000 de deuda. Vos ponés $15,000 y te quedás 51%. Inversores locales ponen $85,000 por 39%. El vendedor retiene 10% y financia $200,000. → {'protagonist': 51.0, 'investors': 39.0, 'seller': 10.0}
+
+## 6. FINANCIAL LEDGER — HIGHLIGHTS
+
+- [fe001] acquisition $99,999 cash 99999 debt 0 · cierre de compra (b03)
+- [fe002] equity_investment $85,000 cash 85000 debt 0 · capital de inversores locales (b03)
+- [fe003] loan $650,000 cash 0 debt 650000 · deuda asumida en la compra (b03)
+- [fe004] player_signing $28,000 cash -28000 debt 0 · ficha (b04)
+- [fe005] player_signing $45,000 cash 0 debt 0 · alta de payroll (b04)
+- [fe006] media $60,000 cash 60000 debt 0 · adelanto de derechos (b04)
+- [fe007] media $120,000 cash 0 debt 0 · contrato de medios (b04)
+- [fe008] facility_upgrade $80,000 cash -80000 debt 0 · inversión en instalaciones (b05)
+- [fe016] debt_payment $8,547 cash -8547 debt 0 · servicio de deuda (b06)
+- [fe017] debt_payment $8,547 cash 0 debt -8547 · servicio de deuda (b06)
+- [fe018] loan $80,000 cash 80000 debt 0 · loan (b07)
+- [fe019] loan $80,000 cash 0 debt 80000 · loan (b07)
+- [fe021] debt_payment $14,231 cash -14231 debt 0 · servicio de deuda (b07)
+- [fe022] debt_payment $14,231 cash 0 debt -14231 · servicio de deuda (b07)
+- [fe039] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b11)
+- [fe040] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b11)
+- [fe044] coach_contract $12,000 cash -12000 debt 0 · contrato de entrenador (b13)
+- [fe045] coach_contract $35,000 cash 0 debt 0 · payroll coach (b13)
+- [fe047] debt_payment $14,231 cash -14231 debt 0 · servicio de deuda (b13)
+- [fe048] debt_payment $14,231 cash 0 debt -14231 · servicio de deuda (b13)
+- [fe059] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b14)
+- [fe060] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b14)
+- [fe068] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b15)
+- [fe069] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b15)
+- [fe107] debt_payment $14,231 cash -14231 debt 0 · servicio de deuda (b19)
+- [fe108] debt_payment $14,231 cash 0 debt -14231 · servicio de deuda (b19)
+- [fe113] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b20)
+- [fe114] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b20)
+- [fe115] facility_upgrade $80,000 cash -80000 debt 0 · inversión en instalaciones (b22)
+- [fe123] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b23)
+- [fe124] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b23)
+- [fe125] owner_injection $5,000 cash 5000 debt 0 · inyección del dueño (b25)
+- [fe127] debt_payment $14,231 cash -14231 debt 0 · servicio de deuda (b25)
+- [fe128] debt_payment $14,231 cash 0 debt -14231 · servicio de deuda (b25)
+- [fe151] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b29)
+- [fe152] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b29)
+- [fe154] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b31)
+- [fe155] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b31)
+- [fe166] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b32)
+- [fe167] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b32)
+- [fe220] debt_payment $14,231 cash -14231 debt 0 · servicio de deuda (b37)
+- [fe221] debt_payment $14,231 cash 0 debt -14231 · servicio de deuda (b37)
+- [fe228] player_signing $28,000 cash -28000 debt 0 · ficha (b40)
+- [fe229] player_signing $45,000 cash 0 debt 0 · alta de payroll (b40)
+- [fe230] sponsor $48,000 cash 48000 debt 0 · contrato de sponsor (b41)
+- [fe231] sponsor $48,000 cash 0 debt 0 · sponsor anual (b41)
+- [fe236] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b42)
+- [fe237] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b42)
+- [fe248] debt_payment $14,231 cash -14231 debt 0 · servicio de deuda (b43)
+- [fe249] debt_payment $14,231 cash 0 debt -14231 · servicio de deuda (b43)
+- [fe260] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b45)
+- [fe261] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b45)
+- [fe302] debt_payment $14,231 cash -14231 debt 0 · servicio de deuda (b49)
+- [fe303] debt_payment $14,231 cash 0 debt -14231 · servicio de deuda (b49)
+- [fe320] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b51)
+- [fe321] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b51)
+- [fe322] player_signing $28,000 cash -28000 debt 0 · ficha (b52)
+- [fe323] player_signing $45,000 cash 0 debt 0 · alta de payroll (b52)
+- [fe324] player_signing $28,000 cash -28000 debt 0 · ficha (b52)
+- [fe325] player_signing $45,000 cash 0 debt 0 · alta de payroll (b52)
+- [fe327] debt_payment $9,487 cash -9487 debt 0 · servicio de deuda (b52)
+- [fe328] debt_payment $9,487 cash 0 debt -9487 · servicio de deuda (b52)
+
+## 7. DEBT PROGRESSION
+
+- [b01] critical · debt $650,000 cash $0 rev $175,000
+- [b03] dangerous · debt $650,000 cash $99,999 rev $175,000
+- [b05] critical · debt $650,000 cash $51,999 rev $295,000
+- [b06] dangerous · debt $650,000 cash $56,253 rev $303,925
+- [b06] critical · debt $641,453 cash $37,887 rev $312,475
+- [b07] dangerous · debt $721,453 cash $117,887 rev $312,475
+- [b09] manageable · debt $707,222 cash $345,004 rev $862,525
+- [b17] healthy · debt $664,530 cash $1.73M rev $2.92M
+
+## 8. ASPIRATIONAL PAYOFFS
+
+- [b03] owns_team: Entras por primera vez a TU estadio. El utilero te llama dueño. Los Halcones de la Ciudad es tuyo.
+- [b04] media: Te llaman de una radio que antes solo oías yendo al trabajo.
+- [b04] valuation_jump: Los Halcones de la Ciudad ya no vale una miseria. El número cambió de verdad.
+- [b05] arena: La arena ya no parece un galpón. Hay luz nueva y un pasillo que es tuyo.
+- [b05] valuation_million: El equipo ahora vale una cifra que nunca habías visto junta.
+- [b08] first_win: El primer silbato a favor. El vestuario grita y alguien te busca con los ojos.
+- [b09] playoffs: Entras al vestuario antes de playoffs. El pizarrón tiene tu temporada escrita.
+- [b09] valuation_jump: Los Halcones de la Ciudad ya no vale una miseria. El número cambió de verdad.
+- [b11] finals: finals
+- [b17] valuation_jump: Los Halcones de la Ciudad ya no vale una miseria. El número cambió de verdad.
+- [b27] sold_out: Hay fila dando la vuelta. Por primera vez no entra más gente.
+- [b27] quit_job: Entregas la renuncia. El badge de la oficina queda sobre el escritorio.
+- [b36] move_home: Mudás las cajas. El departamento viejo queda vacío a las 11 de la noche.
+- [b41] first_sponsor: Un local pone su nombre en la camiseta. Hay plata que no salió de tu bolsillo.
+
+## 9. SETBACKS
+
+- [b06] category= inicio de temporada difícil. | Comienza la temporada, pero el equipo tiene un mal desempeño.
+- [b14] category=sports | Comienza la Temporada 2 con una derrota en el primer partido.
+- [b19] category=sports | El equipo pierde en la segunda ronda de playoffs tras un emocionante partido.
+- [b23] category= racha de derrotas. | El equipo comienza la temporada con una racha de derrotas.
+- [b24] category= crisis de propiedad. | Enfrentas una crisis de propiedad por los altos costos y la baja asistencia.
+- [b29] category= eliminación de playoffs. | El equipo pierde en un emocionante partido de playoffs.
+- [b38] category=sports | Los Halcones pierden en un emocionante partido de la final.
+- [b51] category= eliminación de los playoffs. | Los Halcones pierden en un emocionante partido de la final.
+
+## 10. OPEN LOOPS
+
+- question: ¿realmente podrás comprarlo? | opened: start | paid: paid | payoff: cerraste la compra
+- question: ¿podrás evitar que cierre? | opened: start | paid: paid | payoff: el equipo no cerró: es tuyo
+- question: ¿podrás hacer que el equipo sea lo suficientemente sano como para que la deuda deje de amenazar su existencia? | opened: start | paid: paid | payoff: la deuda sigue, pero ya no puede matar al equipo
+- question: ¿funcionará el nuevo entrenador? | opened: start | paid: paid | payoff: el nuevo coach movió al equipo
+- question: ¿puede este equipo competir de verdad? | opened: start | paid: paid | payoff: el equipo compitió de verdad
+- question: ¿qué tan lejos puede llegar? | opened: start | paid: open | payoff: —
+
+## 11. FINAL WORLD STATE
+
+- age: 27
+- period: DAY 1
+- cash: 0
+- net_worth: 45889800
+- job: dueño del equipo
+- home: departamento propio a cuatro cuadras de la arena
+- ownership: 51.0
+- ledger: {
+  "protagonist": 51.0,
+  "investors": 39.0,
+  "seller": 10.0
+}
+- team_value: 89980000
+- team_debt: 507992
+- team_cash: 28930735
+- revenue: 15176050
+- attendance: 4800
+- record: {'wins': 0, 'losses': 0}
+- sports: {
+  "current_season": 7,
+  "season": 7,
+  "season_year": 7,
+  "season_label": "Temporada 7",
+  "games_played": 0,
+  "wins": 0,
+  "losses": 0,
+  "win_pct": 0.0,
+  "win_percentage": 0.0,
+  "league_position": "finalista",
+  "regular_season_status": "preseason",
+  "playoff_status": "regular",
+  "playoff_round": "",
+  "championships": 0,
+  "coach": "entrenador nuevo",
+  "coach_quality": 4,
+  "roster_quality": 6,
+  "star_players": [],
+  "injuries": [],
+  "team_morale": 4,
+  "recent_form": "",
+  "season_history": [
+    {
+      "season": 1,
+      "season_year": 1,
+      "record": "14-18",
+      "games_played": 32,
+      "wins": 14,
+      "losses": 18,
+      "league_position": "finalista",
+      "playoff_result": "final — derrota",
+      "playoff_status": "finals",
+      "playoff_round": "final",
+      "championship": false,
+      "attendance_avg": 3456,
+      "revenue": 978715,
+      "team_value": 6433000,
+      "major_events": [
+        "cierre de temporada"
+      ]
+    },
+    {
+      "season": 2,
+      "season_year": 2,
+      "record": "14-18",
+      "games_played": 32,
+      "wins": 14,
+      "losses": 18,
+      "league_position": "finalista",
+      "playoff_result": "eliminado",
+      "playoff_status": "out",
+      "playoff_round": "final",
+      "championship": false,
+      "attendance_avg": 4266,
+      "revenue": 3363625,
+      "team_value": 20664000,
+      "major_events": [
+        "eliminación",
+        "cierre de temporada"
+      ]
+    },
+    {
+      "season": 3,
+      "season_year": 3,
+      "record": "14-18",
+      "games_played": 32,
+      "wins": 14,
+      "losses": 18,
+      "league_position": "finalista",
+      "playoff_result": "final — derrota",
+      "playoff_status": "finals",
+      "playoff_round": "final",
+      "championship": false,
+      "attendance_avg": 4800,
+      "revenue": 5913550,
+      "team_value": 35989000,
+      "major_events": [
+        "cierre de temporada"
+      ]
+    },
+    {
+      "season": 4,
+      "season_year": 4,
+      "record": "19-13",
+      "games_played": 32,
+      "wins": 19,
+      "losses": 13,
+      "league_position": "finalista",
+      "playoff_result": "final — derrota",
+      "playoff_status": "finals",
+      "playoff_round": "final",
+      "championship": false,
+      "attendance_avg": 4800,
+      "revenue": 9008050,
+      "team_value": 54256000,
+      "major_events": [
+        "cierre de temporada"
+      ]
+    },
+    {
+      "season": 5,
+      "season_year": 5,
+      "record": "15-17",
+      "games_played": 32,
+      "wins": 15,
+      "losses": 17,
+      "league_position": "playoffs",
+      "playoff_result": "playoffs · first_round",
+      "playoff_status": "playoffs",
+      "playoff_round": "first_round",
+      "championship": false,
+      "attendance_avg": 4800,
+      "revenue": 11720050,
+      "team_value": 70045000,
+      "major_events": [
+        "cierre de temporada"
+      ]
+    },
+    {
+      "season": 6,
+      "season_year": 6,
+      "record": "15-17",
+      "games_played": 32,
+      "wins": 15,
+      "losses": 17,
+      "league_position": "finalista",
+      "playoff_result": "final — derrota",
+      "playoff_status": "finals",
+      "playoff_round": "final",
+      "championship": false,
+      "attendance_avg": 4800,
+      "revenue": 15176050,
+      "team_value": 90500000,
+      "major_events": [
+        "cierre de temporada"
+      ]
+    }
+  ],
+  "playoff_history": [
+    {
+      "season": 1,
+      "result": "final — derrota",
+      "round": "final",
+      "championship": false
+    },
+    {
+      "season": 2,
+      "result": "eliminado",
+      "round": "final",
+      "championship": false
+    },
+    {
+      "season": 3,
+      "result": "final — derrota",
+      "round": "final",
+      "championship": false
+    },
+    {
+      "season": 4,
+      "result": "final — derrota",
+      "round": "final",
+      "championship": false
+    },
+    {
+      "season": 5,
+      "result": "playoffs · first_round",
+      "round": "first_round",
+      "championship": false
+    },
+    {
+      "season": 6,
+      "result": "final — derrota",
+      "round": "final",
+      "championship": false
+    }
+  ],
+  "historical_records": [
+    "14-18",
+    "14-18",
+    "14-18",
+    "19-13",
+    "15-17",
+    "15-17"
+  ],
+  "record": "0-0"
+}
+- life: {
+  "home": "departamento propio a cuatro cuadras de la arena",
+  "job": "dueño del equipo",
+  "salary": 230782,
+  "personal_cash": 0,
+  "personal_net_worth": 45889800,
+  "weekly_work_hours": 65,
+  "freedom": 6,
+  "family_support": 5,
+  "status": 5,
+  "network": 4,
+  "transport": "colectivo y a pie",
+  "lifestyle": "más espacio, más silencio, más estadio",
+  "responsibility": 5
+}
+- team_name: Los Halcones de la Ciudad
+- debt_risk_state: healthy
+- championships: 0
+- season_history: [
+  {
+    "season": 1,
+    "season_year": 1,
+    "record": "14-18",
+    "games_played": 32,
+    "wins": 14,
+    "losses": 18,
+    "league_position": "finalista",
+    "playoff_result": "final — derrota",
+    "playoff_status": "finals",
+    "playoff_round": "final",
+    "championship": false,
+    "attendance_avg": 3456,
+    "revenue": 978715,
+    "team_value": 6433000,
+    "major_events": [
+      "cierre de temporada"
+    ]
+  },
+  {
+    "season": 2,
+    "season_year": 2,
+    "record": "14-18",
+    "games_played": 32,
+    "wins": 14,
+    "losses": 18,
+    "league_position": "finalista",
+    "playoff_result": "eliminado",
+    "playoff_status": "out",
+    "playoff_round": "final",
+    "championship": false,
+    "attendance_avg": 4266,
+    "revenue": 3363625,
+    "team_value": 20664000,
+    "major_events": [
+      "eliminación",
+      "cierre de temporada"
+    ]
+  },
+  {
+    "season": 3,
+    "season_year": 3,
+    "record": "14-18",
+    "games_played": 32,
+    "wins": 14,
+    "losses": 18,
+    "league_position": "finalista",
+    "playoff_result": "final — derrota",
+    "playoff_status": "finals",
+    "playoff_round": "final",
+    "championship": false,
+    "attendance_avg": 4800,
+    "revenue": 5913550,
+    "team_value": 35989000,
+    "major_events": [
+      "cierre de temporada"
+    ]
+  },
+  {
+    "season": 4,
+    "season_year": 4,
+    "record": "19-13",
+    "games_played": 32,
+    "wins": 19,
+    "losses": 13,
+    "league_position": "finalista",
+    "playoff_result": "final — derrota",
+    "playoff_status": "finals",
+    "playoff_round": "final",
+    "championship": false,
+    "attendance_avg": 4800,
+    "revenue": 9008050,
+    "team_value": 54256000,
+    "major_events": [
+      "cierre de temporada"
+    ]
+  },
+  {
+    "season": 5,
+    "season_year": 5,
+    "record": "15-17",
+    "games_played": 32,
+    "wins": 15,
+    "losses": 17,
+    "league_position": "playoffs",
+    "playoff_result": "playoffs · first_round",
+    "playoff_status": "playoffs",
+    "playoff_round": "first_round",
+    "championship": false,
+    "attendance_avg": 4800,
+    "revenue": 11720050,
+    "team_value": 70045000,
+    "major_events": [
+      "cierre de temporada"
+    ]
+  },
+  {
+    "season": 6,
+    "season_year": 6,
+    "record": "15-17",
+    "games_played": 32,
+    "wins": 15,
+    "losses": 17,
+    "league_position": "finalista",
+    "playoff_result": "final — derrota",
+    "playoff_status": "finals",
+    "playoff_round": "final",
+    "championship": false,
+    "attendance_avg": 4800,
+    "revenue": 15176050,
+    "team_value": 90500000,
+    "major_events": [
+      "cierre de temporada"
+    ]
+  }
+]
+
+## 12. QUALITY REPORT
+
+- causality: pass
+- conflict: pass
+- escalation: pass
+- transformation: pass
+- retention: pass
+- repetition: pass
+- open_loops: pass
+- ending: pass
+- synopsis: pass
+- progression: pass
+- continuity: pass
+- transformation_dims: {'ok': True, 'changed': ['wealth', 'ownership', 'work', 'home', 'freedom', 'status', 'network', 'environment', 'responsibility'], 'dims': {'wealth': {'from': 20000.0, 'to': 45889800.0}, 'ownership': {'from': 0.0, 'to': 51.0}, 'work': {'from': 'empleado de oficina', 'to': 'dueño del equipo'}, 'home': {'from': 'departamento compartido', 'to': 'departamento propio a cuatro cuadras de la arena'}, 'freedom': {'from': 2.0, 'to': 6.0}, 'status': {'from': 1.0, 'to': 5.0}, 'network': {'from': 2.0, 'to': 4.0}, 'family': {'from': 5.0, 'to': 5.0}, 'environment': {'from': 'departamento compartido', 'to': 'departamento propio a cuatro cuadras de la arena'}, 'responsibility': {'from': 45.0, 'to': 65.0}}, 'detail': None}
+
+## 13. HARD VALIDATION
+
+ALL GREEN
+
+## FLAGS
+
+- [location_unintroduced] cuarto de utilería en el estadio · b03
+- [delta_mismatch] cash after=5000.0 reconstructed=20000.0 · b03
+- [delta_mismatch] ownership after=51.0 reconstructed=0.0 · b03
+- [valuation_teleport] $1.18M → $5.83M · b09
+- [money_unexplained] cash $5,000 → $0 · b25
+- [delta_mismatch] cash after=0.0 reconstructed=5000.0 · b25
+- [location_unintroduced] departamento propio a cuatro cuadras de la arena · b36
+
+STOP. No script. No visuals. No voice. No render. No Concept Engine.

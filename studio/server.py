@@ -594,7 +594,14 @@ def create_app() -> FastAPI:
     @app.post("/api/projects/{project_id}/story/generate")
     def story_generate(project_id: str):
         try:
-            p = generate_story_plan(load_project(project_id), use_llm=True)
+            p = load_project(project_id)
+            if str(p.get("content_format") or p.get("mode") or "") == FORMAT_CHECK_ALS:
+                from src.documentary.formats.check_als.story_architect import generate_check_story, public_architecture
+
+                p = generate_check_story(p, use_llm=True)
+                p = load_project(project_id)
+                return {"project": _project_full(p), "check_story": public_architecture(p)}
+            p = generate_story_plan(p, use_llm=True)
             return {"project": _project_full(p), "markdown": plan_to_markdown(get_story_plan(p))}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
@@ -602,7 +609,10 @@ def create_app() -> FastAPI:
     @app.put("/api/projects/{project_id}/story")
     def story_save(project_id: str, body: StoryPlanBody):
         try:
-            p = save_story_plan(load_project(project_id), body.plan or {})
+            p = load_project(project_id)
+            if str(p.get("content_format") or p.get("mode") or "") == FORMAT_CHECK_ALS:
+                return {"project": _project_full(p), "check_story": _check_story_public(p)}
+            p = save_story_plan(p, body.plan or {})
             return {"project": _project_full(p), "markdown": plan_to_markdown(get_story_plan(p))}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
@@ -610,7 +620,13 @@ def create_app() -> FastAPI:
     @app.post("/api/projects/{project_id}/story/approve")
     def story_approve(project_id: str):
         try:
-            p = approve_story_plan(load_project(project_id))
+            p = load_project(project_id)
+            if str(p.get("content_format") or p.get("mode") or "") == FORMAT_CHECK_ALS:
+                from src.documentary.formats.check_als.story_architect import approve_check_story
+
+                p = approve_check_story(p)
+                return {"project": _project_full(p)}
+            p = approve_story_plan(p)
             return {"project": _project_full(p)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
@@ -1751,6 +1767,8 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "story_plan": plan,
         "story_plan_approved": bool(p.get("story_plan_approved") or plan.get("approved")),
         "story_plan_markdown": plan_to_markdown(plan) if plan.get("central_story") else "",
+        "check_story": _check_story_public(p),
+        "check_story_approved": bool(p.get("check_story_approved")),
         "script": p.get("script") or "",
         "script_approved": bool(p.get("script_approved")),
         "script_warnings": p.get("script_warnings") or [],
@@ -1763,6 +1781,17 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "checkpoints": p.get("checkpoints") or {},
         "flow_pack_path": str(project_dir(str(p["id"])) / "flow-pack") if p.get("id") else "",
     }
+
+
+def _check_story_public(p: dict[str, Any]) -> dict[str, Any]:
+    if str(p.get("content_format") or p.get("mode") or "") != FORMAT_CHECK_ALS:
+        return {}
+    try:
+        from src.documentary.formats.check_als.story_architect import public_architecture
+
+        return public_architecture(p)
+    except Exception:
+        return dict(p.get("check_story") or {})
 
 
 def _voice_of(p: dict) -> dict:
