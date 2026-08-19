@@ -37,36 +37,60 @@ DEFAULT_CATEGORIES = (
 )
 
 MECHANISM_DIVERSITY = (
+    "software",
     "subscription",
     "acquisition",
-    "turnaround",
-    "arbitrage",
+    "roll_up",
     "marketplace",
     "franchise",
-    "real_estate",
     "licensing",
     "media",
-    "sports_ownership",
     "manufacturing",
     "logistics",
-    "creator_economy",
-    "software",
-    "physical_retail",
+    "real_estate",
     "hospitality",
-    "unusual_local_business",
+    "sports_ownership",
+    "creator_business",
+    "arbitrage",
+    "retail",
+    "turnaround",
+    "platform",
+    "agency_service",
+    "unusual_business",
 )
 
 FANTASY_DIVERSITY = (
     "wealth",
     "freedom",
+    "ownership",
     "status",
     "family",
-    "revenge_comeback",
-    "ownership",
+    "power",
     "competition",
+    "comeback",
+    "legacy",
     "empire",
     "escape",
-    "legacy",
+    "recognition",
+)
+
+STORY_SHAPES = (
+    "zero_to_empire",
+    "acquisition",
+    "roll_up",
+    "accidental_opportunity",
+    "viral_breakout",
+    "invention",
+    "underdog_vs_incumbent",
+    "boom_and_crisis",
+    "rise_fall_comeback",
+    "race_against_time",
+    "high_risk_bet",
+    "partnership",
+    "unexpected_offer",
+    "market_shift",
+    "turnaround",
+    "creator_to_company",
 )
 
 STORY_ENGINE_KEYS = (
@@ -218,6 +242,12 @@ THUMBNAIL_PLACEHOLDERS = (
     "tension",
     "ubicación clave de la historia",
     "un objeto simbólico",
+    "objeto simbólico",
+    "lugar concreto",
+    "lugar de trabajo concreto",
+    "urgencia contenida",
+    "young protagonist",
+    "business environment",
     "antes vs después",
     "tú joven, a mitad de la transformación",
     "contraste simple de dos zonas",
@@ -241,10 +271,14 @@ BANNED_TITLE_PATTERNS = (
     r"^tu camino\b",
     r"^el arte de\b",
     r"^c[oó]mo\b",
+    r"^revitaliza\b",
+    r"^red de transporte\b",
+    r"^descubre\b",
     r"^pov:\s*desafiando\b",
     r"^pov:\s*transformando\b",
     r"^pov:\s*convi[eé]rtete\b",
     r"^pov:\s*conquista\b",
+    r"^pov:\s*descubre\b",
 )
 
 BANNED_HOOK_OPENERS = (
@@ -256,6 +290,7 @@ BANNED_HOOK_OPENERS = (
     "what's up",
     "let me tell you",
     "hoy vamos a",
+    "hoy veremos",
     "en este video",
     "imagina si",
     "imagina que",
@@ -266,6 +301,14 @@ BANNED_HOOK_OPENERS = (
     "imaginate si",
     "imaginate que",
     "imaginate ",
+    "te imaginas",
+    "¿te imaginas",
+    "descubre cómo",
+    "descubre como",
+    "descubre ",
+    "conviértete",
+    "conviertete",
+    "esta es la historia",
     "bienvenidos de nuevo",
     "hola a todos",
     "qué tal",
@@ -285,20 +328,28 @@ SCORE_KEYS = (
     "filmability",
     "thumbnail_potential",
     "originality",
+    "mechanism_distinctiveness",
+    "sceneability",
+    "conflict_specificity",
+    "progression_plausibility",
 )
 
 WEIGHTS = {
-    "specificity": 0.12,
+    "specificity": 0.09,
     "story_engine_strength": 0.12,
-    "aspirational_strength": 0.14,
-    "life_transformation": 0.12,
-    "scale_potential": 0.11,
-    "reward_density": 0.08,
-    "curiosity": 0.08,
-    "fantasy_strength": 0.07,
-    "filmability": 0.06,
-    "thumbnail_potential": 0.05,
-    "originality": 0.05,
+    "aspirational_strength": 0.09,
+    "life_transformation": 0.11,
+    "scale_potential": 0.07,
+    "reward_density": 0.04,
+    "curiosity": 0.05,
+    "fantasy_strength": 0.04,
+    "filmability": 0.07,
+    "thumbnail_potential": 0.04,
+    "originality": 0.04,
+    "mechanism_distinctiveness": 0.08,
+    "sceneability": 0.08,
+    "conflict_specificity": 0.04,
+    "progression_plausibility": 0.04,
 }
 
 TITLE_SCORE_KEYS = (
@@ -315,7 +366,7 @@ MIN_OPEN_LOOPS = 2
 MAX_OPEN_LOOPS = 5
 MIN_LADDER_STEPS = 5
 MIN_REWARDS = 3
-MAX_LOCAL_TURNAROUND_IN_TOP = 2
+MAX_LOCAL_TURNAROUND_IN_TOP = 1
 
 ELIGIBILITY_GATES = (
     "has_specific_opportunity",
@@ -390,7 +441,8 @@ IDIOMA (OBLIGATORIO):
   "revolucionar la industria", "dilemas éticos", "construir un imperio desde cero" como relleno.
 - La historia puede ocurrir en cualquier ciudad del mundo. La MONEDA sigue al mundo de la historia
   (si es EE.UU.: $312, $99/mes, $10 millones). No conviertas todo a euros automáticamente.
-- thumbnail_prompt / image prompts: en INGLÉS (mejor para modelos visuales). text_if_any de thumbnail: español.
+- thumbnail_prompt / image prompts: en INGLÉS (mejor para modelos visuales).
+- text_if_any de thumbnail: vacío por default. Nunca CTA. Español solo si es un número/precio de 1–4 palabras.
 - Claves JSON internas en inglés (story_engine, world_seeds, etc.).
 """
 
@@ -398,26 +450,169 @@ SEED_SYSTEM = f"""Inventas semillas (raw seeds) para Check — Aspirational Life
 Ficción en segunda persona. NO documentales. NO consejos.
 {_LANGUAGE_RULES}
 
-Check NO es un canal de turnarounds de small business que se quedan locales.
-Un taller/lavandería/restaurante puede ser el INICIO, pero la vida final debe sentirse extraordinaria:
-escala nacional+, ownership, libertad, status, imperio, exit — no solo "negocio rentable del barrio".
+Check busca PELÍCULAS, no pitches. La empresa es el vehículo; la fantasía es vivir esa vida.
 
-Cada seed debe nombrar: industria concreta, problema concreto, mecanismo
-(subscription, acquisition, turnaround, arbitrage, marketplace, franchise, real estate,
-licensing, media, sports ownership, manufacturing, logistics, creator economy, software,
-retail, hospitality, unusual local business), fantasía (wealth, freedom, status, family,
-comeback, ownership, competition, empire, escape, legacy) y scale_hint
-(national / international / empire / major_exit preferidos).
+Un taller/lavandería/restaurante/trabajo aburrido PUEDE ser el INICIO (el contraste es valioso).
+NO es una película si el techo es el mismo local un poco mejor.
+SÍ puede serlo si el inicio ordinario escala con un mecanismo causal hasta ownership, cadena,
+plataforma, conflicto real y una decisión grande.
 
-concrete_hook en ESPAÑOL:
-- "En un taller se pierden trabajos tras las 18h; vendes IA a $99/mes y apuntas a concesionarios nacionales."
-- "Compras lavandería por $1; el techo es franquiciar 120 locales y pelear con una cadena nacional."
-- "Palcos vacíos → licencias prepago → ownership minoritario de un club."
+Cada seed nombra: industria concreta, situación inicial concreta, mechanism_type, fantasy_type,
+story_shape y scale_hint (national / international / empire / major_exit preferidos).
 
-Diversifica mecanismos. Evita batches solo de rescates locales.
+story_shape (OBLIGATORIO, una forma por seed, NO un template rígido):
+zero_to_empire, acquisition, roll_up, accidental_opportunity, viral_breakout, invention,
+underdog_vs_incumbent, boom_and_crisis, rise_fall_comeback, race_against_time, high_risk_bet,
+partnership, unexpected_offer, market_shift, turnaround, creator_to_company.
+Usa el story_shape del slot asignado. Ninguna shape puede repetirse en el mismo batch corto.
+La shape cambia el ARCO (cómo ocurre la película), no solo la industria.
+
+PROHIBIDO el arco intercambiable:
+trabajo mediocre → hay demanda / falta atención personalizada → prueba → creces →
+aparece un competidor grande → eliges precio vs calidad → innovas → te vuelves referente.
+Eso NO es una película Check. Es una plantilla.
+
+Paleta de mecanismos (diversidad ORGÁNICA, no una idea por slot):
+software, subscription, acquisition, roll-up, marketplace, franchise, licensing, media,
+manufacturing, logistics, real estate, hospitality, sports ownership, creator business,
+arbitrage, retail, turnaround, platform, agency/service, unusual business.
+
+Paleta de fantasías: wealth, freedom, ownership, status, family, power, competition,
+comeback, legacy, empire, escape, recognition.
+
+PROHIBIDO generar variaciones de: negocio local quebrado → lo compras → franquicia.
+Máximo 2 seeds de rescate local→franquicia en todo el batch, y solo si el techo es national+.
+Cubre al menos 8 mechanism_type distintos en el batch. No clones con otra piel.
+
+concrete_hook en ESPAÑOL, una frase vivida (no pitch):
+- "A las 18h el teléfono del taller sigue sonando; nadie contesta."
+- "Compras una lavandería por $1 y el segundo local te enseña el sistema."
+- "Los palcos del estadio están vacíos entre semana y nadie cobra por usarlos."
+
 NUNCA: Imagina que…, dilemas éticos, revolucionar la industria, Lamborghini/jet en todas.
+NUNCA techo = el mismo local arreglado / "empoderar la comunidad" como fantasía principal.
 
 Return ONLY JSON."""
+
+STORY_CORE_SYSTEM = f"""Escribes el STORY CORE + STORY SPINE de una película Check.
+NO generas título, hook, thumbnail, rewards, world bible ni prompts visuales.
+{_LANGUAGE_RULES}
+
+Check es ficción aspiracional en segunda persona. Sensación: "Quiero ver cómo sería vivir esta vida."
+La empresa es el vehículo. También importa casa, tiempo, libertad, entorno, familia, status,
+qué puedes comprar/hacer, quién te conoce, qué control tienes.
+
+CALIDAD DE REFERENCIA (ADN, NO un negocio a copiar):
+trabajas contestando teléfonos → notas llamadas perdidas después del cierre → construyes un
+recepcionista IA → primer taller paga $99 → agenda 43 trabajos → otros talleres preguntan →
+el mismo problema se repite → producto estandarizado → más talleres → grupos de concesionarios →
+empresa y vida crecen → incumbente copia la función → la incluye gratis → vender / pivotar / pelear.
+Usa ese estándar de especificidad, causalidad, progresión y conflicto.
+NO hagas que todas las ideas se parezcan a un SaaS de talleres.
+
+FORMA NARRATIVA:
+Honra el story_shape de la seed. No reescribas todas las seeds como
+"trabajo mediocre → oportunidad → prueba → crecimiento → competidor grande →
+precio vs calidad → innovación → éxito".
+Esa plantilla está PROHIBIDA. Regression negativa: taller familiar con peor atención,
+luego mejor servicio, sucursales, competidor barato, mantienes calidad. Intercambiable.
+
+CONFLICTO ORGÁNICO:
+major_reversal DEBE nacer del mecanismo de ESTA historia.
+Pregunta: ¿podría pegar este mismo conflicto en otras 20 ideas?
+Si sí → demasiado genérico. FAIL.
+FAIL: aparece un competidor grande / baja precios / debes elegir precio o calidad
+salvo que sea específico e inevitable por el mecanismo (p.ej. el incumbente copia
+TU función concreta y la regala gratis).
+PASS: un evento que solo podría pasarle a este negocio.
+
+OPORTUNIDAD CONCRETA:
+FAIL como unique opportunity: hay demanda / falta atención personalizada /
+las personas quieren mejores experiencias / existe una necesidad insatisfecha.
+Necesitamos un descubrimiento concreto (hora, objeto, número, fallo visible).
+
+PRODUCTO / SOFTWARE / DISPOSITIVO:
+Si construyes algo, di QUÉ HACE en una frase que un espectador pueda repetir.
+FAIL: dispositivo inteligente con IA / plataforma educativa personalizada /
+app que conecta usuarios con expertos (sin el qué).
+PASS: una recepcionista IA que contesta después de las 18h y agenda el turno del auto.
+
+FORTUNA / GIROS:
+Incluye al menos un evento inesperado (positivo o negativo) que sea consecuencia
+plausible del mundo, no un rayo aleatorio. La progresión NO debe sentirse perfectamente lineal.
+
+ENDING:
+FAIL: te conviertes en referente / consolidas tu marca / crecimiento sostenible /
+transformas tus sueños en realidad / líder indiscutido.
+El ending_direction es un ESTADO o EVENTO concreto (oferta de compra, juicio,
+función clonada gratis, segundo local que enseña el sistema, te echan del edificio).
+
+CAUSALIDAD: cada escalón importante provoca o habilita el siguiente.
+FAIL: "Consigues tu primer cliente. El negocio crece. Expandes internacionalmente. Vale $20 millones."
+PASS: primer cliente obtiene resultado → te recomienda a tres → el mismo problema se repite →
+estandarizas → suscripción → ya no das abasto → contratas → un cliente con 18 sucursales cambia
+el tamaño de los contratos → el software dominante te copia.
+
+Un comienzo ordinario (lavandería, taller, restaurante, habitación de tus padres) está BIEN.
+lavandería → lavandería un poco mejor = FAIL.
+lavandería por $1 → turnaround → segunda adquisición → sistema propio → roll-up → cadena →
+competidor → decisión grande = PASS.
+
+story_core campos (oración concreta cada uno, en español, tú/te):
+starting_situation, specific_opportunity, why_you_notice_it, first_action, first_proof,
+core_mechanism, causal_growth_path, first_meaningful_reward, life_transformation,
+major_reversal, big_decision, stakes, ending_direction.
+
+story_spine: 150–250 palabras, español natural, segunda persona. Versión comprimida de la película.
+Leyéndolo se entiende: quién eres → qué vida tienes → qué descubres → qué haces → por qué funciona →
+qué ocurre → cómo escala → cómo cambia tu vida → qué sale mal → qué puedes perder → qué decisión →
+hacia dónde termina.
+NO lo escribas como pitch de startup ni como sinopsis Netflix artificial.
+
+Return JSON: {{"id":"...","story_shape":"...","story_core":{{...claves...}},"story_spine":"..."}}."""
+
+PACKAGING_FROM_STORY_SYSTEM = f"""Emppaquetas una película Check YA DESCUBIERTA.
+NO reinventes la historia. Deriva TODO del story_core + story_spine dados.
+{_LANGUAGE_RULES}
+
+Genera:
+- title + title_options (3). YouTube natural en español. Claridad + transformación + curiosidad.
+  Dirección: "POV: Compras/Construyes/Empiezas/Adquieres/Conviertes…" — no obligar POV siempre.
+  Bloquear tono curso/blog: Conviértete, Descubre, Desafiando, Transformando, Conquista.
+  El título NO puede prometer algo que el Story Core no entrega.
+- hook + hook_options (3). El hook EMPIEZA DENTRO de la vida (edad, hora, lugar, objeto).
+  PROHIBIDO abrir con: ¿Te imaginas…? / Descubre cómo… / Conviértete… / En este video… /
+  Hoy veremos… / Esta es la historia de…
+- thumbnail_concept específico de ESTA historia (español editorial + thumbnail_prompt INGLÉS).
+  text_if_any = null/vacío por default. Nunca CTA.
+  PROHIBIDO placeholders: lugar concreto, objeto simbólico, urgencia contenida,
+  young protagonist, business environment, lugar de trabajo concreto.
+- world_seeds objeto: starting_age, starting_cash, starting_location, starting_status,
+  target_outcome, business_or_career_type, timeline_scale.
+- escalation_ladder: array {{level, event, world_delta}} 5–8 peldaños CAUSALES del spine.
+- life_progression.stages: 5 objetos con
+  {{stage, age_or_time, living_situation, financial_state, freedom, status, family_effect, environment}}
+  stages: start, early_reward, mid_reward, major_reward, late_state.
+- rewards: ≥3 objetos {{type, moment, description, story_significance}}
+  types: financial|lifestyle|family|status|freedom|ownership|experience|relationship|environment
+  description SIEMPRE string. moment = beat de la historia.
+- end_state concreto (edad, vivienda, familia, tiempo, patrimonio, empleados, países).
+- scale_ceiling coherente con end_state y el spine. NO inflar el final para pasar un validator.
+- open_loops, central_story_question, start_end_contrast, business_fantasy, life_fantasy,
+  one_line_fantasy, core_transformation, premise (resumen del spine, no una historia nueva).
+
+Si scale_ceiling es international, el end_state NO puede ser 1 país / $200k / 5 empleados.
+
+Return JSON {{"package": {{...}}}}."""
+
+HOOK_REGEN_SYSTEM = f"""Reescribes SOLO el hook de una película Check.
+NO cambies la historia. NO bajes la calidad de la historia.
+{_LANGUAGE_RULES}
+
+El hook empieza DENTRO de la vida: edad, hora, lugar, objeto, acción.
+PROHIBIDO: ¿Te imaginas, Descubre cómo, Conviértete, En este video, Hoy veremos,
+Esta es la historia de, Imagina que.
+Devuelve JSON {{"hook":"...","hook_options":["...","...","..."]}}."""
 
 EXPAND_SYSTEM = f"""Expandes una seed de Check a un Concept Package COMPLETO (Fase 1.6 Aspirational Engine).
 {_LANGUAGE_RULES}
@@ -437,7 +632,17 @@ OBLIGATORIO además del story_engine:
 - business_fantasy / life_fantasy: frases cortas de qué se desea construir vs qué vida se desea vivir
 
 Títulos: YouTube natural en español. Preferir "POV: Construyes/Compras/Conviertes/Empiezas/Heredas/Pierdes…"
-EVITAR tono blog/LinkedIn/curso: "Desafiando…", "Transformando…", "Conviértete…", "Conquista…"
+EVITAR tono blog/LinkedIn/curso/CTA: "Desafiando…", "Transformando…", "Conviértete…", "Conquista…", "Descubre…"
+El título DEBE ser verdadero respecto al end_state (prohibido "negocio millonario" si el techo es $500k).
+
+escalation_ladder: array de objetos {{"level": 1, "event": "...", "world_delta": "..."}} (5–8).
+Cada peldaño CAUSA el siguiente. Prohibido teletransportar $10k/mes → valuación $10M / 3 países sin peldaños intermedios.
+
+Si el negocio es un PRODUCTO FÍSICO, nombra el objeto concreto (packaging compostable, botellas, etc.).
+Prohibido "productos sostenibles/biodegradables" sin objeto visualizable.
+
+thumbnail text_if_any: vacío por default. Solo un número/precio cortísimo si aumenta curiosidad.
+Nunca CTA publicitario ("¡Descubre…!", "¡Conviértete…!", "Eco-innovación en acción").
 
 NO inventes overall_score. thumbnail_prompt en INGLÉS; resto público en español.
 Pequeño negocio de entrada OK; techo de la historia NO debe ser el mismo local arreglado.

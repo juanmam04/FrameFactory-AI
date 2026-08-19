@@ -1,78 +1,72 @@
 # Check ALS — Fase 1.6 Top 10 (Aspirational Engine)
 
-generated=23 rejected=13 eligible=10 returned=10
+generated=30 rejected=7 eligible=23 returned=10
 
-## 1. [9.01] POV: Construyes una cafetería que se convierte en un centro creativo
+## 1. [9.3] POV: Construyes una fábrica de productos artesanales y compites con los gigantes del comercio
+- scale_ceiling: international
+- aspirational_score: 8.85
+- mechanism: Ventas a través de plataformas como Etsy y Amazon Handmade.
+- contrast: Comienzas con $50,000 y una línea de velas artesanales. → Controlas un imperio de $10 millones con productos en 5 países.
+
+## 2. [9.24] POV: Adquieres derechos de música emergente y construyes un imperio
+- scale_ceiling: international
+- aspirational_score: 8.85
+- mechanism: Licenciamiento de música emergente a plataformas de streaming.
+- contrast: Trabajas en un empleo que no te satisface. → Eres un empresario exitoso con ingresos pasivos y libre de deudas.
+
+## 3. [9.21] POV: Compras entradas y las revendes a precios premium
 - scale_ceiling: national
-- aspirational_score: 9.45
-- mechanism: Modelo de negocio basado en la venta de café y comida mientras se realizan eventos creativos.
-- contrast: Una cafetería pequeña con pocos clientes y escaso reconocimiento. → Una red de cafeterías reconocidas a nivel nacional, con una comunidad activa de 
+- aspirational_score: 8.8
+- mechanism: Modelo de reventa de entradas a través de plataformas en línea.
+- contrast: Un joven aficionado a los conciertos que lucha por ahorrar. → Un empresario exitoso con un patrimonio de $500,000 y un equipo de trabajo.
 
-## 2. [8.9] POV: Construyes una recepcionista IA para talleres mecánicos
-- scale_ceiling: national
-- aspirational_score: 9.25
-- mechanism: SaaS de suscripción para reservas fuera de horario en talleres
-- contrast: Trabajas en un taller mecánico, contestando llamadas sin parar. → Eres el dueño de un negocio de tecnología, con ingresos estables y libertad para
-
-## 3. [8.9] POV: Creas una franquicia de comida bio
-- scale_ceiling: national
-- aspirational_score: 9.25
-- mechanism: Sistema de franquicias que permite a otros emprendedores abrir sucursales de tu marca con un modelo de negocio probado.
-- contrast: Tienes un pequeño local en una esquina de tu ciudad con pocos clientes y recurso → Eres el propietario de 200 sucursales en todo el continente, reconocido como líd
-
-## 4. [8.9] POV: Creas un imperio sensorial de aromas únicos
-- scale_ceiling: national
-- aspirational_score: 9.25
-- mechanism: Marketplace que conecta a productores de aromas artesanales con consumidores interesados.
-- contrast: Trabajando en un empleo que no te satisface. → Dueño de un imperio de aromas con presencia internacional.
-
-## 5. [8.87] POV: Creas un marketplace agrícola y empoderas a productores locales
-- scale_ceiling: national
-- aspirational_score: 9.1
-- mechanism: Marketplace en línea que conecta agricultores locales con consumidores urbanos.
-- contrast: Un grupo de productores locales luchando por sobrevivir. → Un marketplace exitoso que empodera a miles de agricultores y consumidores.
-
-## 6. [8.78] POV: Abres tu primer gimnasio y creas un imperio fitness
-- scale_ceiling: national
-- aspirational_score: 9.25
-- mechanism: Franquicias que replican tu modelo de negocio de gimnasio exitoso.
-- contrast: Tienes un pequeño gimnasio y muchas dudas. → Eres el propietario de una red de franquicias exitosa y respetada.
-
-## 7. [8.76] POV: Alquilas espacios y revives comunidades
-- scale_ceiling: national
-- aspirational_score: 8.9
-- mechanism: Modelo de negocio basado en alquileres flexibles y servicios adicionales como wifi y mobiliario.
-- contrast: Alquilas un espacio vacío por $500 al mes, con la incertidumbre de un nuevo mode → Eres dueño de una red de espacios creativos en varias ciudades, generando ingres
-
-## 8. [8.7] POV: Compras una empresa de renting de coches y la escalas internacionalmente
-- scale_ceiling: national
-- aspirational_score: 9.15
-- mechanism: Modelo de renting corporativo con contratos anuales y precios competitivos.
-- contrast: Eres un pequeño empresario con una flota de 50 coches. → Eres un líder en el sector del renting con 1,000 coches en 4 países.
-
-## 9. [8.65] POV: Construyes un software educativo que transforma la enseñanza
+## 4. [9.07] POV: Estableces una fábrica de productos sostenibles y arrasas en el mercado
 - scale_ceiling: international
 - aspirational_score: 8.65
-- mechanism: Modelo de suscripción anual por $120 por estudiante.
-- contrast: Tienes una idea y un prototipo sin usuarios. → Eres el fundador de una empresa valorada en $100 millones con millones de usuari
+- mechanism: Producción en masa de productos biodegradables y reciclables.
+- contrast: Comienzas con una inversión de $10,000 y un pequeño equipo. → Diriges una empresa de $50 millones con una sólida presencia internacional.
 
-## 10. [8.57] POV: Comienzas un servicio de logística con motos desechadas
+## 5. [9.03] POV: Compras una lavandería y enfrentas a una cadena nacional
 - scale_ceiling: national
-- aspirational_score: 8.6
-- mechanism: Servicio de logística urgente utilizando motos reparadas para entregas rápidas.
-- contrast: Tienes un taller mecánico pequeño con problemas financieros. → Eres el líder del mercado de logística, con una flota amplia y un negocio rentab
+- aspirational_score: 8.45
+- mechanism: Modelo de franquicia que ofrece servicios adicionales como entrega a domicilio.
+- contrast: Eres un emprendedor con una lavandería en problemas y pocos clientes. → Eres un líder en el mercado con 20 franquicias y un patrimonio de $2 millones.
+
+## 6. [9.02] POV: Adquieres una cadena de restaurantes y la escalas a nivel nacional
+- scale_ceiling: national
+- aspirational_score: 8.45
+- mechanism: Modelo de franquicia que permite a otros abrir sucursales bajo tu marca.
+- contrast: Eres un emprendedor con pocos recursos y una gran idea. → Eres un empresario exitoso con una red de 100 franquicias y un patrimonio neto d
+
+## 7. [9.02] POV: Compras propiedades de lujo y construyes un legado inmobiliario
+- scale_ceiling: national
+- aspirational_score: 8.45
+- mechanism: Inviertes en propiedades de lujo y las revendes a precios premium.
+- contrast: Eres un inversionista novato con una sola propiedad. → Eres un líder en el sector inmobiliario con un patrimonio de $10 millones.
+
+## 8. [9.0] POV: Compras los derechos de una liga de baloncesto y la transformas en un fenómeno internacional
+- scale_ceiling: international
+- aspirational_score: 8.5
+- mechanism: Licenciamiento de productos y acuerdos de distribución con tiendas deportivas.
+- contrast: Empiezas con una liga local sin reconocimiento. → Diriges una marca internacional con presencia en 10 países.
+
+## 9. [8.94] POV: Construyes una fábrica de productos sostenibles y te enfrentas a gigantes de la industria
+- scale_ceiling: national
+- aspirational_score: 8.3
+- mechanism: Producción y venta de productos ecológicos a través de un modelo de negocio B2C y B2B.
+- contrast: Inviertes tus ahorros en una pequeña planta de producción. → Diriges una empresa con un patrimonio de $10 millones y presencia en 20 países.
+
+## 10. [8.86] POV: Creas un marketplace de artículos deportivos vintage
+- scale_ceiling: national
+- aspirational_score: 8.15
+- mechanism: Marketplace que conecta vendedores de artículos vintage con compradores especializados.
+- contrast: Comienzas con un sitio web básico y limitadas ventas. → Eres el líder de un marketplace reconocido con miles de miembros.
 
 ## Rejected (motivos)
-- POV: Compras una lavandería por $1 y construyes un imperio: has_scale_progression
-- POV: Empiezas a llenar palcos vacíos en eventos de esports: has_valid_hook
-- POV: Compras los derechos de imagen de un club de fútbol y lo transformas en un éxito.: has_valid_hook
-- POV: Compras merchandising de artistas emergentes y creas NFTs para fans internacionales: has_valid_hook
-- POV: Empiezas tu plataforma de clases de dibujo online: has_valid_hook
-- POV: Construyes paneles solares accesibles para todas las familias: has_valid_hook
-- POV: Compras una empresa de mantenimiento de piscinas en quiebra y la transformas: has_valid_hook
-- POV: Creas una marca de productos bio y la llevas al mundo: has_valid_hook
-- POV: Transformas un taller de antigüedades en un estudio artístico: has_valid_hook
-- POV: Creas una agencia de influencers y luchas por destacar: has_valid_hook
-- POV: Montas una empresa de interiorismo sostenible y te vuelves un referente mundial: has_valid_hook
-- POV: Empiezas a dar coaching online y transformas vidas: has_valid_hook
-- POV: Adquieres una florería en quiebra y la conviertes en un imperio floral: has_valid_hook
+- POV: Compras copas de vino y construyes un imperio: coherence_pass
+- POV: Transformas propiedades en apartamentos de lujo: has_life_progression
+- POV: Compras una participación en un equipo de liga mayor: has_life_progression
+- POV: Creas un marketplace de arte donde los artistas son los dueños de su futuro: has_aspirational_transformation
+- POV: Creas un canal de YouTube deportivo y te conviertes en un influencer: has_life_progression
+- POV: Compras una lavandería en quiebra y la conviertes en franquicia: has_life_progression
+- POV: Lanzas un podcast sobre atletas no reconocidos y generas millones: has_life_progression

@@ -48,17 +48,21 @@ TOP_KEYS = [
 
 
 def _load_env() -> None:
-    env = ROOT / ".env.local"
-    if not env.exists():
-        return
-    for line in env.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+    for name in (".env", ".env.local"):
+        env = ROOT / name
+        if not env.exists():
             continue
-        k, v = line.split("=", 1)
-        k, v = k.strip(), v.strip().strip('"').strip("'")
-        if k and k not in os.environ:
-            os.environ[k] = v
+        for line in env.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            k, v = k.strip(), v.strip().strip('"').strip("'")
+            if not k:
+                continue
+            # .env.local overrides .env
+            if name.endswith(".local") or k not in os.environ:
+                os.environ[k] = v
 
 
 def _mechanism_summary(p: dict) -> str:
@@ -68,6 +72,10 @@ def _mechanism_summary(p: dict) -> str:
 
 def main() -> None:
     _load_env()
+    import sys
+
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
     os.environ.setdefault("PYTHONPATH", str(ROOT))
 
     from src.documentary.channel import check_als_profile

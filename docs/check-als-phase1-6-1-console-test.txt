@@ -1,0 +1,1818 @@
+CHECK ALS — FINAL CONCEPT TEST
+
+Raw generated: 30
+Raw unique: 30
+Expansion attempts: 30
+Expansion success: 30
+Expansion failed: 0
+Replacement seeds: 0
+
+Raw requested: 30
+Raw received: 30
+Unique after dedupe: 30
+Expanded: 30
+Repaired: 30
+Rejected: 13
+Eligible: 17
+Top returned: 10
+
+LLM calls: 100
+Retries: 30
+Failures: 0
+Total runtime: 1741.6s (29.0 min)
+
+model: gpt-4o-mini
+content_format: check_als
+
+REJECTION BREAKDOWN
+
+has_life_progression → 10
+has_visible_rewards → 9
+specific_object_ok → 3
+has_aspirational_transformation → 2
+has_valid_world_seeds → 2
+coherence_pass → 1
+
+Rejected titles:
+- POV: Estableces una fábrica de productos sostenibles y arrasas en el mercado: has_life_progression, has_visible_rewards, specific_object_ok
+- POV: Lanzas una red de transporte alternativo: has_aspirational_transformation, has_life_progression, has_visible_rewards
+- POV: Adquieres derechos de bandas emergentes y construyes un imperio musical: has_life_progression, has_visible_rewards
+- POV: Transformas un terreno baldío en un eco-resort exitoso: has_life_progression, has_visible_rewards, specific_object_ok
+- POV: Construyes una fábrica de productos biodegradables: has_life_progression, has_visible_rewards, specific_object_ok
+- POV: Compras una participación en un equipo de liga mayor y lo conviertes en campeón: has_valid_world_seeds
+- POV: Rescatas una lavandería en crisis y la conviertes en un imperio: has_life_progression, has_visible_rewards
+- POV: Construyes un imperio de licencias musicales: has_valid_world_seeds
+- POV: Creas un servicio de música emergente: has_aspirational_transformation, has_life_progression, has_visible_rewards
+- POV: Construyes una IA para talleres mecánicos y luchas por tu independencia: coherence_pass
+- POV: Compras un hotel y lo transformas en una cadena de franquicias: has_life_progression, has_visible_rewards
+- POV: Transformas un restaurante en crisis en un líder de comida gourmet: has_life_progression, has_visible_rewards
+- POV: Compras una liga de baloncesto y la transformas en un imperio: has_life_progression
+
+TOP 10
+
+========================================================================
+RANK 1
+TITLE
+POV: Adquieres derechos de música emergente y construyes un imperio internacional
+
+OVERALL SCORE
+8.04
+
+PREMISE
+Adquieres derechos de música emergente y construyes un imperio internacional de licencias musicales.
+
+START
+Tienes un trabajo regular y una pasión por la música, sin conexiones en la industria.
+
+END
+edad: 35 · patrimonio: $5 millones · valuación: $20 millones · empleados: 25 · países: 5 · padres: ayudas económicas a tus padres · vivienda: una casa en una zona exclusiva · control_del_tiempo: trabajas 20 horas a la semana
+
+SPECIFIC OPPORTUNITY
+Las plataformas de streaming están buscando contenido exclusivo y música emergente.
+
+MECHANISM
+Modelo de negocio basado en licencias de música emergente a plataformas y productoras.
+
+GROWTH ENGINE
+Expansión a través de asociaciones con festivales y sellos discográficos independientes.
+
+MAJOR THREAT
+Una nueva plataforma de streaming lanza un servicio que descubre música emergente sin intermediarios.
+
+BIG DECISION
+Decidir si invertir en más artistas emergentes o vender la empresa.
+
+STAKES
+La supervivencia de tu negocio y la oportunidad de cambiar la industria musical.
+
+ESCALATION LADDER
+1. Consigues licenciar la música de un artista emergente. — $10,000 en ingresos
+2. Amplías tu catálogo a 10 artistas emergentes. — $50,000 en ingresos anuales
+3. Estableces contratos con productoras de renombre. — Aumentas ingresos a $200,000 anuales
+4. Te enfrentas a una gran disquera que intenta bloquear tus contratos. — Incrementas tu visibilidad y reputación
+5. Recibes una oferta de compra de $500,000. — Te posicionas como un competidor serio
+6. Lanzas una campaña de marketing para artistas emergentes. — Aumentas tu base de clientes y artistas.
+7. Expandes tu negocio a 5 países. — $2 millones en ingresos anuales
+8. Te conviertes en el líder del mercado de licencias de música emergente. — $20 millones en valuación
+
+LIFE PROGRESSION
+start: {'type': 'trabajador regular', 'description': 'Tienes un trabajo promedio en una oficina.'}
+early_reward: {'type': 'primer cliente', 'description': 'Licencias tu primera canción.'}
+mid_reward: {'type': 'contratos con productoras', 'description': 'Estableces contratos con productoras de renombre.'}
+major_reward: {'type': 'expansión internacional', 'description': 'Expandes tu negocio a otros países.'}
+late_state: {'type': 'éxito financiero', 'description': 'Logras un patrimonio de $5 millones.'}
+
+REWARDS
+- [financial] Recibes una oferta de compra de $500,000. (mid_story_complication)
+- [financial] Te posicionas como un competidor serio en la industria. (endgame)
+- [family] Ayudas económicamente a tus padres. (late_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Trabajas en un empleo promedio, sin influencia en la industria musical.
+
+END:
+Eres un líder en la industria musical, influyendo en las tendencias globales.
+
+CENTRAL STORY QUESTION
+¿Cómo transformar la música emergente en un imperio de licencias sin perder la esencia artística?
+
+OPEN LOOPS
+1. ¿Quiénes son los artistas que destacan y cómo los descubres?
+2. ¿Qué obstáculos enfrentarás al negociar derechos de autor?
+3. ¿Cómo manejarás la competencia de plataformas de streaming consolidadas?
+4. ¿Qué pasará si un artista famoso decide irse con un competidor?
+5. ¿Cómo equilibrarás la demanda comercial con la integridad artística?
+
+HOOK
+¿Te imaginas construir un imperio musical a partir de artistas emergentes? Con cada licencia, te acercas más a ser un líder en la industria. Las oportunidades son ilimitadas, pero también los desafíos.
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Las plataformas de streaming buscan contenido exclusivo y música emergente.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Tienes un trabajo regular y una pasión por la música, sin conexión vs edad: 35 · patrimonio: $5 millones · valuación: $20 millones",
+  "emotion": "urgencia contenida",
+  "key_object": "Licencias exitosas que generan $50,000 en ingresos en el primer año.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: Streaming platforms seeking exclusive content and emerging music. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 25,
+  "starting_cash": "$5,000",
+  "starting_location": "una ciudad mediana",
+  "starting_status": "trabajador regular",
+  "target_outcome": "ser un líder en la industria musical",
+  "business_or_career_type": "licencias musicales",
+  "timeline_scale": "5 años"
+}
+
+ASPIRATIONAL SCORE
+7.5
+
+ASPIRATIONAL EVIDENCE
+1. amenaza competitiva nombrada / de escala
+2. escalation_ladder con 8 niveles
+3. scale_ceiling=international
+4. 7 cifras distintas en la progresión
+5. fantasía de ownership/control
+6. life_progression con 5 etapas
+7. 3 recompensas tipadas
+8. vida deseable: padres, oficina, patrimonio
+9. start_end_contrast presente
+10. end_state concreto (6 hechos)
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Consigues licenciar la música de un artista prometedor para una serie de televis; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: Las plataformas de streaming están buscando contenido exclusivo y música emergente.; growth_mechanism: Expansión a través de asociaciones con festivales y sellos discográficos independientes.; first_proof: Licencias exitosas que generan $50,000 en ingresos en el primer año.; major_threat: Una nueva plataforma de streaming lanza un servicio que descubre música emergente sin inte
+  aspirational_strength: 9 — amenaza competitiva nombrada / de escala; escalation_ladder con 8 niveles; scale_ceiling=international; 7 cifras distintas en la progresión
+  life_transformation: 6 — fantasía de ownership/control; life_progression con 5 etapas; vida deseable: padres, oficina, patrimonio; completeness=10
+  scale_potential: 9 — scale_ceiling=international; ladder_n=8
+  reward_density: 5 — 3 rewards
+  curiosity: 8 — 5 open_loops; hook_len=201
+  fantasy_strength: 8 — amenaza competitiva nombrada / de escala; escalation_ladder con 8 niveles; scale_ceiling=international
+  filmability: 9 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 9 — Modelo de negocio basado en licencias de música emergente a plataformas y productoras.
+  sceneability: 3 — Recibes un correo de un conocido que busca música nueva para su serie.
+  conflict_specificity: 6 — Una nueva plataforma de streaming lanza un servicio que descubre música emergente sin inte
+  causal_chain_strength: 8
+  progression_plausibility: 7 — progresión causal aceptable
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 2
+TITLE
+POV: Transformas tu restaurante en una cadena de franquicias.
+
+OVERALL SCORE
+7.87
+
+PREMISE
+Transformas un pequeño restaurante en una exitosa cadena de franquicias que recibe premios gastronómicos.
+
+START
+Tienes un pequeño restaurante con buena reputación en tu ciudad, pero limitado crecimiento.
+
+END
+edad: 45 · patrimonio: $5 millones · valuación: $20 millones · empleados: 150 · países: 5 · padres: felices y orgullosos de tu éxito · vivienda: una casa espaciosa en un barrio exclusivo · control_del_tiempo: trabajas 20 horas a la semana
+
+SPECIFIC OPPORTUNITY
+Los restaurantes pequeños luchan por crecer y ser reconocidos en el mercado
+
+MECHANISM
+Modelo de franquicia que permite a otros replicar tu concepto exitoso
+
+GROWTH ENGINE
+Atraes a más franquiciados a través de la reputación y premios gastronómicos
+
+MAJOR THREAT
+Una cadena de restaurantes grande lanza una campaña en contra de las franquicias independientes
+
+BIG DECISION
+Decidir si mantener un control estricto sobre las franquicias o permitir más flexibilidad
+
+STAKES
+La reputación de tu marca y el futuro de tus franquiciados
+
+ESCALATION LADDER
+1. Lanzas tu primera franquicia con un amigo como franquiciado. — $10,000 por la licencia.
+2. Abres 5 franquicias en tu ciudad. — $100,000 en total de ventas.
+3. Expandes a 20 franquicias en diferentes ciudades. — $500,000 en total de ventas.
+4. Logras reconocimiento nacional con premios gastronómicos. — Incremento del 50% en la reputación de la marca.
+5. Afrontas la competencia de grandes cadenas de restaurantes. — Desafíos en ventas y reputación.
+
+LIFE PROGRESSION
+start: Tienes un pequeño restaurante con buena reputación.
+early_reward: Recibes elogios de clientes.
+mid_reward: Abres tu primera franquicia.
+major_reward: Ganas un premio nacional.
+late_state: Tienes 150 empleados y tu marca se reconoce internacionalmente.
+
+REWARDS
+- [family] edad: 45 · patrimonio: $5 millones · valuación: $20 millones · empleados: 150 · países: 5 · padres: felices y orgullosos de tu éxito · vivienda: una casa espaciosa en un barrio exclusivo (late_state)
+- [financial] Recibes elogios de clientes. (early_reward)
+- [lifestyle] Abres tu primera franquicia. (mid_reward)
+- [family] Ganas un premio nacional. (major_reward)
+- [status] Tienes 150 empleados y tu marca se reconoce internacionalmente. (late_state)
+- [family] edad: 45 · patrimonio: $5 millones · valuación: $20 millones · empleados: 150 · países: 5 · padres: felices y orgullosos de tu éxito · vivienda: una casa espaciosa en un barrio exc (late_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Un pequeño restaurante con clientes leales pero sin expansión.
+
+END:
+Una cadena de franquicias premiadas y reconocidas en todo el país.
+
+CENTRAL STORY QUESTION
+¿Cómo lograrás escalar tu restaurante sin perder la calidad que lo hizo famoso?
+
+OPEN LOOPS
+1. ¿Qué desafíos enfrentarás al franquiciar tu marca?
+2. ¿Cómo manejarás la presión de los competidores?
+3. ¿Qué decisiones tomarás para mantener la esencia del restaurante?
+4. ¿Quién será tu primer franquiciado y cómo lo elegirás?
+
+HOOK
+Transformas un pequeño restaurante en una exitosa cadena de franquicias que recibe premios gastronómicos. ¿Te imaginas el reconocimiento y la satisfacción de ver tu marca crecer mientras mantienes la calidad que te hizo famoso?
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un pequeño restaurante que se transforma en una exitosa cadena de franquicias.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Tienes un pequeño restaurante con buena reputación en tu ciudad vs edad: 45 · patrimonio: $5 millones · valuación: $20 millones",
+  "emotion": "urgencia contenida",
+  "key_object": "Tu primera franquicia genera $200,000 en ventas en su primer año",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A small restaurant struggling to grow and gain recognition in the market. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "$50,000",
+  "starting_location": "una ciudad mediana en España",
+  "starting_status": "dueño de un restaurante pequeño",
+  "target_outcome": "expandir a 5 franquicias en 5 años",
+  "business_or_career_type": "franquicias de restaurantes",
+  "timeline_scale": "5 años"
+}
+
+ASPIRATIONAL SCORE
+8.05
+
+ASPIRATIONAL EVIDENCE
+1. mecanismo de crecimiento concreto
+2. amenaza competitiva nombrada / de escala
+3. endgame de negocio: Establecerte como la cadena de restaurantes preferida en el país, con múltiples 
+4. escalation_ladder con 5 niveles
+5. scale_ceiling=international
+6. 6 cifras distintas en la progresión
+7. life_progression con 5 etapas
+8. 6 recompensas tipadas
+9. tipos de reward: family, financial, lifestyle, status
+10. vida deseable: padres, patrimonio, reconocimiento
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Convences a tu primer amigo restaurador para abrir una franquicia y le cobras $1; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: Los restaurantes pequeños luchan por crecer y ser reconocidos en el mercado; growth_mechanism: Atraes a más franquiciados a través de la reputación y premios gastronómicos; first_proof: Tu primera franquicia genera $200,000 en ventas en su primer año; major_threat: Una cadena de restaurantes grande lanza una campaña en contra de las franquicias independi
+  aspirational_strength: 9 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; endgame de negocio: Establecerte como la cadena de restaurantes preferida en el país, con múltiples ; escalation_ladder con 5 niveles
+  life_transformation: 6 — life_progression con 5 etapas; tipos de reward: family, financial, lifestyle, status; vida deseable: padres, patrimonio, reconocimiento; completeness=10
+  scale_potential: 8 — scale_ceiling=international; ladder_n=5
+  reward_density: 10 — 6 rewards
+  curiosity: 8 — 4 open_loops; hook_len=227
+  fantasy_strength: 8 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; endgame de negocio: Establecerte como la cadena de restaurantes preferida en el país, con múltiples 
+  filmability: 8 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 9 — Modelo de franquicia que permite a otros replicar tu concepto exitoso
+  sceneability: 3 — Recibes comentarios de clientes que desean disfrutar de tu comida en otros lugares
+  conflict_specificity: 6 — Una cadena de restaurantes grande lanza una campaña en contra de las franquicias independi
+  causal_chain_strength: 7
+  progression_plausibility: 7 — progresión causal aceptable
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 3
+TITLE
+POV: Compras entradas y las revendes a precios premium
+
+OVERALL SCORE
+6.87
+
+PREMISE
+Compras entradas para eventos y las revendes a precios premium en todo el país.
+
+START
+Tienes un trabajo regular y te apasiona asistir a conciertos, pero sientes que podrías aprovechar mejor tu tiempo.
+
+END
+edad: 30 · patrimonio: 200000 · valuación: 500000 · empleados: 5 · países: 1
+
+SPECIFIC OPPORTUNITY
+Las entradas para conciertos populares se agotan rápidamente, creando un mercado secundario lucrativo.
+
+MECHANISM
+Plataforma online para la reventa de entradas a precios premium.
+
+GROWTH ENGINE
+Generas una base de clientes leales mediante experiencias exclusivas y promociones.
+
+MAJOR THREAT
+Una nueva ley que prohíbe la reventa de entradas sin licencia puede cerrar tu negocio.
+
+BIG DECISION
+Decides si invertir en una licencia o adaptarte a un modelo de negocio diferente.
+
+STAKES
+El futuro de tu negocio y tu reputación en el mercado de reventa.
+
+ESCALATION LADDER
+1. Compras 50 entradas para un concierto popular a $50 cada una. — $2,500 de inversión inicial
+2. Revendes las entradas a $150 cada una en menos de 24 horas. — $5,000 de beneficio en un fin de semana
+3. Reinviertes las ganancias en más entradas para otros eventos populares. — Expansión de inventario
+4. Generas una base de clientes leales mediante experiencias exclusivas. — Clientes recurrentes y estabilidad
+5. Te enfrentas a la implementación de medidas para limitar la reventa en plataformas. — Desafíos regulatorios
+6. Decides si invertir en una licencia o adaptarte a un modelo de negocio diferente. — Decisión crítica para el futuro
+7. Consolidas tu negocio como un referente en la reventa premium. — Establecimiento como líder en el mercado
+
+LIFE PROGRESSION
+start: {'description': 'Tienes un trabajo regular y te apasiona asistir a conciertos.', 'stage': 'start'}
+early_reward: {'description': 'Generas un ingreso extra al revender entradas.', 'stage': 'early_reward'}
+mid_reward: {'description': 'Estableces una base de clientes leales.', 'stage': 'mid_reward'}
+major_reward: {'description': 'Amplías tu negocio a otros eventos.', 'stage': 'major_reward'}
+late_state: {'description': 'Eres un emprendedor exitoso con un patrimonio considerable.', 'stage': 'late_state'}
+
+REWARDS
+- [family] edad: 30 · patrimonio: 200000 · valuación: 500000 · empleados: 5 · países: 1 · padres: apoyando tu emprendimiento · vivienda: un departamento en una zona céntrica · control_del_tiempo: flexibilidad para asistir a eventos. (late_state)
+- [financial] Generas un ingreso extra al revender entradas. (early_reward)
+- [lifestyle] Estableces una base de clientes leales. (mid_reward)
+- [family] Amplías tu negocio a otros eventos. (major_reward)
+- [status] Eres un emprendedor exitoso con un patrimonio considerable. (late_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Tienes un trabajo regular y te apasiona asistir a conciertos.
+
+END:
+Eres un emprendedor exitoso en el mercado de reventa de entradas.
+
+CENTRAL STORY QUESTION
+¿Cómo lograrás mantener tu negocio de reventa de entradas ante la creciente competencia?
+
+OPEN LOOPS
+1. ¿Qué harás cuando un competidor ofrezca mejores precios?
+2. ¿Cómo atraerás a los clientes que buscan experiencias exclusivas?
+3. ¿Qué medidas tomarás para evitar la atención de las autoridades?
+4. ¿Quién te apoyará en los momentos difíciles?
+
+HOOK
+Empieza un turno que todavía no es tuyo. Ves a tus amigos frustrados al no conseguir entradas para su banda favorita. Compras 50 entradas para un concierto popular a $50 cada una. Vendes todas las entradas y generas un beneficio de $5000 en un fin de semana.
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un emprendedor exitoso vendiendo entradas a un grupo de personas emocionadas.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "una oficina moderna con un ambiente vibrante",
+  "central_contrast": "Tienes un trabajo regular y te apasiona asistir a conciertos vs eres un emprendedor exitoso en el mercado de reventa de entradas.",
+  "emotion": "urgencia contenida",
+  "key_object": "Las entradas que vendiste y el dinero que ganaste.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: An entrepreneur successfully selling tickets to a group of excited people. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 25,
+  "starting_cash": "$1000",
+  "starting_location": "una ciudad grande",
+  "starting_status": "empleado a tiempo completo",
+  "target_outcome": "convertirte en un emprendedor exitoso",
+  "business_or_career_type": "revendedor de entradas",
+  "timeline_scale": "2 años"
+}
+
+ASPIRATIONAL SCORE
+6.55
+
+ASPIRATIONAL EVIDENCE
+1. endgame de negocio: Consolidar tu negocio como un referente en la reventa premium o cerrar debido a 
+2. escalation_ladder con 7 niveles
+3. scale_ceiling=international
+4. 5 cifras distintas en la progresión
+5. life_progression con 5 etapas
+6. 5 recompensas tipadas
+7. tipos de reward: family, financial, lifestyle, status
+8. vida deseable: patrimonio
+9. start_end_contrast presente
+10. end_state concreto (3 hechos)
+
+SCORE BREAKDOWN
+  specificity: 9 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Revendes las entradas a $150 cada una en menos de 24 horas.; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: Las entradas para conciertos populares se agotan rápidamente, creando un mercado secundari; growth_mechanism: Generas una base de clientes leales mediante experiencias exclusivas y promociones.; first_proof: Vendes todas las entradas y generas un beneficio de $5000 en un fin de semana.; major_threat: Una nueva ley que prohíbe la reventa de entradas sin licencia puede cerrar tu negocio.
+  aspirational_strength: 8 — endgame de negocio: Consolidar tu negocio como un referente en la reventa premium o cerrar debido a ; escalation_ladder con 7 niveles; scale_ceiling=international; 5 cifras distintas en la progresión
+  life_transformation: 2 — life_progression con 5 etapas; tipos de reward: family, financial, lifestyle, status; vida deseable: patrimonio; completeness=9
+  scale_potential: 9 — scale_ceiling=international; ladder_n=7
+  reward_density: 9 — 5 rewards
+  curiosity: 8 — 4 open_loops; hook_len=258
+  fantasy_strength: 5 — endgame de negocio: Consolidar tu negocio como un referente en la reventa premium o cerrar debido a ; escalation_ladder con 7 niveles; scale_ceiling=international
+  filmability: 9 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 7 — sin cliché mayor
+  mechanism_distinctiveness: 9 — Plataforma online para la reventa de entradas a precios premium.
+  sceneability: 8 — Ves a tus amigos frustrados al no conseguir entradas para su banda favorita.
+  conflict_specificity: 6 — Una nueva ley que prohíbe la reventa de entradas sin licencia puede cerrar tu negocio.
+  causal_chain_strength: 8
+  progression_plausibility: 7 — progresión causal aceptable
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 4
+TITLE
+POV: Transformas un restaurante en crisis en una franquicia gourmet
+
+OVERALL SCORE
+6.48
+
+PREMISE
+Transformas un restaurante en crisis en una franquicia de comida gourmet a domicilio, recuperando su prestigio rápidamente.
+
+START
+Un restaurante en crisis con deudas y a punto de cerrar sus puertas.
+
+END
+Alcanzas 20 franquicias en 10 ciudades, con un ingreso mensual de $200,000 y un patrimonio neto de $2 millones.
+
+SPECIFIC OPPORTUNITY
+El restaurante está a punto de cerrar y la demanda de comida gourmet a domicilio está en aumento.
+
+MECHANISM
+Franquicia de restaurantes que combinan experiencias gourmet con entregas rápidas a domicilio.
+
+GROWTH ENGINE
+Iniciar con un restaurante y replicar el modelo en diferentes ciudades a través de franquicias.
+
+MAJOR THREAT
+Una gran cadena de restaurantes anuncia un lanzamiento de su propia línea de comida gourmet a domicilio.
+
+BIG DECISION
+Decidir si invertir en un nuevo proveedor o ajustar el menú para mantener la calidad.
+
+STAKES
+El futuro del restaurante y la posibilidad de expandir la franquicia en el país.
+
+ESCALATION LADDER
+1. Transformas el menú y lanzas el servicio de entrega gourmet. — Primer restaurante exitoso.
+2. Recibes 100 pedidos en la primera semana. — Crecimiento del 70% en ventas.
+3. Abres 5 franquicias en diferentes ciudades. — Expansión regional.
+4. Logras un ingreso mensual de $10,000. — Rentabilidad recuperada.
+5. Aumentas a 20 franquicias en 10 ciudades. — Consolidación nacional.
+6. Te enfrentas a competidores internacionales. — Competencia en el mercado gourmet.
+
+LIFE PROGRESSION
+start: {'description': 'El restaurante enfrenta deudas y una inminente quiebra.'}
+early_reward: {'description': 'Recuperas la rentabilidad inicial con el nuevo menú.'}
+mid_reward: {'description': 'Abres las primeras franquicias y expandes el negocio.'}
+major_reward: {'description': 'Alcanzas un ingreso mensual significativo.'}
+late_state: {'description': 'Consolidación como líder en el mercado gourmet.'}
+
+REWARDS
+- [financial] Alcanzas 20 franquicias en 10 ciudades, con un ingreso mensual de $200,000 y un patrimonio neto de $2 millones. (late_state)
+- [financial] {'description': 'Recuperas la rentabilidad inicial con el nuevo menú.'} (early_reward)
+- [lifestyle] {'description': 'Abres las primeras franquicias y expandes el negocio.'} (mid_reward)
+- [family] {'description': 'Alcanzas un ingreso mensual significativo.'} (major_reward)
+- [status] {'description': 'Consolidación como líder en el mercado gourmet.'} (late_state)
+
+SCALE CEILING
+empire
+
+START → END CONTRAST
+START:
+Un restaurante con deudas y a punto de cerrar.
+
+END:
+Una franquicia de comida gourmet a domicilio, líder en el mercado.
+
+CENTRAL STORY QUESTION
+¿Lograrás revivir un restaurante a punto de cerrar y convertirlo en una exitosa franquicia?
+
+OPEN LOOPS
+1. ¿Qué estrategias utilizarás para atraer a nuevos clientes?
+2. ¿Cómo manejarás la presión de los críticos gastronómicos?
+3. ¿Podrás garantizar calidad y rapidez en el servicio a domicilio?
+4. ¿Qué obstáculos enfrentarás al buscar financiamiento?
+
+HOOK
+¿Te imaginas transformar un restaurante en crisis en una prestigiosa franquicia de comida gourmet a domicilio? Ahora es tu oportunidad de revivir un negocio en apuros y conquistar el mercado de entregas gourmet. Atrévete a dar el primer paso y descubre cómo convertir la adversidad en éxito.
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "El restaurante está a punto de cerrar y la demanda de comida gourmet a domicilio está en aumento.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Un restaurante en crisis con deudas y a punto de cerrar sus  vs Alcanzas 20 franquicias en 10 ciudades, con un ingreso mensu",
+  "emotion": "urgencia contenida",
+  "key_object": "Recibes 100 pedidos en la primera semana y un aumento del 70% en las ventas del",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: El restaurante está a punto de cerrar y la demanda de comida gourmet a domicilio está en aumento.. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 35,
+  "starting_cash": "$10000",
+  "starting_location": "Ciudad principal",
+  "starting_status": "Restaurante en crisis",
+  "target_outcome": "Franquicia de éxito",
+  "business_or_career_type": "Restauración",
+  "timeline_scale": "5 años"
+}
+
+ASPIRATIONAL SCORE
+7.7
+
+ASPIRATIONAL EVIDENCE
+1. mecanismo de crecimiento concreto
+2. amenaza competitiva nombrada / de escala
+3. endgame de negocio: Convertirse en la principal franquicia de comida gourmet a domicilio en el país 
+4. escalation_ladder con 6 niveles
+5. scale_ceiling=empire
+6. 4 cifras distintas en la progresión
+7. life_progression con 5 etapas
+8. 5 recompensas tipadas
+9. tipos de reward: family, financial, lifestyle, status
+10. vida deseable: patrimonio
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Un cliente paga $50 por una cena gourmet a domicilio y deja una reseña positiva.; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: El restaurante está a punto de cerrar y la demanda de comida gourmet a domicilio está en a; growth_mechanism: Iniciar con un restaurante y replicar el modelo en diferentes ciudades a través de franqui; first_proof: Recibes 100 pedidos en la primera semana y un aumento del 70% en las ventas del restaurant; major_threat: Una gran cadena de restaurantes anuncia un lanzamiento de su propia línea de comida gourme
+  aspirational_strength: 9 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; endgame de negocio: Convertirse en la principal franquicia de comida gourmet a domicilio en el país ; escalation_ladder con 6 niveles
+  life_transformation: 4 — life_progression con 5 etapas; tipos de reward: family, financial, lifestyle, status; vida deseable: patrimonio; completeness=10
+  scale_potential: 10 — scale_ceiling=empire; ladder_n=6
+  reward_density: 9 — 5 rewards
+  curiosity: 8 — 4 open_loops; hook_len=291
+  fantasy_strength: 6 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; endgame de negocio: Convertirse en la principal franquicia de comida gourmet a domicilio en el país 
+  filmability: 8 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 9 — Franquicia de restaurantes que combinan experiencias gourmet con entregas rápidas a domici
+  sceneability: 3 — Un crítico gastronómico menciona la falta de opciones gourmet a domicilio en su blog.
+  conflict_specificity: 6 — Una gran cadena de restaurantes anuncia un lanzamiento de su propia línea de comida gourme
+  causal_chain_strength: 8
+  progression_plausibility: 6 — salto grande 10000→2000000
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 5
+TITLE
+POV: Creas una app de nutrición personalizada y te conviertes en referente del bienestar
+
+OVERALL SCORE
+6.42
+
+PREMISE
+Creas una app de nutrición personalizada y te conviertes en el referente del bienestar en el país.
+
+START
+Eres un apasionado de la salud con un trabajo estable, pero sientes que puedes hacer más.
+
+END
+A los 35 años, tienes una app con 250,000 usuarios activos, generando $4.5 millones anuales, un equipo de 20 personas, y has expandido tu marca a otros países.
+
+SPECIFIC OPPORTUNITY
+Las personas buscan soluciones personalizadas para mejorar su salud y nutrición.
+
+MECHANISM
+Modelo de suscripción mensual a $19.99, con contenido premium a $29.99.
+
+GROWTH ENGINE
+Estrategias de marketing digital y colaboraciones con nutricionistas y entrenadores personales.
+
+MAJOR THREAT
+Una gran corporación lanza una app gratuita con características similares y un respaldo publicitario masivo.
+
+BIG DECISION
+Decidir entre vender la app a la corporación para asegurar tu futuro o luchar por mantener tu independencia.
+
+STAKES
+La lealtad de tus usuarios y la supervivencia de tu negocio en un mercado competitivo.
+
+ESCALATION LADDER
+1. Lanzas la app y atraes tus primeros 1,000 usuarios. — Inicias tu camino en el mercado.
+2. Alcanzas 10,000 usuarios activos tras el apoyo de un influencer. — Tu reputación comienza a crecer.
+3. Superas los 100,000 usuarios gracias a campañas de marketing digital. — Te estableces como una opción popular.
+4. Formas alianzas estratégicas con nutricionistas y entrenadores. — Tu credibilidad se refuerza.
+5. Enfrentas la competencia feroz de una gran corporación. — Tu negocio se pone a prueba.
+
+LIFE PROGRESSION
+start: {'description': 'Tienes un trabajo estable y un sueño.', 'type': 'initial'}
+early_reward: {'description': 'Alcanzas tus primeros 1,000 usuarios.', 'type': 'user_growth'}
+mid_reward: {'description': 'Generas tus primeros $199,900 en ingresos anuales.', 'type': 'financial'}
+major_reward: {'description': 'Contratas un equipo de desarrollo tras alcanzar 10,000 usuarios.', 'type': 'team_growth'}
+late_state: {'description': 'Eres un empresario exitoso y reconocido en el sector de la salud.', 'type': 'success'}
+
+REWARDS
+- [financial] A los 35 años, tienes una app con 250,000 usuarios activos, generando $4.5 millones anuales, un equipo de 20 personas, y has expandido tu marca a otros países. (late_state)
+- [financial] {'description': 'Alcanzas tus primeros 1,000 usuarios.', 'type': 'user_growth'} (early_reward)
+- [lifestyle] {'description': 'Generas tus primeros $199,900 en ingresos anuales.', 'type': 'financial'} (mid_reward)
+- [family] {'description': 'Contratas un equipo de desarrollo tras alcanzar 10,000 usuarios.', 'type': 'team_growth'} (major_reward)
+- [status] {'description': 'Eres un empresario exitoso y reconocido en el sector de la salud.', 'type': 'success'} (late_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Tienes un trabajo estable y un sueño.
+
+END:
+Eres un empresario exitoso y reconocido en el sector de la salud.
+
+CENTRAL STORY QUESTION
+¿Cómo puede el protagonista mantener su liderazgo en un mercado que se vuelve cada vez más competitivo?
+
+OPEN LOOPS
+1. ¿Qué harán los competidores para intentar superarte?
+2. ¿Cómo atraerás a más usuarios a tu app?
+3. ¿Qué innovaciones introducirás para mantenerte relevante?
+4. ¿Podrás mantener la calidad del servicio a medida que escalas?
+5. ¿Qué decisiones difíciles tendrás que tomar para crecer?
+
+HOOK
+¿Te imaginas crear una app de nutrición personalizada que te lleve a ser el referente del bienestar en tu país? Con cada usuario satisfecho, tu reputación crece y las oportunidades se multiplican. Pero, ¿podrás mantener tu liderazgo ante la feroz competencia?
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un apasionado de la salud trabajando en su computadora, desarrollando una app.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "oficina moderna y ordenada",
+  "central_contrast": "Eres un apasionado de la salud con un trabajo estable, pero vs A los 35 años, tienes una app con 250,000 usuarios activos.",
+  "emotion": "urgencia contenida",
+  "key_object": "Alcanzas 10,000 usuarios activos en el primer trimestre y recibes una calificación",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A health enthusiast working on their computer, developing an app. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 28,
+  "starting_cash": "$5000",
+  "starting_location": "una ciudad mediana en España",
+  "starting_status": "empleado en una empresa de salud",
+  "target_outcome": "convertirse en un líder en el sector del bienestar digital",
+  "business_or_career_type": "emprendimiento tecnológico",
+  "timeline_scale": "5 años"
+}
+
+ASPIRATIONAL SCORE
+6.6
+
+ASPIRATIONAL EVIDENCE
+1. escalation_ladder con 5 niveles
+2. scale_ceiling=international
+3. 4 cifras distintas en la progresión
+4. life_progression con 5 etapas
+5. 5 recompensas tipadas
+6. tipos de reward: family, financial, lifestyle, status
+7. start_end_contrast presente
+8. end_state concreto (3 hechos)
+9. end_money≈4500000
+10. delta de status
+
+SCORE BREAKDOWN
+  specificity: 9 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Un influencer de salud comienza a usar tu app y comparte su experiencia, atrayen; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: Las personas buscan soluciones personalizadas para mejorar su salud y nutrición.; growth_mechanism: Estrategias de marketing digital y colaboraciones con nutricionistas y entrenadores person; first_proof: Alcanzas 10,000 usuarios activos en el primer trimestre y recibes una calificación promedi; major_threat: Una gran corporación lanza una app gratuita con características similares y un respaldo pu
+  aspirational_strength: 7 — escalation_ladder con 5 niveles; scale_ceiling=international; 4 cifras distintas en la progresión; life_progression con 5 etapas
+  life_transformation: 4 — life_progression con 5 etapas; tipos de reward: family, financial, lifestyle, status; start_end_contrast presente; completeness=8
+  scale_potential: 8 — scale_ceiling=international; ladder_n=5
+  reward_density: 9 — 5 rewards
+  curiosity: 8 — 5 open_loops; hook_len=259
+  fantasy_strength: 6 — escalation_ladder con 5 niveles; scale_ceiling=international; 4 cifras distintas en la progresión
+  filmability: 8 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 7 — sin cliché mayor
+  mechanism_distinctiveness: 9 — Modelo de suscripción mensual a $19.99, con contenido premium a $29.99.
+  sceneability: 3 — Recibes comentarios constantes de amigos y familiares que luchan con sus dietas.
+  conflict_specificity: 6 — Una gran corporación lanza una app gratuita con características similares y un respaldo pu
+  causal_chain_strength: 7
+  progression_plausibility: 7 — progresión causal aceptable
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 6
+TITLE
+POV: Compras una lavandería en quiebra y la transformas en una franquicia nacional
+
+OVERALL SCORE
+6.4
+
+PREMISE
+Compras una lavandería en quiebra y la transformas en una franquicia reconocida a nivel nacional.
+
+START
+Propietario de una lavandería en quiebra, con una inversión de $30,000 y una base de clientes mínima.
+
+END
+age: 35 · net_worth: 1000000 · valuation: 5000000 · employees: 50 · countries: 5 · parents: apoyan tu emprendimiento · housing: vives en una casa moderna en la ciudad · time_control: tienes más tiempo libre para tu familia
+
+SPECIFIC OPPORTUNITY
+Las lavanderías en quiebra tienen equipos y local a bajo costo.
+
+MECHANISM
+Franquicia que ofrece servicio de lavandería con entrega a domicilio y descuentos para clientes frecuentes.
+
+GROWTH ENGINE
+Expansión a través de franquicias, donde cada nuevo local reduce costos operativos mediante compras al por mayor.
+
+MAJOR THREAT
+Una cadena de lavanderías nacional decide abrir una sucursal a solo dos calles de tu primera franquicia.
+
+BIG DECISION
+Decidir entre invertir más en marketing para competir o bajar precios y arriesgar la rentabilidad.
+
+STAKES
+Tu reputación como emprendedor y el futuro de la franquicia que has comenzado.
+
+ESCALATION LADDER
+1. Compras la lavandería en quiebra por $30,000. — Te vuelves propietario de un negocio con potencial.
+2. Reformas el local y mejoras el servicio. — Aumentas la satisfacción del cliente y la visibilidad del negocio.
+3. Atraes a 50 nuevos clientes en el primer mes. — Comienzas a generar ingresos y confianza en el mercado.
+4. Recibes tu primera ganancia neta de $10,000. — Tu negocio comienza a ser rentable.
+5. Abres 5 franquicias en la ciudad. — Tu marca se establece localmente.
+6. Expandes a otras ciudades. — Tu franquicia se vuelve nacional.
+7. Compites con una cadena nacional. — Enfrentas a grandes rivales en el sector.
+
+LIFE PROGRESSION
+start: Empiezas con una inversión de $30,000 y una lavandería en quiebra.
+early_reward: Logras atraer a tus primeros 50 clientes.
+mid_reward: Recibes tu primera ganancia neta de $10,000.
+major_reward: Abres 5 franquicias en la ciudad.
+late_state: Vives en una casa moderna y tienes más tiempo para tu familia.
+
+REWARDS
+- [financial] Recibes tu primera ganancia neta de $10,000. (early_reward)
+- [family] Tienes más tiempo libre para tu familia. (late_state)
+- [financial] Tu reputación como emprendedor crece. (mid_reward)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Propietario de una lavandería en quiebra, luchando por sobrevivir.
+
+END:
+Dueño de una cadena de lavanderías exitosa con reconocimiento nacional.
+
+CENTRAL STORY QUESTION
+¿Podrás convertir una lavandería en quiebra en una franquicia exitosa a nivel nacional?
+
+OPEN LOOPS
+1. ¿Qué estrategias usarás para atraer a tus primeros clientes?
+2. ¿Cómo enfrentarás la competencia de lavanderías establecidas?
+3. ¿Qué cambios implementarás para mejorar el servicio?
+4. ¿Quién te apoyará en este viaje empresarial?
+
+HOOK
+¿Te atreverías a convertir una lavandería en quiebra en una franquicia reconocida a nivel nacional? Con esfuerzo y estrategias inteligentes, podrías cambiar tu vida y la de muchos otros. ¡Descubre cómo hacerlo!
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Transformación de una lavandería en quiebra en una exitosa franquicia.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Propietario de una lavandería en quiebra, con una inversión vs dueño de una cadena de lavanderías exitosa con reconocimiento nacional.",
+  "emotion": "urgencia contenida",
+  "key_object": "Logras atraer a 50 nuevos clientes en el primer mes tras la reestructuración.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: Transformación de una lavandería en quiebra en una exitosa franquicia. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "$30000",
+  "starting_location": "una ciudad mediana",
+  "starting_status": "emprendedor con experiencia limitada",
+  "target_outcome": "franquicia nacional exitosa",
+  "business_or_career_type": "lavandería",
+  "timeline_scale": "2 años"
+}
+
+ASPIRATIONAL SCORE
+6.25
+
+ASPIRATIONAL EVIDENCE
+1. mecanismo de crecimiento concreto
+2. amenaza competitiva nombrada / de escala
+3. endgame de negocio: Convertirte en una marca nacional de lavandería o cerrar todas las franquicias y
+4. escalation_ladder con 7 niveles
+5. scale_ceiling=international
+6. 2 cifras distintas en la progresión
+7. life_progression con 5 etapas
+8. 3 recompensas tipadas
+9. start_end_contrast presente
+10. end_state concreto (4 hechos)
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Un cliente habitual regresa y te dice que le encanta el nuevo servicio de entreg; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: Las lavanderías en quiebra tienen equipos y local a bajo costo.; growth_mechanism: Expansión a través de franquicias, donde cada nuevo local reduce costos operativos mediant; first_proof: Logras atraer a 50 nuevos clientes en el primer mes tras la reestructuración.; major_threat: Una cadena de lavanderías nacional decide abrir una sucursal a solo dos calles de tu prime
+  aspirational_strength: 8 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; endgame de negocio: Convertirte en una marca nacional de lavandería o cerrar todas las franquicias y; escalation_ladder con 7 niveles
+  life_transformation: 3 — life_progression con 5 etapas; start_end_contrast presente; end_state concreto (4 hechos); completeness=8
+  scale_potential: 9 — scale_ceiling=international; ladder_n=7
+  reward_density: 5 — 3 rewards
+  curiosity: 8 — 4 open_loops; hook_len=210
+  fantasy_strength: 6 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; endgame de negocio: Convertirte en una marca nacional de lavandería o cerrar todas las franquicias y
+  filmability: 9 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 7 — Franquicia que ofrece servicio de lavandería con entrega a domicilio y descuentos para cli
+  sceneability: 5 — Ves un local con letrero de 'se traspasa' mientras buscas oportunidades de negocio.
+  conflict_specificity: 6 — Una cadena de lavanderías nacional decide abrir una sucursal a solo dos calles de tu prime
+  causal_chain_strength: 6
+  progression_plausibility: 7 — progresión causal aceptable
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 7
+TITLE
+POV: Adquieres un pequeño hotel y lo transformas en una cadena hotelera de lujo
+
+OVERALL SCORE
+6.21
+
+PREMISE
+Adquieres un pequeño hotel y lo transformas en una cadena hotelera de lujo reconocida mundialmente.
+
+START
+Propietario de un pequeño hotel con capacidades limitadas y un servicio inconsistente.
+
+END
+edad: 45 · patrimonio: $15 millones · valuación: $50 millones · empleados: 150 · países: 5 · padres: viven cómodamente · vivienda: casa en una zona exclusiva · control_del_tiempo: flexibilidad para viajar y disfrutar de la vida
+
+SPECIFIC OPPORTUNITY
+El pequeño hotel tiene una ubicación privilegiada en una zona turística emergente.
+
+MECHANISM
+Modelo de negocio basado en ofrecer experiencias exclusivas y personalizadas a los huéspedes.
+
+GROWTH ENGINE
+Utilizas el boca a boca y las redes sociales para atraer a nuevos clientes de alto poder adquisitivo.
+
+MAJOR THREAT
+Una cadena hotelera internacional abre un establecimiento de lujo a pocos kilómetros del tuyo.
+
+BIG DECISION
+Decidir si asociarte con un grupo de inversión para expandir rápidamente o continuar creciendo de manera orgánica.
+
+STAKES
+Tu reputación y la viabilidad financiera del hotel que has transformado.
+
+ESCALATION LADDER
+1. Renovación del hotel con un enfoque en el lujo — Aumento del 50% en la satisfacción del cliente.
+2. Ganar un premio local como mejor hotel boutique — Incremento del 100% en reservas gracias a la reputación.
+3. Expansión a una segunda ubicación en otra ciudad — Diversificación de ingresos y aumento de la marca.
+4. Apertura de tres nuevos hoteles en diferentes países — Reconocimiento internacional como marca de lujo.
+5. Asociación con un grupo de inversión para expansión masiva — Aumento del 300% en la capacidad de operación.
+6. Apertura de un hotel insignia en una ubicación icónica — Atracción de celebridades y viajeros de alto perfil.
+7. Convertirse en la marca de lujo más reconocida en el sector hotelero — Dominio del mercado y lealtad de clientes.
+
+LIFE PROGRESSION
+start: {'description': 'Propietario de un pequeño hotel con capacidades limitadas y un servicio inconsistente.', 'story_beat': 'start'}
+early_reward: {'description': 'Ganas un premio local como mejor hotel boutique.', 'story_beat': 'early_reward'}
+mid_reward: {'description': 'Logras un aumento del 150% en las reservas en el primer año tras las mejoras.', 'story_beat': 'mid_reward'}
+major_reward: {'description': 'Expansión a una segunda ubicación en otra ciudad.', 'story_beat': 'major_reward'}
+late_state: {'description': 'Edad: 45 años, patrimonio: $15 millones, empleados: 150, presencia en 5 países, vivienda en una zona exclusiva.', 'story_beat': 'late_state'}
+
+REWARDS
+- [financial] Patrimonio de $15 millones y valuación de $50 millones. (late_state)
+- [financial] Ganas un premio local como mejor hotel boutique. (early_reward)
+- [financial] Apertura de tres nuevos hoteles en diferentes países. (major_reward)
+- [financial] {'description': 'Ganas un premio local como mejor hotel boutique.', 'story_beat': 'early_reward'} (early_reward)
+- [lifestyle] {'description': 'Logras un aumento del 150% en las reservas en el primer año tras las mejoras.', 'story_beat': 'mid_reward'} (mid_reward)
+- [family] {'description': 'Expansión a una segunda ubicación en otra ciudad.', 'story_beat': 'major_reward'} (major_reward)
+- [status] {'description': 'Edad: 45 años, patrimonio: $15 millones, empleados: 150, presencia en 5 países, vivienda en una zona exclusiva.', 'story_beat': 'late_state'} (late_state)
+- [family] edad: 45 · patrimonio: $15 millones · valuación: $50 millones · empleados: 150 · países: 5 · padres: viven cómodamente · vivienda: casa en una zona exclusiva · control_del_tiempo: (late_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Un pequeño hotel que lucha por mantenerse a flote.
+
+END:
+Una cadena hotelera de lujo con presencia internacional y reputación impecable.
+
+CENTRAL STORY QUESTION
+¿Cómo convertirás un modesto hotel en una marca de lujo sin perder la esencia del servicio personalizado?
+
+OPEN LOOPS
+1. ¿Qué decisiones tomarás para mejorar la experiencia del cliente?
+2. ¿Cómo enfrentarás la competencia de cadenas hoteleras consolidadas?
+3. ¿Cuál será tu estrategia para atraer a celebridades y viajeros de alto perfil?
+4. ¿Qué obstáculos inesperados surgirán durante la expansión?
+5. ¿Cómo manejarás la presión de los inversores que buscan resultados rápidos?
+
+HOOK
+¿Te imaginas adquirir un pequeño hotel y convertirlo en una cadena de lujo?
+
+La clave está en mantener la esencia del servicio personalizado mientras escalas a nivel internacional.
+
+Cada decisión cuenta en esta aventura empresarial.
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "El pequeño hotel tiene una ubicación privilegiada en una zona turística emergente.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Propietario de un pequeño hotel con capacidades limitadas vs edad: 45 · patrimonio: $15 millones · valuación: $50 millones · empleados: 150 · países: 5 · padres: viven cómodamente · vivienda: casa en una zona exclusiva",
+  "emotion": "urgencia contenida",
+  "key_object": "Logras un aumento del 150% en las reservas en el primer año tras las mejoras.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: The small hotel has a prime location in an emerging tourist area. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "50,000",
+  "starting_location": "una pequeña ciudad costera",
+  "starting_status": "Propietario de un pequeño hotel con capacidades limitadas.",
+  "target_outcome": "Convertirse en una cadena hotelera de lujo internacional.",
+  "business_or_career_type": "hospitalidad",
+  "timeline_scale": "10 años"
+}
+
+ASPIRATIONAL SCORE
+8.3
+
+ASPIRATIONAL EVIDENCE
+1. mecanismo de crecimiento concreto
+2. amenaza competitiva nombrada / de escala
+3. escalation_ladder con 7 niveles
+4. scale_ceiling=international
+5. 2 cifras distintas en la progresión
+6. fantasía de ownership/control
+7. life_progression con 5 etapas
+8. 8 recompensas tipadas
+9. tipos de reward: family, financial, lifestyle, status
+10. vida deseable: padres, viaj, patrimonio
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Recibes una crítica positiva de un influyente blog de viajes tras la renovación.; problema/oportunidad concreta; mecanismo de crecimiento concreto
+  story_engine_strength: 10 — specific_opportunity: El pequeño hotel tiene una ubicación privilegiada en una zona turística emergente.; growth_mechanism: Utilizas el boca a boca y las redes sociales para atraer a nuevos clientes de alto poder a; first_proof: Logras un aumento del 150% en las reservas en el primer año tras las mejoras.; major_threat: Una cadena hotelera internacional abre un establecimiento de lujo a pocos kilómetros del t
+  aspirational_strength: 10 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; escalation_ladder con 7 niveles; scale_ceiling=international
+  life_transformation: 5 — fantasía de ownership/control; life_progression con 5 etapas; tipos de reward: family, financial, lifestyle, status; completeness=10
+  scale_potential: 9 — scale_ceiling=international; ladder_n=7
+  reward_density: 10 — 8 rewards
+  curiosity: 8 — 5 open_loops; hook_len=232
+  fantasy_strength: 7 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; escalation_ladder con 7 niveles
+  filmability: 9 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 6 — Modelo de negocio basado en ofrecer experiencias exclusivas y personalizadas a los huésped
+  sceneability: 3 — Observas que el hotel llena su capacidad cada fin de semana, pero la calidad del servicio 
+  conflict_specificity: 4 — Una cadena hotelera internacional abre un establecimiento de lujo a pocos kilómetros del t
+  causal_chain_strength: 6
+  progression_plausibility: 7 — progresión causal aceptable
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 8
+TITLE
+POV: Creas un marketplace para artistas emergentes
+
+OVERALL SCORE
+5.81
+
+PREMISE
+Creas un marketplace donde artistas emergentes pueden vender su trabajo directamente a coleccionistas.
+
+START
+Tienes un sitio web básico y una inversión inicial de $200.
+
+END
+edad: 31 · patrimonio: $200,000 · valuación: $5,000,000 · empleados: 15 · países: 5
+
+SPECIFIC OPPORTUNITY
+Los artistas emergentes tienen dificultades para llegar a coleccionistas sin un intermediario.
+
+MECHANISM
+Marketplace donde artistas emergentes reciben el 80% de las ventas.
+
+GROWTH ENGINE
+Campañas de marketing en redes sociales y colaboraciones con influencers del arte.
+
+MAJOR THREAT
+Una plataforma de arte establecida lanza una sección para artistas emergentes con tarifas más bajas.
+
+BIG DECISION
+Decidir si invertir en publicidad agresiva o mejorar la experiencia del usuario.
+
+STAKES
+La viabilidad del marketplace y la capacidad de los artistas emergentes para ser vistos.
+
+ESCALATION LADDER
+1. Lanzas el sitio web con 10 artistas. — Primeras ventas y retroalimentación positiva.
+2. Aumentas a 50 artistas en la plataforma. — Mayor variedad de obras y atracción de coleccionistas.
+3. Generas $4,000 de ingresos en el primer trimestre. — Estableces credibilidad y consigues más artistas.
+4. Te enfrentas a un artista famoso que se une a la competencia. — Necesitas diferenciarte y mejorar tu propuesta.
+5. Implementas campañas de marketing en redes sociales. — Aumentan las ventas y la visibilidad de los artistas.
+6. Logras 200 artistas en la plataforma. — Te posicionas como un competidor serio en el mercado.
+7. Conviertes tu marketplace en la preferida para artistas emergentes. — Estableces una comunidad sólida de artistas y coleccionistas.
+8. Eres adquirido por una gran empresa o mantienes el liderazgo en el nicho. — Consolidación del negocio y expansión a nuevos mercados.
+
+LIFE PROGRESSION
+start: Tienes un sitio web básico y solo 10 artistas.
+early_reward: Alcanza $4,000 en ingresos trimestrales.
+mid_reward: Logras 200 artistas en la plataforma.
+major_reward: Conviertes tu marketplace en la preferida para artistas emergentes.
+late_state: Eres adquirido por una gran empresa o mantienes el liderazgo en el nicho.
+
+REWARDS
+- [status] Alcanza $4,000 en ingresos trimestrales, con 200 artistas en la plataforma y reconocimiento nacional. (late_state)
+- [financial] Alcanza $4,000 en ingresos trimestrales. (early_reward)
+- [lifestyle] Logras 200 artistas en la plataforma. (mid_reward)
+- [family] Conviertes tu marketplace en la preferida para artistas emergentes. (major_reward)
+- [status] Eres adquirido por una gran empresa o mantienes el liderazgo en el nicho. (late_state)
+- [financial] edad: 31 · patrimonio: $200,000 · valuación: $5,000,000 · empleados: 15 · países: 5 (late_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Tienes un sitio web básico y solo 10 artistas.
+
+END:
+Eres la plataforma favorita de 200 artistas, generando $4,000 cada trimestre.
+
+CENTRAL STORY QUESTION
+¿Cómo lograr que los artistas emergentes sean vistos por los coleccionistas en un mercado saturado?
+
+OPEN LOOPS
+1. ¿Qué estrategias usarás para atraer a los primeros artistas?
+2. ¿Cómo enfrentarás la competencia de plataformas establecidas?
+3. ¿Qué medidas tomarás para garantizar la calidad de las obras vendidas?
+4. ¿Cómo construirás una comunidad leal entre artistas y coleccionistas?
+
+HOOK
+Tienes 28 años en ciudad grande. Tienes $200 en la cuenta.
+
+Asistes a una exposición y ves a varios artistas talentosos sin compradores.
+
+Creas un sitio web simple y lo lanzas con una pequeña inversión de $200.
+
+Un total de 10 obras vendidas en el primer mes.
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Los artistas emergentes luchan por ser vistos por coleccionistas en un mercado saturado.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Tienes un sitio web básico y una inversión inicial de $200. vs Alcanza $4,000 en ingresos trimestrales, con 200 artistas en la plataforma.",
+  "emotion": "urgencia contenida",
+  "key_object": "Un total de 10 obras vendidas en el primer mes.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: Emerging artists struggle to reach collectors without a middleman. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 28,
+  "starting_cash": "$200",
+  "starting_location": "ciudad grande",
+  "starting_status": "entusiasta del arte",
+  "target_outcome": "convertirte en líder en el mercado de arte emergente",
+  "business_or_career_type": "emprendimiento en arte",
+  "timeline_scale": "3 años"
+}
+
+ASPIRATIONAL SCORE
+7.3
+
+ASPIRATIONAL EVIDENCE
+1. amenaza competitiva nombrada / de escala
+2. escalation_ladder con 8 niveles
+3. scale_ceiling=international
+4. 5 cifras distintas en la progresión
+5. life_progression con 5 etapas
+6. 6 recompensas tipadas
+7. tipos de reward: family, financial, lifestyle, status
+8. vida deseable: patrimonio
+9. start_end_contrast presente
+10. end_state concreto (4 hechos)
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; problema/oportunidad concreta; transacción/precio concreto; mecanismo de crecimiento concreto
+  story_engine_strength: 10 — specific_opportunity: Los artistas emergentes tienen dificultades para llegar a coleccionistas sin un intermedia; growth_mechanism: Campañas de marketing en redes sociales y colaboraciones con influencers del arte.; first_proof: Un total de 10 obras vendidas en el primer mes.; major_threat: Una plataforma de arte establecida lanza una sección para artistas emergentes con tarifas 
+  aspirational_strength: 8 — amenaza competitiva nombrada / de escala; escalation_ladder con 8 niveles; scale_ceiling=international; 5 cifras distintas en la progresión
+  life_transformation: 4 — life_progression con 5 etapas; tipos de reward: family, financial, lifestyle, status; vida deseable: patrimonio; completeness=10
+  scale_potential: 9 — scale_ceiling=international; ladder_n=8
+  reward_density: 10 — 6 rewards
+  curiosity: 8 — 4 open_loops; hook_len=259
+  fantasy_strength: 6 — amenaza competitiva nombrada / de escala; escalation_ladder con 8 niveles; scale_ceiling=international
+  filmability: 9 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 8 — Marketplace donde artistas emergentes reciben el 80% de las ventas.
+  sceneability: 5 — Asistes a una exposición y ves a varios artistas talentosos sin compradores.
+  conflict_specificity: 6 — Una plataforma de arte establecida lanza una sección para artistas emergentes con tarifas 
+  causal_chain_strength: 8
+  progression_plausibility: 4 — salto 4000→5000000 (x1250)
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 9
+TITLE
+POV: Vendes un software de IA a talleres mecánicos
+
+OVERALL SCORE
+4.84
+
+PREMISE
+Vendes un software de inteligencia artificial a talleres mecánicos que optimiza su tiempo y aumenta sus ganancias; suscríbete desde $99/mes y expande a toda la red nacional.
+
+START
+Eres un joven emprendedor que trabaja en un taller mecánico y ves una oportunidad de negocio.
+
+END
+edad: 30 · patrimonio: $2 millones · valuación: $10 millones · empleados: 20 · países: 5 · padres: apoyan tu emprendimiento · vivienda: vives en una casa propia · control del tiempo: puedes elegir tus horarios
+
+SPECIFIC OPPORTUNITY
+Los talleres pierden trabajos después de las 18h porque nadie contesta el teléfono.
+
+MECHANISM
+SaaS de suscripción para reservas fuera de horario en talleres.
+
+GROWTH ENGINE
+Referidos entre dueños y luego grupos multi-local de concesionarios.
+
+MAJOR THREAT
+La plataforma más grande de gestión de talleres copia la función y la incluye gratis.
+
+BIG DECISION
+Vender al incumbente o pelear como especialista.
+
+STAKES
+Tus usuarios y si los talleres independientes siguen teniendo opción.
+
+ESCALATION LADDER
+1. Consigues tu primer taller como cliente. — MRR de $99
+2. Aumentas a 5 talleres suscritos. — MRR de $495
+3. Logras que 50 talleres se unan a tu software. — MRR de $4,950
+4. Comienzas a ofrecer tu servicio a concesionarios. — MRR de $20,000
+5. Enfrentas la competencia de una plataforma gigante que ofrece tu servicio gratis. — Pérdida de clientes y necesidad de innovar.
+
+LIFE PROGRESSION
+start: Eres un recepcionista que cierra el taller a las 18:00.
+early_reward: Logras que tu primer taller confíe en tu software.
+mid_reward: Consigues que 5 talleres se suscriban.
+major_reward: Suficiente MRR para dejar el mostrador.
+late_state: Eres un empresario que gestiona un SaaS con clientes en varios países.
+
+REWARDS
+- [freedom] edad: 30 · patrimonio: $2 millones · valuación: $10 millones · empleados: 20 · países: 5 · padres: apoyan tu emprendimiento · vivienda: vives en una casa propia · control del tiempo: puedes elegir tus horarios (late_state)
+- [financial] Valuación de $10 millones gracias a la expansión. (major_reward)
+- [financial] Transformación de la industria de talleres mecánicos. (end_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Eres un recepcionista que cierra el taller a las 18:00.
+
+END:
+Eres un empresario que gestiona un SaaS con clientes en varios países.
+
+CENTRAL STORY QUESTION
+¿Podrás competir contra una plataforma gigante que copia tu idea y la ofrece gratis?
+
+OPEN LOOPS
+1. ¿Cómo convencerás a los dueños de talleres de que confíen en la IA?
+2. ¿Qué harás cuando tu primer cliente se sienta insatisfecho?
+3. ¿Podrás encontrar un nicho que te diferencie de la competencia?
+4. ¿Cómo manejarás la presión de un competidor que lanza una versión gratuita?
+
+HOOK
+¿Te imaginas optimizar los trabajos de un taller mecánico con inteligencia artificial? ¿Y si pudieras hacerlo desde $99 al mes? 
+Vas a convertirte en el referente de la industria mientras los talleres aumentan sus ganancias y tú escalas a nivel nacional.
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Los talleres pierden trabajos después de las 18h porque nadie contesta el teléfono.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Eres un joven emprendedor que trabaja en un taller mecánico vs edad: 30 · patrimonio: $2 millones · valuación: $10 millones · empleados: 20 · países: 5.",
+  "emotion": "urgencia contenida",
+  "key_object": "43 trabajos agendados el primer mes.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: Workshops lose jobs after 6 PM because no one answers the phone. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 20,
+  "starting_cash": "$500",
+  "starting_location": "taller mecánico local",
+  "starting_status": "empleado",
+  "target_outcome": "convertirte en un empresario exitoso",
+  "business_or_career_type": "emprendimiento tecnológico",
+  "timeline_scale": "5 años"
+}
+
+ASPIRATIONAL SCORE
+7.45
+
+ASPIRATIONAL EVIDENCE
+1. mecanismo de crecimiento concreto
+2. amenaza competitiva nombrada / de escala
+3. escalation_ladder con 5 niveles
+4. scale_ceiling=international
+5. 6 cifras distintas en la progresión
+6. life_progression con 5 etapas
+7. 3 recompensas tipadas
+8. vida deseable: padres, patrimonio, horario
+9. start_end_contrast presente
+10. end_state concreto (6 hechos)
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Tu dueño paga $99/mes si agenda trabajos reales.; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: Los talleres pierden trabajos después de las 18h porque nadie contesta el teléfono.; growth_mechanism: Referidos entre dueños y luego grupos multi-local de concesionarios.; first_proof: 43 trabajos agendados el primer mes.; major_threat: La plataforma más grande de gestión de talleres copia la función y la incluye gratis.
+  aspirational_strength: 9 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; escalation_ladder con 5 niveles; scale_ceiling=international
+  life_transformation: 6 — life_progression con 5 etapas; vida deseable: padres, patrimonio, horario; start_end_contrast presente; completeness=10
+  scale_potential: 8 — scale_ceiling=international; ladder_n=5
+  reward_density: 6 — 3 rewards
+  curiosity: 8 — 4 open_loops; hook_len=254
+  fantasy_strength: 8 — mecanismo de crecimiento concreto; amenaza competitiva nombrada / de escala; escalation_ladder con 5 niveles
+  filmability: 8 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 9 — SaaS de suscripción para reservas fuera de horario en talleres.
+  sceneability: 8 — Ves al dueño cerrar mientras el teléfono sigue sonando.
+  conflict_specificity: 8 — La plataforma más grande de gestión de talleres copia la función y la incluye gratis.
+  causal_chain_strength: 4
+  progression_plausibility: 1 — salto 20000→10000000 (x500); delta total enorme con ladder corta; ingresos chicos vs valuación enorme
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+========================================================================
+RANK 10
+TITLE
+POV: Lanzas un canal de YouTube de deportes extremos y te vuelves un referente
+
+OVERALL SCORE
+4.19
+
+PREMISE
+Lanzas un canal de YouTube centrado en deportes extremos y te conviertes en un influyente en la comunidad.
+
+START
+Eres un amante de los deportes extremos con una cámara y una idea.
+
+END
+edad: 30 · patrimonio: $500,000 · valoración: $1,000,000 · empleados: 5 · países: 3 · padres: independientes · vivienda: casa propia · control del tiempo: flexible
+
+SPECIFIC OPPORTUNITY
+El auge de los deportes extremos ha llevado a una creciente demanda de contenido auténtico y emocionante.
+
+MECHANISM
+Generar ingresos mediante publicidad y patrocinadores interesados en la audiencia de deportes extremos.
+
+GROWTH ENGINE
+Colaboraciones con otros influencers y participación en competencias para aumentar visibilidad.
+
+MAJOR THREAT
+Una plataforma de video rival lanza un programa de monetización más atractivo para creadores de contenido.
+
+BIG DECISION
+Decidir si invertir en publicidad pagada para promocionar tu canal o continuar creciendo orgánicamente.
+
+STAKES
+La viabilidad de tu carrera como creador de contenido y la posibilidad de vivir de tus pasiones.
+
+ESCALATION LADDER
+1. Subes tu primer video de acrobacias en skateboarding. — Recibes 10,000 vistas en la primera semana.
+2. Alcanzas 50,000 suscriptores en el primer año. — Empiezas a generar ingresos mediante publicidad.
+3. Recibes tu primer cheque de YouTube por $1,000. — Te sientes motivado y decides invertir en mejor equipo.
+4. Haces colaboraciones con otros influencers. — Aumentas tu visibilidad y seguidores.
+5. Participas en eventos en vivo de deportes extremos. — Recibes propuestas de patrocinio de marcas reconocidas.
+6. Lanzas tu propia línea de productos relacionados con deportes extremos. — Te conviertes en un referente en el mercado.
+
+LIFE PROGRESSION
+start: {'description': 'Eres un aficionado que graba sus acrobacias en el parque.', 'rewards': []}; {'description': 'Tu primer video recibe 10,000 vistas.', 'rewards': ['$500 en donaciones']}
+early_reward: {'description': 'Alcanzas 50,000 suscriptores en el primer año.', 'rewards': ['$1,000 de cheque de YouTube']}
+mid_reward: {'description': 'Haces colaboraciones con otros influencers.', 'rewards': ['Incremento en seguidores']}
+major_reward: {'description': 'Participas en eventos en vivo.', 'rewards': ['Patrocinios de marcas']}
+late_state: {'description': 'Eres un referente de los deportes extremos.', 'rewards': ['Lanzas tu propia línea de productos']}
+
+REWARDS
+- [lifestyle] edad: 30 · patrimonio: $500,000 · valoración: $1,000,000 · empleados: 5 · países: 3 · padres: independientes · vivienda: casa propia · control del tiempo: flexible (late_state)
+- [financial] {'description': 'Alcanzas 50,000 suscriptores en el primer año.', 'rewards': ['$1,000 de cheque de YouTube']} (early_reward)
+- [lifestyle] {'description': 'Haces colaboraciones con otros influencers.', 'rewards': ['Incremento en seguidores']} (mid_reward)
+- [family] {'description': 'Participas en eventos en vivo.', 'rewards': ['Patrocinios de marcas']} (major_reward)
+- [status] {'description': 'Eres un referente de los deportes extremos.', 'rewards': ['Lanzas tu propia línea de productos']} (late_state)
+
+SCALE CEILING
+international
+
+START → END CONTRAST
+START:
+Eres un aficionado que graba sus acrobacias en el parque.
+
+END:
+Eres un referente de los deportes extremos con miles de seguidores y un negocio exitoso.
+
+CENTRAL STORY QUESTION
+¿Cómo lograrás destacar en un mercado saturado y monetizar tu contenido?
+
+OPEN LOOPS
+1. ¿Lograrás superar la competencia de otros creadores de contenido?
+2. ¿Cómo atraerás a tus primeros suscriptores?
+3. ¿Qué estrategias utilizarás para monetizar tu canal?
+4. ¿Qué impacto tendrá tu contenido en la comunidad de deportes extremos?
+
+HOOK
+Tienes 20 años en tu habitación. Tienes $500 en la cuenta.
+
+Ves que otros creadores de contenido están ganando popularidad rápidamente con sus videos de deportes extremos.
+
+Creas y subes tu primer video de una acrobacia en skateboarding.
+
+Alcanzas 50,000 suscriptores en el primer año.
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "El auge de los deportes extremos ha llevado a una creciente demanda de contenido auténtico y emocionante.",
+  "protagonist_state": "tú, en el momento exacto en que el negocio da el primer salto",
+  "environment": "lugar de trabajo concreto",
+  "central_contrast": "Eres un amante de los deportes extremos con una cámara y una vs edad: 30 · patrimonio: $500,000 · valoración: $1,000,000 · empleados: 5 · países: 3.",
+  "emotion": "urgencia contenida",
+  "key_object": "Alcanzas 50,000 suscriptores en el primer año.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "entorno de trabajo",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: The rise of extreme sports has led to a growing demand for authentic and exciting content. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 20,
+  "starting_cash": "$500",
+  "starting_location": "tu habitación",
+  "starting_status": "aficionado",
+  "target_outcome": "convertirte en un influente en deportes extremos",
+  "business_or_career_type": "creador de contenido",
+  "timeline_scale": "2 años"
+}
+
+ASPIRATIONAL SCORE
+7.25
+
+ASPIRATIONAL EVIDENCE
+1. amenaza competitiva nombrada / de escala
+2. escalation_ladder con 6 niveles
+3. scale_ceiling=international
+4. 3 cifras distintas en la progresión
+5. life_progression con 5 etapas
+6. 5 recompensas tipadas
+7. tipos de reward: family, financial, lifestyle, status
+8. vida deseable: padres, patrimonio
+9. start_end_contrast presente
+10. end_state concreto (6 hechos)
+
+SCORE BREAKDOWN
+  specificity: 10 — industria/modelo de negocio nombrado; cliente/ruptura concreta: Tu primer video recibe 10,000 vistas en su primera semana.; problema/oportunidad concreta; transacción/precio concreto
+  story_engine_strength: 10 — specific_opportunity: El auge de los deportes extremos ha llevado a una creciente demanda de contenido auténtico; growth_mechanism: Colaboraciones con otros influencers y participación en competencias para aumentar visibil; first_proof: Alcanzas 50,000 suscriptores en el primer año.; major_threat: Una plataforma de video rival lanza un programa de monetización más atractivo para creador
+  aspirational_strength: 8 — amenaza competitiva nombrada / de escala; escalation_ladder con 6 niveles; scale_ceiling=international; 3 cifras distintas en la progresión
+  life_transformation: 5 — life_progression con 5 etapas; tipos de reward: family, financial, lifestyle, status; vida deseable: padres, patrimonio; completeness=10
+  scale_potential: 8 — scale_ceiling=international; ladder_n=6
+  reward_density: 9 — 5 rewards
+  curiosity: 8 — 4 open_loops; hook_len=285
+  fantasy_strength: 7 — amenaza competitiva nombrada / de escala; escalation_ladder con 6 niveles; scale_ceiling=international
+  filmability: 8 — 17 concrete story_engine beats; multiple status/crisis beats; distinct escalation language across beats
+  thumbnail_potential: 8 — 4/4 thumbnail fields concrete
+  originality: 8 — sin cliché mayor
+  mechanism_distinctiveness: 6 — Generar ingresos mediante publicidad y patrocinadores interesados en la audiencia de depor
+  sceneability: 3 — Ves que otros creadores de contenido están ganando popularidad rápidamente con sus videos 
+  conflict_specificity: 6 — Una plataforma de video rival lanza un programa de monetización más atractivo para creador
+  causal_chain_strength: 4
+  progression_plausibility: 4 — salto 1000→1000000 (x1000)
+
+ELIGIBILITY
+{
+  "eligible": true,
+  "gates": {
+    "has_specific_opportunity": true,
+    "has_specific_mechanism": true,
+    "has_growth_engine": true,
+    "has_major_threat": true,
+    "has_stakes": true,
+    "has_story_question": true,
+    "has_valid_hook": true,
+    "has_valid_world_seeds": true,
+    "category_matches": true,
+    "coherence_pass": true,
+    "has_story_engine": true,
+    "specificity_ok": true,
+    "thumbnail_concrete": true,
+    "has_aspirational_transformation": true,
+    "has_life_progression": true,
+    "has_scale_progression": true,
+    "has_visible_rewards": true
+  },
+  "failed_gates": [],
+  "reasons": []
+}
+
+
+DIVERSITY REPORT
+
+categorías:
+  hospitality: 2
+  technology: 2
+  music: 1
+  events: 1
+  food: 1
+  laundry: 1
+  entrepreneurship: 1
+  media: 1
+
+industry families:
+  music_rights: 1
+  food_service: 1
+  ticket_resale: 1
+  food_delivery: 1
+  software_saas: 1
+  laundry: 1
+  lodging: 1
+  marketplace: 1
+  workshop_saas: 1
+  other: 1
+
+business_model:
+  subscription: 3
+  franchise: 2
+  acquisition: 2
+  licensing: 1
+  arbitrage: 1
+  marketplace: 1
+
+mecanismos (bucket):
+  restaur: 2
+  música: 1
+  entrada: 1
+  suscrip: 1
+  lavander: 1
+  hotel: 1
+  marketplace: 1
+  saas: 1
+  media: 1
+
+industrias (world_seeds.business_or_career_type):
+  emprendimiento tecnológico: 2
+  licencias musicales: 1
+  franquicias de restaurantes: 1
+  revendedor de entradas: 1
+  Restauración: 1
+  lavandería: 1
+  hospitalidad: 1
+  emprendimiento en arte: 1
+  creador de contenido: 1
+
+fantasy_type:
+  other: 7
+  empire: 3
+
+one_line_fantasy:
+  Construyes un imperio internacional de licencias musicales a partir de la música: 1
+  Conviertes un pequeño restaurante en una cadena premiada que se expande por todo: 1
+  Construir un negocio próspero en la reventa de entradas para eventos populares.: 1
+  Conviertes un restaurante en crisis en una franquicia gourmet a domicilio.: 1
+  Construir una app que transforme vidas y establezca un nuevo estándar en nutrici: 1
+  Transformar una lavandería en quiebra en una franquicia de éxito nacional.: 1
+  Construir un imperio hotelero de lujo mientras ofreces experiencias únicas a tus: 1
+  Construyes un espacio donde el arte auténtico es accesible y valorado.: 1
+  Transformas la forma en que los talleres mecánicos gestionan su tiempo y gananci: 1
+  Construye un imperio de deportes extremos desde tu hogar.: 1
+
+ending_directions:
+  Construyes un monopolio en la industria musical a través de la innovación y la adaptación.: 1
+  exitoso crecimiento y reconocimiento: 1
+  competencia feroz y estrategias de diferenciación: 1
+  comeback: 1
+  El protagonista logra establecer la app como la líder del mercado, pero enfrenta una competencia feroz que amenaza su éxito.: 1
+  Éxito nacional o fracaso financiero.: 1
+  expansión y reconocimiento internacional: 1
+  supervivencia del marketplace frente a competidores grandes: 1
+  sobrevivir como capa especializada o ser comprado en malas condiciones: 1
+  éxito: 1
+
+scale_ceilings:
+  international: 9
+  empire: 1
+
+similitudes detectadas en Top 10:
+  ninguna pareja del Top 10 es la misma película.
+
+EDITORIAL SELF-CHECK
+
+(se completa en el informe de corrida tras leer cada paquete; el motor no auto-aprueba calidad editorial.)

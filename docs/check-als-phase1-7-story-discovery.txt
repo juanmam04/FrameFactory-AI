@@ -1,0 +1,1303 @@
+CHECK ALS — FASE 1.7 STORY DISCOVERY
+model=gpt-4o-mini
+
+TOP 15 STORY SPINES — BLIND EDITORIAL REVIEW
+
+Sin scores. Sin ranking. Sin títulos. Juzgar como espectador.
+
+------------------------------------------------------------------------
+ID
+catering_espectacular
+
+STORY SPINE
+Eres un chef que trabaja en un restaurante mediocre, y sientes que tu talento se desperdicia. Un día, asistes a una fiesta de barrio y te das cuenta de que la comida es lo que puede hacer que un evento sea especial. Motivado por esta revelación, decides organizar un pequeño catering para una fiesta de amigos, usando recetas únicas que has creado. La reacción es sorprendente; tus amigos quedan maravillados y te piden ayuda para sus propias celebraciones. Así, comienzas a estandarizar tus recetas y procesos, transformando tu esfuerzo en un servicio de catering formal. Con el primer pago significativo, decides dejar tu trabajo en el restaurante y lanzarte por completo al negocio. Sin embargo, cuando un competidor más grande empieza a atraer a tus clientes con precios bajos, decides innovar y ofrecer experiencias personalizadas que ellos no pueden igualar. Al final, tu esfuerzo logra que tu empresa de catering se expanda a otras ciudades, convirtiéndose en una referencia nacional.
+
+------------------------------------------------------------------------
+ID
+circuito_exclusivo
+
+STORY SPINE
+Eres un entrenador de tenis que trabaja en una academia local y observa que los torneos están llenos de caos y desorganización. Te das cuenta de que, a pesar del interés, no hay una estructura adecuada para que los jugadores compitan. Decide organizar un pequeño torneo y, sorprendentemente, la participación es masiva y todos están satisfechos. Motivado por el éxito, creas un modelo de franquicia para llevar tu idea a otras ciudades. Con el tiempo, las franquicias crecen y empiezas a ser reconocido en medios deportivos. Sin embargo, un competidor lanza un servicio similar, amenazando tu crecimiento. Frente a esta situación, debes decidir si bajar precios o elevar la calidad. Optas por destacar ofreciendo experiencias únicas. Esto no solo salva tu negocio, sino que te establece como el líder indiscutido en la organización de torneos de tenis a nivel nacional.
+
+------------------------------------------------------------------------
+ID
+educacion_digital
+
+STORY SPINE
+Eres un profesor de secundaria que lucha por captar la atención de tus alumnos en un mundo lleno de distracciones digitales. Descubres que muchos estudiantes buscan alternativas para acceder a recursos educativos de calidad. Te das cuenta de que la educación tradicional no satisface sus necesidades y decides crear una plataforma en línea que ofrezca cursos interactivos. Al lanzarla, un grupo de estudiantes se registra y mejora sus calificaciones, lo que demuestra que tu idea funciona. La plataforma, que utiliza inteligencia artificial para personalizar el aprendizaje, atrae rápidamente más usuarios gracias al boca a boca. Recibes reconocimiento y te conviertes en un referente en educación digital, disfrutando de más libertad y tiempo. Sin embargo, un competidor grande entra al mercado y tu plataforma comienza a perder usuarios. Tienes que tomar una decisión: pivotar y enfocarte en contenido exclusivo y alianzas estratégicas. Si no lo haces, podrías perder todo lo que has construido. Finalmente, te lanzas a un nuevo modelo de negocio que revitaliza tu plataforma y la lleva a un nuevo nivel.
+
+------------------------------------------------------------------------
+ID
+estadio-bajo-rendimiento
+
+STORY SPINE
+Eres un comentarista deportivo sin rumbo, atrapado en la rutina de tu trabajo. Un día, descubres un estadio en decadencia que está en venta y decides comprarlo, a pesar de las dudas de quienes te rodean. Tu primera idea es organizar un pequeño evento, y para tu sorpresa, la respuesta de la comunidad es abrumadora. Con el tiempo, transformas el estadio en un espacio versátil que atrae no solo a aficionados al deporte, sino también a familias y amantes de la cultura. Sin embargo, un competidor abre un estadio cercano que amenaza tu éxito. Te ves obligado a tomar la difícil decisión de invertir más en tu estadio o diversificar la oferta de eventos. Si no actúas, tu inversión podría desvanecerse. Finalmente, decides innovar y expandir tus actividades, logrando que tu estadio se convierta en un referente en la ciudad, cambiando no solo tu vida, sino también la de toda la comunidad.
+
+------------------------------------------------------------------------
+ID
+franquicia_de_gimnasio
+
+STORY SPINE
+Eres un instructor de gimnasio, trabajando largas horas en un lugar que apenas sobrevive. Te das cuenta de que hay una gran demanda de gimnasios accesibles en tu área. Decides abrir uno, centrándote en precios bajos y en construir una comunidad. Pronto, tus primeros clientes comienzan a compartir sus logros en redes sociales, atrayendo a más personas. Al ver el éxito, decides estandarizar el modelo y abrir franquicias en otras ciudades. Tu negocio crece rápidamente, y te conviertes en un referente en el mundo del fitness. Sin embargo, una gran cadena decide copiar tu idea, abriendo sucursales a precios bajos. Debes elegir entre vender tu franquicia o mejorar tu oferta. Al final, decides adaptarte, innovar y redoblar esfuerzos en la experiencia del cliente, lo que no solo te permite sobrevivir, sino también prosperar en un mercado competitivo.
+
+------------------------------------------------------------------------
+ID
+hospitalidad-exclusiva
+
+STORY SPINE
+Eres un empleado en un restaurante de una pequeña ciudad, soñando con un futuro mejor. Un día, descubres una antigua casa que podría transformarse en un hotel boutique y decides invertir tus ahorros en su renovación. Pronto, atraes a tus primeros huéspedes, quienes quedan maravillados con la experiencia única que ofreces. Implementas un servicio personalizado que incluye eventos exclusivos, ganando popularidad y atrayendo a celebridades. Sin embargo, una gran cadena hotelera abre cerca y amenaza tu negocio. Debes tomar una decisión crucial: competir en precio o seguir apostando por la exclusividad. Optas por lo segundo, lo que te permite destacar aún más y convertir tu hotel en un destino icónico, transformando tu vida y tus sueños en realidad.
+
+------------------------------------------------------------------------
+ID
+lavanderia-renacer
+
+STORY SPINE
+Eres un empleado común que vive atrapado en un trabajo sin futuro. Un día, descubres que una lavandería en quiebra se vende por solo $1 y decides arriesgarte a comprarla. Con el tiempo, logras atraer clientes gracias a un servicio excepcional. Pronto, abres un segundo local donde implementas un sistema de gestión eficiente que te permite crecer. Tus ingresos se multiplican y experimentas una transformación: pasas de ser un empleado desmotivado a un empresario exitoso. Sin embargo, un competidor grande baja sus precios y amenaza tu negocio. Te enfrentas a una gran decisión: reducir precios o innovar. Decides innovar, ofreciendo servicios personalizados y creando una comunidad en torno a tus lavanderías, asegurando así tu éxito y libertad.
+
+------------------------------------------------------------------------
+ID
+mercado_virtual
+
+STORY SPINE
+Eres un empleado en una oficina, sintiéndote atrapado y deseando más libertad. Un día, la idea de crear un mercado virtual para que los creadores vendan sus productos surge en tu mente. Te inspiras al ver que hay muchas personas talentosas que no tienen un lugar donde exhibir su arte. Inicias una plataforma en línea sencilla y, rápidamente, los primeros usuarios comienzan a vender, lo que te brinda una prueba de que tu idea funciona. A medida que la plataforma crece, implementas nuevas características que atraen a más vendedores. Tu vida da un giro radical cuando decides dejar tu trabajo y dedicarte por completo al mercado virtual. Sin embargo, un competidor grande entra en el juego, amenazando tu negocio. Debes elegir entre bajar tarifas o innovar. Optas por la innovación, lo que resulta en un crecimiento masivo y posiciona tu mercado como una referencia en la industria.
+
+------------------------------------------------------------------------
+ID
+paseo_en_onda
+
+STORY SPINE
+Eres un guía turístico que se siente atrapado en la rutina de su trabajo. Un día, notas que los turistas buscan experiencias más auténticas y personalizadas. Decides crear un canal en línea donde compartes los secretos de tu ciudad. Después de publicar tu primer video, este se vuelve viral, lo que te anima a seguir. Al crecer tu audiencia, comienzas a ofrecer tours virtuales y colaboraciones. Pronto, las marcas te contactan, permitiéndote dejar tu trabajo y dedicarte completamente a tu canal. Sin embargo, una gran empresa de turismo lanza su propia plataforma, lo que pone en riesgo tu éxito. Debes decidir si competir con ellos o pivotar hacia una oferta más exclusiva. Al final, eliges centrarte en la calidad y en construir una comunidad, lo que te permite crecer y disfrutar de la libertad que siempre deseaste.
+
+------------------------------------------------------------------------
+ID
+producto_innovador
+
+STORY SPINE
+Eres un ingeniero atrapado en una rutina laboral, pero descubres una necesidad insatisfecha en el mercado de dispositivos inteligentes para el hogar. Al identificar el problema, decides crear un prototipo en tu garaje. Después de meses de trabajo, presentas tu producto en una feria, donde recibe elogios y despierta interés. Tu innovación utiliza inteligencia artificial para facilitar la vida diaria, lo que llama la atención de un inversor que te permite dejar tu trabajo y enfocarte en tu emprendimiento. Sin embargo, un gigante de la tecnología lanza un producto similar que amenaza tu crecimiento. Debes decidir si competir con ellos o encontrar un nicho inexplorado. Optas por pivotar, centrándote en las necesidades específicas de tus usuarios, lo que te lleva a una nueva etapa de éxito y a establecer un legado en la industria.
+
+------------------------------------------------------------------------
+ID
+productos-unicos
+
+STORY SPINE
+Eres un artesano que trabaja en un pequeño taller creando productos personalizados con materiales reciclados. Un día, descubres que hay una creciente demanda por productos únicos y sostenibles. Al recibir comentarios positivos de tus clientes, decides abrir una tienda en línea para llegar a más personas. Las primeras ventas superan tus expectativas y te motivan a contratar a otros artesanos para que se unan a tu equipo. Tu marca comienza a ganar reconocimiento y disfrutas de mayor libertad financiera. Sin embargo, un competidor grande lanza productos similares a precios más bajos, lo que amenaza tu negocio. Decides enfocarte en la calidad y personalización para diferenciarte. A pesar de los desafíos, logras consolidar tu marca y expandirla, convirtiéndote en un referente en la industria de productos únicos.
+
+------------------------------------------------------------------------
+ID
+restaurante-masivo
+
+STORY SPINE
+Eres dueño de un pequeño restaurante familiar que lucha por mantenerse a flote. Un día, un famoso chef visita tu local y ve el potencial en tu cocina. Con su ayuda, empiezas a ofrecer un nuevo menú que atrae a más clientes, y los comentarios positivos comienzan a multiplicarse. Esta viralización del éxito te lleva a abrir una segunda ubicación y a reinvertir en tu negocio. Sin embargo, la competencia se intensifica y otras restauraciones empiezan a imitar tu modelo. Deberás tomar una decisión crucial: arriesgarte a expandirte más o consolidar tu éxito. Si no lo haces bien, podrías perder todo lo que has logrado. Finalmente, optas por innovar y decides crear una cadena con experiencias gastronómicas únicas a nivel internacional.
+
+------------------------------------------------------------------------
+ID
+start-up-software
+
+STORY SPINE
+Eres un desarrollador de software que trabaja desde casa, enfrentando la lucha por destacar en el mundo de la tecnología. Un día, te das cuenta de que muchas personas tienen problemas para encontrar expertos en diversas áreas. Luego de recibir muchas consultas de amigos, decides crear una aplicación que conecte a usuarios con especialistas mediante recomendaciones y valoraciones. Lanzas una versión beta, y los usuarios comienzan a recibir respuestas útiles, mejorando su experiencia. Con el tiempo, más usuarios se registran, lo que hace crecer tu base de datos de expertos y mejora el algoritmo. Empiezas a recibir reconocimientos en medios de tecnología y tu reputación crece, permitiéndote dejar tu trabajo y dedicarte por completo a la app. Sin embargo, un competidor lanza una función similar, amenazando tu éxito. Decides invertir en mejoras y marketing para destacar. Si no lo logras, podrías perder a tus usuarios y ver cómo tu sueño se desmorona. Pero con esfuerzo y una nueva visión, tu aplicación se convierte en la referencia del sector, transformando completamente tu vida.
+
+------------------------------------------------------------------------
+ID
+taller_del_futuro
+
+STORY SPINE
+Eres dueño de un pequeño taller de reparación de automóviles, donde luchas por atraer clientes. Un día, observas que la mayoría de los talleres no ofrecen un buen servicio de atención al cliente, especialmente fuera del horario habitual. Decides implementar un sistema de reservas telefónicas y en línea, lo que resulta en comentarios positivos y recomendaciones. Con el tiempo, formas una red de talleres que utilizan la misma plataforma, permitiendo que todos mejoren su visibilidad y atención. Tu negocio crece y obtienes un contrato con una empresa para mantener su flota. Sin embargo, un competidor lanza una campaña agresiva, amenazando tu posición en el mercado. Debes decidir si competir en precios o mantener la calidad que te distingue. Optas por centrarte en la experiencia del cliente, llevando tu taller a ser una cadena reconocida a nivel nacional.
+
+------------------------------------------------------------------------
+ID
+taller_renovado
+
+STORY SPINE
+Eres el dueño de un taller mecánico familiar que ha estado en la misma ubicación durante décadas, pero las ventas han caído drásticamente. Observas que muchos de tus clientes se quejan de la falta de servicios personalizados en el sector automotriz. Te das cuenta de que la mayoría de los talleres están más enfocados en las ganancias rápidas. Decides implementar un servicio de atención al cliente excepcional, ofreciendo una experiencia única a cada cliente. Después de unos meses, comienzas a recibir comentarios positivos, lo que aumenta el número de clientes que regresan. Creas un sistema de seguimiento y fidelización que permite a tus clientes programar mantenciones. Con el tiempo, esto lleva a abrir nuevas sucursales en otras ciudades. Logras duplicar tus ingresos y te sientes admirado por tu comunidad. Sin embargo, un competidor local decide copiar tu modelo y ofrece precios más bajos. Debes decidir si bajar tus precios o mantener la calidad de tu servicio. Te decides por la calidad y la lealtad de tus clientes, lo que resulta en una consolidación de tu marca y un crecimiento sostenible.
+
+
+SYSTEM RANKING
+
+1. taller_renovado
+   story_score: 7.08
+   would_watch: 10
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 8
+   aspirational_strength: 6
+   conflict_strength: 9
+   distinctiveness: 6
+   packaging_score: 7.75
+
+2. lavanderia-renacer
+   story_score: 7.04
+   would_watch: 9
+   causal_strength: 7
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 7
+   conflict_strength: 7
+   distinctiveness: 6
+   packaging_score: 7.75
+
+3. paseo_en_onda
+   story_score: 6.96
+   would_watch: 9
+   causal_strength: 7
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 5
+   conflict_strength: 9
+   distinctiveness: 6
+   packaging_score: 8.0
+
+4. start-up-software
+   story_score: 6.82
+   would_watch: 8
+   causal_strength: 6
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 7
+   conflict_strength: 8
+   distinctiveness: 7
+   packaging_score: 8.0
+
+5. educacion_digital
+   story_score: 6.78
+   would_watch: 9
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 7
+   conflict_strength: 8
+   distinctiveness: 6
+   packaging_score: 8.0
+
+6. catering_espectacular
+   story_score: 6.74
+   would_watch: 9
+   causal_strength: 6
+   mechanism_strength: 5
+   progression_strength: 8
+   aspirational_strength: 6
+   conflict_strength: 6
+   distinctiveness: 6
+   packaging_score: 8.0
+
+7. producto_innovador
+   story_score: 6.68
+   would_watch: 9
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 7
+   conflict_strength: 7
+   distinctiveness: 6
+   packaging_score: 7.75
+
+8. estadio-bajo-rendimiento
+   story_score: 6.68
+   would_watch: 9
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 7
+   conflict_strength: 7
+   distinctiveness: 6
+   packaging_score: 8.0
+
+9. productos-unicos
+   story_score: 6.66
+   would_watch: 8
+   causal_strength: 6
+   mechanism_strength: 5
+   progression_strength: 8
+   aspirational_strength: 7
+   conflict_strength: 6
+   distinctiveness: 6
+   packaging_score: 7.75
+
+10. hospitalidad-exclusiva
+   story_score: 6.64
+   would_watch: 8
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 8
+   aspirational_strength: 6
+   conflict_strength: 9
+   distinctiveness: 6
+   packaging_score: 7.75
+
+11. mercado_virtual
+   story_score: 6.64
+   would_watch: 9
+   causal_strength: 4
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 6
+   conflict_strength: 9
+   distinctiveness: 7
+   packaging_score: None
+
+12. circuito_exclusivo
+   story_score: 6.64
+   would_watch: 8
+   causal_strength: 4
+   mechanism_strength: 6
+   progression_strength: 7
+   aspirational_strength: 7
+   conflict_strength: 9
+   distinctiveness: 6
+   packaging_score: None
+
+13. restaurante-masivo
+   story_score: 6.58
+   would_watch: 8
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 8
+   aspirational_strength: 7
+   conflict_strength: 7
+   distinctiveness: 6
+   packaging_score: None
+
+14. taller_del_futuro
+   story_score: 6.44
+   would_watch: 8
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 8
+   aspirational_strength: 6
+   conflict_strength: 7
+   distinctiveness: 6
+   packaging_score: None
+
+15. franquicia_de_gimnasio
+   story_score: 6.44
+   would_watch: 7
+   causal_strength: 5
+   mechanism_strength: 5
+   progression_strength: 7
+   aspirational_strength: 7
+   conflict_strength: 9
+   distinctiveness: 6
+   packaging_score: None
+
+FINAL TOP 10 ORDER
+1. taller_renovado  story=7.08  pack=7.75  rank=73.125
+2. lavanderia-renacer  story=7.04  pack=7.75  rank=72.72500000000001
+3. paseo_en_onda  story=6.96  pack=8.0  rank=72.0
+4. start-up-software  story=6.82  pack=8.0  rank=70.60000000000001
+5. educacion_digital  story=6.78  pack=8.0  rank=70.2
+6. catering_espectacular  story=6.74  pack=8.0  rank=69.80000000000001
+7. estadio-bajo-rendimiento  story=6.68  pack=8.0  rank=69.2
+8. producto_innovador  story=6.68  pack=7.75  rank=69.125
+9. productos-unicos  story=6.66  pack=7.75  rank=68.925
+10. hospitalidad-exclusiva  story=6.64  pack=7.75  rank=68.725
+
+
+TOP 10 COMPLETOS
+
+========================================================================
+RANK 1
+ID
+taller_renovado
+
+TITLE
+POV: Transformas tu taller mecánico en un imperio
+
+STORY SCORE
+7.08
+STORY SUBSCORES
+{
+  "would_watch": 10,
+  "causal_strength": 5,
+  "mechanism_strength": 5,
+  "progression_strength": 8,
+  "aspirational_strength": 6,
+  "conflict_strength": 9,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+7.75
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 7
+}
+
+STORY SPINE
+Eres el dueño de un taller mecánico familiar que ha estado en la misma ubicación durante décadas, pero las ventas han caído drásticamente. Observas que muchos de tus clientes se quejan de la falta de servicios personalizados en el sector automotriz. Te das cuenta de que la mayoría de los talleres están más enfocados en las ganancias rápidas. Decides implementar un servicio de atención al cliente excepcional, ofreciendo una experiencia única a cada cliente. Después de unos meses, comienzas a recibir comentarios positivos, lo que aumenta el número de clientes que regresan. Creas un sistema de seguimiento y fidelización que permite a tus clientes programar mantenciones. Con el tiempo, esto lleva a abrir nuevas sucursales en otras ciudades. Logras duplicar tus ingresos y te sientes admirado por tu comunidad. Sin embargo, un competidor local decide copiar tu modelo y ofrece precios más bajos. Debes decidir si bajar tus precios o mantener la calidad de tu servicio. Te decides por la calidad y la lealtad de tus clientes, lo que resulta en una consolidación de tu marca y un crecimiento sostenible.
+
+HOOK
+A las 8 de la mañana, llegas a tu taller mecánico y te das cuenta de que las ventas han caído a su nivel más bajo.
+
+END STATE
+age: 55 · vivienda: cadena de talleres en varias ciudades · familia: unida y orgullosa · tiempo: 5 años después · patrimonio: $1.5 millones · empleados: 30 · países: 2
+
+SCALE CEILING
+international
+
+MECHANISM
+Creas un sistema de seguimiento y fidelización que permite a tus clientes programar mantenciones y recibir recordatorios personalizados.
+
+MAJOR THREAT
+Un competidor local decide copiar tu modelo y ofrece precios más bajos, amenazando tu crecimiento.
+
+BIG DECISION
+Debes decidir si bajar tus precios para competir o mantener la calidad de tu servicio y enfocarte en lo que te hizo exitoso.
+
+ESCALATION LADDER
+1. Caída drástica en las ventas — los clientes se van a otros talleres
+2. Decisión de implementar un servicio personalizado — mejora la atención al cliente
+3. Feedback positivo y aumento de clientes — la reputación del taller mejora
+4. Apertura de nuevas sucursales — expansión de la marca
+5. Competencia que copia el modelo — amenaza de perder clientes
+6. Decisión de mantener la calidad — consolidación de la marca y crecimiento sostenible
+
+LIFE PROGRESSION
+- start:  · start ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · early_reward ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · mid_reward ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · major_reward ·  · libertad= · status= · familia= · entorno=
+- late_state:  · late_state ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] Logras duplicar tus ingresos y mejorar la situación financiera del taller. (duplicar ingresos)
+- [status] Te conviertes en un referente en el sector automotriz, ganando respeto. (ser admirado por la comunidad)
+- [freedom] La apertura de nuevas sucursales te brinda libertad para innovar y crecer. (expansión de la marca)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un taller mecánico en transformación, con clientes satisfechos y un ambiente de trabajo positivo.",
+  "protagonist_state": "Motivado y decidido a cambiar la situación de su taller.",
+  "environment": "ciudad mediana, con un taller mecánico visible y clientes felices.",
+  "central_contrast": "De un taller en declive a una red de talleres exitosos.",
+  "emotion": "Esperanza y determinación frente a los desafíos.",
+  "key_object": "Clientes satisfechos y un libro de registro de recomendaciones.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "ciudad mediana",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A mechanic workshop transforming with satisfied customers and a positive work environment. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 45,
+  "starting_cash": "$10000",
+  "starting_location": "ciudad mediana",
+  "starting_status": "en declive",
+  "target_outcome": "cadena de talleres reconocida",
+  "business_or_career_type": "taller mecánico",
+  "timeline_scale": "5 años"
+}
+
+========================================================================
+RANK 2
+ID
+lavanderia-renacer
+
+TITLE
+POV: Compras una lavandería por $1 y transformas tu vida
+
+STORY SCORE
+7.04
+STORY SUBSCORES
+{
+  "would_watch": 9,
+  "causal_strength": 7,
+  "mechanism_strength": 5,
+  "progression_strength": 7,
+  "aspirational_strength": 7,
+  "conflict_strength": 7,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+7.75
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 7
+}
+
+STORY SPINE
+Eres un empleado común que vive atrapado en un trabajo sin futuro. Un día, descubres que una lavandería en quiebra se vende por solo $1 y decides arriesgarte a comprarla. Con el tiempo, logras atraer clientes gracias a un servicio excepcional. Pronto, abres un segundo local donde implementas un sistema de gestión eficiente que te permite crecer. Tus ingresos se multiplican y experimentas una transformación: pasas de ser un empleado desmotivado a un empresario exitoso. Sin embargo, un competidor grande baja sus precios y amenaza tu negocio. Te enfrentas a una gran decisión: reducir precios o innovar. Decides innovar, ofreciendo servicios personalizados y creando una comunidad en torno a tus lavanderías, asegurando así tu éxito y libertad.
+
+HOOK
+A los 30 años, atrapado en un cubículo, un anuncio en el periódico te llama la atención: una lavandería se vende por $1.
+
+END STATE
+edad: 34 · vivienda: casa con piscina · familia: pareja e hijos · tiempo: 4 años · patrimonio: $500,000 · empleados: 10 · países: México
+
+SCALE CEILING
+international
+
+MECHANISM
+Descubres un sistema de gestión eficiente que optimiza las operaciones y mejora la experiencia del cliente.
+
+MAJOR THREAT
+Un competidor grande decide bajar sus precios y ofrecer servicios similares, amenazando tu crecimiento.
+
+BIG DECISION
+Debes decidir si reducir precios y arriesgar tus márgenes o innovar y ofrecer un servicio único.
+
+ESCALATION LADDER
+1. Decides comprar la lavandería por $1. — Cambio de empleado a empresario.
+2. Atrae clientes con un servicio excepcional. — Incremento en la reputación del negocio.
+3. Abre una segunda lavandería. — Expansión del negocio.
+4. Competidor baja precios. — Amenaza a la estabilidad financiera.
+5. Decide innovar en servicios. — Fortalecimiento del negocio y lealtad del cliente.
+
+LIFE PROGRESSION
+- start: 30 · departamento compartido · bajo · libertad=bajo · status=desmotivado · familia=poca apoyo emocional · entorno=urbano
+- early_reward: 31 · departamento propio · estabilidad · libertad=medio · status=motivado · familia=apoyo creciente · entorno=urbano
+- mid_reward: 32 · casa propia · bueno · libertad=alto · status=reconocido · familia=apoyo total · entorno=urbano
+- major_reward: 33 · casa con jardín · muy bueno · libertad=alto · status=exitoso · familia=orgullosos · entorno=comunidad
+- late_state: 34 · casa con piscina · excelente · libertad=máxima · status=influencer local · familia=unidos y felices · entorno=comunidad próspera
+
+REWARDS
+- [financial] Tus ingresos se multiplican por tres tras atraer nuevos clientes. (primer mes de ganancias)
+- [freedom] Tomas el control de tu futuro y decides expandir tu negocio. (decisión de abrir la segunda lavandería)
+- [status] Te conviertes en un referente local, reconocido por tu innovación. (reconocimiento en la comunidad)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un anuncio te llama la atención: una lavandería en quiebra se vende por solo $1.",
+  "protagonist_state": "La idea de tener tu propio negocio resuena contigo, un anhelo de libertad y control sobre tu vida.",
+  "environment": "Ciudad de México",
+  "central_contrast": "AGE 30 · CASH $1 · Ciudad de México · empleado aburrido vs edad: 34 · vivienda: casa con piscina · familia: pareja e hijos · tiempo: 4 años · patrimonio: $500,000 · empleados: 10 · países: México",
+  "emotion": "Si no tomas la decisión correcta, podrías perder todo lo que has construido y regresar a una vida sin propósito.",
+  "key_object": "Algunas semanas después, logras atraer clientes ofreciendo un servicio excepcional.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "Ciudad de México",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: An ad catches your attention: a bankrupt laundromat is sold for just $1. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "$1",
+  "starting_location": "Ciudad de México",
+  "starting_status": "empleado aburrido",
+  "target_outcome": "ser un empresario exitoso",
+  "business_or_career_type": "lavandería",
+  "timeline_scale": "3 años"
+}
+
+========================================================================
+RANK 3
+ID
+paseo_en_onda
+
+TITLE
+POV: Transformas tu pasión por la ciudad en un negocio exitoso
+
+STORY SCORE
+6.96
+STORY SUBSCORES
+{
+  "would_watch": 9,
+  "causal_strength": 7,
+  "mechanism_strength": 5,
+  "progression_strength": 7,
+  "aspirational_strength": 5,
+  "conflict_strength": 9,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+8.0
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 8
+}
+
+STORY SPINE
+Eres un guía turístico que se siente atrapado en la rutina de su trabajo. Un día, notas que los turistas buscan experiencias más auténticas y personalizadas. Decides crear un canal en línea donde compartes los secretos de tu ciudad. Después de publicar tu primer video, este se vuelve viral, lo que te anima a seguir. Al crecer tu audiencia, comienzas a ofrecer tours virtuales y colaboraciones. Pronto, las marcas te contactan, permitiéndote dejar tu trabajo y dedicarte completamente a tu canal. Sin embargo, una gran empresa de turismo lanza su propia plataforma, lo que pone en riesgo tu éxito. Debes decidir si competir con ellos o pivotar hacia una oferta más exclusiva. Al final, eliges centrarte en la calidad y en construir una comunidad, lo que te permite crecer y disfrutar de la libertad que siempre deseaste.
+
+HOOK
+A los 35 años, después de años de guiar turistas, te sientes atrapado en la rutina de un trabajo que no te satisface.
+
+END STATE
+A los 40 años, has construido un canal exitoso con un patrimonio de 500,000 euros, 10 empleados, y eres el propietario de tu propia marca.
+
+SCALE CEILING
+major_exit
+
+MECHANISM
+Tu canal permite a los turistas experimentar la ciudad desde una perspectiva auténtica, conectando con locales y descubriendo lugares escondidos.
+
+MAJOR THREAT
+Una gran empresa de turismo decide lanzar su propia plataforma de experiencias personalizadas, amenazando tu crecimiento.
+
+BIG DECISION
+Debes decidir si competir con ellos o pivotar tu negocio hacia una oferta más exclusiva y diferenciada.
+
+ESCALATION LADDER
+1. A medida que tu audiencia crece, comienzas a ofrecer tours virtuales y colaboraciones con otros creadores de contenido, lo que amplía tu alcance.
+2. [{'level': 1, 'event': 'A medida que tu audiencia crece, comienzas a ofrecer tours virtuales y colaboraciones con otros creadores de contenido, lo que amplía tu alcance.', 'world_delta': ''}]
+
+LIFE PROGRESSION
+- start:  · start ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · early_reward ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · mid_reward ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · major_reward ·  · libertad= · status= · familia= · entorno=
+- late_state:  · late_state ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] early_reward (early_reward)
+- [lifestyle] mid_reward (mid_reward)
+- [family] major_reward (major_reward)
+- [status] late_state (late_state)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un guía turístico que se convierte en un emprendedor digital exitoso.",
+  "protagonist_state": "Recibes comentarios de turistas que desean conocer los secretos de la ciudad, no solo lo que ofrecen las guías convencionales.",
+  "environment": "Eres un guía turístico con años de experiencia, pero te sientes estancado en un trabajo rutinario.",
+  "central_contrast": "Éxito vs Estancamiento",
+  "emotion": "Si no tomas la decisión correcta, podrías perder todo lo que has construido.",
+  "key_object": "Publicas tu primer video y rápidamente se vuelve viral, recibiendo miles de vistas.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "Eres un guía turístico con años de experiencia, pero te sientes estancado en un trabajo rutinario.",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A tour guide transforms into a successful digital entrepreneur. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 35,
+  "starting_cash": "0",
+  "starting_location": "Ciudad turística",
+  "starting_status": "Guía turístico",
+  "target_outcome": "Ser un emprendedor exitoso",
+  "business_or_career_type": "Canal de turismo online",
+  "timeline_scale": "2 años"
+}
+
+========================================================================
+RANK 4
+ID
+start-up-software
+
+TITLE
+POV: Creas una app que conecta a usuarios con expertos
+
+STORY SCORE
+6.82
+STORY SUBSCORES
+{
+  "would_watch": 8,
+  "causal_strength": 6,
+  "mechanism_strength": 5,
+  "progression_strength": 7,
+  "aspirational_strength": 7,
+  "conflict_strength": 8,
+  "distinctiveness": 7
+}
+PACKAGING SCORE
+8.0
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 8
+}
+
+STORY SPINE
+Eres un desarrollador de software que trabaja desde casa, enfrentando la lucha por destacar en el mundo de la tecnología. Un día, te das cuenta de que muchas personas tienen problemas para encontrar expertos en diversas áreas. Luego de recibir muchas consultas de amigos, decides crear una aplicación que conecte a usuarios con especialistas mediante recomendaciones y valoraciones. Lanzas una versión beta, y los usuarios comienzan a recibir respuestas útiles, mejorando su experiencia. Con el tiempo, más usuarios se registran, lo que hace crecer tu base de datos de expertos y mejora el algoritmo. Empiezas a recibir reconocimientos en medios de tecnología y tu reputación crece, permitiéndote dejar tu trabajo y dedicarte por completo a la app. Sin embargo, un competidor lanza una función similar, amenazando tu éxito. Decides invertir en mejoras y marketing para destacar. Si no lo logras, podrías perder a tus usuarios y ver cómo tu sueño se desmorona. Pero con esfuerzo y una nueva visión, tu aplicación se convierte en la referencia del sector, transformando completamente tu vida.
+
+HOOK
+A las 3 de la tarde, en tu oficina en casa, te llega un mensaje de un amigo pidiendo ayuda para encontrar un especialista.
+
+END STATE
+edad: 32 · vivienda: casa propia · familia: casado con hijos · tiempo: 2 años después del lanzamiento · patrimonio: $2 millones · empleados: 10 · países: operando en 5 países
+
+SCALE CEILING
+international
+
+MECHANISM
+La aplicación utiliza un algoritmo que empareja a los usuarios con expertos según sus necesidades y el historial de valoraciones.
+
+MAJOR THREAT
+Un competidor introduce una función similar en su plataforma, amenazando tu creciente base de usuarios.
+
+BIG DECISION
+Decides invertir en nuevas mejoras para tu aplicación y en estrategias de marketing más agresivas para destacar en el mercado.
+
+ESCALATION LADDER
+1. Lanzamiento de la versión beta de la app — Primeros usuarios satisfechos.
+2. Crecimiento de la base de datos de expertos — Más usuarios se registran.
+3. Reconocimientos en blogs de tecnología — Aumenta tu reputación.
+4. Competidor lanza función similar — Amenaza a tu base de usuarios.
+5. Inviertes en mejoras y marketing — Tu app se convierte en referencia.
+
+LIFE PROGRESSION
+- start:  · start ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · early_reward ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · mid_reward ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · major_reward ·  · libertad= · status= · familia= · entorno=
+- late_state:  · late_state ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] Tus ingresos comienzan a crecer gracias a la popularidad de la app. (cuando recibes tus primeros ingresos significativos)
+- [status] Tu reputación se consolida al ser reconocido en la industria. (cuando eres mencionado en un blog de tecnología)
+- [freedom] Te sientes libre para dedicarte completamente a tu proyecto. (cuando decides dejar tu trabajo diario)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un desarrollador de software en su oficina en casa, trabajando en su computadora con una expresión de determinación.",
+  "protagonist_state": "Concentrado y decidido a resolver un problema que afecta a muchos.",
+  "environment": "Ciudad de México",
+  "central_contrast": "AGE 28 · CASH $500 · Ciudad de México · trabajador independiente vs edad: 32 · vivienda: casa propia · familia: casado con hijos",
+  "emotion": "Si no logras innovar, podrías perder a tus usuarios y ver cómo tu sueño se desmorona.",
+  "key_object": "Lanzas una versión beta de la app y los primeros usuarios comienzan a recibir respuestas rápidas y útiles.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "Ciudad de México",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A software developer in his home office, focused and determined to solve a problem that affects many. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 28,
+  "starting_cash": "$500",
+  "starting_location": "Ciudad de México",
+  "starting_status": "trabajador independiente",
+  "target_outcome": "convertirse en líder del mercado de aplicaciones de conexión",
+  "business_or_career_type": "tecnología",
+  "timeline_scale": "2 años"
+}
+
+========================================================================
+RANK 5
+ID
+educacion_digital
+
+TITLE
+POV: Creas una plataforma educativa que transforma la enseñanza
+
+STORY SCORE
+6.78
+STORY SUBSCORES
+{
+  "would_watch": 9,
+  "causal_strength": 5,
+  "mechanism_strength": 5,
+  "progression_strength": 7,
+  "aspirational_strength": 7,
+  "conflict_strength": 8,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+8.0
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 8
+}
+
+STORY SPINE
+Eres un profesor de secundaria que lucha por captar la atención de tus alumnos en un mundo lleno de distracciones digitales. Descubres que muchos estudiantes buscan alternativas para acceder a recursos educativos de calidad. Te das cuenta de que la educación tradicional no satisface sus necesidades y decides crear una plataforma en línea que ofrezca cursos interactivos. Al lanzarla, un grupo de estudiantes se registra y mejora sus calificaciones, lo que demuestra que tu idea funciona. La plataforma, que utiliza inteligencia artificial para personalizar el aprendizaje, atrae rápidamente más usuarios gracias al boca a boca. Recibes reconocimiento y te conviertes en un referente en educación digital, disfrutando de más libertad y tiempo. Sin embargo, un competidor grande entra al mercado y tu plataforma comienza a perder usuarios. Tienes que tomar una decisión: pivotar y enfocarte en contenido exclusivo y alianzas estratégicas. Si no lo haces, podrías perder todo lo que has construido. Finalmente, te lanzas a un nuevo modelo de negocio que revitaliza tu plataforma y la lleva a un nuevo nivel.
+
+HOOK
+Tienes 35 años en Ciudad Universitaria. Tienes $5000 en la cuenta. Te das cuenta de que en el contexto actual, la educación tradicional no está satisfaciendo las necesidades de aprendizaje de los jóvenes. Decides crear una plataforma en línea que ofrezca cursos interactivos y accesibles para cualquier estudiante, en cualquier lugar. Al lanzar la plataforma, un grupo de estudiantes se registra y comienza a mostrar mejoras significativas en sus calificaciones.
+
+END STATE
+edad: 39 · vivienda: Casa propia más grande · familia: Esposa e hijos · tiempo: 2 años desde el lanzamiento · patrimonio: $2 millones · empleados: 10 · países: Operaciones en 5 países
+
+SCALE CEILING
+international
+
+MECHANISM
+La plataforma utiliza inteligencia artificial para personalizar la experiencia de aprendizaje de cada usuario, adaptándose a su ritmo y estilo de aprendizaje.
+
+MAJOR THREAT
+Un competidor grande entra al mercado con una oferta similar, lo que hace que tu plataforma pierda visibilidad y usuarios.
+
+BIG DECISION
+Decides pivotar y enfocarte en la creación de contenido exclusivo y alianzas estratégicas con influenciadores educativos.
+
+ESCALATION LADDER
+1. Lanzas tu plataforma en línea — Crecimiento inicial en inscripciones.
+2. Los estudiantes muestran mejoras en sus calificaciones — Aumento del reconocimiento en la comunidad educativa.
+3. Recibes una invitación para presentar en una conferencia — Tu plataforma se vuelve más visible.
+4. Un competidor grande entra al mercado — Pérdida de usuarios y visibilidad.
+5. Decides pivotar hacia contenido exclusivo — Recuperas usuarios y revitalizas la plataforma.
+
+LIFE PROGRESSION
+- start: 35 · Alquiler de un apartamento · Estable pero limitado · libertad=Baja · status=Profesor frustrado · familia=Poca influencia en la familia · entorno=Entorno educativo tradicional
+- early_reward: 36 · Alquiler de un apartamento · Crecimiento moderado · libertad=Media · status=Reconocido en la comunidad · familia=Apoyo familiar creciente · entorno=Entorno educativo innovador
+- mid_reward: 37 · Propietario de un pequeño estudio · Crecimiento sólido · libertad=Alta · status=Referente en educación digital · familia=Apoyo y orgullo familiar · entorno=Entorno educativo colaborativo
+- major_reward: 38 · Casa propia · Estable y próspero · libertad=Alta · status=Líder en el sector educativo · familia=Familia satisfecha y apoyadora · entorno=Entorno educativo dinámico
+- late_state: 39 · Casa propia más grande · Significativa riqueza acumulada · libertad=Máxima · status=Influencer en educación digital · familia=Familia unida y satisfecha · entorno=Entorno educativo en constante evolución
+
+REWARDS
+- [financial] Tu plataforma atrae inversores que creen en tu visión. (Al recibir la primera inversión en la plataforma)
+- [lifestyle] Disfrutas de una vida más cómoda gracias al éxito de tu plataforma. (Al mudarte a un nuevo hogar más grande)
+- [status] Te conviertes en un referente global en educación digital. (Al ser invitado a conferencias internacionales)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un profesor frustrado se enfrenta a la desconexión de sus alumnos y busca soluciones innovadoras.",
+  "protagonist_state": "Te das cuenta de que en el contexto actual, la educación tradicional no está satisfaciendo las necesidades de aprendizaje.",
+  "environment": "Ciudad Universitaria",
+  "central_contrast": "AGE 35 · CASH $5000 · Ciudad Universitaria · Profesor de secundaria vs edad: 39 · vivienda: Casa propia más grande · familia: Esposa e hijos.",
+  "emotion": "La presión de adaptarte a un mercado educativo competitivo.",
+  "key_object": "Al lanzar la plataforma, un grupo de estudiantes se registra y comienza a mostrar mejoras significativas.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "Ciudad Universitaria",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A frustrated teacher discovers students struggling to access quality educational resources and seeks innovative solutions. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 35,
+  "starting_cash": "$5000",
+  "starting_location": "Ciudad Universitaria",
+  "starting_status": "Profesor de secundaria",
+  "target_outcome": "Liderar una revolución en la educación digital",
+  "business_or_career_type": "Educación en línea",
+  "timeline_scale": "2 años"
+}
+
+========================================================================
+RANK 6
+ID
+catering_espectacular
+
+TITLE
+POV: Transformas tu pasión culinaria en un negocio de catering
+
+STORY SCORE
+6.74
+STORY SUBSCORES
+{
+  "would_watch": 9,
+  "causal_strength": 6,
+  "mechanism_strength": 5,
+  "progression_strength": 8,
+  "aspirational_strength": 6,
+  "conflict_strength": 6,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+8.0
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 8
+}
+
+STORY SPINE
+Eres un chef que trabaja en un restaurante mediocre, y sientes que tu talento se desperdicia. Un día, asistes a una fiesta de barrio y te das cuenta de que la comida es lo que puede hacer que un evento sea especial. Motivado por esta revelación, decides organizar un pequeño catering para una fiesta de amigos, usando recetas únicas que has creado. La reacción es sorprendente; tus amigos quedan maravillados y te piden ayuda para sus propias celebraciones. Así, comienzas a estandarizar tus recetas y procesos, transformando tu esfuerzo en un servicio de catering formal. Con el primer pago significativo, decides dejar tu trabajo en el restaurante y lanzarte por completo al negocio. Sin embargo, cuando un competidor más grande empieza a atraer a tus clientes con precios bajos, decides innovar y ofrecer experiencias personalizadas que ellos no pueden igualar. Al final, tu esfuerzo logra que tu empresa de catering se expanda a otras ciudades, convirtiéndose en una referencia nacional.
+
+HOOK
+A los 30 años, estás atrapado en un restaurante que no valora tu talento, hasta que un día asistes a una fiesta de barrio y te das cuenta de que la comida es la clave para hacer eventos memorables.
+
+END STATE
+edad: 35 · patrimonio: 200000 · empleados: 15 · ownership: Propietario completo del negocio.
+
+SCALE CEILING
+international
+
+MECHANISM
+Desarrollas un menú adaptado a cada cliente, personalizando la experiencia de catering con un enfoque creativo y único.
+
+MAJOR THREAT
+Un competidor más grande empieza a ofrecer servicios de catering a precios bajos, amenazando tu creciente clientela.
+
+BIG DECISION
+Decides innovar aún más y agregar un toque exclusivo a tus servicios, creando experiencias personalizadas que los grandes competidores no pueden igualar.
+
+ESCALATION LADDER
+1. Las recomendaciones de tus amigos te llevan a conseguir más eventos, lo que te permite estandarizar tus recetas y procesos, convirtiéndolos en un servicio de catering más formal.
+2. Tu primer pago significativo te motiva a dejar tu trabajo en el restaurante.
+3. Tu negocio empieza a crecer y atrae a nuevos clientes a través de la publicidad boca a boca.
+4. El competidor más grande comienza a ofrecer precios bajos, lo que te obliga a innovar.
+5. Decides ofrecer experiencias de catering personalizadas, lo que te ayuda a diferenciarte en el mercado.
+6. Tu empresa de catering se expande a otras ciudades, aumentando tu reputación.
+7. Comienzas a recibir contratos de eventos grandes y prestigiosos.
+8. Tu negocio se convierte en una referencia nacional en catering.
+
+LIFE PROGRESSION
+- start:  · start ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · early_reward ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · mid_reward ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · major_reward ·  · libertad= · status= · familia= · entorno=
+- late_state:  · late_state ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] Recibes tu primer pago significativo. (early_reward)
+- [lifestyle] Logras estabilidad financiera y mayor libertad creativa. (mid_reward)
+- [family] Tu familia se siente orgullosa de tu éxito. (major_reward)
+- [status] Te conviertes en un referente en el sector del catering. (late_state)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Descubres que las fiestas de barrio son aburridas y carecen de opciones de catering creativas que sorprendan a los asistentes.",
+  "protagonist_state": "Al asistir a una fiesta local, te das cuenta de que la comida es un aspecto crucial que puede hacer que un evento sea me",
+  "environment": "Eres un chef que trabaja en un restaurante mediocre, sintiendo que tu talento se",
+  "central_contrast": "AGE 30 · CASH $500 · restaurante mediocre · empleado vs edad: 35 · patrimonio: 200000 · empleados: 15 · ownership: P",
+  "emotion": "Si no logras diferenciarte, podrías perder tus clientes y tu negocio podría frac",
+  "key_object": "Los asistentes quedan maravillados con la comida y te piden que les ayudes con s",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "Eres un chef que trabaja en un restaurante mediocre, sintiendo que tu talento se",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: Descubres que las fiestas de barrio son aburridas y carecen de opciones de catering creativas que sorprendan a los asist. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "$500",
+  "starting_location": "restaurante mediocre",
+  "starting_status": "empleado",
+  "target_outcome": "expansión nacional del catering",
+  "business_or_career_type": "catering",
+  "timeline_scale": "5 años"
+}
+
+========================================================================
+RANK 7
+ID
+estadio-bajo-rendimiento
+
+TITLE
+POV: Transformas un estadio en un ícono deportivo
+
+STORY SCORE
+6.68
+STORY SUBSCORES
+{
+  "would_watch": 9,
+  "causal_strength": 5,
+  "mechanism_strength": 5,
+  "progression_strength": 7,
+  "aspirational_strength": 7,
+  "conflict_strength": 7,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+8.0
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 8
+}
+
+STORY SPINE
+Eres un comentarista deportivo sin rumbo, atrapado en la rutina de tu trabajo. Un día, descubres un estadio en decadencia que está en venta y decides comprarlo, a pesar de las dudas de quienes te rodean. Tu primera idea es organizar un pequeño evento, y para tu sorpresa, la respuesta de la comunidad es abrumadora. Con el tiempo, transformas el estadio en un espacio versátil que atrae no solo a aficionados al deporte, sino también a familias y amantes de la cultura. Sin embargo, un competidor abre un estadio cercano que amenaza tu éxito. Te ves obligado a tomar la difícil decisión de invertir más en tu estadio o diversificar la oferta de eventos. Si no actúas, tu inversión podría desvanecerse. Finalmente, decides innovar y expandir tus actividades, logrando que tu estadio se convierta en un referente en la ciudad, cambiando no solo tu vida, sino también la de toda la comunidad.
+
+HOOK
+Empieza un turno que todavía no es tuyo.
+
+Te das cuenta de que la ciudad no tiene un lugar adecuado para albergar eventos deportivos importantes y que la comunidad necesita un espacio revitalizado para disfrutar del deporte.
+
+Decides invertir tus ahorros en la compra del estadio, a pesar de las críticas de tus amigos y familiares.
+
+Organizas un pequeño evento deportivo y logras reunir a una gran cantidad de personas, superando tus propias expectativas.
+
+END STATE
+Estadio exitoso y reconocido
+
+SCALE CEILING
+major_exit
+
+MECHANISM
+Transformas el estadio en un centro multifuncional, ofreciendo no solo competiciones deportivas, sino también actividades culturales y comunitarias.
+
+MAJOR THREAT
+Un competidor decide abrir un estadio similar justo en la misma zona, lo que amenaza tu recién adquirida popularidad.
+
+BIG DECISION
+Debes decidir si invertir más en mejorar tu estadio o diversificar tus eventos para atraer una clientela más amplia.
+
+ESCALATION LADDER
+1. A medida que el estadio se vuelve más popular, comienzas a atraer patrocinadores y a generar ingresos por medio de venta de entradas y eventos privados.
+2. [{'level': 1, 'event': 'A medida que el estadio se vuelve más popular, comienzas a atraer patrocinadores y a generar ingresos por medio de venta de entradas y eventos privados.', 'world_delta': ''}]
+
+LIFE PROGRESSION
+- start:  · start ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · early_reward ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · mid_reward ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · major_reward ·  · libertad= · status= · familia= · entorno=
+- late_state:  · late_state ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] early_reward (early_reward)
+- [lifestyle] mid_reward (mid_reward)
+- [family] major_reward (major_reward)
+- [status] late_state (late_state)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un estadio en decadencia transformándose en un vibrante centro deportivo.",
+  "protagonist_state": "Emocionado y decidido a cambiar su futuro.",
+  "environment": "Un estadio con áreas en mal estado pero con potencial.",
+  "central_contrast": "Estadio en decadencia vs Estadio revitalizado",
+  "emotion": "Esperanza y determinación.",
+  "key_object": "Eventos deportivos exitosos que atraen a la comunidad.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "Un estadio vibrante lleno de vida y actividad.",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A decaying stadium transforming into a vibrant sports center. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "$50000",
+  "starting_location": "Ciudad Media",
+  "starting_status": "Comentarista deportivo",
+  "target_outcome": "Estadio exitoso y reconocido",
+  "business_or_career_type": "Emprendimiento deportivo",
+  "timeline_scale": "5 años"
+}
+
+========================================================================
+RANK 8
+ID
+producto_innovador
+
+TITLE
+POV: Creas un dispositivo inteligente que transforma hogares
+
+STORY SCORE
+6.68
+STORY SUBSCORES
+{
+  "would_watch": 9,
+  "causal_strength": 5,
+  "mechanism_strength": 5,
+  "progression_strength": 7,
+  "aspirational_strength": 7,
+  "conflict_strength": 7,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+7.75
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 7
+}
+
+STORY SPINE
+Eres un ingeniero atrapado en una rutina laboral, pero descubres una necesidad insatisfecha en el mercado de dispositivos inteligentes para el hogar. Al identificar el problema, decides crear un prototipo en tu garaje. Después de meses de trabajo, presentas tu producto en una feria, donde recibe elogios y despierta interés. Tu innovación utiliza inteligencia artificial para facilitar la vida diaria, lo que llama la atención de un inversor que te permite dejar tu trabajo y enfocarte en tu emprendimiento. Sin embargo, un gigante de la tecnología lanza un producto similar que amenaza tu crecimiento. Debes decidir si competir con ellos o encontrar un nicho inexplorado. Optas por pivotar, centrándote en las necesidades específicas de tus usuarios, lo que te lleva a una nueva etapa de éxito y a establecer un legado en la industria.
+
+HOOK
+A los 30 años, en tu garaje, comienzas a construir un sueño que puede cambiar la forma en que vivimos.
+
+END STATE
+edad: 35 · vivienda: mansión · familia: casado con hijos · tiempo: 5 años desde el inicio · patrimonio: $10 millones · empleados: 50 · países: presente en 5 países
+
+SCALE CEILING
+international
+
+MECHANISM
+Tu producto utiliza inteligencia artificial para automatizar y optimizar las rutinas diarias, haciéndolo indispensable en cualquier hogar moderno.
+
+MAJOR THREAT
+Sin embargo, uno de los gigantes de la tecnología lanza un producto similar que amenaza con consumir tu mercado y atraer a tus clientes.
+
+BIG DECISION
+Debes decidir si competir directamente con el gigante o pivotar tu enfoque hacia un nicho de mercado que aún no ha sido explorado.
+
+ESCALATION LADDER
+1. Descubres una necesidad en el mercado de dispositivos inteligentes. — Identificación de un problema no resuelto.
+2. Creas un prototipo en tu garaje. — Inicio del desarrollo del producto.
+3. Presentas tu producto en una feria local. — Generación de interés y reconocimiento.
+4. Recibes inversión y dejas tu trabajo. — Transición a emprendedor a tiempo completo.
+5. Un gigante tecnológico lanza un producto similar. — Aumento de la competencia en el mercado.
+6. Decides pivotar y enfocarte en un nicho. — Reorientación estratégica hacia un mercado específico.
+7. Estableces un legado en la industria. — Reconocimiento y éxito sostenido.
+
+LIFE PROGRESSION
+- start:  · start ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · early_reward ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · mid_reward ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · major_reward ·  · libertad= · status= · familia= · entorno=
+- late_state:  · late_state ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] Recibir el primer cheque de un inversor marca el inicio de tu carrera como emprendedor. (primer cheque de inversión)
+- [status] La atención recibida en la feria valida tu esfuerzo y te posiciona en el mercado. (reconocimiento en la feria)
+- [freedom] Dejar tu empleo te permite dedicarte completamente a tu proyecto y vivir de tu pasión. (dejar tu trabajo)
+- [experience] Las experiencias positivas de tus primeros usuarios te motivan a seguir innovando. (feedback de usuarios)
+- [ownership] Crear tu propia empresa te brinda un sentido de pertenencia y logro. (establecer tu empresa)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un ingeniero en su garaje, trabajando arduamente en un prototipo de dispositivo inteligente.",
+  "protagonist_state": "Concentrado y apasionado, enfrentando la adversidad de la rutina laboral.",
+  "environment": "Garaje en Madrid, lleno de herramientas y tecnología.",
+  "central_contrast": "AGE 30 · CASH $5000 · Madrid · empleado vs edad: 35 · vivienda: mansión · familia: casado con hijos · tiempo: 5 años desde el inicio · patrimonio: $10 millones · empleados: 50 · países: presente en 5 países",
+  "emotion": "Determinación y ansiedad por el futuro.",
+  "key_object": "El prototipo funcional que presentas en la feria.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "Madrid",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: An engineer in his garage, passionately working on a smart device prototype. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "$5000",
+  "starting_location": "Madrid",
+  "starting_status": "empleado",
+  "target_outcome": "establecer un legado en la industria tecnológica",
+  "business_or_career_type": "emprendimiento tecnológico",
+  "timeline_scale": "2 años"
+}
+
+========================================================================
+RANK 9
+ID
+productos-unicos
+
+TITLE
+POV: Transformas tu pasión en un negocio exitoso
+
+STORY SCORE
+6.66
+STORY SUBSCORES
+{
+  "would_watch": 8,
+  "causal_strength": 6,
+  "mechanism_strength": 5,
+  "progression_strength": 8,
+  "aspirational_strength": 7,
+  "conflict_strength": 6,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+7.75
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 7
+}
+
+STORY SPINE
+Eres un artesano que trabaja en un pequeño taller creando productos personalizados con materiales reciclados. Un día, descubres que hay una creciente demanda por productos únicos y sostenibles. Al recibir comentarios positivos de tus clientes, decides abrir una tienda en línea para llegar a más personas. Las primeras ventas superan tus expectativas y te motivan a contratar a otros artesanos para que se unan a tu equipo. Tu marca comienza a ganar reconocimiento y disfrutas de mayor libertad financiera. Sin embargo, un competidor grande lanza productos similares a precios más bajos, lo que amenaza tu negocio. Decides enfocarte en la calidad y personalización para diferenciarte. A pesar de los desafíos, logras consolidar tu marca y expandirla, convirtiéndote en un referente en la industria de productos únicos.
+
+HOOK
+Tienes 30 años en ciudad pequeña. Tienes $500 en la cuenta.
+
+Recibes comentarios positivos de tus clientes sobre la calidad y originalidad de tus creaciones, lo que te da la idea de expandir tu negocio.
+
+Decides abrir una tienda en línea para mostrar y vender tus productos a un público más amplio.
+
+Las primeras ventas a través de la tienda en línea superan tus expectativas y obtienes nuevos clientes de diferentes partes del país.
+
+END STATE
+edad: 34 · vivienda: casa propia · familia: casado con hijos · tiempo: 4 años desde el inicio · patrimonio: 200,000 dólares · empleados: 5 · países: distribución nacional
+
+SCALE CEILING
+international
+
+MECHANISM
+Estableces un proceso de producción estandarizado que permite mantener la calidad mientras aumentas la producción.
+
+MAJOR THREAT
+Un competidor grande lanza una línea de productos similares a precios más bajos, amenazando tu negocio.
+
+BIG DECISION
+Decides mejorar tu enfoque en la calidad y la personalización, en lugar de competir en precio.
+
+ESCALATION LADDER
+1. Abres una tienda en línea. — Aumenta la visibilidad de tus productos.
+2. Contratas a otros artesanos. — Incrementas la producción y diversificación.
+3. Recibes un reconocimiento en un evento local. — Aumenta tu reputación y atrae nuevos clientes.
+4. Un competidor lanza productos similares más baratos. — La presión del mercado aumenta.
+5. Decides enfocarte en calidad y personalización. — Te diferencias en un mercado competitivo.
+6. Consolidas tu marca y expandes tu alcance. — Te conviertes en un referente en la industria.
+
+LIFE PROGRESSION
+- start:  · start ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · early_reward ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · mid_reward ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · major_reward ·  · libertad= · status= · familia= · entorno=
+- late_state:  · late_state ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] Las ventas superan tus expectativas, lo que te permite reinvertir en tu negocio. (primeras ventas en línea)
+- [status] Recibes un premio que aumenta la visibilidad de tu marca. (reconocimiento en evento local)
+- [freedom] Contratar a otros artesanos te permite enfocarte en la creatividad y la dirección del negocio. (expansión de la producción)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Un artesano feliz trabajando en su taller rodeado de productos únicos y sostenibles.",
+  "protagonist_state": "Recibes comentarios positivos de tus clientes sobre la calidad y originalidad de tus creaciones, lo que te da la idea de expandir tu negocio.",
+  "environment": "ciudad pequeña",
+  "central_contrast": "AGE 30 · CASH $500 · ciudad pequeña · artesano independiente vs edad: 34 · vivienda: casa propia · familia: casado con hijos",
+  "emotion": "Si no logras diferenciarte, podrías perder tu negocio y tus sueños de ser un emprendedor exitoso.",
+  "key_object": "Las primeras ventas a través de la tienda en línea superan tus expectativas.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "ciudad pequeña",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: A happy artisan working in his workshop surrounded by unique and sustainable products. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 30,
+  "starting_cash": "$500",
+  "starting_location": "ciudad pequeña",
+  "starting_status": "artesano independiente",
+  "target_outcome": "ser un referente en la industria de productos únicos",
+  "business_or_career_type": "artesanía sostenible",
+  "timeline_scale": "2 años"
+}
+
+========================================================================
+RANK 10
+ID
+hospitalidad-exclusiva
+
+TITLE
+POV: Transformas una casa en un hotel boutique exclusivo
+
+STORY SCORE
+6.64
+STORY SUBSCORES
+{
+  "would_watch": 8,
+  "causal_strength": 5,
+  "mechanism_strength": 5,
+  "progression_strength": 8,
+  "aspirational_strength": 6,
+  "conflict_strength": 9,
+  "distinctiveness": 6
+}
+PACKAGING SCORE
+7.75
+PACKAGING SUBSCORES
+{
+  "title": 8,
+  "hook": 8,
+  "thumbnail": 8,
+  "promise_coherence": 7
+}
+
+STORY SPINE
+Eres un empleado en un restaurante de una pequeña ciudad, soñando con un futuro mejor. Un día, descubres una antigua casa que podría transformarse en un hotel boutique y decides invertir tus ahorros en su renovación. Pronto, atraes a tus primeros huéspedes, quienes quedan maravillados con la experiencia única que ofreces. Implementas un servicio personalizado que incluye eventos exclusivos, ganando popularidad y atrayendo a celebridades. Sin embargo, una gran cadena hotelera abre cerca y amenaza tu negocio. Debes tomar una decisión crucial: competir en precio o seguir apostando por la exclusividad. Optas por lo segundo, lo que te permite destacar aún más y convertir tu hotel en un destino icónico, transformando tu vida y tus sueños en realidad.
+
+HOOK
+En una pequeña ciudad, trabajas en un restaurante y sueñas con algo más grande. Un día, descubres una antigua casa en ruinas que podría ser tu oportunidad.
+
+END STATE
+edad: 32 · vivienda: hotel lujoso · familia: apoyo constante · tiempo: 2 años después · patrimonio: $2 millones · empleados: 15 · países: operaciones en 3 países.
+
+SCALE CEILING
+international
+
+MECHANISM
+Implementas un servicio personalizado que incluye experiencias exclusivas y eventos privados, lo que te diferencia de otros hoteles.
+
+MAJOR THREAT
+Una gran cadena hotelera decide abrir una propiedad cercana, amenazando tu negocio y atrayendo a tus clientes potenciales.
+
+BIG DECISION
+Debes decidir si competir con precios bajos o enfocarte aún más en la exclusividad y la experiencia personalizada que ofreces.
+
+ESCALATION LADDER
+1. Encuentras la casa antigua y decides renovarla. — Inversión inicial y trabajo duro.
+2. Atraes a tus primeros huéspedes. — Comienzas a construir una reputación.
+3. Implementas un servicio personalizado y exclusivo. — Te diferencias de la competencia.
+4. Recibes recomendaciones de clientes satisfechos. — Aumenta la popularidad del hotel.
+5. Una gran cadena hotelera abre cerca. — Aumenta la presión competitiva.
+6. Decides enfocarte en la exclusividad. — Fortaleces la identidad de tu hotel.
+7. Tu hotel se convierte en un destino icónico. — Transformas tu vida y logras tus sueños.
+
+LIFE PROGRESSION
+- start:  · Vives en una pequeña ciudad donde trabajas en un restaurante local. ·  · libertad= · status= · familia= · entorno=
+- early_reward:  · Tu hotel comienza a atraer a más clientes. ·  · libertad= · status= · familia= · entorno=
+- mid_reward:  · Tu reputación crece y recibes más reservas. ·  · libertad= · status= · familia= · entorno=
+- major_reward:  · Celebrities eligen tu hotel como su lugar de hospedaje. ·  · libertad= · status= · familia= · entorno=
+- late_state:  · Tu hotel es reconocido internacionalmente. ·  · libertad= · status= · familia= · entorno=
+
+REWARDS
+- [financial] Aumenta tu flujo de caja y te permite reinvertir en el hotel. (Cuando recibes tus primeros pagos de huéspedes.)
+- [status] Estableces una reputación que atrae a más clientes. (Al recibir críticas positivas en redes sociales.)
+- [experience] Tu hotel se convierte en un lugar de referencia para el turismo exclusivo. (Cuando celebridades eligen tu hotel para hospedarse.)
+
+THUMBNAIL CONCEPT
+{
+  "main_visual": "Transformación de una casa en ruinas en un hotel boutique lujoso.",
+  "protagonist_state": "Un empleado de restaurante con grandes sueños.",
+  "environment": "Una pequeña ciudad llena de encanto.",
+  "central_contrast": "De empleado en un restaurante a dueño de un hotel icónico.",
+  "emotion": "La presión de perder todo lo que has construido.",
+  "key_object": "Los primeros huéspedes encantados con su experiencia.",
+  "composition": "sujeto a la izquierda, consecuencia a la derecha",
+  "camera": "plano medio amplio",
+  "lighting": "luz práctica del lugar",
+  "background": "una pequeña ciudad",
+  "text_if_any": "",
+  "thumbnail_prompt": "2D cinematic illustration: Transformación de una casa en ruinas en un hotel boutique lujoso. Simple expressive protagonist, strong contrast, detailed environment, no busy text."
+}
+
+WORLD SEEDS
+{
+  "starting_age": 28,
+  "starting_cash": "$20000",
+  "starting_location": "una pequeña ciudad",
+  "starting_status": "empleado en un restaurante",
+  "target_outcome": "convertir la casa en un hotel boutique exitoso",
+  "business_or_career_type": "hospitalidad",
+  "timeline_scale": "2 años"
+}
+
+
+MÉTRICAS DE EJECUCIÓN
+raw requested: 40
+raw generated: 40
+raw unique: 40
+story cores generated: 40
+story cores rejected: 10
+story cores eligible: 30
+story shortlist: 15
+packaging attempted: 15
+packaging repaired: 15
+packaging failed: 0
+semantic duplicates removed: 6
+LLM calls: 77
+retries: 0
+failures: 0
+runtime_sec: 1339.1
+model: gpt-4o-mini

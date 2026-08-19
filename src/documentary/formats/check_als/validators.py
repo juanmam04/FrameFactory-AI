@@ -293,12 +293,13 @@ def validate_hook(hook: Any) -> dict[str, Any]:
     if not text:
         return {"pass": False, "reasons": ["hook vacío"]}
     low = text.lower()
+    head = re.sub(r"^[¿¡\"'\s]+", "", low)
     has_es = bool(_SECOND_PERSON_ES_RE.search(low))
     has_en = bool(re.search(r"\byou\b", low))
     if not has_es and not has_en:
         reasons.append("no es segunda persona (falta tú/te/tienes/eres…)")
     for ban in BANNED_HOOK_OPENERS:
-        if low.startswith(ban):
+        if head.startswith(ban) or low.startswith(ban):
             reasons.append(f"apertura prohibida: {ban}")
     if re.search(r"sueñas con construir algo grande|you dream of building something big", low):
         reasons.append("apertura genérica de sueño")
@@ -503,7 +504,12 @@ def validate_titles(title: str, options: list[dict[str, Any]]) -> dict[str, Any]
 
 
 def validate_thumbnail(thumb: dict[str, Any] | None) -> dict[str, Any]:
-    t = thumb if isinstance(thumb, dict) else {}
+    from src.documentary.formats.check_als.quality import (
+        strip_ad_thumbnail_text,
+        thumbnail_fields_complete,
+    )
+
+    t = strip_ad_thumbnail_text(thumb if isinstance(thumb, dict) else {})
     placeholders_hit: list[str] = []
     for key in ("main_visual", "protagonist_state", "environment", "central_contrast", "emotion", "key_object", "background"):
         val = _low(t.get(key))
@@ -520,6 +526,9 @@ def validate_thumbnail(thumb: dict[str, Any] | None) -> dict[str, Any]:
     reasons = []
     if placeholders_hit:
         reasons.append(f"placeholders: {', '.join(placeholders_hit)}")
+    fields = thumbnail_fields_complete(t)
+    if not fields["pass"]:
+        reasons.append("campos vacíos: " + ", ".join(fields["missing"]))
     if len(main) < 24:
         reasons.append("main_visual too thin")
     if len(contrast) < 12:
@@ -528,7 +537,7 @@ def validate_thumbnail(thumb: dict[str, Any] | None) -> dict[str, Any]:
         reasons.append("key_object too thin")
     if len(prompt) < 40:
         reasons.append("thumbnail_prompt too thin")
-    return {"pass": not reasons, "reasons": reasons}
+    return {"pass": not reasons, "reasons": reasons, "thumbnail": t}
 
 
 def validate_story_question(q: Any) -> dict[str, Any]:

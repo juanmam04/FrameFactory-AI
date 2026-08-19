@@ -1,0 +1,221 @@
+CHECK ALS — FASE 1.7.1 STORY SHAPE DIVERSITY
+20 Story Cores. SIN packaging. SIN scores en los spines.
+model=gpt-4o-mini
+
+20 STORY SPINES
+
+------------------------------------------------------------------------
+ID
+lavanderia_renovada
+
+STORY SPINE
+Eres el dueño de una lavandería en quiebra que compraste por $500, luchando por mantenerla a flote. Un día, descubres que el local vecino está vacío y tiene el potencial para convertirse en una sucursal franquiciada. Al notar que la demanda de servicios de lavandería ha aumentado en el barrio, decides invertir tus últimos ahorros en renovar el local y abrir una nueva sucursal. Desde el primer día, la nueva sucursal atrae a muchos clientes, superando tus expectativas. Implementas un sistema de recogida y entrega a domicilio que mejora la experiencia del cliente y aumenta las ventas. La popularidad de la sucursal te permite contratar a más empleados, mejorando el servicio y la eficiencia. Consigues tu primer contrato de servicio regular con un edificio de apartamentos, asegurando ingresos constantes. Tu vida toma un giro radical, pasando de la incertidumbre financiera a ser un empresario exitoso. Sin embargo, un competidor grande abre una lavandería justo al lado de tu primera sucursal y lanza una campaña de precios bajos. Debes decidir entre bajar tus precios o mantener tus estándares de calidad. Si bajas los precios, puedes perder clientes fieles; si mantienes la calidad, arriesgas la viabilidad de tu negocio. Finalmente, logras negociar una colaboración con la comunidad local, ofreciendo servicios exclusivos que el competidor no puede igualar.
+
+------------------------------------------------------------------------
+ID
+plataforma_deportiva
+
+STORY SPINE
+Eres un joven apasionado por el deporte que graba partidos locales en tu comunidad, pero sientes que la visibilidad de estos eventos es mínima. Observas que muchos talentos no tienen un lugar donde mostrar sus habilidades y decides crear una plataforma donde puedan subir sus partidos y highlights. Subes un video, y en 24 horas recibe miles de visitas, lo que te impulsa a seguir adelante. La plataforma crece rápidamente gracias a su algoritmo que promueve contenido local. Consigues tu primer patrocinador, y tu vida cambia al convertirte en un referente en la comunidad. Sin embargo, una gran plataforma global lanza una funcionalidad similar, amenazando tu crecimiento. Debes decidir entre vender tu plataforma o innovar. Finalmente, optas por mejorar tu plataforma, introduciendo funciones que mantienen unida a tu comunidad, asegurando su crecimiento.
+
+------------------------------------------------------------------------
+ID
+comida_a_domicilio_exclusiva
+
+STORY SPINE
+Eres un chef apasionado que trabaja en un restaurante famoso, pero anhelas tener tu propio negocio. Un error de entrega provoca que un cliente reciba un plato exquisito por error, y su reseña en redes se vuelve viral. Aprovechas esta atención y lanzas tu servicio de comida a domicilio especializado en platos de autor. Con el boca a boca y las redes sociales, tu negocio crece rápidamente y decides implementar un sistema de suscripción. Las cosas van bien, hasta que un competidor grande imita tu modelo con precios más bajos. Debes decidir si bajar tus precios o mantener la calidad que te hizo destacado. Optas por lo segundo, enfocándote en la experiencia y el estatus que ofrece tu comida, lo que solidifica tu reputación y te establece como un referente en el sector.
+
+------------------------------------------------------------------------
+ID
+micro_fabrica
+
+STORY SPINE
+Eres un apasionado de la moda sostenible, pero trabajas en un empleo aburrido. Un día, descubres una microfábrica textil en quiebra que tiene el potencial de producir ropa ecológica. Te das cuenta de que hay una creciente demanda por productos sostenibles y decides invertir tus ahorros para adquirirla. Tras reactivar la producción, lanzas una colección inicial de camisetas ecológicas que reciben críticas entusiastas. Implementas un sistema de producción basado en materiales reciclados que no solo reduce costos, sino que también atrae a clientes conscientes del medio ambiente. Con el éxito de tu primera colección, comienzas a recibir pedidos de tiendas locales y ganas un premio por innovación. Sin embargo, un competidor grande entra al mercado con productos similares a precios bajos. Debes decidir entre bajar precios o mantener la calidad y buscar un nicho exclusivo. Al final, optas por pivotar hacia un modelo de suscripción para ropa sostenible, estableciendo una comunidad leal que valora la calidad y el impacto ambiental.
+
+------------------------------------------------------------------------
+ID
+juego_educativo
+
+STORY SPINE
+Eres un profesor apasionado que se da cuenta de que los métodos tradicionales no captan la atención de tus estudiantes. Observando su desmotivación, decides crear un juego educativo que combine diversión con aprendizaje. Después de desarrollar un prototipo y presentarlo en un evento escolar, los niños se entusiasman y comienzan a involucrarse activamente. La noticia se extiende y una editorial se interesa en publicar tu juego. Tu vida cambia al dejar tu trabajo y dedicarte a tiempo completo a esta nueva aventura. Sin embargo, una gran compañía de videojuegos lanza un producto similar, amenazando tu éxito. Debes decidir si competir o innovar. Al optar por lanzar una versión mejorada que incluye realidad aumentada, logras un nuevo éxito que culmina en un contrato para una película basada en tu juego.
+
+------------------------------------------------------------------------
+ID
+restaurante_interactivo
+
+STORY SPINE
+Eres el dueño de un pequeño restaurante familiar que apenas sobrevive. Al observar la creciente demanda de experiencias únicas, decides transformar tu local en un restaurante interactivo donde los clientes participan en la comida. Tu primera cena temática es un éxito rotundo, y la popularidad de tu restaurante crece rápidamente. Al implementar un sistema de reservas en línea, logras atraer más clientela y abrir nuevas sucursales en diferentes ciudades. Sin embargo, un gran competidor lanza un concepto similar con precios más bajos, poniendo en riesgo tu negocio. Debes decidir entre bajar tus precios o mantener la calidad que te caracteriza. Al final, optas por diversificar tus experiencias con toques únicos que atraen a los comensales, asegurando que tu restaurante no solo sobreviva, sino que también prospere en un mercado competitivo.
+
+------------------------------------------------------------------------
+ID
+logistica_eficiente
+
+STORY SPINE
+Eres un coordinador de logística que siente que tu vida está estancada. Tras perder tu trabajo, descubres que muchas pequeñas empresas luchan por optimizar sus entregas. Decides crear una plataforma que utiliza inteligencia artificial para mejorar las rutas de transporte. Con tu primer cliente, una pequeña empresa de alimentos, logras un aumento de eficiencia. La plataforma se vuelve popular y empiezas a atraer empresas más grandes. Tu éxito te lleva a presentar tu producto en una conferencia internacional, pero una gran corporación lanza un competidor más barato. Debes decidir entre bajar precios o innovar. Al final, optas por desarrollar una nueva funcionalidad que predice la demanda, lo que te permite no solo retener a tus clientes, sino también conseguir nuevos, transformando tu vida y tu negocio.
+
+------------------------------------------------------------------------
+ID
+canal_de_reviews
+
+STORY SPINE
+Eres un apasionado del cine que tiene un pequeño canal de YouTube donde haces reseñas humildes desde tu departamento. Al notar que muchos críticos son superficiales, decides ofrecer análisis genuinos y profundos. Tu estilo auténtico resuena con la audiencia, y un video sobre una película de culto se vuelve viral, atrayendo nuevos suscriptores. A medida que creces, colaboras con otros creadores y marcas, transformando tu pasión en carrera. Sin embargo, un gran estudio intenta desprestigiarte, cuestionando tu credibilidad. Te enfrentas a una difícil decisión: luchar por tu integridad o retirarte. Optas por confrontar la situación, lo que resulta en un aumento de seguidores y te establece como un crítico sincero y respetado en la industria.
+
+------------------------------------------------------------------------
+ID
+franquicia_desayunos
+
+STORY SPINE
+Eres un apasionado de la cocina que trabaja en un pequeño café, hasta que descubres que tres cafés locales en venta tienen potencial. Decides comprarlos y transformarlos, mejorando la calidad de los ingredientes y la presentación de los platos. Gracias a tu esfuerzo, los clientes comienzan a disfrutar de la experiencia y comparten su entusiasmo. Implementas un sistema de franquicias, lo que te permite replicar tu modelo de negocio en diferentes ciudades. A medida que creces, tus cafés se convierten en un referente del desayuno saludable. Sin embargo, un competidor grande lanza una línea similar, amenazando tu éxito. Debes decidir entre bajar precios o mantener la calidad. Optas por diferenciarte y estableces una alianza con un influencer, lo que revitaliza tu marca y te impulsa a abrir nuevas franquicias a nivel nacional.
+
+------------------------------------------------------------------------
+ID
+abogado_creativo
+
+STORY SPINE
+Eres un abogado en un bufete de renombre, pero sientes que tu vida carece de pasión. Al observar las luchas de tus amigos emprendedores por conseguir servicios legales asequibles, decides dejar tu trabajo y fundar una agencia que ofrece asesoría legal a precios accesibles para startups tecnológicas. Tu modelo de precios flexible y servicios en línea atraen a los primeros clientes, y rápidamente te haces un nombre en la comunidad emprendedora. Sin embargo, un gran competidor empieza a ofrecer servicios legales gratuitos, amenazando tu crecimiento. Debes decidir si reducir tus precios o mantener la calidad que te distingue. Optas por la calidad, creando una base leal de clientes que valoran tu trabajo, lo que te permite crecer y fortalecer tu comunidad en el sector tecnológico.
+
+------------------------------------------------------------------------
+ID
+de-cero-a-imperio-1
+
+STORY SPINE
+Eres un community manager en una agencia pequeña, donde sientes que tu trabajo pasa desapercibido. Un día, notas que muchas empresas luchan por gestionar sus redes sociales y decides ofrecer un servicio especializado. Tu primer cliente obtiene resultados sorprendentes y te recomienda a otros, lo que hace que tu negocio empiece a despegar. Creas un sistema único que se adapta a cada cliente, y pronto, tus ingresos crecen lo suficiente como para que dejes tu trabajo y te dediques por completo a esto. Sin embargo, un gran competidor entra al mercado ofreciendo precios bajos y copia tu modelo. Te enfrentas a una decisión difícil: bajar tus precios o mantener la calidad. Optas por innovar y, en lugar de bajar tus tarifas, creas un servicio que resalta tu valor único. Esto redefine tu negocio y te establece como líder en un mercado competitivo.
+
+------------------------------------------------------------------------
+ID
+oportunidad-inesperada-1
+
+STORY SPINE
+Eres el propietario de un pequeño café familiar que lucha por sobrevivir. Un día, un chef reconocido menciona que ve potencial en tu negocio y te sugiere ofrecer un menú de comida. Te das cuenta de que tus clientes buscan una experiencia más completa, así que comienzas a experimentar en la cocina. Después de implementar un menú pequeño, un grupo de influencers de comida visita y comparte su experiencia, lo que aumenta significativamente tu clientela. Al ver el éxito, decides ofrecer menús temáticos semanales, lo que atrae la atención de críticos gastronómicos y transforma tu café en un lugar popular. Sin embargo, un grupo de restaurantes grandes copia tu concepto y lo ofrece a precios más bajos, poniendo en riesgo tu negocio. Debes decidir si competir en precio o mantener la calidad que te hizo exitoso. Al final, eliges mantener la esencia de tu café, lo que construye una comunidad leal de clientes que valoran la autenticidad.
+
+------------------------------------------------------------------------
+ID
+de-horario-a-imperio
+
+STORY SPINE
+Eres un trabajador en un bar nocturno, donde te das cuenta de que hay una gran demanda insatisfecha para un ambiente exclusivo. Con la idea de un cliente habitual en mente, decides abrir un segundo bar en un barrio animado. El éxito supera tus expectativas y comienzas a estandarizar tu modelo para abrir franquicias. Atraes la atención de un gran grupo hotelero que lanza un bar similar gratuitamente, lo que pone en riesgo tu negocio. Debes elegir entre competir en precios o reforzar tu propuesta única, arriesgando tus ganancias. A pesar de esta presión, logras mantener la lealtad de tus clientes y tu marca se consolida, llevando tus franquicias a un nivel nacional.
+
+------------------------------------------------------------------------
+ID
+un-suceso-inesperado
+
+STORY SPINE
+Eres un joven arquitecto que siente que tu talento no es valorado en un pequeño estudio. Entonces, ganas un concurso para administrar una propiedad antigua en un barrio en declive. Al investigar, descubres que esta propiedad tiene un pasado cautivador que atrae a turistas. Decides restaurarla y convertirla en un espacio turístico. Tu primera visita guiada es un éxito, atrayendo a más visitantes y ganando atención mediática. Esto te lleva a establecer conexiones con agencias de turismo. Te conviertes en un referente en el turismo patrimonial y logras la libertad financiera que deseabas. Sin embargo, un gran desarrollador inmobiliario quiere comprar la propiedad para construir un centro comercial. Debes decidir si venderla o luchar por su preservación. Finalmente, eliges asociarte con una organización sin fines de lucro para protegerla, asegurando su legado y continuando con el turismo.
+
+------------------------------------------------------------------------
+ID
+reviviendo-los-tiempos-de-oro
+
+STORY SPINE
+Eres un periodista apasionado que ha visto cómo la industria de las revistas se desmorona. Encuentras una revista de entretenimiento en declive que solía ser un ícono, y decides comprarla con la esperanza de revivirla. Reúnes a un equipo creativo y lanzas un número especial que sorprende a tus lectores, generando un revuelo en redes sociales. Con la creación de una plataforma digital, logras atraer anunciantes y aumentar tus ingresos. Poco a poco, recuperas a los antiguos suscriptores y atraes a nuevos, transformando tu trabajo en una misión significativa. Sin embargo, un competidor importante lanza una campaña maliciosa en tu contra, poniendo en riesgo todo lo que has logrado. Debes decidir si luchar sucio o concentrarte en la calidad de tu contenido. Optas por lo último y lanzas una campaña positiva que resalta lo que tu revista representa, lo que resulta en un aumento inesperado de ventas y la consolidación de tu posición en el mercado.
+
+------------------------------------------------------------------------
+ID
+del-basket-a-la-primera
+
+STORY SPINE
+Eres un apasionado del baloncesto que trabaja en una oficina y sueña con tener un equipo propio. Cuando descubres un equipo de baloncesto de segunda división al borde de la quiebra, decides que es tu oportunidad para hacer un cambio. Con tu inversión y visión, logras revitalizar el equipo y, en poco tiempo, atraes a más aficionados. Su éxito en los playoffs genera una ola de reconocimiento, pero un empresario rival se interpone en tu camino, amenazando tus sueños. Debes elegir entre aceptar una oferta de compra o seguir invirtiendo en tu pasión. Al final, decides rechazar la oferta y luchar por llevar al equipo a la NBA, manteniendo viva la esperanza de una comunidad que cree en ti.
+
+------------------------------------------------------------------------
+ID
+transformacion_clinica
+
+STORY SPINE
+Eres un médico que hereda un viejo consultorio en un barrio olvidado, un lugar donde los tiempos de espera son inaceptables. Un día, escuchas a un paciente frustrado y te das cuenta de que puedes implementar un sistema de gestión digital para mejorar la atención. Al hacerlo, los pacientes comienzan a elogiar el servicio y, con el tiempo, tu clínica se convierte en un lugar de referencia. La satisfacción del paciente te lleva a abrir una segunda sede, pero un competidor grande lanza una clínica moderna a poca distancia. Debes decidir si competir con precios o innovar, y eliges ofrecer consultas virtuales. Esto no solo te ayuda a retener a tus pacientes, sino que también atraes a más, consolidando tu éxito en la comunidad.
+
+------------------------------------------------------------------------
+ID
+startups_de_moda
+
+STORY SPINE
+Eres un apasionado de la moda que ha estado escribiendo un blog desde tu pequeño departamento. Un día, decides abordar la influencia de la cultura urbana en las tendencias de moda, un tema poco explorado. Publicas el artículo sin muchas expectativas y, para tu sorpresa, se vuelve viral. Tu enfoque auténtico llama la atención de influencers y marcas, lo que te lleva a crear contenido en video y a realizar entrevistas con diseñadores emergentes. Al ganar seguidores, consigues tu primer patrocinador y decides dejar tu trabajo para dedicarte a tiempo completo a crear contenido. Sin embargo, una famosa marca lanza una campaña que imita tu estilo y se desata la controversia. Ahora te enfrentas a la decisión de demandar por plagio o capitalizar la situación para fortalecer tu marca. Al final, decides construir una plataforma que promueva diseñadores independientes, estableciendo tu lugar en la industria.
+
+------------------------------------------------------------------------
+ID
+supermercados_competitivos
+
+STORY SPINE
+Eres un joven emprendedor que ha heredado una pequeña cadena de supermercados en una ciudad en declive. Las ventas están cayendo y el negocio parece condenado. Sin embargo, observas que la competencia está sufriendo a causa de la crisis económica, lo que te da una oportunidad única. Decides aplicar una visión innovadora centrada en productos orgánicos y frescos, mejorando la experiencia del cliente. En pocos meses, los clientes vuelven y las ventas aumentan un 30%. Con un nuevo sistema de gestión de inventario, logras reducir el desperdicio y mejorar la rentabilidad. A medida que tu negocio crece, decides adquirir otros supermercados cercanos. Sin embargo, un competidor, que había cerrado, regresa y copia tu modelo, amenazando tu éxito. Debes decidir si bajar precios o mantener tu calidad. Al final, optas por mantener tu propuesta de valor y lanzas un programa de fidelización, consolidándote como el supermercado favorito de la comunidad.
+
+------------------------------------------------------------------------
+ID
+app_de_gestion
+
+STORY SPINE
+Eres un emprendedor con un software de gestión que ha caído en el olvido. Observas que hay un creciente número de pequeñas y medianas empresas que luchan con la gestión de sus recursos y decidas revitalizar tu producto. Implementas mejoras y, al probarlo en una empresa, logras que su eficiencia se disparé. Gracias a las recomendaciones, el interés en tu software se dispara y comienzas a crecer. Sin embargo, un competidor grande lanza un producto similar gratuito, lo que pone en riesgo tu negocio. Decides innovar y añadir nuevas funcionalidades, lo que te ayuda a destacarte nuevamente en el mercado. Finalmente, después de meses de esfuerzo, te ofrecen una compra del software, transformando tu vida y asegurando tu futuro.
+
+
+STORY SHAPE (por ID)
+
+lavanderia_renovada: zero_to_empire
+plataforma_deportiva: viral_breakout
+comida_a_domicilio_exclusiva: accidental_opportunity
+micro_fabrica: turnaround
+juego_educativo: invention
+restaurante_interactivo: boom_and_crisis
+logistica_eficiente: rise_fall_comeback
+canal_de_reviews: underdog_vs_incumbent
+franquicia_desayunos: acquisition
+abogado_creativo: high_risk_bet
+de-cero-a-imperio-1: zero_to_empire
+oportunidad-inesperada-1: accidental_opportunity
+de-horario-a-imperio: zero_to_empire
+un-suceso-inesperado: accidental_opportunity
+reviviendo-los-tiempos-de-oro: turnaround
+del-basket-a-la-primera: underdog_vs_incumbent
+transformacion_clinica: zero_to_empire
+startups_de_moda: viral_breakout
+supermercados_competitivos: boom_and_crisis
+app_de_gestion: turnaround
+
+SHAPE COUNTS
+{
+  "zero_to_empire": 4,
+  "viral_breakout": 2,
+  "accidental_opportunity": 3,
+  "turnaround": 3,
+  "invention": 1,
+  "boom_and_crisis": 2,
+  "rise_fall_comeback": 1,
+  "underdog_vs_incumbent": 2,
+  "acquisition": 1,
+  "high_risk_bet": 1
+}
+
+SIMILITUD ESTRUCTURAL DETECTADA
+generic_success_arc share: 0.4
+generic_success_arc ids: comida_a_domicilio_exclusiva, logistica_eficiente, franquicia_desayunos, abogado_creativo, de-cero-a-imperio-1, oportunidad-inesperada-1, supermercados_competitivos, app_de_gestion
+dominant_shape_count: 4
+
+lavanderia_renovada: template=none · beats=[swap_competitor, innovate_win] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+plataforma_deportiva: template=none · beats=[generic_ending] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+comida_a_domicilio_exclusiva: template=generic_success_arc · beats=[soft_proof, smooth_growth, swap_competitor, price_vs_quality, innovate_win, generic_ending] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=True
+micro_fabrica: template=none · beats=[vague_opportunity, swap_competitor, price_vs_quality, innovate_win] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=True · ending_genérico=False
+juego_educativo: template=none · beats=[vague_opportunity] · conflicto_intercambiable=True · oportunidad_genérica=True · invento_genérico=False · ending_genérico=False
+restaurante_interactivo: template=none · beats=[vague_opportunity, swap_competitor, price_vs_quality, innovate_win] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+logistica_eficiente: template=generic_success_arc · beats=[trapped_job, soft_proof, price_vs_quality] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=True · ending_genérico=False
+canal_de_reviews: template=none · beats=[soft_proof] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+franquicia_desayunos: template=generic_success_arc · beats=[swap_competitor, price_vs_quality, innovate_win, generic_ending] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+abogado_creativo: template=generic_success_arc · beats=[trapped_job, swap_competitor, price_vs_quality, innovate_win] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+de-cero-a-imperio-1: template=generic_success_arc · beats=[trapped_job, swap_competitor, innovate_win, generic_ending] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+oportunidad-inesperada-1: template=generic_success_arc · beats=[trapped_job, price_vs_quality, innovate_win] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+de-horario-a-imperio: template=none · beats=[vague_opportunity, price_vs_quality] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+un-suceso-inesperado: template=none · beats=[generic_ending] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+reviviendo-los-tiempos-de-oro: template=none · beats=[generic_ending] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+del-basket-a-la-primera: template=none · beats=[—] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+transformacion_clinica: template=none · beats=[swap_competitor] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+startups_de_moda: template=none · beats=[soft_proof] · conflicto_intercambiable=False · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+supermercados_competitivos: template=generic_success_arc · beats=[smooth_growth, swap_competitor, price_vs_quality, innovate_win] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+app_de_gestion: template=generic_success_arc · beats=[swap_competitor, price_vs_quality, innovate_win] · conflicto_intercambiable=True · oportunidad_genérica=False · invento_genérico=False · ending_genérico=False
+
+MÉTRICAS
+raw requested: 20
+raw generated: 20
+raw unique: 20
+story cores generated: 20
+story cores rejected: 16
+story cores eligible: 4
+LLM calls: 24
+retries: 0
+failures: 0
+runtime_sec: 164.0

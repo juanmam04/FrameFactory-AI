@@ -400,8 +400,241 @@ def test_score_separation_possible():
     a = _fixture_package(0, ["entrepreneurship"])
     b = _fixture_package(1, ["acquisition"])
     c = _fixture_package(2, ["sports_business"])
-    scores = sorted({round(float(x["overall_score"]), 2) for x in (a, b, c)})
-    # At least some spread OR distinct rank_scores
-    ranks = sorted({round(float(x.get("rank_score") or 0), 3) for x in (a, b, c)})
-    assert len(scores) >= 2 or len(ranks) >= 2
+    scores = sorted(float(x["overall_score"]) for x in (a, b, c))
+    ranks = sorted(float(x.get("rank_score") or 0) for x in (a, b, c))
+    assert max(scores) - min(scores) >= 0.15 or max(ranks) - min(ranks) >= 0.15
+    # Sub-scores must not be a cloned vector
+    vectors = [tuple(sorted((x.get("scores") or {}).items())) for x in (a, b, c)]
+    assert len(set(vectors)) >= 2
     assert all(isinstance(x["overall_score"], float) for x in (a, b, c))
+    assert isinstance(a.get("business_fantasy"), str) and a["business_fantasy"]
+
+
+def test_community_savior_fails_aspirational():
+    pkg = normalize_concept_package(
+        {
+            **_fixture_package(0, ["entrepreneurship"]),
+            "id": "community-cafe",
+            "title": "POV: Alquilas espacios y revives comunidades",
+            "premise": "Alquilas un local vacío y empoderas a productores locales con un centro creativo.",
+            "one_line_fantasy": "Revitalizas tu barrio con espacios creativos",
+            "core_transformation": "Vecino → salvador de la comunidad local",
+        }
+    )
+    assert pkg["eligible"] is False
+    failed = pkg.get("eligibility", {}).get("failed_gates") or []
+    assert "has_aspirational_transformation" in failed
+
+
+def test_ladder_dicts_become_canonical():
+    from src.documentary.formats.check_als.aspirational import normalize_escalation_ladder
+
+    out = normalize_escalation_ladder(
+        [
+            {"nivel": "Abrir el primer eco-resort y generar $16,000"},
+            {"level": "Expansión internacional", "description": "Lanzas productos en e-commerce"},
+            "3. Franquicias nacionales",
+        ]
+    )
+    assert len(out) == 3
+    assert all(isinstance(row, dict) and row.get("event") and "level" in row for row in out)
+    assert "eco-resort" in out[0]["event"].lower()
+    assert "e-commerce" in out[1]["event"].lower()
+
+
+def test_scale_ceiling_repairs_to_match_countries():
+    pkg = normalize_concept_package(
+        {
+            **_fixture_package(0, ["entrepreneurship"]),
+            "scale_ceiling": "national",
+        }
+    )
+    assert pkg["scale_ceiling"] == "international"
+
+
+def test_title_millonario_with_500k_end_fails():
+    base = _fixture_package(0, ["entrepreneurship"])
+    pkg = normalize_concept_package(
+        {
+            **base,
+            "title": "POV: Compras entradas y creas un negocio millonario",
+            "title_options": [{"text": "POV: Compras entradas y creas un negocio millonario"}],
+            "premise": "Compras entradas a conciertos y las revendes a precios premium.",
+            "end_state": "A los 30 años patrimonio $500,000, 10 empleados, 1 país",
+            "starting_state": "empleo a tiempo parcial · $500",
+            "world_seeds": {
+                **base["world_seeds"],
+                "starting_cash": "$500",
+                "target_outcome": "reventa de entradas con patrimonio $500,000",
+            },
+            "escalation_ladder": [
+                "Compras 10 entradas",
+                "Ganas $1,500",
+                "Llegas a $50,000 al año",
+                "10 empleados",
+                "Patrimonio $500,000",
+            ],
+            "start_end_contrast": {
+                "start": "empleo a tiempo parcial y $500",
+                "end": "patrimonio $500,000 y 10 empleados",
+            },
+            "story_engine": {
+                **base["story_engine"],
+                "endgame": "negocio de reventa con patrimonio de $500,000",
+                "first_major_reward": "ganas $2,000 al mes",
+                "escalation_path": "local → nacional $500k",
+            },
+        }
+    )
+    failed = pkg.get("eligibility", {}).get("failed_gates") or []
+    assert pkg["eligible"] is False
+    assert "title_truthful" in failed
+
+
+def test_generic_sustainable_products_fail_object_gate():
+    base = _fixture_package(0, ["entrepreneurship"])
+    pkg = normalize_concept_package(
+        {
+            **base,
+            "title": "POV: Construyes un imperio de productos sostenibles",
+            "premise": "Estableces una fábrica de productos sostenibles y biodegradables.",
+            "story_engine": {
+                **base["story_engine"],
+                "specific_opportunity": "El mercado de productos sostenibles crece un 20% anual",
+                "business_or_progress_mechanism": "Producción y venta de productos biodegradables a tiendas",
+            },
+            "thumbnail_concept": {
+                **base["thumbnail_concept"],
+                "key_object": "Un producto biodegradable innovador",
+            },
+        }
+    )
+    failed = pkg.get("eligibility", {}).get("failed_gates") or []
+    assert "specific_object_ok" in failed
+
+
+def test_life_transformation_is_magnitude_not_completeness():
+    strong = _fixture_package(0, ["entrepreneurship"])
+    assert int((strong.get("scores") or {}).get("life_transformation") or 0) >= 7
+    assert int(strong.get("life_progression_completeness") or 0) >= 7
+    base = strong
+    weak = normalize_concept_package(
+        {
+            **base,
+            "title": "POV: Compras entradas a conciertos",
+            "end_state": "patrimonio $500,000 · 10 empleados · un país · departamento alquilado",
+            "starting_state": "tiempo parcial · $500",
+            "world_seeds": {**base["world_seeds"], "starting_cash": "$500", "target_outcome": "$500k"},
+            "escalation_ladder": [
+                "revendes entradas locales",
+                "ganas $1,500",
+                "llegas a $50,000 al año",
+                "contratas 10 personas",
+                "patrimonio $500,000",
+            ],
+            "start_end_contrast": {
+                "start": "joven con empleo a tiempo parcial y $500",
+                "end": "dueño de reventa con patrimonio de $500,000 y 10 empleados",
+            },
+            "story_engine": {
+                **base["story_engine"],
+                "endgame": "líder nacional de reventa con $500,000",
+            },
+        }
+    )
+    lt = int((weak.get("scores") or {}).get("life_transformation") or 10)
+    completeness = int(weak.get("life_progression_completeness") or 0)
+    assert lt <= 6
+    assert completeness >= lt
+
+
+def test_lodging_clones_cannot_both_enter_top():
+    from src.documentary.formats.check_als.quality import is_same_movie
+    from src.documentary.formats.check_als.scoring import finalize_ranked_batch
+
+    base = _fixture_package(0, ["entrepreneurship"])
+    cabins = normalize_concept_package(
+        {
+            **base,
+            "id": "eco-cabins",
+            "title": "POV: Construyes cabañas ecológicas",
+            "premise": "Compras un terreno baldío y construyes cabañas ecológicas de ecoturismo.",
+            "one_line_fantasy": "De un terreno baldío a un imperio de cabañas ecológicas",
+        }
+    )
+    resort = normalize_concept_package(
+        {
+            **base,
+            "id": "eco-resort",
+            "title": "POV: Transformas un terreno baldío en un eco-resort",
+            "premise": "Transformas un terreno baldío en un eco-resort de turismo sostenible.",
+            "one_line_fantasy": "De un lote vacío a una cadena de eco-resorts",
+        }
+    )
+    other = _fixture_package(1, ["acquisition"])
+    assert is_same_movie(cabins, resort) is True
+    ranked = finalize_ranked_batch([cabins, resort, other], 10)
+    top_ids = {p.get("id") for p in ranked["eligible_ranked"]}
+    assert not ({"eco-cabins", "eco-resort"} <= top_ids)
+
+
+def test_thumbnail_required_fields_are_filled():
+    base = _fixture_package(0, ["entrepreneurship"])
+    pkg = normalize_concept_package(
+        {
+            **base,
+            "thumbnail_concept": {
+                "main_visual": "Recepcionista en un taller con el teléfono sonando sin respuesta",
+                "central_contrast": "mostrador chico vs software nacional",
+                "key_object": "teléfono con 17 llamadas perdidas",
+                "thumbnail_prompt": "2D cinematic illustration of a mechanic shop receptionist at night with a ringing phone",
+                "protagonist_state": "",
+                "environment": "",
+                "emotion": "",
+                "text_if_any": "¡Descubre el ecoturismo!",
+            },
+        }
+    )
+    thumb = pkg.get("thumbnail_concept") or {}
+    assert thumb.get("protagonist_state")
+    assert thumb.get("environment")
+    assert thumb.get("emotion")
+    assert not thumb.get("text_if_any")
+
+
+def test_rewards_dict_and_collapsed_types_parse():
+    from src.documentary.formats.check_als.aspirational import normalize_rewards
+
+    as_dict = normalize_rewards(
+        {
+            "financial": "Patrimonio de $5 millones",
+            "lifestyle": "Vives en una casa en la playa",
+            "status": "Eres referente nacional",
+        }
+    )
+    assert len(as_dict) >= 3
+    assert len({r["type"] for r in as_dict}) >= 2
+
+    collapsed = normalize_rewards(
+        [
+            {"type": "financial", "description": "Pagas la hipoteca de tus padres"},
+            {"type": "financial", "description": "Controlas tu horario y tu libertad"},
+            {"type": "financial", "description": "Reconocimiento como líder del sector"},
+        ]
+    )
+    assert len({r["type"] for r in collapsed}) >= 2
+
+
+def test_retry_backoff_retries_connection_errors():
+    from src.documentary.formats.check_als.concepts import _with_retry
+
+    hits = {"n": 0}
+
+    def flaky():
+        hits["n"] += 1
+        if hits["n"] < 3:
+            raise ConnectionError("Connection error.")
+        return "ok"
+
+    assert _with_retry(flaky, attempts=4, base=0.01, label="test") == "ok"
+    assert hits["n"] == 3
