@@ -467,7 +467,7 @@ function pad3(n) {
   return String(n).padStart(3, "0");
 }
 
-function slotCard(v, projectId, previewSrc = "") {
+function slotCard(v, projectId, previewSrc = "", reuse = null, isCheckFlow = false) {
   const n = Number(v.number);
   const id = pad3(n);
   const has = String(v.status || "").toUpperCase() === "READY";
@@ -475,10 +475,34 @@ function slotCard(v, projectId, previewSrc = "") {
   const kind = "Google Flow";
   const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?v=${IMG_BOOT}`;
   const local = previewSrc ? ` data-local="1"` : "";
+  const st = String((reuse && reuse.status) || "").toUpperCase();
+  let reuseLabel = "";
+  if (isCheckFlow) {
+    if (has || st === "EXACT") reuseLabel = "EXACT";
+    else if (st === "REUSED") reuseLabel = "FALLBACK";
+    else if (st === "REVIEW_REUSE") reuseLabel = "REVIEW";
+    else if (st.includes("MISSING")) reuseLabel = "MISSING EXACT";
+  } else {
+    reuseLabel = st === "EXACT" ? "EXACT" : st === "REUSED" ? "REUSED" : st === "REVIEW_REUSE" ? "REVIEW" : st.includes("MISSING") ? "MISSING" : "";
+  }
+  const reuseMeta = reuseLabel
+    ? `<div class="ff-episode-meta"><strong>${reuseLabel}</strong>${
+        reuse && reuse.assigned_asset && reuseLabel !== "EXACT" && !has
+          ? ` · ${esc(String(reuse.assigned_asset))}`
+          : ""
+      }${reuse && reuse.score && (reuseLabel === "FALLBACK" || reuseLabel === "REVIEW") ? ` · ${esc(String(reuse.score))}` : ""}${
+        reuse && reuse.reason && reuseLabel !== "EXACT" && !has ? ` · ${esc(String(reuse.reason).slice(0, 90))}` : ""
+      }</div>${
+        reuseLabel === "FALLBACK" || reuseLabel === "REVIEW"
+          ? `<button type="button" class="btn btn-ghost" data-disable-reuse="${n}">No reutilizar</button>`
+          : ""
+      }`
+    : "";
   return `
     <article class="shot" data-slot="${n}">
       <strong>${esc(v.moment_label ? `${v.moment_label} · foto` : "Imagen")} ${id}</strong>
       <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)}${v.moment_label ? " · sin orden" : ""}</div>
+      ${reuseMeta}
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
       <div class="slot-frame">
         ${has
@@ -1846,6 +1870,7 @@ async function paintFlow(ws, p) {
   ws.innerHTML = `<div class="panel"><p class="lead">Cargando plan de imágenes…</p></div>`;
   let plan = null;
   let shots = null;
+  let coverage = {};
   try {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/flow`);
     state.shots = data.shots;
@@ -1853,6 +1878,7 @@ async function paintFlow(ws, p) {
     if (data.project) state.project = data.project;
     plan = data.visual_plan;
     shots = data.shots;
+    coverage = data.asset_coverage || {};
   } catch (e) {
     ws.innerHTML = `
       <div class="panel workspace">
@@ -1873,22 +1899,54 @@ async function paintFlow(ws, p) {
   const visuals = (plan && plan.visuals) || (shots && shots.shots) || [];
   const total = stats.total || visuals.length || 0;
   const isCheckFlow = p.content_format === "check_als" || p.mode === "check_als";
+  const covRows = coverage.slot_plan || [];
+  const covBySlot = Object.fromEntries(covRows.map((r) => [Number(r.slot), r]));
+  const prog = coverage.production_progress || {};
+  const fullPack = coverage.full_still_pack || coverage.production_batches?.["all-stills"] || {};
+  const p01Pack = coverage.production_batches?.["p0-p1"] || coverage.production_batch || {};
+  const totalSlots = prog.total_slots || total;
+  const importedExact = prog.imported_exact ?? prog.generated_imported ?? 0;
+  const missingExact = prog.missing_exact_assets ?? Math.max(0, totalSlots - importedExact);
+  const fallbackAvail = prog.fallback_coverage_available ?? prog.temporarily_covered_by_reuse ?? 0;
 
   ws.innerHTML = `
     <div class="panel workspace">
-      <div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
+      ${isCheckFlow ? `<div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
+        <h2 style="margin:0 0 0.5rem">Producción Check — un still por slot</h2>
+        <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
+          <li><strong>Cada slot = su imagen.</strong> Generá <code>001.png</code> para el slot 001, etc.</li>
+          <li><strong>P0 → P1 → P2 → P3</strong> es solo orden de generación, no permiso para saltear slots.</li>
+          <li><strong>Smart Reuse</strong> solo entra si falta el still exacto — contingencia, no objetivo.</li>
+          <li>Pack completo: <code>flow-pack/batches/all-stills/</code> · batch opcional: <code>p0-p1/</code></li>
+        </ol>
+      </div>` : `<div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
         <h2 style="margin:0 0 0.5rem">Qué tenés que hacer acá (paso a paso)</h2>
         <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
           <li><strong>Un bloque = un momento.</strong> “Le va bien”, “Se cae”, etc. Pedí ~10 fotos de ESE clima, no un orden 1-2-3.</li>
           <li><strong>Copiá el pedido del bloque</strong> → Flow. Si las mezcla, da igual: son intercambiables.</li>
           <li><strong>Subí varias de una</strong> con “Subir varias a este bloque”. Se acomodan solas en los recuadros vacíos.</li>
         </ol>
-        <p class="lead" style="margin-top:0.75rem;margin-bottom:0">
-          No hay que matchear “imagen 7 = prompt 7”.
-        </p>
-      </div>
+        <p class="lead" style="margin-top:0.75rem;margin-bottom:0">No hay que matchear “imagen 7 = prompt 7”.</p>
+      </div>`}
 
-      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. ${isCheckFlow ? "Revisá los prompts. Todavía no generes voz. Los stills van después de tu OK." : "Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena."}</p>
+      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. ${isCheckFlow ? "Generá e importá un still por slot. Todavía no generes voz." : "Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena."}</p>
+      ${isCheckFlow ? `<div class="panel soft" style="margin:1rem 0;border:1px solid var(--line,#ccc)">
+        <strong>STILLS — ${totalSlots} visual slots</strong>
+        <div class="ff-episode-meta">Generated/imported: <strong>${importedExact} / ${totalSlots}</strong></div>
+        <div class="ff-episode-meta">Exact coverage: <strong>${importedExact}</strong> · Missing exact assets: <strong>${missingExact}</strong></div>
+        <div class="ff-episode-meta">Potential fallback coverage: <strong>${fallbackAvail}</strong> <span style="opacity:0.75">(solo mientras falte el still propio)</span></div>
+        <div class="ff-episode-meta">Prompts ready: <strong>${prog.prompts_ready ?? totalSlots}</strong></div>
+      </div>
+      <div class="panel soft" id="p0p1-pack" style="margin:1rem 0">
+        <strong>Batch opcional P0 + P1</strong> (${(p01Pack.shots || p01Pack.prompts || 24)} prompts prioritarios)
+        <p class="lead" style="margin:0.4rem 0"><code>flow-pack/batches/p0-p1/</code> — podés empezar acá, pero el objetivo sigue siendo <strong>100 stills únicos</strong>.</p>
+        <div class="actions" id="p0p1-actions"></div>
+      </div>
+      <div class="panel soft" style="margin:1rem 0">
+        <strong>Full still generation pack</strong> — ${fullPack.prompts_ready ?? totalSlots} prompts
+        <p class="lead" style="margin:0.4rem 0"><code>flow-pack/batches/all-stills/</code> · <code>manifest.json</code> + <code>prompts/001.txt</code> … <code>100.txt</code></p>
+      </div>
+      <div id="reuse-review"></div>` : ""}
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
@@ -1906,6 +1964,59 @@ async function paintFlow(ws, p) {
     </div>`;
 
   $("#rebuild").onclick = () => rebuildFlow();
+  if (isCheckFlow) {
+    const pack = coverage.production_batch || {};
+    const shots = pack.shots || [];
+    const actions = $("#p0p1-actions");
+    if (actions) {
+      actions.innerHTML = shots
+        .map((id) => `<button class="btn btn-soft" data-copy-p01="${esc(String(id))}">Copiar ${esc(String(id))}</button>`)
+        .join(" ");
+      actions.querySelectorAll("[data-copy-p01]").forEach((btn) => {
+        btn.onclick = async () => {
+          try {
+            const data = await api(`/api/projects/${encodeURIComponent(p.id)}/visuals/${Number(btn.dataset.copyP01)}/prompt`);
+            await navigator.clipboard.writeText(data.prompt || "");
+            toast(`Prompt ${btn.dataset.copyP01} copiado`);
+          } catch (e) {
+            toast(e.message);
+          }
+        };
+      });
+    }
+    const reviewHost = $("#reuse-review");
+    const reviews = (coverage.reuse_reviews || []).filter((r) => r.status === "REUSED" || r.status === "REVIEW_REUSE");
+    const missingRows = (coverage.slot_plan || []).filter((r) => String(r.status || "").includes("MISSING"));
+    const showReview = Number(importedExact) > 0;
+    if (reviewHost && showReview) {
+      const missingCards = missingRows
+        .map((r) => {
+          const n = Number(r.slot);
+          return `<article class="shot"><strong>MISSING EXACT ${pad3(n)}</strong><div class="ff-episode-meta">${esc(String(r.reason || "").slice(0, 140))}</div></article>`;
+        })
+        .join("");
+      const reuseCards = reviews
+        .map((r) => {
+          const srcNum = Number(String(r.source_asset || "").split("_").pop());
+          const n = Number(r.target_slot);
+          const label = r.status === "REVIEW_REUSE" ? "REVIEW FALLBACK" : "FALLBACK";
+          return `<article class="shot">
+            <strong>${label} slot ${pad3(n)}</strong>
+            <div class="ff-episode-meta">falta still ${pad3(n)} · source ${esc(String(r.source_asset))} · score ${esc(String(r.reuse_score))}</div>
+            <div class="ff-episode-meta">${esc(String(r.semantic_reason || "").slice(0, 160))}</div>
+            <div class="slot-frame"><img class="slot-thumb" src="/api/projects/${encodeURIComponent(p.id)}/images/${srcNum}?v=${IMG_BOOT}" alt="" loading="lazy" /></div>
+            <button type="button" class="btn btn-ghost" data-disable-reuse="${n}">No reutilizar</button>
+          </article>`;
+        })
+        .join("");
+      reviewHost.innerHTML = `
+        <h2 style="margin-top:1.6rem">Revisión fallback (solo slots sin still propio)</h2>
+        <p class="lead">Importá <code>NNN.png</code> y el slot vuelve a EXACT automáticamente.</p>
+        <div class="list">${reuseCards || `<div class="notice">Ningún fallback activo.</div>`}</div>
+        <h3 style="margin-top:1.2rem">Missing exact (${missingRows.length})</h3>
+        <div class="list">${missingCards || `<div class="notice">Nada missing.</div>`}</div>`;
+    }
+  }
   const toVoice = $("#to-voice");
   if (toVoice) {
     toVoice.onclick = async () => {
@@ -1935,7 +2046,7 @@ async function paintFlow(ws, p) {
           const done = b.imported || 0;
           const byNum = Object.fromEntries(visuals.map((v) => [Number(v.number), v]));
           const slots = (b.visual_numbers || [])
-            .map((n) => slotCard(byNum[Number(n)] || { number: n, visual_type: "FLOW_REENACTMENT" }, p.id))
+            .map((n) => slotCard(byNum[Number(n)] || { number: n, visual_type: "FLOW_REENACTMENT" }, p.id, "", covBySlot[Number(n)], isCheckFlow))
             .join("");
           const mood = b.moment_label || b.label || `Bloque ${bi + 1}`;
           return `
@@ -1973,6 +2084,22 @@ async function paintFlow(ws, p) {
   });
   bindSlotUploads($("#batches"), p.id);
   bindDeleteAll($("#delete-all-stills"), p.id);
+  ws.querySelectorAll("[data-disable-reuse]").forEach((btn) => {
+    btn.onclick = async () => {
+      try {
+        await api(`/api/projects/${encodeURIComponent(p.id)}/visuals/${btn.dataset.disableReuse}/reuse`, {
+          method: "POST",
+          body: JSON.stringify({ disable_reuse: true }),
+        });
+        toast("Reuse desactivado en este slot");
+        state.shots = null;
+        state.visualPlan = null;
+        renderProject();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  });
 
   $("#batches").querySelectorAll("[data-expand-batch]").forEach((btn) => {
     btn.onclick = () => {

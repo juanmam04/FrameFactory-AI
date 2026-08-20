@@ -1,0 +1,2704 @@
+{
+  "assets": [
+    {
+      "asset_id": "still_001",
+      "source_shot": 1,
+      "exists": true,
+      "mood": [
+        "neutral"
+      ],
+      "story_functions": [
+        "setup"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 1
+    },
+    {
+      "asset_id": "still_002",
+      "source_shot": 2,
+      "exists": false,
+      "mood": [
+        "determination"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "cubicle",
+      "location_family": "office",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 2
+    },
+    {
+      "asset_id": "still_003",
+      "source_shot": 3,
+      "exists": false,
+      "mood": [
+        "neutral"
+      ],
+      "story_functions": [
+        "setup"
+      ],
+      "intensity": "low",
+      "location": "shared_apartment",
+      "location_family": "home",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 3
+    },
+    {
+      "asset_id": "still_004",
+      "source_shot": 4,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "shared_apartment",
+      "location_family": "home",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 4
+    },
+    {
+      "asset_id": "still_005",
+      "source_shot": 5,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "cubicle",
+      "location_family": "office",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 5
+    },
+    {
+      "asset_id": "still_006",
+      "source_shot": 6,
+      "exists": false,
+      "mood": [
+        "curiosity"
+      ],
+      "story_functions": [
+        "opportunity"
+      ],
+      "intensity": "medium",
+      "location": "stands",
+      "location_family": "arena",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "crowd",
+      "action_family": "watching",
+      "crowd_state": "sparse",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 6
+    },
+    {
+      "asset_id": "still_007",
+      "source_shot": 7,
+      "exists": false,
+      "mood": [
+        "curiosity"
+      ],
+      "story_functions": [
+        "opportunity"
+      ],
+      "intensity": "medium",
+      "location": "cubicle",
+      "location_family": "office",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "reading",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "dollar_listing",
+      "max_reuse_count": 1,
+      "slot": 7
+    },
+    {
+      "asset_id": "still_008",
+      "source_shot": 8,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "owner_office",
+      "location_family": "office",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 8
+    },
+    {
+      "asset_id": "still_009",
+      "source_shot": 9,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "reading",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 9
+    },
+    {
+      "asset_id": "still_010",
+      "source_shot": 10,
+      "exists": false,
+      "mood": [
+        "opportunity"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "pre_owner",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "dollar_listing",
+      "max_reuse_count": 1,
+      "slot": 10
+    },
+    {
+      "asset_id": "still_011",
+      "source_shot": 11,
+      "exists": false,
+      "mood": [
+        "opportunity"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "pre_owner",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 11
+    },
+    {
+      "asset_id": "still_012",
+      "source_shot": 12,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "owner_office",
+      "location_family": "office",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "signing",
+      "crowd_state": "empty",
+      "wealth_state": "cash_poor",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 12
+    },
+    {
+      "asset_id": "still_013",
+      "source_shot": 13,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "owner_office",
+      "location_family": "office",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "signing",
+      "crowd_state": "empty",
+      "wealth_state": "cash_poor",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 13
+    },
+    {
+      "asset_id": "still_014",
+      "source_shot": 14,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "owner_office",
+      "location_family": "office",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 14
+    },
+    {
+      "asset_id": "still_015",
+      "source_shot": 15,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "owner_office",
+      "location_family": "office",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "signing",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 15
+    },
+    {
+      "asset_id": "still_016",
+      "source_shot": 16,
+      "exists": false,
+      "mood": [
+        "opportunity"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "signing",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "signing_acquisition",
+      "max_reuse_count": 1,
+      "slot": 16
+    },
+    {
+      "asset_id": "still_017",
+      "source_shot": 17,
+      "exists": false,
+      "mood": [
+        "opportunity"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "signing",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 17
+    },
+    {
+      "asset_id": "still_018",
+      "source_shot": 18,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "arena",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 18
+    },
+    {
+      "asset_id": "still_019",
+      "source_shot": 19,
+      "exists": false,
+      "mood": [
+        "hope"
+      ],
+      "story_functions": [
+        "payoff"
+      ],
+      "intensity": "high",
+      "location": "arena",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "waiting",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 19
+    },
+    {
+      "asset_id": "still_020",
+      "source_shot": 20,
+      "exists": false,
+      "mood": [
+        "hope"
+      ],
+      "story_functions": [
+        "payoff"
+      ],
+      "intensity": "high",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "reading",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "utilero_keys",
+      "max_reuse_count": 1,
+      "slot": 20
+    },
+    {
+      "asset_id": "still_021",
+      "source_shot": 21,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "court",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "first_entrance",
+      "max_reuse_count": 1,
+      "slot": 21
+    },
+    {
+      "asset_id": "still_022",
+      "source_shot": 22,
+      "exists": false,
+      "mood": [
+        "hope"
+      ],
+      "story_functions": [
+        "payoff"
+      ],
+      "intensity": "high",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "signing",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 22
+    },
+    {
+      "asset_id": "still_023",
+      "source_shot": 23,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 23
+    },
+    {
+      "asset_id": "still_024",
+      "source_shot": 24,
+      "exists": false,
+      "mood": [
+        "opportunity"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "signing",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 24
+    },
+    {
+      "asset_id": "still_025",
+      "source_shot": 25,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 25
+    },
+    {
+      "asset_id": "still_026",
+      "source_shot": 26,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 26
+    },
+    {
+      "asset_id": "still_027",
+      "source_shot": 27,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "coach",
+      "action_family": "training",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 27
+    },
+    {
+      "asset_id": "still_028",
+      "source_shot": 28,
+      "exists": false,
+      "mood": [
+        "pressure"
+      ],
+      "story_functions": [
+        "crisis"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 28
+    },
+    {
+      "asset_id": "still_029",
+      "source_shot": 29,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "reward"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "cash_poor",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 29
+    },
+    {
+      "asset_id": "still_030",
+      "source_shot": 30,
+      "exists": false,
+      "mood": [
+        "pressure"
+      ],
+      "story_functions": [
+        "crisis"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "cash_poor",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 30
+    },
+    {
+      "asset_id": "still_031",
+      "source_shot": 31,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 31
+    },
+    {
+      "asset_id": "still_032",
+      "source_shot": 32,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 32
+    },
+    {
+      "asset_id": "still_033",
+      "source_shot": 33,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "court",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "crowd",
+      "action_family": "watching",
+      "crowd_state": "full",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 33
+    },
+    {
+      "asset_id": "still_034",
+      "source_shot": 34,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "filling",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 34
+    },
+    {
+      "asset_id": "still_035",
+      "source_shot": 35,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "arena",
+      "location_family": "arena",
+      "protagonist_era": "early_owner",
+      "age_range": "22-22",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 35
+    },
+    {
+      "asset_id": "still_036",
+      "source_shot": 36,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 36
+    },
+    {
+      "asset_id": "still_037",
+      "source_shot": 37,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "paper_rich",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 37
+    },
+    {
+      "asset_id": "still_038",
+      "source_shot": 38,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 38
+    },
+    {
+      "asset_id": "still_039",
+      "source_shot": 39,
+      "exists": false,
+      "mood": [
+        "pressure"
+      ],
+      "story_functions": [
+        "crisis"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 39
+    },
+    {
+      "asset_id": "still_040",
+      "source_shot": 40,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "cubicle",
+      "location_family": "office",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 40
+    },
+    {
+      "asset_id": "still_041",
+      "source_shot": 41,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "cubicle",
+      "location_family": "office",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 41
+    },
+    {
+      "asset_id": "still_042",
+      "source_shot": 42,
+      "exists": false,
+      "mood": [
+        "pressure"
+      ],
+      "story_functions": [
+        "crisis"
+      ],
+      "intensity": "medium",
+      "location": "cubicle",
+      "location_family": "office",
+      "protagonist_era": "ordinary_life",
+      "age_range": "22-22",
+      "visual_subject": "documents",
+      "action_family": "reading",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "pre_acquisition",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 42
+    },
+    {
+      "asset_id": "still_043",
+      "source_shot": 43,
+      "exists": false,
+      "mood": [
+        "opportunity"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "cubicle",
+      "location_family": "office",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 43
+    },
+    {
+      "asset_id": "still_044",
+      "source_shot": 44,
+      "exists": false,
+      "mood": [
+        "failure"
+      ],
+      "story_functions": [
+        "setback"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 44
+    },
+    {
+      "asset_id": "still_045",
+      "source_shot": 45,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "crowd",
+      "action_family": "watching",
+      "crowd_state": "full",
+      "wealth_state": "paper_rich",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 45
+    },
+    {
+      "asset_id": "still_046",
+      "source_shot": 46,
+      "exists": false,
+      "mood": [
+        "neutral"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "city",
+      "action_family": "walking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 46
+    },
+    {
+      "asset_id": "still_047",
+      "source_shot": 47,
+      "exists": false,
+      "mood": [
+        "hope"
+      ],
+      "story_functions": [
+        "payoff"
+      ],
+      "intensity": "high",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "waiting",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 47
+    },
+    {
+      "asset_id": "still_048",
+      "source_shot": 48,
+      "exists": false,
+      "mood": [
+        "happiness"
+      ],
+      "story_functions": [
+        "reward"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "family",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 48
+    },
+    {
+      "asset_id": "still_049",
+      "source_shot": 49,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 49
+    },
+    {
+      "asset_id": "still_050",
+      "source_shot": 50,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "arena",
+      "location_family": "arena",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "full",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 50
+    },
+    {
+      "asset_id": "still_051",
+      "source_shot": 51,
+      "exists": false,
+      "mood": [
+        "glory"
+      ],
+      "story_functions": [
+        "payoff"
+      ],
+      "intensity": "high",
+      "location": "stands",
+      "location_family": "arena",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "crowd",
+      "action_family": "watching",
+      "crowd_state": "sold_out",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "sold_out_reveal",
+      "max_reuse_count": 1,
+      "slot": 51
+    },
+    {
+      "asset_id": "still_052",
+      "source_shot": 52,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 52
+    },
+    {
+      "asset_id": "still_053",
+      "source_shot": 53,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "arena",
+      "location_family": "arena",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "quit_job",
+      "max_reuse_count": 1,
+      "slot": 53
+    },
+    {
+      "asset_id": "still_054",
+      "source_shot": 54,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 54
+    },
+    {
+      "asset_id": "still_055",
+      "source_shot": 55,
+      "exists": false,
+      "mood": [
+        "failure"
+      ],
+      "story_functions": [
+        "setback"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 55
+    },
+    {
+      "asset_id": "still_056",
+      "source_shot": 56,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 56
+    },
+    {
+      "asset_id": "still_057",
+      "source_shot": 57,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "crowd",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "cash_poor",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 57
+    },
+    {
+      "asset_id": "still_058",
+      "source_shot": 58,
+      "exists": false,
+      "mood": [
+        "pressure"
+      ],
+      "story_functions": [
+        "crisis"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "struggling_owner",
+      "age_range": "23-23",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "debt_risk",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 58
+    },
+    {
+      "asset_id": "still_059",
+      "source_shot": 59,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 59
+    },
+    {
+      "asset_id": "still_060",
+      "source_shot": 60,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 60
+    },
+    {
+      "asset_id": "still_061",
+      "source_shot": 61,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "new_apartment",
+      "location_family": "home",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "moving_home",
+      "max_reuse_count": 1,
+      "slot": 61
+    },
+    {
+      "asset_id": "still_062",
+      "source_shot": 62,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 62
+    },
+    {
+      "asset_id": "still_063",
+      "source_shot": 63,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 63
+    },
+    {
+      "asset_id": "still_064",
+      "source_shot": 64,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "coach",
+      "action_family": "training",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 64
+    },
+    {
+      "asset_id": "still_065",
+      "source_shot": 65,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 65
+    },
+    {
+      "asset_id": "still_066",
+      "source_shot": 66,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "full",
+      "wealth_state": "paper_rich",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 66
+    },
+    {
+      "asset_id": "still_067",
+      "source_shot": 67,
+      "exists": false,
+      "mood": [
+        "happiness"
+      ],
+      "story_functions": [
+        "reward"
+      ],
+      "intensity": "medium",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "family",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "parents_box",
+      "max_reuse_count": 1,
+      "slot": 67
+    },
+    {
+      "asset_id": "still_068",
+      "source_shot": 68,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "paper_rich",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 68
+    },
+    {
+      "asset_id": "still_069",
+      "source_shot": 69,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 69
+    },
+    {
+      "asset_id": "still_070",
+      "source_shot": 70,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 70
+    },
+    {
+      "asset_id": "still_071",
+      "source_shot": 71,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "protagonist",
+      "action_family": "thinking",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 71
+    },
+    {
+      "asset_id": "still_072",
+      "source_shot": 72,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "owner_office",
+      "location_family": "office",
+      "protagonist_era": "growing_owner",
+      "age_range": "25-25",
+      "visual_subject": "documents",
+      "action_family": "reading",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 72
+    },
+    {
+      "asset_id": "still_073",
+      "source_shot": 73,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 73
+    },
+    {
+      "asset_id": "still_074",
+      "source_shot": 74,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 74
+    },
+    {
+      "asset_id": "still_075",
+      "source_shot": 75,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 75
+    },
+    {
+      "asset_id": "still_076",
+      "source_shot": 76,
+      "exists": false,
+      "mood": [
+        "wealth"
+      ],
+      "story_functions": [
+        "reflection"
+      ],
+      "intensity": "medium",
+      "location": "court",
+      "location_family": "arena",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "phone",
+      "action_family": "reading",
+      "crowd_state": "full",
+      "wealth_state": "cash_poor",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 76
+    },
+    {
+      "asset_id": "still_077",
+      "source_shot": 77,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 77
+    },
+    {
+      "asset_id": "still_078",
+      "source_shot": 78,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 78
+    },
+    {
+      "asset_id": "still_079",
+      "source_shot": 79,
+      "exists": false,
+      "mood": [
+        "determination"
+      ],
+      "story_functions": [
+        "commitment"
+      ],
+      "intensity": "high",
+      "location": "new_apartment",
+      "location_family": "home",
+      "protagonist_era": "growing_owner",
+      "age_range": "23-23",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 79
+    },
+    {
+      "asset_id": "still_080",
+      "source_shot": 80,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 80
+    },
+    {
+      "asset_id": "still_081",
+      "source_shot": 81,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 81
+    },
+    {
+      "asset_id": "still_082",
+      "source_shot": 82,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 82
+    },
+    {
+      "asset_id": "still_083",
+      "source_shot": 83,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 83
+    },
+    {
+      "asset_id": "still_084",
+      "source_shot": 84,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "proof"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 84
+    },
+    {
+      "asset_id": "still_085",
+      "source_shot": 85,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 85
+    },
+    {
+      "asset_id": "still_086",
+      "source_shot": 86,
+      "exists": false,
+      "mood": [
+        "failure"
+      ],
+      "story_functions": [
+        "setback"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 86
+    },
+    {
+      "asset_id": "still_087",
+      "source_shot": 87,
+      "exists": false,
+      "mood": [
+        "pressure"
+      ],
+      "story_functions": [
+        "crisis"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "sparse",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 87
+    },
+    {
+      "asset_id": "still_088",
+      "source_shot": 88,
+      "exists": false,
+      "mood": [
+        "glory"
+      ],
+      "story_functions": [
+        "payoff"
+      ],
+      "intensity": "high",
+      "location": "stands",
+      "location_family": "arena",
+      "protagonist_era": "established_owner",
+      "age_range": "26-26",
+      "visual_subject": "crowd",
+      "action_family": "watching",
+      "crowd_state": "sold_out",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": false,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 88
+    },
+    {
+      "asset_id": "still_089",
+      "source_shot": 89,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "documents",
+      "action_family": "reading",
+      "crowd_state": "empty",
+      "wealth_state": "cash_poor",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 89
+    },
+    {
+      "asset_id": "still_090",
+      "source_shot": 90,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 90
+    },
+    {
+      "asset_id": "still_091",
+      "source_shot": 91,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "paper_rich",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 91
+    },
+    {
+      "asset_id": "still_092",
+      "source_shot": 92,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "cash_poor",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 92
+    },
+    {
+      "asset_id": "still_093",
+      "source_shot": 93,
+      "exists": false,
+      "mood": [
+        "reflection"
+      ],
+      "story_functions": [
+        "ending"
+      ],
+      "intensity": "medium",
+      "location": "arena",
+      "location_family": "arena",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "sparse",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": false,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 93
+    },
+    {
+      "asset_id": "still_094",
+      "source_shot": 94,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 94
+    },
+    {
+      "asset_id": "still_095",
+      "source_shot": 95,
+      "exists": false,
+      "mood": [
+        "reflection"
+      ],
+      "story_functions": [
+        "ending"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": false,
+      "reuse_priority": "low",
+      "hero_shot": true,
+      "hero_id": "acquisition_email",
+      "max_reuse_count": 1,
+      "slot": 95
+    },
+    {
+      "asset_id": "still_096",
+      "source_shot": 96,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "arena",
+      "location_family": "arena",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 96
+    },
+    {
+      "asset_id": "still_097",
+      "source_shot": 97,
+      "exists": false,
+      "mood": [
+        "hope"
+      ],
+      "story_functions": [
+        "payoff"
+      ],
+      "intensity": "high",
+      "location": "locker_room",
+      "location_family": "arena",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "protagonist",
+      "action_family": "waiting",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "medium",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 3,
+      "slot": 97
+    },
+    {
+      "asset_id": "still_098",
+      "source_shot": 98,
+      "exists": false,
+      "mood": [
+        "tension"
+      ],
+      "story_functions": [
+        "progress"
+      ],
+      "intensity": "low",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "phone",
+      "action_family": "reading",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 98
+    },
+    {
+      "asset_id": "still_099",
+      "source_shot": 99,
+      "exists": false,
+      "mood": [
+        "reflection"
+      ],
+      "story_functions": [
+        "ending"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": false,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 99
+    },
+    {
+      "asset_id": "still_100",
+      "source_shot": 100,
+      "exists": false,
+      "mood": [
+        "progress"
+      ],
+      "story_functions": [
+        "reward"
+      ],
+      "intensity": "medium",
+      "location": "city",
+      "location_family": "city",
+      "protagonist_era": "late_story",
+      "age_range": "27-27",
+      "visual_subject": "arena",
+      "action_family": "watching",
+      "crowd_state": "empty",
+      "wealth_state": "employee",
+      "business_state": "healthy",
+      "reusable": true,
+      "reuse_priority": "high",
+      "hero_shot": false,
+      "hero_id": null,
+      "max_reuse_count": 4,
+      "slot": 100
+    }
+  ]
+}

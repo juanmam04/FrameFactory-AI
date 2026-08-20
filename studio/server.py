@@ -698,6 +698,52 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
+    @app.get("/api/projects/{project_id}/asset-coverage")
+    def asset_coverage_get(project_id: str):
+        try:
+            p = load_project(project_id)
+            fmt = str(p.get("content_format") or p.get("mode") or "")
+            cov_path = project_dir(project_id) / "flow-pack" / "asset-coverage.json"
+            if fmt != FORMAT_CHECK_ALS:
+                if cov_path.is_file():
+                    return json.loads(cov_path.read_text(encoding="utf-8"))
+                return {}
+            if cov_path.is_file():
+                return json.loads(cov_path.read_text(encoding="utf-8"))
+            from src.documentary.formats.check_als.asset_reuse import build_for_project
+
+            return build_for_project(project_id)
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/{project_id}/visuals/{number}/reuse")
+    def visual_reuse_override(project_id: str, number: int, body: VisualReuseBody):
+        try:
+            from src.documentary.formats.check_als.asset_reuse import apply_override
+
+            return apply_override(
+                project_id,
+                int(number),
+                force_asset=body.force_asset,
+                disable_reuse=body.disable_reuse,
+            )
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/{project_id}/assets/{asset_id}/flags")
+    def asset_flags(project_id: str, asset_id: str, body: AssetFlagBody):
+        try:
+            from src.documentary.formats.check_als.asset_reuse import mark_asset_flags
+
+            return mark_asset_flags(
+                project_id,
+                asset_id,
+                reusable=body.reusable,
+                max_reuse_count=body.max_reuse_count,
+            )
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
     @app.put("/api/projects/{project_id}/visuals/{number}")
     def visual_edit(project_id: str, number: int, body: VisualEditBody):
         try:
@@ -1634,10 +1680,18 @@ def _flow_payload(project_id: str, p: dict[str, Any]) -> dict[str, Any]:
         shots = load_shot_list(project_id)
     except Exception:
         pass
+    coverage = None
+    cov_path = project_dir(project_id) / "flow-pack" / "asset-coverage.json"
+    if cov_path.is_file():
+        try:
+            coverage = json.loads(cov_path.read_text(encoding="utf-8"))
+        except Exception:
+            coverage = None
     return {
         "shots": shots,
         "visual_plan": plan,
         "visual_plan_markdown": md,
+        "asset_coverage": coverage,
         "project": _project_full(p if p.get("id") else load_project(project_id)),
     }
 
@@ -1685,6 +1739,16 @@ class ScriptBody(BaseModel):
 
 class VisualEditBody(BaseModel):
     description: str = ""
+
+
+class VisualReuseBody(BaseModel):
+    force_asset: str | None = None
+    disable_reuse: bool | None = None
+
+
+class AssetFlagBody(BaseModel):
+    reusable: bool | None = None
+    max_reuse_count: int | None = None
 
 
 class ImportBody(BaseModel):

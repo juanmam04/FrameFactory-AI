@@ -1,0 +1,3380 @@
+{
+  "total_slots": 100,
+  "must_have_unique": 10,
+  "recommended_unique": 79,
+  "coverable_by_reuse": 21,
+  "missing_if_all_recommended_generated": 0,
+  "heroes": [
+    {
+      "slot": 7,
+      "hero_id": "dollar_listing",
+      "asset": "still_007",
+      "script": "No es un sueño. Es un aviso impreso."
+    },
+    {
+      "slot": 10,
+      "hero_id": "dollar_listing",
+      "asset": "still_010",
+      "script": "El precio de compra es un dólar."
+    },
+    {
+      "slot": 16,
+      "hero_id": "signing_acquisition",
+      "asset": "still_016",
+      "script": "Preguntan si sabes de básquet. Dices que sabes de números y de no dejar morir el gimnasio. Uno se ríe. Otro firma igual."
+    },
+    {
+      "slot": 20,
+      "hero_id": "utilero_keys",
+      "asset": "still_020",
+      "script": "Te entrega un manojo de llaves. Hace una pausa. Las llaves pesan más que el contrato."
+    },
+    {
+      "slot": 21,
+      "hero_id": "first_entrance",
+      "asset": "still_021",
+      "script": "No contestas enseguida. El túnel tiene una gotera. Al fondo, la cancha vacía."
+    },
+    {
+      "slot": 51,
+      "hero_id": "sold_out_reveal",
+      "asset": "still_051",
+      "script": "Sold out."
+    },
+    {
+      "slot": 53,
+      "hero_id": "quit_job",
+      "asset": "still_053",
+      "script": "En la mochila, de vuelta, no llevas notebook de la empresa. Llevas un llavero del estadio."
+    },
+    {
+      "slot": 61,
+      "hero_id": "moving_home",
+      "asset": "still_061",
+      "script": "El nuevo queda a cuatro cuadras de la arena. Desde la ventana, si te asomas, ves las luces del techo cuando hay partido."
+    },
+    {
+      "slot": 67,
+      "hero_id": "parents_box",
+      "asset": "still_067",
+      "script": "En el tercero pide un agua y se ríe cuando el utilero le dice “familia del jefe”. Tu vieja guarda el ticket. No es un souvenir de lujo."
+    },
+    {
+      "slot": 95,
+      "hero_id": "acquisition_email",
+      "asset": "still_095",
+      "script": "Oferta de adquisición."
+    }
+  ],
+  "reuse_groups": [
+    {
+      "id": "g_001",
+      "group": "neutral_setup_city",
+      "slots": [
+        1
+      ],
+      "recommended_asset": "still_001",
+      "size": 1,
+      "mood": "neutral",
+      "story_function": "setup",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_002",
+      "group": "determination_commitment_office",
+      "slots": [
+        2
+      ],
+      "recommended_asset": "still_002",
+      "size": 1,
+      "mood": "determination",
+      "story_function": "commitment",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_003",
+      "group": "neutral_setup_home",
+      "slots": [
+        3
+      ],
+      "recommended_asset": "still_003",
+      "size": 1,
+      "mood": "neutral",
+      "story_function": "setup",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_004",
+      "group": "tension_progress_home",
+      "slots": [
+        4
+      ],
+      "recommended_asset": "still_004",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_005",
+      "group": "tension_progress_office",
+      "slots": [
+        5
+      ],
+      "recommended_asset": "still_005",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_006",
+      "group": "curiosity_opportunity_arena",
+      "slots": [
+        6
+      ],
+      "recommended_asset": "still_006",
+      "size": 1,
+      "mood": "curiosity",
+      "story_function": "opportunity",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_008",
+      "group": "tension_progress_office",
+      "slots": [
+        8
+      ],
+      "recommended_asset": "still_008",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_009",
+      "group": "tension_progress_city",
+      "slots": [
+        9,
+        25
+      ],
+      "recommended_asset": "still_009",
+      "size": 2,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "ordinary_life",
+      "reusable_prompt": "documents reading in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_011",
+      "group": "opportunity_commitment_city",
+      "slots": [
+        11
+      ],
+      "recommended_asset": "still_011",
+      "size": 1,
+      "mood": "opportunity",
+      "story_function": "commitment",
+      "era": "pre_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_012",
+      "group": "tension_progress_office",
+      "slots": [
+        12
+      ],
+      "recommended_asset": "still_012",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_013",
+      "group": "tension_progress_office",
+      "slots": [
+        13
+      ],
+      "recommended_asset": "still_013",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_014",
+      "group": "tension_progress_office",
+      "slots": [
+        14
+      ],
+      "recommended_asset": "still_014",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_015",
+      "group": "tension_progress_office",
+      "slots": [
+        15
+      ],
+      "recommended_asset": "still_015",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_017",
+      "group": "opportunity_commitment_city",
+      "slots": [
+        17
+      ],
+      "recommended_asset": "still_017",
+      "size": 1,
+      "mood": "opportunity",
+      "story_function": "commitment",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_018",
+      "group": "tension_progress_arena",
+      "slots": [
+        18
+      ],
+      "recommended_asset": "still_018",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_019",
+      "group": "hope_payoff_arena",
+      "slots": [
+        19
+      ],
+      "recommended_asset": "still_019",
+      "size": 1,
+      "mood": "hope",
+      "story_function": "payoff",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_022",
+      "group": "hope_payoff_arena",
+      "slots": [
+        22
+      ],
+      "recommended_asset": "still_022",
+      "size": 1,
+      "mood": "hope",
+      "story_function": "payoff",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_023",
+      "group": "tension_progress_arena",
+      "slots": [
+        23
+      ],
+      "recommended_asset": "still_023",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_024",
+      "group": "opportunity_commitment_city",
+      "slots": [
+        24
+      ],
+      "recommended_asset": "still_024",
+      "size": 1,
+      "mood": "opportunity",
+      "story_function": "commitment",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_026",
+      "group": "tension_progress_city",
+      "slots": [
+        26
+      ],
+      "recommended_asset": "still_026",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_027",
+      "group": "tension_progress_city",
+      "slots": [
+        27
+      ],
+      "recommended_asset": "still_027",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_028",
+      "group": "pressure_crisis_city",
+      "slots": [
+        28,
+        39
+      ],
+      "recommended_asset": "still_028",
+      "size": 2,
+      "mood": "pressure",
+      "story_function": "crisis",
+      "era": "ordinary_life",
+      "reusable_prompt": "protagonist thinking in city, pressure atmosphere, medium intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_029",
+      "group": "progress_reward_city",
+      "slots": [
+        29,
+        37
+      ],
+      "recommended_asset": "still_029",
+      "size": 2,
+      "mood": "progress",
+      "story_function": "reward",
+      "era": "ordinary_life",
+      "reusable_prompt": "protagonist thinking in city, progress atmosphere, medium intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_030",
+      "group": "pressure_crisis_city",
+      "slots": [
+        30
+      ],
+      "recommended_asset": "still_030",
+      "size": 1,
+      "mood": "pressure",
+      "story_function": "crisis",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_031",
+      "group": "progress_proof_arena",
+      "slots": [
+        31
+      ],
+      "recommended_asset": "still_031",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_032",
+      "group": "progress_proof_city",
+      "slots": [
+        32
+      ],
+      "recommended_asset": "still_032",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_033",
+      "group": "progress_proof_arena",
+      "slots": [
+        33
+      ],
+      "recommended_asset": "still_033",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_034",
+      "group": "progress_proof_city",
+      "slots": [
+        34
+      ],
+      "recommended_asset": "still_034",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_035",
+      "group": "progress_proof_arena",
+      "slots": [
+        35
+      ],
+      "recommended_asset": "still_035",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "early_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_036",
+      "group": "progress_proof_city",
+      "slots": [
+        36
+      ],
+      "recommended_asset": "still_036",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_038",
+      "group": "progress_proof_city",
+      "slots": [
+        38
+      ],
+      "recommended_asset": "still_038",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_040",
+      "group": "progress_proof_office",
+      "slots": [
+        40
+      ],
+      "recommended_asset": "still_040",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_041",
+      "group": "progress_proof_office",
+      "slots": [
+        41
+      ],
+      "recommended_asset": "still_041",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_042",
+      "group": "pressure_crisis_office",
+      "slots": [
+        42
+      ],
+      "recommended_asset": "still_042",
+      "size": 1,
+      "mood": "pressure",
+      "story_function": "crisis",
+      "era": "ordinary_life",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_043",
+      "group": "opportunity_commitment_office",
+      "slots": [
+        43
+      ],
+      "recommended_asset": "still_043",
+      "size": 1,
+      "mood": "opportunity",
+      "story_function": "commitment",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_044",
+      "group": "failure_setback_city",
+      "slots": [
+        44,
+        55
+      ],
+      "recommended_asset": "still_044",
+      "size": 2,
+      "mood": "failure",
+      "story_function": "setback",
+      "era": "struggling_owner",
+      "reusable_prompt": "protagonist thinking in city, failure atmosphere, medium intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_045",
+      "group": "tension_progress_city",
+      "slots": [
+        45,
+        54
+      ],
+      "recommended_asset": "still_045",
+      "size": 2,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "struggling_owner",
+      "reusable_prompt": "crowd watching in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_046",
+      "group": "neutral_progress_city",
+      "slots": [
+        46
+      ],
+      "recommended_asset": "still_046",
+      "size": 1,
+      "mood": "neutral",
+      "story_function": "progress",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_047",
+      "group": "hope_payoff_arena",
+      "slots": [
+        47
+      ],
+      "recommended_asset": "still_047",
+      "size": 1,
+      "mood": "hope",
+      "story_function": "payoff",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_048",
+      "group": "happiness_reward_city",
+      "slots": [
+        48
+      ],
+      "recommended_asset": "still_048",
+      "size": 1,
+      "mood": "happiness",
+      "story_function": "reward",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_049",
+      "group": "tension_progress_city",
+      "slots": [
+        49,
+        57
+      ],
+      "recommended_asset": "still_049",
+      "size": 2,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "struggling_owner",
+      "reusable_prompt": "protagonist thinking in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_050",
+      "group": "tension_progress_arena",
+      "slots": [
+        50
+      ],
+      "recommended_asset": "still_050",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_052",
+      "group": "tension_progress_city",
+      "slots": [
+        52
+      ],
+      "recommended_asset": "still_052",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_056",
+      "group": "progress_proof_city",
+      "slots": [
+        56
+      ],
+      "recommended_asset": "still_056",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_058",
+      "group": "pressure_crisis_city",
+      "slots": [
+        58
+      ],
+      "recommended_asset": "still_058",
+      "size": 1,
+      "mood": "pressure",
+      "story_function": "crisis",
+      "era": "struggling_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_059",
+      "group": "tension_progress_city",
+      "slots": [
+        59,
+        68,
+        77,
+        85
+      ],
+      "recommended_asset": "still_059",
+      "size": 4,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "growing_owner",
+      "reusable_prompt": "protagonist thinking in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_060",
+      "group": "tension_progress_city",
+      "slots": [
+        60,
+        69,
+        78
+      ],
+      "recommended_asset": "still_060",
+      "size": 3,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "growing_owner",
+      "reusable_prompt": "protagonist thinking in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_062",
+      "group": "tension_progress_city",
+      "slots": [
+        62,
+        70,
+        80
+      ],
+      "recommended_asset": "still_062",
+      "size": 3,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "growing_owner",
+      "reusable_prompt": "protagonist thinking in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_063",
+      "group": "progress_proof_city",
+      "slots": [
+        63,
+        84
+      ],
+      "recommended_asset": "still_063",
+      "size": 2,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "growing_owner",
+      "reusable_prompt": "protagonist thinking in city, progress atmosphere, medium intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_064",
+      "group": "tension_progress_arena",
+      "slots": [
+        64,
+        73,
+        82
+      ],
+      "recommended_asset": "still_064",
+      "size": 3,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "growing_owner",
+      "reusable_prompt": "coach training in locker_room, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_065",
+      "group": "progress_proof_city",
+      "slots": [
+        65
+      ],
+      "recommended_asset": "still_065",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "proof",
+      "era": "growing_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_066",
+      "group": "tension_progress_city",
+      "slots": [
+        66,
+        74,
+        83
+      ],
+      "recommended_asset": "still_066",
+      "size": 3,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "growing_owner",
+      "reusable_prompt": "protagonist thinking in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_071",
+      "group": "tension_progress_city",
+      "slots": [
+        71,
+        81
+      ],
+      "recommended_asset": "still_071",
+      "size": 2,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "growing_owner",
+      "reusable_prompt": "protagonist thinking in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_072",
+      "group": "tension_progress_office",
+      "slots": [
+        72
+      ],
+      "recommended_asset": "still_072",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "growing_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_075",
+      "group": "tension_progress_city",
+      "slots": [
+        75,
+        89,
+        98
+      ],
+      "recommended_asset": "still_075",
+      "size": 3,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "established_owner",
+      "reusable_prompt": "arena watching in city, tension atmosphere, low intensity, medium cinematic shot, no specific plot numbers in frame"
+    },
+    {
+      "id": "g_076",
+      "group": "wealth_reflection_arena",
+      "slots": [
+        76
+      ],
+      "recommended_asset": "still_076",
+      "size": 1,
+      "mood": "wealth",
+      "story_function": "reflection",
+      "era": "established_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_079",
+      "group": "determination_commitment_home",
+      "slots": [
+        79
+      ],
+      "recommended_asset": "still_079",
+      "size": 1,
+      "mood": "determination",
+      "story_function": "commitment",
+      "era": "growing_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_086",
+      "group": "failure_setback_city",
+      "slots": [
+        86
+      ],
+      "recommended_asset": "still_086",
+      "size": 1,
+      "mood": "failure",
+      "story_function": "setback",
+      "era": "established_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_087",
+      "group": "pressure_crisis_city",
+      "slots": [
+        87
+      ],
+      "recommended_asset": "still_087",
+      "size": 1,
+      "mood": "pressure",
+      "story_function": "crisis",
+      "era": "established_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_088",
+      "group": "glory_payoff_arena",
+      "slots": [
+        88
+      ],
+      "recommended_asset": "still_088",
+      "size": 1,
+      "mood": "glory",
+      "story_function": "payoff",
+      "era": "established_owner",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_090",
+      "group": "tension_progress_city",
+      "slots": [
+        90
+      ],
+      "recommended_asset": "still_090",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_091",
+      "group": "tension_progress_city",
+      "slots": [
+        91
+      ],
+      "recommended_asset": "still_091",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_092",
+      "group": "tension_progress_city",
+      "slots": [
+        92
+      ],
+      "recommended_asset": "still_092",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_093",
+      "group": "reflection_ending_arena",
+      "slots": [
+        93
+      ],
+      "recommended_asset": "still_093",
+      "size": 1,
+      "mood": "reflection",
+      "story_function": "ending",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_094",
+      "group": "tension_progress_arena",
+      "slots": [
+        94
+      ],
+      "recommended_asset": "still_094",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_096",
+      "group": "tension_progress_arena",
+      "slots": [
+        96
+      ],
+      "recommended_asset": "still_096",
+      "size": 1,
+      "mood": "tension",
+      "story_function": "progress",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_097",
+      "group": "hope_payoff_arena",
+      "slots": [
+        97
+      ],
+      "recommended_asset": "still_097",
+      "size": 1,
+      "mood": "hope",
+      "story_function": "payoff",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_099",
+      "group": "reflection_ending_city",
+      "slots": [
+        99
+      ],
+      "recommended_asset": "still_099",
+      "size": 1,
+      "mood": "reflection",
+      "story_function": "ending",
+      "era": "late_story",
+      "reusable_prompt": null
+    },
+    {
+      "id": "g_100",
+      "group": "progress_reward_city",
+      "slots": [
+        100
+      ],
+      "recommended_asset": "still_100",
+      "size": 1,
+      "mood": "progress",
+      "story_function": "reward",
+      "era": "late_story",
+      "reusable_prompt": null
+    }
+  ],
+  "generation_queue": {
+    "P0": [
+      "still_007",
+      "still_010",
+      "still_016",
+      "still_020",
+      "still_021",
+      "still_051",
+      "still_053",
+      "still_061",
+      "still_067",
+      "still_095"
+    ],
+    "P1": [
+      "still_009",
+      "still_028",
+      "still_029",
+      "still_044",
+      "still_045",
+      "still_049",
+      "still_059",
+      "still_060",
+      "still_062",
+      "still_063",
+      "still_064",
+      "still_066",
+      "still_071",
+      "still_075"
+    ],
+    "P2": [
+      "still_001",
+      "still_002",
+      "still_003",
+      "still_004",
+      "still_005",
+      "still_006",
+      "still_008",
+      "still_011",
+      "still_012",
+      "still_013",
+      "still_014",
+      "still_015",
+      "still_017",
+      "still_018",
+      "still_019",
+      "still_022",
+      "still_023",
+      "still_024",
+      "still_026",
+      "still_027",
+      "still_030",
+      "still_031",
+      "still_032",
+      "still_033",
+      "still_034",
+      "still_035",
+      "still_036",
+      "still_038",
+      "still_040",
+      "still_041",
+      "still_042",
+      "still_043",
+      "still_046",
+      "still_047",
+      "still_048",
+      "still_050",
+      "still_052",
+      "still_056",
+      "still_058",
+      "still_065",
+      "still_072",
+      "still_076",
+      "still_079",
+      "still_086",
+      "still_087",
+      "still_088",
+      "still_090",
+      "still_091",
+      "still_092",
+      "still_093",
+      "still_094",
+      "still_096",
+      "still_097",
+      "still_099",
+      "still_100"
+    ],
+    "P3": [
+      "still_025",
+      "still_037",
+      "still_039",
+      "still_054",
+      "still_055",
+      "still_057",
+      "still_068",
+      "still_069",
+      "still_070",
+      "still_073",
+      "still_074",
+      "still_077",
+      "still_078",
+      "still_080",
+      "still_081",
+      "still_082",
+      "still_083",
+      "still_084",
+      "still_085",
+      "still_089",
+      "still_098"
+    ]
+  },
+  "simulation_p0_p1": {
+    "generated": [
+      "still_007",
+      "still_009",
+      "still_010",
+      "still_016",
+      "still_020",
+      "still_021",
+      "still_028",
+      "still_029",
+      "still_044",
+      "still_045",
+      "still_049",
+      "still_051",
+      "still_053",
+      "still_059",
+      "still_060",
+      "still_061",
+      "still_062",
+      "still_063",
+      "still_064",
+      "still_066",
+      "still_067",
+      "still_071",
+      "still_075",
+      "still_095"
+    ],
+    "unique_generated": 24,
+    "covered": 56,
+    "reused": 32,
+    "review": 6,
+    "missing": 38
+  },
+  "simulation_recommended": {
+    "unique_generated": 79,
+    "covered": 100,
+    "reused": 21,
+    "review": 0,
+    "missing": 0
+  },
+  "slot_plan": [
+    {
+      "slot": 1,
+      "status": "EXACT",
+      "assigned_asset": "still_001",
+      "primary_asset": "still_001",
+      "score": 1.0,
+      "reason": "primary asset",
+      "ken_burns": "slow_push",
+      "hero": false,
+      "reuse_count": 1,
+      "distance": null
+    },
+    {
+      "slot": 2,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_002",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 3,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_003",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 4,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_004",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 5,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_005",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 6,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_006",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 7,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_007",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 8,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_008",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 9,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_009",
+      "score": 0.503,
+      "reason": "best=still_001 score=0.50 (mood tension~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 10,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_010",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 11,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_011",
+      "score": 0.48,
+      "reason": "best=still_001 score=0.48 (mood opportunity~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 12,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_012",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 13,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_013",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 14,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_014",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 15,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_015",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 16,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_016",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 17,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_017",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 18,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_018",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 19,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_019",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 20,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_020",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 21,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_021",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 22,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_022",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 23,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_023",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 24,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_024",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 25,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_025",
+      "score": 0.59,
+      "reason": "best=still_001 score=0.59 (mood tension~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 26,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_026",
+      "score": 0.59,
+      "reason": "best=still_001 score=0.59 (mood tension~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 27,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_027",
+      "score": 0.503,
+      "reason": "best=still_001 score=0.50 (mood tension~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 28,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_028",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood pressure~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 29,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_029",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood progress~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 30,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_030",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood pressure~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 31,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_031",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 32,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_032",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 33,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_033",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 34,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_034",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood progress~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 35,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_035",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 36,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_036",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood progress~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 37,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_037",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood progress~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 38,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_038",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood progress~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 39,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_039",
+      "score": 0.568,
+      "reason": "best=still_001 score=0.57 (mood pressure~neutral loc city era ordinary_life)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 40,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_040",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 41,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_041",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 42,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_042",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 43,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_043",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 44,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_044",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 45,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_045",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 46,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_046",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 47,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_047",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 48,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_048",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 49,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_049",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 50,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_050",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 51,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_051",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 52,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_052",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 53,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_053",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 54,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_054",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 55,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_055",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 56,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_056",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 57,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_057",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 58,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_058",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 59,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_059",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 60,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_060",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 61,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_061",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 62,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_062",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 63,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_063",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 64,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_064",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 65,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_065",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 66,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_066",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 67,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_067",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 68,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_068",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 69,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_069",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 70,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_070",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 71,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_071",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 72,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_072",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 73,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_073",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 74,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_074",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 75,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_075",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 76,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_076",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 77,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_077",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 78,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_078",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 79,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_079",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 80,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_080",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 81,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_081",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 82,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_082",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 83,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_083",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 84,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_084",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 85,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_085",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 86,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_086",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 87,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_087",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 88,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_088",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 89,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_089",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 90,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_090",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 91,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_091",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 92,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_092",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 93,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_093",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 94,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_094",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 95,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_095",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": true,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 96,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_096",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 97,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_097",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 98,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_098",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 99,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_099",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    },
+    {
+      "slot": 100,
+      "status": "MISSING_VISUAL",
+      "assigned_asset": null,
+      "primary_asset": "still_100",
+      "score": 0.0,
+      "reason": "best=None score=0.00 (none)",
+      "ken_burns": null,
+      "hero": false,
+      "reuse_count": 0,
+      "distance": null
+    }
+  ],
+  "thresholds": {
+    "auto_reuse": 0.75,
+    "review_reuse": 0.6,
+    "min_distance": 8
+  },
+  "real_coverage": {
+    "imported_unique": 1,
+    "imported_exact": 1,
+    "EXACT": 1,
+    "AUTO_REUSE": 0,
+    "REVIEW_REUSE": 0,
+    "MISSING": 99,
+    "missing_exact_assets": 99
+  },
+  "reuse_reviews": [],
+  "next_queue": {
+    "NEXT_REQUIRED": [
+      {
+        "asset": "still_020",
+        "slot": 20,
+        "covers": [
+          20
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 5,
+        "rank": 1120
+      },
+      {
+        "asset": "still_051",
+        "slot": 51,
+        "covers": [
+          51
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 5,
+        "rank": 1120
+      },
+      {
+        "asset": "still_010",
+        "slot": 10,
+        "covers": [
+          10
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 1119
+      },
+      {
+        "asset": "still_016",
+        "slot": 16,
+        "covers": [
+          16
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 1119
+      },
+      {
+        "asset": "still_095",
+        "slot": 95,
+        "covers": [
+          95
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 1119
+      },
+      {
+        "asset": "still_007",
+        "slot": 7,
+        "covers": [
+          7
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 3,
+        "rank": 1118
+      },
+      {
+        "asset": "still_021",
+        "slot": 21,
+        "covers": [
+          21
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 1117
+      },
+      {
+        "asset": "still_053",
+        "slot": 53,
+        "covers": [
+          53
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 1117
+      },
+      {
+        "asset": "still_061",
+        "slot": 61,
+        "covers": [
+          61
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 1117
+      },
+      {
+        "asset": "still_067",
+        "slot": 67,
+        "covers": [
+          67
+        ],
+        "hero": true,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 1117
+      },
+      {
+        "asset": "still_059",
+        "slot": 59,
+        "covers": [
+          59,
+          68,
+          77,
+          85
+        ],
+        "hero": false,
+        "potentially_covered": 4,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 147
+      },
+      {
+        "asset": "still_060",
+        "slot": 60,
+        "covers": [
+          60,
+          69,
+          78
+        ],
+        "hero": false,
+        "potentially_covered": 3,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 137
+      },
+      {
+        "asset": "still_062",
+        "slot": 62,
+        "covers": [
+          62,
+          70,
+          80
+        ],
+        "hero": false,
+        "potentially_covered": 3,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 137
+      },
+      {
+        "asset": "still_064",
+        "slot": 64,
+        "covers": [
+          64,
+          73,
+          82
+        ],
+        "hero": false,
+        "potentially_covered": 3,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 137
+      },
+      {
+        "asset": "still_066",
+        "slot": 66,
+        "covers": [
+          66,
+          74,
+          83
+        ],
+        "hero": false,
+        "potentially_covered": 3,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 137
+      },
+      {
+        "asset": "still_075",
+        "slot": 75,
+        "covers": [
+          75,
+          89,
+          98
+        ],
+        "hero": false,
+        "potentially_covered": 3,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 137
+      },
+      {
+        "asset": "still_028",
+        "slot": 28,
+        "covers": [
+          28,
+          39
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 129
+      },
+      {
+        "asset": "still_044",
+        "slot": 44,
+        "covers": [
+          44,
+          55
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 3,
+        "rank": 128
+      },
+      {
+        "asset": "still_009",
+        "slot": 9,
+        "covers": [
+          9,
+          25
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 127
+      },
+      {
+        "asset": "still_029",
+        "slot": 29,
+        "covers": [
+          29,
+          37
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 127
+      },
+      {
+        "asset": "still_045",
+        "slot": 45,
+        "covers": [
+          45,
+          54
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 127
+      },
+      {
+        "asset": "still_049",
+        "slot": 49,
+        "covers": [
+          49,
+          57
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 127
+      },
+      {
+        "asset": "still_063",
+        "slot": 63,
+        "covers": [
+          63,
+          84
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 127
+      },
+      {
+        "asset": "still_071",
+        "slot": 71,
+        "covers": [
+          71,
+          81
+        ],
+        "hero": false,
+        "potentially_covered": 2,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 127
+      }
+    ],
+    "NEXT_RECOMMENDED": [
+      {
+        "asset": "still_019",
+        "slot": 19,
+        "covers": [
+          19
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 5,
+        "rank": 120
+      },
+      {
+        "asset": "still_022",
+        "slot": 22,
+        "covers": [
+          22
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 5,
+        "rank": 120
+      },
+      {
+        "asset": "still_047",
+        "slot": 47,
+        "covers": [
+          47
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 5,
+        "rank": 120
+      },
+      {
+        "asset": "still_088",
+        "slot": 88,
+        "covers": [
+          88
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 5,
+        "rank": 120
+      },
+      {
+        "asset": "still_097",
+        "slot": 97,
+        "covers": [
+          97
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 5,
+        "rank": 120
+      },
+      {
+        "asset": "still_002",
+        "slot": 2,
+        "covers": [
+          2
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_011",
+        "slot": 11,
+        "covers": [
+          11
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_017",
+        "slot": 17,
+        "covers": [
+          17
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_024",
+        "slot": 24,
+        "covers": [
+          24
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_030",
+        "slot": 30,
+        "covers": [
+          30
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_042",
+        "slot": 42,
+        "covers": [
+          42
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_043",
+        "slot": 43,
+        "covers": [
+          43
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_058",
+        "slot": 58,
+        "covers": [
+          58
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_079",
+        "slot": 79,
+        "covers": [
+          79
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_087",
+        "slot": 87,
+        "covers": [
+          87
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_093",
+        "slot": 93,
+        "covers": [
+          93
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_099",
+        "slot": 99,
+        "covers": [
+          99
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 4,
+        "rank": 119
+      },
+      {
+        "asset": "still_006",
+        "slot": 6,
+        "covers": [
+          6
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 3,
+        "rank": 118
+      },
+      {
+        "asset": "still_086",
+        "slot": 86,
+        "covers": [
+          86
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 3,
+        "rank": 118
+      },
+      {
+        "asset": "still_004",
+        "slot": 4,
+        "covers": [
+          4
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_005",
+        "slot": 5,
+        "covers": [
+          5
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_008",
+        "slot": 8,
+        "covers": [
+          8
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_012",
+        "slot": 12,
+        "covers": [
+          12
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_013",
+        "slot": 13,
+        "covers": [
+          13
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_014",
+        "slot": 14,
+        "covers": [
+          14
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_015",
+        "slot": 15,
+        "covers": [
+          15
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_018",
+        "slot": 18,
+        "covers": [
+          18
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_023",
+        "slot": 23,
+        "covers": [
+          23
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_026",
+        "slot": 26,
+        "covers": [
+          26
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_027",
+        "slot": 27,
+        "covers": [
+          27
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_031",
+        "slot": 31,
+        "covers": [
+          31
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_032",
+        "slot": 32,
+        "covers": [
+          32
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_033",
+        "slot": 33,
+        "covers": [
+          33
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_034",
+        "slot": 34,
+        "covers": [
+          34
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_035",
+        "slot": 35,
+        "covers": [
+          35
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_036",
+        "slot": 36,
+        "covers": [
+          36
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_038",
+        "slot": 38,
+        "covers": [
+          38
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_040",
+        "slot": 40,
+        "covers": [
+          40
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_041",
+        "slot": 41,
+        "covers": [
+          41
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_048",
+        "slot": 48,
+        "covers": [
+          48
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_050",
+        "slot": 50,
+        "covers": [
+          50
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_052",
+        "slot": 52,
+        "covers": [
+          52
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_056",
+        "slot": 56,
+        "covers": [
+          56
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_065",
+        "slot": 65,
+        "covers": [
+          65
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_072",
+        "slot": 72,
+        "covers": [
+          72
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_090",
+        "slot": 90,
+        "covers": [
+          90
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_091",
+        "slot": 91,
+        "covers": [
+          91
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_092",
+        "slot": 92,
+        "covers": [
+          92
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_094",
+        "slot": 94,
+        "covers": [
+          94
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_096",
+        "slot": 96,
+        "covers": [
+          96
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_100",
+        "slot": 100,
+        "covers": [
+          100
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 2,
+        "rank": 117
+      },
+      {
+        "asset": "still_003",
+        "slot": 3,
+        "covers": [
+          3
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 1,
+        "rank": 116
+      },
+      {
+        "asset": "still_076",
+        "slot": 76,
+        "covers": [
+          76
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": true,
+        "retention": 1,
+        "rank": 116
+      },
+      {
+        "asset": "still_046",
+        "slot": 46,
+        "covers": [
+          46
+        ],
+        "hero": false,
+        "potentially_covered": 1,
+        "variety_new": false,
+        "retention": 2,
+        "rank": 112
+      }
+    ],
+    "OPTIONAL": []
+  },
+  "production_progress": {
+    "total_slots": 100,
+    "prompts_ready": 100,
+    "imported_exact": 1,
+    "generated_imported": 1,
+    "exact_coverage": 1,
+    "missing_exact_assets": 99,
+    "temporarily_covered_by_reuse": 0,
+    "fallback_auto_reuse": 0,
+    "fallback_review": 0,
+    "fallback_coverage_available": 0,
+    "policy": "Each slot targets its own still. Smart reuse is fallback only."
+  },
+  "generation_order_note": "P0–P3 = order of generation, not permission to skip slots.",
+  "production_batches": {
+    "p0-p1": {
+      "path": "flow-pack/batches/p0-p1",
+      "prompts": 24,
+      "shots": [
+        "007",
+        "009",
+        "010",
+        "016",
+        "020",
+        "021",
+        "028",
+        "029",
+        "044",
+        "045",
+        "049",
+        "051",
+        "053",
+        "059",
+        "060",
+        "061",
+        "062",
+        "063",
+        "064",
+        "066",
+        "067",
+        "071",
+        "075",
+        "095"
+      ],
+      "role": "optional_priority_batch"
+    },
+    "all-stills": {
+      "path": "flow-pack/batches/all-stills",
+      "prompts": 100,
+      "total_slots": 100,
+      "role": "full_still_generation_pack"
+    }
+  },
+  "full_still_pack": {
+    "path": "flow-pack/batches/all-stills",
+    "total_slots": 100,
+    "prompts_ready": 100,
+    "imported_exact": 0,
+    "policy": "Each visual slot targets its own still (NNN.png). P0–P3 = generation order only, not permission to skip slots. Smart reuse activates only when the exact asset is missing."
+  }
+}

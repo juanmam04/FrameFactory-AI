@@ -1,0 +1,22 @@
+shot_id: 012
+priority: P2
+requires_own_still: true
+protagonist_era: early_owner
+location: owner_office
+mood: tension
+story_function: progress
+visual_bible_refs: protagonist_visual_bible, office_visual_bible
+reuse_slots: —
+---
+2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.
+STYLE LOCK (Check): 2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism.
+EXACT CHARACTER: Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face. Age now: 22. State: office employee, shared apartment. Wardrobe matches age/state from the protagonist bible.
+EXACT ACTION: sitting across a stained table with a napkin of numbers. Beat: in a cheap meeting/cafe: Ochenta y cinco mil de los inversores por el treinta y nueve. El vendedor, diez, y doscientos mil financiados.
+EXACT ENVIRONMENT: A tired conference room or a cheap cafe booth in Ciudad Central, not a glass boardroom.
+STORY TIME: AGE 22 · season 1
+CAMERA: OTS toward three men in a cheap cafe booth
+COMPOSITION: 16:9 widescreen, strong foreground/midground/background, one clear subject Foreground: coffee cup and napkin. Background: late-night cafe.
+LIGHTING: cinematic motivated light, strong depth
+IMPORTANT OBJECTS: story-specific props only
+CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. Wardrobe matches age/state from the protagonist bible. Do not invent a new man or a new building.
+AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks.

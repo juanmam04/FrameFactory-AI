@@ -1,0 +1,22 @@
+shot_id: 093
+priority: P2
+requires_own_still: true
+protagonist_era: late_story
+location: arena
+mood: reflection
+story_function: ending
+visual_bible_refs: protagonist_visual_bible, arena_visual_bible, team_visual_bible
+reuse_slots: —
+---
+2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. Not anime, not clipart, not stock-photo look, not hyperrealistic random humans.
+STYLE LOCK (Check): 2D cinematic illustrated storytelling: clean linework, expressive simple characters, detailed environments, strong lighting, readable silhouettes, consistent proportions. Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism.
+EXACT CHARACTER: Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, readable eyes, clean linework, not a model, not a cartoon mascot. Age 22: cheap office collared shirt, dark trousers, worn backpack. After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. Never swap ethnicity, never redesign the face. Age now: 27. State: owner, paper millionaire, empty arena. Wardrobe matches age/state from the protagonist bible.
+EXACT ACTION: street-level brick facade; protagonist small or absent. Beat: in the same municipal Halcones arena: El estadio está vacío después del partido.
+EXACT ENVIRONMENT: Same Halcones municipal arena now packed toward 4800 capacity, stronger lights, same architecture. Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, same roof shape, same tunnel to the court, same floor orientation. Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. Later: same architecture, better lighting, fresh paint, packed then sold-out stands. The building evolves; it does not become a different NBA arena. Same exterior all years.
+STORY TIME: AGE 27 · season 6
+CAMERA: insert of faded Halcones brick exterior
+COMPOSITION: 16:9 widescreen, strong foreground/midground/background, one clear subject Foreground: faded Halcones lettering. Background: municipal brick.
+LIGHTING: empty-arena practicals, long shadows, quiet night
+IMPORTANT OBJECTS: Halcones hawk mark
+CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. Wardrobe matches age/state from the protagonist bible. Do not invent a new man or a new building.
+AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks.

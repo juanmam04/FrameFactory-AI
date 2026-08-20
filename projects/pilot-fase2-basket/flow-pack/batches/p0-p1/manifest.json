@@ -1,0 +1,445 @@
+{
+  "batch": "p0-p1",
+  "project_id": "pilot-fase2-basket",
+  "policy": "Each visual slot targets its own still (NNN.png). P0–P3 = generation order only, not permission to skip slots. Smart reuse activates only when the exact asset is missing.",
+  "total_prompts": 24,
+  "note": "Optional first batch: P0 heroes + P1 high-value moments. Generate all 100 via all-stills pack.",
+  "items": [
+    {
+      "shot_id": "007",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "office_visual_bible"
+      ],
+      "protagonist_era": "ordinary_life",
+      "location": "cubicle",
+      "mood": "curiosity",
+      "story_function": "opportunity",
+      "reuse_slots": [],
+      "hero_id": "dollar_listing",
+      "expected_file": "007.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/007.txt"
+    },
+    {
+      "shot_id": "009",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "ordinary_life",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "025"
+      ],
+      "hero_id": null,
+      "expected_file": "009.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/009.txt"
+    },
+    {
+      "shot_id": "010",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "pre_owner",
+      "location": "city",
+      "mood": "opportunity",
+      "story_function": "commitment",
+      "reuse_slots": [],
+      "hero_id": "dollar_listing",
+      "expected_file": "010.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/010.txt"
+    },
+    {
+      "shot_id": "016",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "early_owner",
+      "location": "city",
+      "mood": "opportunity",
+      "story_function": "commitment",
+      "reuse_slots": [],
+      "hero_id": "signing_acquisition",
+      "expected_file": "016.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/016.txt"
+    },
+    {
+      "shot_id": "020",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "arena_visual_bible",
+        "team_visual_bible",
+        "utilero_visual_bible"
+      ],
+      "protagonist_era": "early_owner",
+      "location": "locker_room",
+      "mood": "hope",
+      "story_function": "payoff",
+      "reuse_slots": [],
+      "hero_id": "utilero_keys",
+      "expected_file": "020.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/020.txt"
+    },
+    {
+      "shot_id": "021",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "arena_visual_bible",
+        "team_visual_bible"
+      ],
+      "protagonist_era": "early_owner",
+      "location": "court",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [],
+      "hero_id": "first_entrance",
+      "expected_file": "021.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/021.txt"
+    },
+    {
+      "shot_id": "028",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "ordinary_life",
+      "location": "city",
+      "mood": "pressure",
+      "story_function": "crisis",
+      "reuse_slots": [
+        "039"
+      ],
+      "hero_id": null,
+      "expected_file": "028.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/028.txt"
+    },
+    {
+      "shot_id": "029",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "ordinary_life",
+      "location": "city",
+      "mood": "progress",
+      "story_function": "reward",
+      "reuse_slots": [
+        "037"
+      ],
+      "hero_id": null,
+      "expected_file": "029.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/029.txt"
+    },
+    {
+      "shot_id": "044",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "struggling_owner",
+      "location": "city",
+      "mood": "failure",
+      "story_function": "setback",
+      "reuse_slots": [
+        "055"
+      ],
+      "hero_id": null,
+      "expected_file": "044.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/044.txt"
+    },
+    {
+      "shot_id": "045",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "struggling_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "054"
+      ],
+      "hero_id": null,
+      "expected_file": "045.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/045.txt"
+    },
+    {
+      "shot_id": "049",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "struggling_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "057"
+      ],
+      "hero_id": null,
+      "expected_file": "049.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/049.txt"
+    },
+    {
+      "shot_id": "051",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "arena_visual_bible",
+        "team_visual_bible"
+      ],
+      "protagonist_era": "struggling_owner",
+      "location": "stands",
+      "mood": "glory",
+      "story_function": "payoff",
+      "reuse_slots": [],
+      "hero_id": "sold_out_reveal",
+      "expected_file": "051.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/051.txt"
+    },
+    {
+      "shot_id": "053",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "arena_visual_bible",
+        "team_visual_bible"
+      ],
+      "protagonist_era": "struggling_owner",
+      "location": "arena",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [],
+      "hero_id": "quit_job",
+      "expected_file": "053.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/053.txt"
+    },
+    {
+      "shot_id": "059",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "068",
+        "077",
+        "085"
+      ],
+      "hero_id": null,
+      "expected_file": "059.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/059.txt"
+    },
+    {
+      "shot_id": "060",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "069",
+        "078"
+      ],
+      "hero_id": null,
+      "expected_file": "060.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/060.txt"
+    },
+    {
+      "shot_id": "061",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "new_apartment_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "new_apartment",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [],
+      "hero_id": "moving_home",
+      "expected_file": "061.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/061.txt"
+    },
+    {
+      "shot_id": "062",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "070",
+        "080"
+      ],
+      "hero_id": null,
+      "expected_file": "062.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/062.txt"
+    },
+    {
+      "shot_id": "063",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "city",
+      "mood": "progress",
+      "story_function": "proof",
+      "reuse_slots": [
+        "084"
+      ],
+      "hero_id": null,
+      "expected_file": "063.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/063.txt"
+    },
+    {
+      "shot_id": "064",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "arena_visual_bible",
+        "team_visual_bible",
+        "coach_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "locker_room",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "073",
+        "082"
+      ],
+      "hero_id": null,
+      "expected_file": "064.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/064.txt"
+    },
+    {
+      "shot_id": "066",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "074",
+        "083"
+      ],
+      "hero_id": null,
+      "expected_file": "066.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/066.txt"
+    },
+    {
+      "shot_id": "067",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible",
+        "arena_visual_bible",
+        "team_visual_bible",
+        "utilero_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "locker_room",
+      "mood": "happiness",
+      "story_function": "reward",
+      "reuse_slots": [],
+      "hero_id": "parents_box",
+      "expected_file": "067.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/067.txt"
+    },
+    {
+      "shot_id": "071",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "growing_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "081"
+      ],
+      "hero_id": null,
+      "expected_file": "071.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/071.txt"
+    },
+    {
+      "shot_id": "075",
+      "priority": "P1",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "established_owner",
+      "location": "city",
+      "mood": "tension",
+      "story_function": "progress",
+      "reuse_slots": [
+        "089",
+        "098"
+      ],
+      "hero_id": null,
+      "expected_file": "075.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/075.txt"
+    },
+    {
+      "shot_id": "095",
+      "priority": "P0",
+      "visual_bible_refs": [
+        "protagonist_visual_bible"
+      ],
+      "protagonist_era": "late_story",
+      "location": "city",
+      "mood": "reflection",
+      "story_function": "ending",
+      "reuse_slots": [],
+      "hero_id": "acquisition_email",
+      "expected_file": "095.png",
+      "requires_own_still": true,
+      "prompt_file": "prompts/095.txt"
+    }
+  ]
+}

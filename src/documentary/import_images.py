@@ -10,6 +10,21 @@ from typing import Any
 from src.documentary.flow_pack import load_shot_list
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 
+
+def _refresh_check_asset_library(project: dict[str, Any]) -> None:
+    fmt = str(project.get("content_format") or project.get("mode") or "")
+    if fmt != "check_als":
+        return
+    pid = str(project.get("id") or "")
+    if not pid:
+        return
+    try:
+        from src.documentary.formats.check_als.asset_reuse import refresh_assets_after_import
+
+        refresh_assets_after_import(pid)
+    except Exception:
+        pass
+
 _NUM_RE = re.compile(r"^(\d{1,4})\.(png|jpg|jpeg|webp)$", re.I)
 _STILL_EXTS = (".jpg", ".jpeg", ".png", ".webp")
 
@@ -259,6 +274,7 @@ def import_images(
         project["ui_step"] = "images"
     save_project(project)
     sync_shot_statuses_from_images(str(project["id"]))
+    _refresh_check_asset_library(project)
     append_log(str(project["id"]), f"import ready={ready}/{expected_n} missing={len(missing)}")
     return report
 
@@ -383,6 +399,7 @@ def import_uploaded_images(
         save_project(project)
     except Exception:
         pass
+    _refresh_check_asset_library(project)
     return report
 
 
