@@ -1618,7 +1618,7 @@ function paintCheckLocked(ws, p, step, extra) {
       <p class="lead">Historia aprobada desbloquea Guion + Imágenes (prompts). Voz y render siguen después.</p>
       <div class="actions">
         <button class="btn btn-primary" id="go-story">Volver a Historia</button>
-        ${generated && !approved ? `<button class="btn btn-accent" id="approve-from-lock">Aprobar historia → Guion</button>` : ""}
+        ${hasStory && !approved ? `<button class="btn btn-accent" id="approve-from-lock">Aprobar historia → Guion</button>` : ""}
       </div>
     </div>`;
   $("#go-story").onclick = async () => {
