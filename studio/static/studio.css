@@ -49,6 +49,7 @@ html, body {
   min-height: 100dvh;
   min-height: 100svh;
   overflow-x: clip;
+  box-sizing: border-box;
 }
 img, video, audio, svg { max-width: 100%; }
 button, input, textarea, select { font: inherit; }
@@ -917,7 +918,14 @@ label.field {
   .nav-link { white-space: nowrap; padding: 0.5rem 0.8rem; }
   .stage {
     width: 100%;
+    max-width: 100%;
     padding: 1rem 0.9rem 7rem;
+    box-sizing: border-box;
+  }
+  .workspace {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .ws-line { display: none; }
   .ff-video-split {
@@ -935,19 +943,34 @@ label.field {
   .edit-picks {
     grid-template-columns: 1fr;
   }
+  .panel {
+    width: 100%;
+    box-sizing: border-box;
+  }
   .actions {
     flex-direction: column;
     gap: 0.6rem;
+    width: 100%;
   }
   .actions .btn {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     text-align: center;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
   }
 }
 
 @media (max-width: 640px) {
   .panel,
-  .day-card { padding: 1.05rem 0.95rem; border-radius: 18px; }
+  .day-card { 
+    padding: 1.05rem 0.95rem; 
+    border-radius: 18px;
+    width: 100%;
+    box-sizing: border-box;
+  }
   .h1 { font-size: 1.55rem; }
   .lead { font-size: 0.95rem; max-width: none; }
   .day-ticks { display: none; }
@@ -971,12 +994,19 @@ label.field {
   .actions { 
     gap: 0.5rem;
     flex-direction: column;
+    width: 100%;
   }
   .actions .btn {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     text-align: center;
     min-height: 46px;
-    padding: 0.85rem 1rem;
+    padding: 0.85rem 0.8rem;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    font-size: 0.9rem;
   }
   .slot-actions .btn,
   .slot-upload {
@@ -984,7 +1014,10 @@ label.field {
     text-align: center;
     min-height: 46px;
   }
-  .btn { padding: 0.85rem 1rem; }
+  .btn { 
+    padding: 0.85rem 0.8rem;
+    box-sizing: border-box;
+  }
   .stepper {
     flex-wrap: nowrap;
     overflow-x: auto;
