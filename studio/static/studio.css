@@ -199,6 +199,8 @@ button { cursor: pointer; }
   padding: 1.4rem 1.5rem;
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .panel.soft {
   background: linear-gradient(160deg, #ffffff 0%, #f7fbfa 100%);
@@ -360,9 +362,15 @@ code { word-break: break-all; }
   gap: 0.65rem;
   margin-top: 1.25rem;
   max-width: 100%;
+  width: 100%;
 }
 .actions.actions-center { justify-content: center; }
-.actions .btn { max-width: 100%; }
+.actions .btn { 
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
 .btn {
   border: 0;
   border-radius: 999px;
@@ -370,6 +378,7 @@ code { word-break: break-all; }
   font-weight: 700;
   letter-spacing: -0.01em;
   transition: transform 140ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  box-sizing: border-box;
 }
 .btn:active { transform: none; }
 @media (hover: hover) {
@@ -496,7 +505,13 @@ code { word-break: break-all; }
 .step.now { background: var(--ink); color: #fff; }
 .step.done { background: var(--accent-soft); color: var(--accent); }
 
-.workspace { display: grid; gap: 1rem; }
+.workspace { 
+  display: grid; 
+  gap: 1rem;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
 
 .ff-video-split {
   display: grid;
@@ -883,6 +898,14 @@ label.field {
   .edit-picks {
     grid-template-columns: 1fr;
   }
+  .actions {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .actions .btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 @media (max-width: 640px) {
@@ -912,7 +935,12 @@ label.field {
     gap: 0.5rem;
     flex-direction: column;
   }
-  .actions .btn,
+  .actions .btn {
+    width: 100%;
+    text-align: center;
+    min-height: 46px;
+    padding: 0.85rem 1rem;
+  }
   .slot-actions .btn,
   .slot-upload {
     width: 100%;
