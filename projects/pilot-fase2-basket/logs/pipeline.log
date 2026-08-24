@@ -19,3 +19,15 @@
 2026-08-19T20:37:49Z check visual QC final shots=100 (no image gen)
 2026-08-19T20:38:28Z check visual QC final shots=100 (no image gen)
 2026-08-19T20:39:10Z check visual QC final shots=100 (no image gen)
+2026-08-24T19:52:49Z sync READY from images ready=100
+2026-08-24T19:52:49Z import ready=100/100 missing=0
+2026-08-24T19:52:52Z sync READY from images ready=100
+2026-08-24T19:54:58Z voice verify overlap=0.93
+2026-08-24T19:55:01Z invalidated voice-derived (new narration) removed=0
+2026-08-24T19:55:01Z voice ready duration=650.71 script_hash=805c87dfe3bdacb99723
+2026-08-24T19:55:08Z still reuse method=ai gaps=9 filled=9 needed=109 unique=100
+2026-08-24T19:55:51Z captions aligned via whisper cues=290
+2026-08-24T19:55:51Z captions srt cues=290 source=whisper
+2026-08-24T19:55:51Z captions srt ready source=whisper
+2026-08-24T20:17:45Z captions burned into final.mp4
+2026-08-24T20:17:45Z render ok → /Users/juanmamartinez/FrameFactory-AI/projects/pilot-fase2-basket/render/final.mp4 Full HD 1080p captions=True

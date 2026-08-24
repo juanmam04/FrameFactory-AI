@@ -30,7 +30,7 @@
     {
       "asset_id": "still_002",
       "source_shot": 2,
-      "exists": false,
+      "exists": true,
       "mood": [
         "determination"
       ],
@@ -57,7 +57,7 @@
     {
       "asset_id": "still_003",
       "source_shot": 3,
-      "exists": false,
+      "exists": true,
       "mood": [
         "neutral"
       ],
@@ -84,7 +84,7 @@
     {
       "asset_id": "still_004",
       "source_shot": 4,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -111,7 +111,7 @@
     {
       "asset_id": "still_005",
       "source_shot": 5,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -138,7 +138,7 @@
     {
       "asset_id": "still_006",
       "source_shot": 6,
-      "exists": false,
+      "exists": true,
       "mood": [
         "curiosity"
       ],
@@ -165,7 +165,7 @@
     {
       "asset_id": "still_007",
       "source_shot": 7,
-      "exists": false,
+      "exists": true,
       "mood": [
         "curiosity"
       ],
@@ -192,7 +192,7 @@
     {
       "asset_id": "still_008",
       "source_shot": 8,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -219,7 +219,7 @@
     {
       "asset_id": "still_009",
       "source_shot": 9,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -246,7 +246,7 @@
     {
       "asset_id": "still_010",
       "source_shot": 10,
-      "exists": false,
+      "exists": true,
       "mood": [
         "opportunity"
       ],
@@ -273,7 +273,7 @@
     {
       "asset_id": "still_011",
       "source_shot": 11,
-      "exists": false,
+      "exists": true,
       "mood": [
         "opportunity"
       ],
@@ -300,7 +300,7 @@
     {
       "asset_id": "still_012",
       "source_shot": 12,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -327,7 +327,7 @@
     {
       "asset_id": "still_013",
       "source_shot": 13,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -354,7 +354,7 @@
     {
       "asset_id": "still_014",
       "source_shot": 14,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -381,7 +381,7 @@
     {
       "asset_id": "still_015",
       "source_shot": 15,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -408,7 +408,7 @@
     {
       "asset_id": "still_016",
       "source_shot": 16,
-      "exists": false,
+      "exists": true,
       "mood": [
         "opportunity"
       ],
@@ -435,7 +435,7 @@
     {
       "asset_id": "still_017",
       "source_shot": 17,
-      "exists": false,
+      "exists": true,
       "mood": [
         "opportunity"
       ],
@@ -462,7 +462,7 @@
     {
       "asset_id": "still_018",
       "source_shot": 18,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -489,7 +489,7 @@
     {
       "asset_id": "still_019",
       "source_shot": 19,
-      "exists": false,
+      "exists": true,
       "mood": [
         "hope"
       ],
@@ -516,7 +516,7 @@
     {
       "asset_id": "still_020",
       "source_shot": 20,
-      "exists": false,
+      "exists": true,
       "mood": [
         "hope"
       ],
@@ -543,7 +543,7 @@
     {
       "asset_id": "still_021",
       "source_shot": 21,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -570,7 +570,7 @@
     {
       "asset_id": "still_022",
       "source_shot": 22,
-      "exists": false,
+      "exists": true,
       "mood": [
         "hope"
       ],
@@ -597,7 +597,7 @@
     {
       "asset_id": "still_023",
       "source_shot": 23,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -624,7 +624,7 @@
     {
       "asset_id": "still_024",
       "source_shot": 24,
-      "exists": false,
+      "exists": true,
       "mood": [
         "opportunity"
       ],
@@ -651,7 +651,7 @@
     {
       "asset_id": "still_025",
       "source_shot": 25,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -678,7 +678,7 @@
     {
       "asset_id": "still_026",
       "source_shot": 26,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -705,7 +705,7 @@
     {
       "asset_id": "still_027",
       "source_shot": 27,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -732,7 +732,7 @@
     {
       "asset_id": "still_028",
       "source_shot": 28,
-      "exists": false,
+      "exists": true,
       "mood": [
         "pressure"
       ],
@@ -759,7 +759,7 @@
     {
       "asset_id": "still_029",
       "source_shot": 29,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -786,7 +786,7 @@
     {
       "asset_id": "still_030",
       "source_shot": 30,
-      "exists": false,
+      "exists": true,
       "mood": [
         "pressure"
       ],
@@ -813,7 +813,7 @@
     {
       "asset_id": "still_031",
       "source_shot": 31,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -840,7 +840,7 @@
     {
       "asset_id": "still_032",
       "source_shot": 32,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -867,7 +867,7 @@
     {
       "asset_id": "still_033",
       "source_shot": 33,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -894,7 +894,7 @@
     {
       "asset_id": "still_034",
       "source_shot": 34,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -921,7 +921,7 @@
     {
       "asset_id": "still_035",
       "source_shot": 35,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -948,7 +948,7 @@
     {
       "asset_id": "still_036",
       "source_shot": 36,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -975,7 +975,7 @@
     {
       "asset_id": "still_037",
       "source_shot": 37,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -1002,7 +1002,7 @@
     {
       "asset_id": "still_038",
       "source_shot": 38,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -1029,7 +1029,7 @@
     {
       "asset_id": "still_039",
       "source_shot": 39,
-      "exists": false,
+      "exists": true,
       "mood": [
         "pressure"
       ],
@@ -1056,7 +1056,7 @@
     {
       "asset_id": "still_040",
       "source_shot": 40,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -1083,7 +1083,7 @@
     {
       "asset_id": "still_041",
       "source_shot": 41,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -1110,7 +1110,7 @@
     {
       "asset_id": "still_042",
       "source_shot": 42,
-      "exists": false,
+      "exists": true,
       "mood": [
         "pressure"
       ],
@@ -1137,7 +1137,7 @@
     {
       "asset_id": "still_043",
       "source_shot": 43,
-      "exists": false,
+      "exists": true,
       "mood": [
         "opportunity"
       ],
@@ -1164,7 +1164,7 @@
     {
       "asset_id": "still_044",
       "source_shot": 44,
-      "exists": false,
+      "exists": true,
       "mood": [
         "failure"
       ],
@@ -1191,7 +1191,7 @@
     {
       "asset_id": "still_045",
       "source_shot": 45,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1218,7 +1218,7 @@
     {
       "asset_id": "still_046",
       "source_shot": 46,
-      "exists": false,
+      "exists": true,
       "mood": [
         "neutral"
       ],
@@ -1245,7 +1245,7 @@
     {
       "asset_id": "still_047",
       "source_shot": 47,
-      "exists": false,
+      "exists": true,
       "mood": [
         "hope"
       ],
@@ -1272,7 +1272,7 @@
     {
       "asset_id": "still_048",
       "source_shot": 48,
-      "exists": false,
+      "exists": true,
       "mood": [
         "happiness"
       ],
@@ -1299,7 +1299,7 @@
     {
       "asset_id": "still_049",
       "source_shot": 49,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1326,7 +1326,7 @@
     {
       "asset_id": "still_050",
       "source_shot": 50,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1353,7 +1353,7 @@
     {
       "asset_id": "still_051",
       "source_shot": 51,
-      "exists": false,
+      "exists": true,
       "mood": [
         "glory"
       ],
@@ -1380,7 +1380,7 @@
     {
       "asset_id": "still_052",
       "source_shot": 52,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1407,7 +1407,7 @@
     {
       "asset_id": "still_053",
       "source_shot": 53,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1434,7 +1434,7 @@
     {
       "asset_id": "still_054",
       "source_shot": 54,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1461,7 +1461,7 @@
     {
       "asset_id": "still_055",
       "source_shot": 55,
-      "exists": false,
+      "exists": true,
       "mood": [
         "failure"
       ],
@@ -1488,7 +1488,7 @@
     {
       "asset_id": "still_056",
       "source_shot": 56,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -1515,7 +1515,7 @@
     {
       "asset_id": "still_057",
       "source_shot": 57,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1542,7 +1542,7 @@
     {
       "asset_id": "still_058",
       "source_shot": 58,
-      "exists": false,
+      "exists": true,
       "mood": [
         "pressure"
       ],
@@ -1569,7 +1569,7 @@
     {
       "asset_id": "still_059",
       "source_shot": 59,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1596,7 +1596,7 @@
     {
       "asset_id": "still_060",
       "source_shot": 60,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1623,7 +1623,7 @@
     {
       "asset_id": "still_061",
       "source_shot": 61,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1650,7 +1650,7 @@
     {
       "asset_id": "still_062",
       "source_shot": 62,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1677,7 +1677,7 @@
     {
       "asset_id": "still_063",
       "source_shot": 63,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -1704,7 +1704,7 @@
     {
       "asset_id": "still_064",
       "source_shot": 64,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1731,7 +1731,7 @@
     {
       "asset_id": "still_065",
       "source_shot": 65,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -1758,7 +1758,7 @@
     {
       "asset_id": "still_066",
       "source_shot": 66,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1785,7 +1785,7 @@
     {
       "asset_id": "still_067",
       "source_shot": 67,
-      "exists": false,
+      "exists": true,
       "mood": [
         "happiness"
       ],
@@ -1812,7 +1812,7 @@
     {
       "asset_id": "still_068",
       "source_shot": 68,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1839,7 +1839,7 @@
     {
       "asset_id": "still_069",
       "source_shot": 69,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1866,7 +1866,7 @@
     {
       "asset_id": "still_070",
       "source_shot": 70,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1893,7 +1893,7 @@
     {
       "asset_id": "still_071",
       "source_shot": 71,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1920,7 +1920,7 @@
     {
       "asset_id": "still_072",
       "source_shot": 72,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1947,7 +1947,7 @@
     {
       "asset_id": "still_073",
       "source_shot": 73,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -1974,7 +1974,7 @@
     {
       "asset_id": "still_074",
       "source_shot": 74,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2001,7 +2001,7 @@
     {
       "asset_id": "still_075",
       "source_shot": 75,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2028,7 +2028,7 @@
     {
       "asset_id": "still_076",
       "source_shot": 76,
-      "exists": false,
+      "exists": true,
       "mood": [
         "wealth"
       ],
@@ -2055,7 +2055,7 @@
     {
       "asset_id": "still_077",
       "source_shot": 77,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2082,7 +2082,7 @@
     {
       "asset_id": "still_078",
       "source_shot": 78,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2109,7 +2109,7 @@
     {
       "asset_id": "still_079",
       "source_shot": 79,
-      "exists": false,
+      "exists": true,
       "mood": [
         "determination"
       ],
@@ -2136,7 +2136,7 @@
     {
       "asset_id": "still_080",
       "source_shot": 80,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2163,7 +2163,7 @@
     {
       "asset_id": "still_081",
       "source_shot": 81,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2190,7 +2190,7 @@
     {
       "asset_id": "still_082",
       "source_shot": 82,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2217,7 +2217,7 @@
     {
       "asset_id": "still_083",
       "source_shot": 83,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2244,7 +2244,7 @@
     {
       "asset_id": "still_084",
       "source_shot": 84,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],
@@ -2271,7 +2271,7 @@
     {
       "asset_id": "still_085",
       "source_shot": 85,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2298,7 +2298,7 @@
     {
       "asset_id": "still_086",
       "source_shot": 86,
-      "exists": false,
+      "exists": true,
       "mood": [
         "failure"
       ],
@@ -2325,7 +2325,7 @@
     {
       "asset_id": "still_087",
       "source_shot": 87,
-      "exists": false,
+      "exists": true,
       "mood": [
         "pressure"
       ],
@@ -2352,7 +2352,7 @@
     {
       "asset_id": "still_088",
       "source_shot": 88,
-      "exists": false,
+      "exists": true,
       "mood": [
         "glory"
       ],
@@ -2379,7 +2379,7 @@
     {
       "asset_id": "still_089",
       "source_shot": 89,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2406,7 +2406,7 @@
     {
       "asset_id": "still_090",
       "source_shot": 90,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2433,7 +2433,7 @@
     {
       "asset_id": "still_091",
       "source_shot": 91,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2460,7 +2460,7 @@
     {
       "asset_id": "still_092",
       "source_shot": 92,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2487,7 +2487,7 @@
     {
       "asset_id": "still_093",
       "source_shot": 93,
-      "exists": false,
+      "exists": true,
       "mood": [
         "reflection"
       ],
@@ -2514,7 +2514,7 @@
     {
       "asset_id": "still_094",
       "source_shot": 94,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2541,7 +2541,7 @@
     {
       "asset_id": "still_095",
       "source_shot": 95,
-      "exists": false,
+      "exists": true,
       "mood": [
         "reflection"
       ],
@@ -2568,7 +2568,7 @@
     {
       "asset_id": "still_096",
       "source_shot": 96,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2595,7 +2595,7 @@
     {
       "asset_id": "still_097",
       "source_shot": 97,
-      "exists": false,
+      "exists": true,
       "mood": [
         "hope"
       ],
@@ -2622,7 +2622,7 @@
     {
       "asset_id": "still_098",
       "source_shot": 98,
-      "exists": false,
+      "exists": true,
       "mood": [
         "tension"
       ],
@@ -2649,7 +2649,7 @@
     {
       "asset_id": "still_099",
       "source_shot": 99,
-      "exists": false,
+      "exists": true,
       "mood": [
         "reflection"
       ],
@@ -2676,7 +2676,7 @@
     {
       "asset_id": "still_100",
       "source_shot": 100,
-      "exists": false,
+      "exists": true,
       "mood": [
         "progress"
       ],

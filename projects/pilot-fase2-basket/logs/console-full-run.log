@@ -1,0 +1,35 @@
+project=pilot-fase2-basket shots=100 script_words=1904
+
+============================================================
+5/7 Black placeholders (100 stills)
+============================================================
+Wrote 100 black stills → /Users/juanmamartinez/FrameFactory-AI/projects/pilot-fase2-basket/flow-import
+
+============================================================
+6/7 Import stills
+============================================================
+{
+  "expected": 100,
+  "ready": 100,
+  "imported_files": 100,
+  "missing": [],
+  "duplicates": [],
+  "unknown_numbers": [],
+  "invalid_files": [],
+  "dimension_issues": [],
+  "source_dir": "/Users/juanmamartinez/FrameFactory-AI/projects/pilot-fase2-basket/flow-import"
+}
+
+============================================================
+7/7 Voice + render
+============================================================
+   ⚠️ Texto muy largo (10557 caracteres), dividiendo en chunks para ElevenLabs...
+   📦 Texto dividido en 3 chunks para ElevenLabs
+   🔄 Generando chunk 1/3 con ElevenLabs (4820 caracteres)...
+   🔄 Generando chunk 2/3 con ElevenLabs (4948 caracteres)...
+   🔄 Generando chunk 3/3 con ElevenLabs (686 caracteres)...
+   🔗 Combinando 3 archivos de audio de ElevenLabs...
+voice → /Users/juanmamartinez/FrameFactory-AI/projects/pilot-fase2-basket/audio/narration.mp3 (129s)
+render → /Users/juanmamartinez/FrameFactory-AI/projects/pilot-fase2-basket/render/final.mp4 (1364s)
+
+✅ VIDEO LISTO: /Users/juanmamartinez/FrameFactory-AI/projects/pilot-fase2-basket/render/final.mp4
