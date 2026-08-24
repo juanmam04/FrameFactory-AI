@@ -3364,6 +3364,46 @@ window.addEventListener("hashchange", () => {
   else go("home");
 });
 
+// Pull-to-refresh: jalar hacia abajo para recargar
+(function initPullToRefresh() {
+  let startY = 0;
+  let currentY = 0;
+  let pulling = false;
+  const threshold = 80;
+  
+  document.addEventListener("touchstart", (e) => {
+    if (window.scrollY === 0 && e.touches.length === 1) {
+      startY = e.touches[0].pageY;
+      pulling = true;
+    }
+  }, { passive: true });
+  
+  document.addEventListener("touchmove", (e) => {
+    if (!pulling || e.touches.length !== 1) return;
+    currentY = e.touches[0].pageY;
+    const pullDistance = currentY - startY;
+    
+    if (pullDistance > threshold && window.scrollY === 0) {
+      document.body.style.overflow = "hidden";
+    }
+  }, { passive: true });
+  
+  document.addEventListener("touchend", () => {
+    if (!pulling) return;
+    
+    const pullDistance = currentY - startY;
+    document.body.style.overflow = "";
+    
+    if (pullDistance > threshold && window.scrollY === 0) {
+      location.reload();
+    }
+    
+    pulling = false;
+    startY = 0;
+    currentY = 0;
+  }, { passive: true });
+})();
+
 boot();
 
 document.addEventListener("visibilitychange", () => {
