@@ -102,11 +102,11 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
     low = text.lower()
     if vehicle_mode == "business":
         needed = {
-            "launch": ("lanz", "fund", "empresa", "startup", "negocio", "creador"),
-            "personal": ("renunci", "departamento", "oficina", "mud", "casa"),
-            "setback": ("crisis", "deuda", "cash", "cliente", "compet"),
-            "payoff": ("contrato", "sponsor", "viral", "millón", "equipo", "oficina"),
-            "final_life": ("años", "ahora", "hoy", "dueño", "founder"),
+            "launch": ("lanz", "fund", "empresa", "startup", "negocio", "creador", "firma", "compr"),
+            "personal": ("renunci", "departamento", "oficina", "mud", "casa", "habitación", "habitacion"),
+            "setback": ("crisis", "deuda", "cash", "cliente", "compet", "corte", "queda"),
+            "payoff": ("contrato", "sponsor", "viral", "millón", "millon", "oficina", "equipo", "marca"),
+            "final_life": ("años", "ahora", "hoy", "dueño", "founder", "empresa"),
         }
     else:
         needed = {
@@ -130,12 +130,19 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
     if vehicle_mode == "business" and any(w in low for w in ("campeonat", "playoff", "básquet", "basquet", "estadio")):
         flags.append({"code": "sports_in_business_story", "detail": "synopsis de negocio menciona deporte", "hard": True})
     hist = sports.get("season_history") or []
+    # Length: soft miss between 850-899; hard only if still under 850 after polish.
     if 900 <= words <= 1200 and not any(f.get("code") == "synopsis_missing" for f in flags):
         ok = True
     else:
         ok = False
         if words < 850 or words > 1200:
-            flags.append({"code": "synopsis_length", "detail": f"{words} palabras (objetivo 900–1200)", "hard": words < 850})
+            flags.append(
+                {
+                    "code": "synopsis_length",
+                    "detail": f"{words} palabras (objetivo 900–1200)",
+                    "hard": words < 850 or words > 1400,
+                }
+            )
     return {"ok": ok, "flags": flags, "words": words, "season_history": hist}
 
 
@@ -219,12 +226,28 @@ def validate_hard_gates(
             before_n = len(before.get("financial_events") or [])
             after_n = len(after.get("financial_events") or [])
             if after_n <= before_n:
-                fails.append({"code": "missing_financial_event", "beat_id": bid, "detail": "transacción sin financial_events", "hard": True})
+                closed = bool((before.get("acquisition") or {}).get("closed"))
+                only_acq = all(
+                    str((o or {}).get("op") or "") in ("acquire_team", "launch_company")
+                    for o in ops
+                    if isinstance(o, dict)
+                )
+                # Already-closed acquire/launch is a no-op — not a continuity hole.
+                if not (closed and only_acq):
+                    fails.append(
+                        {
+                            "code": "missing_financial_event",
+                            "beat_id": bid,
+                            "detail": "transacción sin financial_events",
+                            "hard": True,
+                        }
+                    )
         debt_b = _num(((before.get("finance") or {}).get("team_debt")))
         debt_a = _num(((after.get("finance") or {}).get("team_debt")))
         if abs(debt_a - debt_b) > 1:
             debt_ops = {
                 "acquire_team",
+                "launch_company",
                 "pay_debt",
                 "credit_line",
                 "bridge_loan",

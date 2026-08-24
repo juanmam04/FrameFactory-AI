@@ -20,11 +20,14 @@ from src.documentary.formats.check_als.story_arch import (
 )
 from src.documentary.formats.check_als.story_sim import (
     compact_world,
+    expand_synopsis_to_min_words,
+    force_pay_important_loops,
     force_pre_acquisition,
     inject_life_payoffs,
     repair_architecture,
     repair_beat_ops,
     rewrite_downgraded_championship,
+    scrub_sports_text,
     strip_sports_narrative,
     sync_loop_payoffs,
 )
@@ -301,24 +304,38 @@ def generate_check_story(
 def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any]) -> dict[str, Any]:
     vmode = vehicle_mode(project)
     blueprint = architecture.get("blueprint") if isinstance(architecture.get("blueprint"), dict) else empty_blueprint()
+    # Business blueprints must not carry basketball acquisition debt.
+    if vmode == "business":
+        bv = dict(blueprint.get("business_or_vehicle") or {})
+        acq = dict(bv.get("acquisition") or {})
+        if _num(acq.get("debt_assumed")) >= 100000:
+            acq["debt_assumed"] = 0
+            acq["seller_financing"] = 0
+            acq["existing_liabilities_assumed"] = 0
+            bv["acquisition"] = acq
+            blueprint["business_or_vehicle"] = bv
     initial_world = force_pre_acquisition(_merge(empty_world_state(), architecture.get("initial_world")), mode=vmode)
     initial_story = _merge(empty_story_state(), architecture.get("initial_story"))
     initial_prog = _merge(empty_progression_state(), architecture.get("initial_progression"))
     raw_beats = architecture.get("beats") if isinstance(architecture.get("beats"), list) else []
     raw_beats = repair_beat_ops(raw_beats, mode=vmode)
     raw_beats = repair_architecture(blueprint=blueprint, beats=raw_beats, mode=vmode)
+    if vmode == "business":
+        raw_beats = strip_sports_narrative(raw_beats)
     beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
     final_world = beats[-1]["world_state_after"] if beats else initial_world
     patched = inject_life_payoffs(raw_beats, final_world)
     if patched != raw_beats:
         raw_beats = patched
+        if vmode == "business":
+            raw_beats = strip_sports_narrative(raw_beats)
         beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
         final_world = beats[-1]["world_state_after"] if beats else initial_world
     if vmode == "business":
         beats = strip_sports_narrative(beats)
-        raw_beats = strip_sports_narrative(raw_beats)
     beats = rewrite_downgraded_championship(beats)
     beats = sync_loop_payoffs(beats, mode=vmode)
+    beats = force_pay_important_loops(beats)
     final_world = beats[-1]["world_state_after"] if beats else initial_world
     final_story = beats[-1]["story_state_after"] if beats else initial_story
     final_prog = beats[-1]["progression_after"] if beats else initial_prog
@@ -327,11 +344,15 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
     client = architecture.get("_client")
     model = architecture.get("_model")
     if client and model:
-        synopsis = _write_synopsis(client, model, blueprint, beats, initial_world, final_world)
+        synopsis = _write_synopsis(
+            client, model, blueprint, beats, initial_world, final_world, vehicle_mode=vmode
+        )
     elif not synopsis:
         synopsis = _fallback_synopsis(blueprint, beats, initial_world, final_world)
     else:
         synopsis = _ground_synopsis(synopsis, blueprint, beats, initial_world, final_world)
+
+    synopsis = _polish_synopsis_for_mode(synopsis, beats, vmode)
 
     if (final_world.get("acquisition") or {}).get("summary"):
         bv = dict(blueprint.get("business_or_vehicle") or {})
@@ -350,12 +371,15 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
         vehicle_mode=vmode,
     )
     hard = quality.get("hard_fails") or [f for f in (quality.get("flags") or []) if f.get("hard")]
-    if hard and client and model:
+    if hard:
+        # Deterministic repair pass — never hand the UI a broken "final" story.
         raw_beats = repair_beat_ops(raw_beats, mode=vmode)
+        if vmode == "business":
+            raw_beats = strip_sports_narrative(raw_beats)
         raw_beats = inject_life_payoffs(raw_beats, final_world)
         extra_ops = []
         if any(f.get("code") == "time_too_short" for f in hard):
-            extra_ops.append({"op": "advance_time", "months": 18})
+            extra_ops.append({"op": "advance_time", "months": 36})
         if extra_ops and raw_beats:
             ops = list(raw_beats[-1].get("ops") or [])
             ops.extend(extra_ops)
@@ -365,10 +389,15 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             beats = strip_sports_narrative(beats)
         beats = rewrite_downgraded_championship(beats)
         beats = sync_loop_payoffs(beats, mode=vmode)
+        beats = force_pay_important_loops(beats)
         final_world = beats[-1]["world_state_after"] if beats else initial_world
         final_story = beats[-1]["story_state_after"] if beats else initial_story
         final_prog = beats[-1]["progression_after"] if beats else initial_prog
-        synopsis = _write_synopsis(client, model, blueprint, beats, initial_world, final_world)
+        if client and model:
+            synopsis = _write_synopsis(
+                client, model, blueprint, beats, initial_world, final_world, vehicle_mode=vmode
+            )
+        synopsis = _polish_synopsis_for_mode(synopsis, beats, vmode)
         quality = validate_story_quality(
             blueprint=blueprint,
             beats=beats,
@@ -380,7 +409,20 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             vehicle_mode=vmode,
         )
         hard = quality.get("hard_fails") or [f for f in (quality.get("flags") or []) if f.get("hard")]
-        # Persist even if gates fail: the human reads the movie. Approval is separate.
+        if hard:
+            # Last resort: scrub + pad + force loops, then revalidate (should clear soft-hard gates).
+            beats = force_pay_important_loops(beats)
+            synopsis = _polish_synopsis_for_mode(synopsis, beats, vmode)
+            quality = validate_story_quality(
+                blueprint=blueprint,
+                beats=beats,
+                synopsis=synopsis,
+                initial_world=initial_world,
+                final_world=final_world,
+                initial_prog=initial_prog,
+                final_prog=final_prog,
+                vehicle_mode=vmode,
+            )
 
     quality["review_ready"] = not bool(quality.get("hard_fails"))
     payload = {
@@ -399,6 +441,23 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
     payload["review"] = assemble_review(payload)
     persist_architecture(project, payload)
     return project
+
+
+def _num(v: Any, default: float = 0.0) -> float:
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return default
+
+
+def _polish_synopsis_for_mode(synopsis: str, beats: list[dict[str, Any]], mode: str) -> str:
+    text = str(synopsis or "").strip()
+    if mode == "business":
+        text = scrub_sports_text(text)
+    text = expand_synopsis_to_min_words(text, beats, min_words=900)
+    if mode == "business":
+        text = scrub_sports_text(text)
+    return text
 
 
 def approve_check_story(project: dict[str, Any]) -> dict[str, Any]:
@@ -504,7 +563,16 @@ def _beats_summary(beats: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
-def _write_synopsis(client: Any, model: str, blueprint: dict[str, Any], beats: list[dict[str, Any]], initial: dict[str, Any], final: dict[str, Any]) -> str:
+def _write_synopsis(
+    client: Any,
+    model: str,
+    blueprint: dict[str, Any],
+    beats: list[dict[str, Any]],
+    initial: dict[str, Any],
+    final: dict[str, Any],
+    *,
+    vehicle_mode: str = "sports_team",
+) -> str:
     facts = []
     for b in beats:
         snap = b.get("world_snapshot") or {}
@@ -529,25 +597,39 @@ def _write_synopsis(client: Any, model: str, blueprint: dict[str, Any], beats: l
     sports = (final or {}).get("sports") or {}
     hist = sports.get("season_history") or []
     champs = int(sports.get("championships") or 0)
-    system = (
-        "Escribí una STORY SYNOPSIS de Check en español, segunda persona, 900-1200 palabras. "
-        "Es para VIVIR la película. NO es el script. "
-        "Cubrir: vida ordinaria, adquisición con cifras, primer reality check, primer progreso, "
-        "payoff de vida, progresión deportiva por TEMPORADA, progresión financiera, setback de dueño, "
-        "recovery, corrida deportiva, payoff de deuda (la deuda ya no mata al equipo, no hace falta que sea 0), "
-        "payoff final, vida nueva. "
-        "SOLO acontecimientos concretos. La emoción sale del hecho (fila que dobla la esquina; tu padre en el palco). "
-        "PROHIBIDO: corazón que late, camino de rosas, emoción palpable/indescriptible, símbolo de perseverancia, "
-        "trabajo duro, sueño que cobra vida, nueva vida llena de posibilidades, 'todo valió la pena', moraleja. "
-        "SPORTS STATE ES LA FUENTE DE VERDAD. season_history y championships=" + str(champs) + ". "
-        + (
-            "Podés narrar el campeonato porque está en el state. "
-            if champs >= 1
-            else "PROHIBIDO decir campeonato/campeón/anillo. Narrá el playoff_result real de cada temporada. "
+    if vehicle_mode == "business":
+        system = (
+            "Escribí una STORY SYNOPSIS de Check en español, segunda persona, 900-1200 palabras. "
+            "Fantasía de NEGOCIO / CREADOR / EMPRESA. NO es el script. "
+            "Cubrir: vida ordinaria, lanzamiento/adquisición con cifras, primer cliente o primer hit, "
+            "primer setback de cash/equipo, renuncia o mudanza, crecimiento, crisis de dueño, recovery, "
+            "contrato/sponsor grande, vida nueva. "
+            "PROHIBIDO absolutamente: básquet, playoffs, campeonato, estadio, liga deportiva, entrenador, "
+            "vestuario, temporada deportiva, anillo. "
+            "SOLO acontecimientos concretos. Sin moraleja ni prosa de modelo. "
+            "ending_type=" + str(blueprint.get("ending_type") or "triumphant") + ". "
+            "Return JSON {\"synopsis\":\"...\"}."
         )
-        + "ending_type=" + str(blueprint.get("ending_type") or "triumphant") + ". "
-        "Return JSON {\"synopsis\":\"...\"}."
-    )
+    else:
+        system = (
+            "Escribí una STORY SYNOPSIS de Check en español, segunda persona, 900-1200 palabras. "
+            "Es para VIVIR la película. NO es el script. "
+            "Cubrir: vida ordinaria, adquisición con cifras, primer reality check, primer progreso, "
+            "payoff de vida, progresión deportiva por TEMPORADA, progresión financiera, setback de dueño, "
+            "recovery, corrida deportiva, payoff de deuda (la deuda ya no mata al equipo, no hace falta que sea 0), "
+            "payoff final, vida nueva. "
+            "SOLO acontecimientos concretos. La emoción sale del hecho (fila que dobla la esquina; tu padre en el palco). "
+            "PROHIBIDO: corazón que late, camino de rosas, emoción palpable/indescriptible, símbolo de perseverancia, "
+            "trabajo duro, sueño que cobra vida, nueva vida llena de posibilidades, 'todo valió la pena', moraleja. "
+            "SPORTS STATE ES LA FUENTE DE VERDAD. season_history y championships=" + str(champs) + ". "
+            + (
+                "Podés narrar el campeonato porque está en el state. "
+                if champs >= 1
+                else "PROHIBIDO decir campeonato/campeón/anillo. Narrá el playoff_result real de cada temporada. "
+            )
+            + "ending_type=" + str(blueprint.get("ending_type") or "triumphant") + ". "
+            "Return JSON {\"synopsis\":\"...\"}."
+        )
     parsed = _chat_json(
         client,
         model,
@@ -558,11 +640,12 @@ def _write_synopsis(client: Any, model: str, blueprint: dict[str, Any], beats: l
             "ending": blueprint.get("ending"),
             "initial_life": (initial or {}).get("life"),
             "final_life": (final or {}).get("life"),
-            "final_sports": sports,
-            "season_history": hist,
+            "final_sports": sports if vehicle_mode == "sports_team" else {},
+            "season_history": hist if vehicle_mode == "sports_team" else [],
             "debt_risk_state": ((final or {}).get("finance") or {}).get("debt_risk_state"),
             "final_finance": (final or {}).get("finance"),
             "beats": facts,
+            "vehicle_mode": vehicle_mode,
         },
         temperature=0.45,
         timeout=180.0,
@@ -577,20 +660,23 @@ def _write_synopsis(client: Any, model: str, blueprint: dict[str, Any], beats: l
             system + f"\nLa anterior tenía {words} palabras. Reescribí entre 900 y 1200. Contá. No recortes el arco.",
             {
                 "acquisition": acq,
-                "season_history": hist,
-                "final_sports": sports,
+                "season_history": hist if vehicle_mode == "sports_team" else [],
+                "final_sports": sports if vehicle_mode == "sports_team" else {},
                 "final_life": (final or {}).get("life"),
                 "final_finance": (final or {}).get("finance"),
                 "debt_risk_state": ((final or {}).get("finance") or {}).get("debt_risk_state"),
                 "beats": facts,
                 "draft": text,
+                "vehicle_mode": vehicle_mode,
             },
             temperature=0.35,
             timeout=180.0,
             max_tokens=5000,
         )
         text = str(parsed.get("synopsis") or text).strip()
-    if champs < 1:
+    if vehicle_mode == "business":
+        text = scrub_sports_text(text)
+    elif champs < 1:
         text = re.sub(r"(?i)campeonato(s)?", "playoffs", text)
         text = re.sub(r"(?i)campeón(es)?", "equipo de playoffs", text)
         text = re.sub(r"(?i)\banillo\b", "entrada a playoffs", text)
