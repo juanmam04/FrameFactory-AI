@@ -21,18 +21,20 @@
 
 * { box-sizing: border-box; }
 html {
-  overflow-x: clip;
+  overflow-x: hidden;
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  width: 100%;
+  max-width: 100vw;
 }
 html, body {
   margin: 0;
   width: 100%;
-  max-width: 100%;
+  max-width: 100vw;
   min-height: 100%;
   min-height: 100dvh;
-  overflow-x: clip;
+  overflow-x: hidden;
   overscroll-behavior: none;
   background:
     radial-gradient(900px 420px at 10% -10%, rgba(15, 118, 110, 0.08), transparent 55%),
@@ -45,10 +47,10 @@ html, body {
 }
 #app {
   width: 100%;
-  max-width: 100%;
+  max-width: 100vw;
   min-height: 100dvh;
   min-height: 100svh;
-  overflow-x: clip;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 img, video, audio, svg { max-width: 100%; }
@@ -917,15 +919,17 @@ label.field {
   .top-nav::-webkit-scrollbar { display: none; }
   .nav-link { white-space: nowrap; padding: 0.5rem 0.8rem; }
   .stage {
-    width: 100%;
-    max-width: 100%;
-    padding: 1rem 0.9rem 7rem;
-    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 1rem 0.75rem 7rem !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
   }
   .workspace {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
   }
   .ws-line { display: none; }
   .ff-video-split {
@@ -944,32 +948,39 @@ label.field {
     grid-template-columns: 1fr;
   }
   .panel {
-    width: 100%;
-    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
   }
   .actions {
-    flex-direction: column;
+    flex-direction: column !important;
     gap: 0.6rem;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   .actions .btn {
     width: 100% !important;
     max-width: 100% !important;
-    text-align: center;
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    box-sizing: border-box;
+    text-align: center !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    box-sizing: border-box !important;
+    padding: 0.75rem 0.6rem !important;
+    font-size: 0.85rem !important;
   }
 }
 
 @media (max-width: 640px) {
   .panel,
   .day-card { 
-    padding: 1.05rem 0.95rem; 
+    padding: 1.05rem 0.85rem !important;
     border-radius: 18px;
-    width: 100%;
-    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden;
   }
   .h1 { font-size: 1.55rem; }
   .lead { font-size: 0.95rem; max-width: none; }
@@ -992,21 +1003,23 @@ label.field {
   }
   .ep { width: 48px; height: 48px; border-radius: 14px; }
   .actions { 
-    gap: 0.5rem;
-    flex-direction: column;
-    width: 100%;
+    gap: 0.5rem !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   .actions .btn {
     width: 100% !important;
     max-width: 100% !important;
-    text-align: center;
+    text-align: center !important;
     min-height: 46px;
-    padding: 0.85rem 0.8rem;
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    box-sizing: border-box;
-    font-size: 0.9rem;
+    padding: 0.75rem 0.6rem !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    box-sizing: border-box !important;
+    font-size: 0.82rem !important;
+    line-height: 1.3 !important;
   }
   .slot-actions .btn,
   .slot-upload {
@@ -1015,7 +1028,7 @@ label.field {
     min-height: 46px;
   }
   .btn { 
-    padding: 0.85rem 0.8rem;
+    padding: 0.75rem 0.6rem;
     box-sizing: border-box;
   }
   .stepper {
