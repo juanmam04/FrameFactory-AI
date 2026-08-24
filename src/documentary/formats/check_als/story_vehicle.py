@@ -86,14 +86,6 @@ def beats_system(mode: str) -> str:
 
 _BLUEPRINT_SPORTS = """
 Eres Story Architect de Check: ficción aspiracional en ESPAÑOL. El espectador ES el protagonista (tú/te).
-Simulación de vida comprando/construyendo un EQUIPO DE BÁSQUET profesional ficticio.
-[... rest same as before - I'll import from story_architect or duplicate key parts]
-""".strip()
-
-# Full prompts inlined below (sports = existing, business = new)
-
-_BLUEPRINT_SPORTS = """
-Eres Story Architect de Check: ficción aspiracional en ESPAÑOL. El espectador ES el protagonista (tú/te).
 Check NO es moraleja. Es simulación de vida construyendo un EQUIPO DE BÁSQUET ficticio.
 Empieza ANTES de ser dueño. ownership inicial = 0. Adquisición con cifras concretas.
 3-5 temporadas de básquet simuladas. La vida personal CAMBIA con el equipo.
