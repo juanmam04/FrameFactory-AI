@@ -179,12 +179,11 @@ def generate_concept_packages(
     story_select_count: int | None = None,
 ) -> list[dict[str, Any]]:
     """Public API: return up to `count` eligible ranked concepts (may be fewer)."""
-    # Studio /api/ideas uses count≈5. Cap the pipeline so it returns instead of hanging.
     target = max(1, int(count))
-    if raw_seed_count is None and target < 10:
-        raw_seed_count = max(target * 2, 8)
-    if story_select_count is None and target < 10:
-        story_select_count = min(target + 2, 6)
+    if raw_seed_count is None:
+        raw_seed_count = min(28, max(18, target + 8))
+    if story_select_count is None:
+        story_select_count = min(14, max(10, target))
     result = generate_concepts_v2(
         profile,
         prior_videos=prior_videos,
@@ -194,7 +193,26 @@ def generate_concept_packages(
         raw_seed_count=raw_seed_count,
         story_select_count=story_select_count,
     )
-    return list(result.get("eligible_ranked") or [])[:target]
+    ranked = list(result.get("eligible_ranked") or [])
+    if len(ranked) >= target:
+        return ranked[:target]
+    seen = {str(p.get("id") or "") for p in ranked if p.get("id")}
+    for pool_key in ("eligible", "generated"):
+        pool = list(result.get(pool_key) or [])
+        pool.sort(
+            key=lambda x: float(x.get("rank_score") or x.get("overall_score") or x.get("story_score") or 0),
+            reverse=True,
+        )
+        for pkg in pool:
+            pid = str(pkg.get("id") or "")
+            if pid and pid in seen:
+                continue
+            ranked.append(pkg)
+            if pid:
+                seen.add(pid)
+            if len(ranked) >= target:
+                return ranked[:target]
+    return ranked[:target]
 
 
 def generate_concepts_v2(
@@ -219,20 +237,14 @@ def generate_concepts_v2(
     cats = _categories(p, categories)
     prior = list(prior_videos or [])
     target = max(1, int(count))
-    # Studio asks for ~5 concepts. Keep the LLM budget small so /api/ideas
-    # finishes under Vercel maxDuration (300s) instead of spinning forever.
     if raw_seed_count is not None:
         seed_target = int(raw_seed_count)
-    elif target >= 10:
-        seed_target = 40
     else:
-        seed_target = max(target * 2, 8)
+        seed_target = min(28, max(18, target + 8))
     if story_select_count is not None:
         shortlist_n = int(story_select_count)
-    elif target >= 10:
-        shortlist_n = 15
     else:
-        shortlist_n = min(target + 2, 6)
+        shortlist_n = min(14, max(10, target))
     stats: dict[str, Any] = {
         "raw_requested": seed_target,
         "raw_generated": 0,
@@ -270,7 +282,7 @@ def generate_concepts_v2(
     stats["raw_unique"] = len(seeds)
 
     stories: list[dict[str, Any]] = []
-    eligible_needed = shortlist_n + (1 if target < 10 else 3)
+    eligible_needed = min(len(seeds), shortlist_n + 2)
     for idx, seed in enumerate(seeds, 1):
         print(f"[v2] story core {idx}/{len(seeds)}", flush=True)
         story = _discover_story_resilient(client, model, seed, stats)
@@ -291,6 +303,12 @@ def generate_concepts_v2(
             break
 
     eligible_stories = [s for s in stories if s.get("story_eligible")]
+    if not eligible_stories and stories:
+        eligible_stories = sorted(
+            stories,
+            key=lambda x: float(x.get("story_score") or 0),
+            reverse=True,
+        )
     shortlist, skipped = select_diverse_stories(eligible_stories, shortlist_n)
     stats["semantic_duplicates_removed"] = int(stats.get("semantic_duplicates_removed") or 0) + skipped
     stats["story_shortlist"] = len(shortlist)

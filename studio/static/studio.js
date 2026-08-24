@@ -12,11 +12,54 @@ const state = {
   view: "home",
   bootstrap: null,
   ideas: [],
-  contentFormat: "documentary",
+  contentFormat: "check_als",
+  pickedConceptId: "",
+  activeProjectId: "",
   project: null,
   shots: null,
   visualPlan: null,
 };
+
+const IDEAS_CACHE_KEY = "ff_check_ideas_v1";
+
+function saveIdeasCache() {
+  try {
+    sessionStorage.setItem(
+      IDEAS_CACHE_KEY,
+      JSON.stringify({
+        ideas: state.ideas,
+        contentFormat: state.contentFormat,
+        pickedConceptId: state.pickedConceptId,
+        activeProjectId: state.activeProjectId,
+      })
+    );
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function loadIdeasCache() {
+  try {
+    const raw = sessionStorage.getItem(IDEAS_CACHE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.ideas) && data.ideas.length) state.ideas = data.ideas;
+    if (data.contentFormat) state.contentFormat = data.contentFormat;
+    if (data.pickedConceptId) state.pickedConceptId = data.pickedConceptId;
+    if (data.activeProjectId) state.activeProjectId = data.activeProjectId;
+  } catch {
+    /* ignore corrupt cache */
+  }
+}
+
+function activeInProgressProject() {
+  const projects = state.bootstrap?.projects || [];
+  if (state.activeProjectId) {
+    const hit = projects.find((p) => p.id === state.activeProjectId);
+    if (hit && hit.status !== "complete") return hit;
+  }
+  return projects.find((p) => p.status !== "complete") || null;
+}
 
 const stage = () => document.getElementById("stage");
 const setStageMode = (mode) => {
@@ -851,7 +894,8 @@ async function boot() {
       state.bootstrap?.formats?.active ||
       state.bootstrap?.channel?.content_format ||
       state.contentFormat ||
-      "documentary";
+      "check_als";
+    loadIdeasCache();
     renderCreds(state.bootstrap.credentials);
     const note = state.bootstrap?.workspace?.sync_note;
     if (note) toast(note, 5000);
@@ -904,6 +948,9 @@ function renderHome() {
   setStageMode("home");
   const b = state.bootstrap;
   const s = b.stats;
+  const fmt = b.formats?.active || b.channel?.content_format || "check_als";
+  const isCheck = fmt === "check_als";
+  const active = activeInProgressProject();
   const goal = Math.max(1, s.goal || 100);
   const pct = Math.min(100, Math.round((s.day / goal) * 100));
   const ringC = 2 * Math.PI * 54;
@@ -916,7 +963,11 @@ function renderHome() {
       <div class="panel soft">
         <p class="kicker">Channel</p>
         <h1 class="h1">${esc(b.channel.name)}</h1>
-        <p class="lead">${esc(b.channel.tagline)} One true story a day. Research → script → Flow → voice → render.</p>
+        <p class="lead">${
+          isCheck
+            ? "Simulaciones de vida aspiracional en segunda persona. Concepto → arquitectura → script → visuales → voz."
+            : esc(b.channel.tagline) + " One true story a day. Research → script → Flow → voice → render."
+        }</p>
         <p class="lead ws-line" style="font-size:0.9rem;opacity:.85">
           Datos: <code>${esc((b.workspace && b.workspace.projects_dir) || "projects/")}</code>
           ${b.workspace && b.workspace.supabase
@@ -926,7 +977,7 @@ function renderHome() {
               : " · solo esta PC"}
         </p>
         <div class="actions">
-          <button class="btn btn-primary" id="cta-new">Create today's video</button>
+          <button class="btn btn-primary" id="cta-new">${isCheck ? "Elegir fantasía de vida" : "Create today's video"}</button>
           <button class="btn btn-ghost" id="cta-lib">Browse library</button>
           ${b.workspace && b.workspace.supabase ? `
           <button class="btn btn-ghost" id="cta-push">Subir a la nube</button>
@@ -967,6 +1018,19 @@ function renderHome() {
         </div>
       </div>
     </section>
+    ${
+      active
+        ? `<div class="panel" style="margin-bottom:1.2rem;border-left:4px solid var(--accent)">
+          <p class="kicker">Video en producción</p>
+          <h3>${esc(active.title)}</h3>
+          <p class="lead">Episodio ${String(active.episode_number).padStart(3, "0")} · ${esc(active.ui_step || "in progress")}</p>
+          <div class="actions">
+            <button class="btn btn-primary" data-open="${esc(active.id)}">Continuar este video</button>
+            <button class="btn btn-ghost" id="cta-concepts">Ver conceptos</button>
+          </div>
+        </div>`
+        : ""
+    }
     <div class="section-head">
       <div>
         <h2>Recent episodes</h2>
@@ -983,6 +1047,16 @@ function renderHome() {
     location.hash = "library";
     go("library");
   };
+  const ctaConcepts = $("#cta-concepts");
+  if (ctaConcepts) {
+    ctaConcepts.onclick = () => {
+      location.hash = "ideas";
+      go("ideas");
+    };
+  }
+  stage().querySelectorAll("[data-open]").forEach((btn) => {
+    btn.onclick = () => openProject(btn.dataset.open);
+  });
   const syncMsg = $("#sync-msg");
   const bindSync = (id, path, label) => {
     const btn = $(id);
@@ -1048,16 +1122,28 @@ function renderHome() {
 
 async function renderIdeas() {
   setStageMode("home");
-  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  loadIdeasCache();
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "check_als";
   const isCheck = fmt === "check_als";
+  const active = activeInProgressProject();
   stage().innerHTML = `
     <p class="kicker">${isCheck ? "Check · Concept" : "New episode"}</p>
-    <h1 class="h1">${isCheck ? "Pick a life fantasy" : "Pick a story engine"}</h1>
+    <h1 class="h1">${isCheck ? "Elegí una fantasía de vida" : "Pick a story engine"}</h1>
     <p class="lead">${
       isCheck
-        ? "Ranked Aspirational Life Simulations. Inspect title, thumbnail concept, hook and scores — then choose one."
+        ? "Simulaciones aspiracionales rankeadas. Título, thumbnail, hook y scores — elegí una y seguí produciendo sin perder la lista."
         : "Five true-story angles. Choose one, or drop your own topic."
     }</p>
+    ${
+      active
+        ? `<div class="panel" style="margin-bottom:1rem;border-left:4px solid var(--accent)">
+          <p class="kicker">Video principal en curso</p>
+          <h3>${esc(active.title)}</h3>
+          <p class="lead">Ep. ${String(active.episode_number).padStart(3, "0")} · ${esc(active.ui_step || "in progress")}</p>
+          <button class="btn btn-primary" data-open-active="${esc(active.id)}">Abrir este episodio</button>
+        </div>`
+        : ""
+    }
     <div class="actions" style="margin-bottom:1.2rem">
       <label class="tag" style="display:inline-flex;gap:0.4rem;align-items:center">
         Format
@@ -1066,7 +1152,7 @@ async function renderIdeas() {
           <option value="documentary"${!isCheck ? " selected" : ""}>Documentary</option>
         </select>
       </label>
-      <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generate concepts" : "Generate ideas"}</button>
+      <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generar conceptos (10)" : "Generate ideas"}</button>
       <button class="btn btn-ghost" id="manual">I have a topic</button>
       <button class="btn btn-ghost" id="back-home">Back</button>
     </div>
@@ -1087,6 +1173,8 @@ async function renderIdeas() {
     location.hash = "";
     go("home");
   };
+  const openActive = $("[data-open-active]");
+  if (openActive) openActive.onclick = () => openProject(openActive.dataset.openActive);
   $("#fmt-select").onchange = async () => {
     const next = $("#fmt-select").value;
     try {
@@ -1101,6 +1189,8 @@ async function renderIdeas() {
         if (data.channel) state.bootstrap.channel = { ...(state.bootstrap.channel || {}), ...data.channel };
       }
       state.ideas = [];
+      state.pickedConceptId = "";
+      saveIdeasCache();
       renderIdeas();
     } catch (e) {
       toast(e.message);
@@ -1134,26 +1224,32 @@ async function renderIdeas() {
   else {
     $("#ideas").innerHTML = `
       <div class="panel">
-        <p class="lead">No ${isCheck ? "concepts" : "ideas"} yet. Press <strong>Generate</strong> when you want suggestions — it does not run automatically.</p>
+        <p class="lead">Todavía no hay ${isCheck ? "conceptos" : "ideas"}. Tocá <strong>Generar conceptos</strong> — trae ~10 fantasías rankeadas (tarda 1–3 min).</p>
       </div>`;
   }
 }
 
 async function loadIdeas(force) {
-  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "check_als";
+  const want = fmt === "check_als" ? 10 : 5;
   try {
-    const data = await withBusy(fmt === "check_als" ? "Scoring life fantasies…" : "Finding story engines…", () =>
+    const data = await withBusy(fmt === "check_als" ? "Generando fantasías de vida…" : "Finding story engines…", () =>
       api("/api/ideas", {
         method: "POST",
-        body: JSON.stringify({ count: 5, content_format: fmt }),
-        // Under Vercel maxDuration (300s). Without this the spinner never ends if the function dies.
+        body: JSON.stringify({ count: want, content_format: fmt }),
         timeoutMs: 240000,
       })
     );
     state.contentFormat = data.content_format || fmt;
     state.ideas = data.concepts?.length ? data.concepts : data.ideas || [];
+    saveIdeasCache();
     paintIdeas();
-    if (force) toast(state.contentFormat === "check_als" ? "Concepts ready" : "Ideas ready");
+    if (!state.ideas.length) {
+      $("#ideas").innerHTML = `<div class="notice bad">No llegaron conceptos. Revisá OPENAI_API_KEY y probá de nuevo.</div>`;
+      toast("Sin conceptos — probá otra vez");
+      return;
+    }
+    if (force) toast(fmt === "check_als" ? `${state.ideas.length} conceptos listos` : "Ideas ready");
   } catch (e) {
     toast(e.message);
     $("#ideas").innerHTML = `<div class="notice bad">${esc(e.message)}</div>`;
@@ -1163,7 +1259,7 @@ async function loadIdeas(force) {
 function paintIdeas() {
   const host = $("#ideas");
   if (!host) return;
-  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "check_als";
   if (fmt === "check_als") {
     paintCheckConcepts(host);
     return;
@@ -1197,7 +1293,8 @@ function paintIdeas() {
           })
         );
         state.project = data.project;
-        state.ideas = [];
+        state.activeProjectId = data.project.id;
+        saveIdeasCache();
         location.hash = `project/${data.project.id}`;
         go("project");
         await refreshBootstrap();
@@ -1211,6 +1308,7 @@ function paintIdeas() {
 function paintCheckConcepts(host) {
   const sorted = [...state.ideas].sort((a, b) => (b.overall_score || 0) - (a.overall_score || 0));
   state.ideas = sorted;
+  saveIdeasCache();
   host.innerHTML = sorted
     .map((c, i) => {
       const scores = c.scores || {};
@@ -1220,9 +1318,12 @@ function paintCheckConcepts(host) {
         .join("");
       const thumb = c.thumbnail_concept || {};
       const coh = c.coherence || {};
+      const cid = String(c.id || "");
+      const isPicked = state.pickedConceptId && cid && state.pickedConceptId === cid;
       return `
-      <article class="idea idea-check">
+      <article class="idea idea-check${isPicked ? " idea-picked" : ""}"${isPicked ? ' style="outline:2px solid var(--accent);outline-offset:2px"' : ""}>
         <div class="tags" style="margin-bottom:0.4rem">
+          ${isPicked ? '<span class="tag" style="background:var(--accent);color:#fff">Video principal</span>' : ""}
           <span class="tag">${esc(c.story_category || "—")}</span>
           <span class="tag">score ${esc(c.overall_score ?? "—")}</span>
           <span class="tag">${esc(c.ending_direction || "")}</span>
@@ -1244,7 +1345,7 @@ function paintCheckConcepts(host) {
         </details>
         <div class="tags">${scoreBits}</div>
         <div class="actions">
-          <button class="btn btn-primary" data-pick="${i}">Select concept</button>
+          <button class="btn btn-primary" data-pick="${i}">${isPicked ? "Abrir episodio" : "Elegir este concepto"}</button>
           <button class="btn btn-ghost" data-regen="title" data-i="${i}">Regen title</button>
           <button class="btn btn-ghost" data-regen="thumbnail" data-i="${i}">Regen thumb</button>
           <button class="btn btn-ghost" data-regen="hook" data-i="${i}">Regen hook</button>
@@ -1257,18 +1358,26 @@ function paintCheckConcepts(host) {
   host.querySelectorAll("[data-pick]").forEach((btn) => {
     btn.onclick = async () => {
       const concept = state.ideas[Number(btn.dataset.pick)];
+      const cid = String(concept?.id || "");
+      if (state.pickedConceptId && cid && state.pickedConceptId === cid && state.activeProjectId) {
+        await openProject(state.activeProjectId);
+        return;
+      }
       try {
-        const data = await withBusy("Creating Check episode…", () =>
+        const data = await withBusy("Creando episodio Check…", () =>
           api("/api/projects", {
             method: "POST",
             body: JSON.stringify({ concept, content_format: "check_als" }),
           })
         );
         state.project = data.project;
-        state.ideas = [];
+        state.pickedConceptId = cid || state.pickedConceptId;
+        state.activeProjectId = data.project.id;
+        saveIdeasCache();
         location.hash = `project/${data.project.id}`;
         go("project");
         await refreshBootstrap();
+        toast("Episodio creado — la lista de conceptos sigue en Ideas");
       } catch (e) {
         toast(e.message);
       }
@@ -1287,6 +1396,7 @@ function paintCheckConcepts(host) {
           })
         );
         state.ideas[i] = data.package;
+        saveIdeasCache();
         paintIdeas();
         toast(`${part} updated`);
       } catch (e) {
@@ -3203,7 +3313,7 @@ async function refreshBootstrap() {
     state.bootstrap?.formats?.active ||
     state.bootstrap?.channel?.content_format ||
     state.contentFormat ||
-    "documentary";
+    "check_als";
   if (prev && prev.openai?.status && prev.openai.status !== "unchecked") {
     state.bootstrap.credentials = prev;
   }

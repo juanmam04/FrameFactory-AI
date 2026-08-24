@@ -12,11 +12,54 @@ const state = {
   view: "home",
   bootstrap: null,
   ideas: [],
-  contentFormat: "documentary",
+  contentFormat: "check_als",
+  pickedConceptId: "",
+  activeProjectId: "",
   project: null,
   shots: null,
   visualPlan: null,
 };
+
+const IDEAS_CACHE_KEY = "ff_check_ideas_v1";
+
+function saveIdeasCache() {
+  try {
+    sessionStorage.setItem(
+      IDEAS_CACHE_KEY,
+      JSON.stringify({
+        ideas: state.ideas,
+        contentFormat: state.contentFormat,
+        pickedConceptId: state.pickedConceptId,
+        activeProjectId: state.activeProjectId,
+      })
+    );
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function loadIdeasCache() {
+  try {
+    const raw = sessionStorage.getItem(IDEAS_CACHE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.ideas) && data.ideas.length) state.ideas = data.ideas;
+    if (data.contentFormat) state.contentFormat = data.contentFormat;
+    if (data.pickedConceptId) state.pickedConceptId = data.pickedConceptId;
+    if (data.activeProjectId) state.activeProjectId = data.activeProjectId;
+  } catch {
+    /* ignore corrupt cache */
+  }
+}
+
+function activeInProgressProject() {
+  const projects = state.bootstrap?.projects || [];
+  if (state.activeProjectId) {
+    const hit = projects.find((p) => p.id === state.activeProjectId);
+    if (hit && hit.status !== "complete") return hit;
+  }
+  return projects.find((p) => p.status !== "complete") || null;
+}
 
 const stage = () => document.getElementById("stage");
 const setStageMode = (mode) => {
@@ -469,7 +512,7 @@ function pad3(n) {
   return String(n).padStart(3, "0");
 }
 
-function slotCard(v, projectId, previewSrc = "") {
+function slotCard(v, projectId, previewSrc = "", reuse = null, isCheckFlow = false) {
   const n = Number(v.number);
   const id = pad3(n);
   const has = String(v.status || "").toUpperCase() === "READY";
@@ -477,10 +520,34 @@ function slotCard(v, projectId, previewSrc = "") {
   const kind = "Google Flow";
   const src = previewSrc || `/api/projects/${encodeURIComponent(projectId)}/images/${n}?v=${IMG_BOOT}`;
   const local = previewSrc ? ` data-local="1"` : "";
+  const st = String((reuse && reuse.status) || "").toUpperCase();
+  let reuseLabel = "";
+  if (isCheckFlow) {
+    if (has || st === "EXACT") reuseLabel = "EXACT";
+    else if (st === "REUSED") reuseLabel = "FALLBACK";
+    else if (st === "REVIEW_REUSE") reuseLabel = "REVIEW";
+    else if (st.includes("MISSING")) reuseLabel = "MISSING EXACT";
+  } else {
+    reuseLabel = st === "EXACT" ? "EXACT" : st === "REUSED" ? "REUSED" : st === "REVIEW_REUSE" ? "REVIEW" : st.includes("MISSING") ? "MISSING" : "";
+  }
+  const reuseMeta = reuseLabel
+    ? `<div class="ff-episode-meta"><strong>${reuseLabel}</strong>${
+        reuse && reuse.assigned_asset && reuseLabel !== "EXACT" && !has
+          ? ` · ${esc(String(reuse.assigned_asset))}`
+          : ""
+      }${reuse && reuse.score && (reuseLabel === "FALLBACK" || reuseLabel === "REVIEW") ? ` · ${esc(String(reuse.score))}` : ""}${
+        reuse && reuse.reason && reuseLabel !== "EXACT" && !has ? ` · ${esc(String(reuse.reason).slice(0, 90))}` : ""
+      }</div>${
+        reuseLabel === "FALLBACK" || reuseLabel === "REVIEW"
+          ? `<button type="button" class="btn btn-ghost" data-disable-reuse="${n}">No reutilizar</button>`
+          : ""
+      }`
+    : "";
   return `
     <article class="shot" data-slot="${n}">
       <strong>${esc(v.moment_label ? `${v.moment_label} · foto` : "Imagen")} ${id}</strong>
       <div class="ff-episode-meta">${has ? "✓ ya está" : "○ falta"} · ${esc(kind)}${v.moment_label ? " · sin orden" : ""}</div>
+      ${reuseMeta}
       <div class="ff-episode-meta">${esc(String(desc).slice(0, 240))}</div>
       <div class="slot-frame">
         ${has
@@ -827,7 +894,8 @@ async function boot() {
       state.bootstrap?.formats?.active ||
       state.bootstrap?.channel?.content_format ||
       state.contentFormat ||
-      "documentary";
+      "check_als";
+    loadIdeasCache();
     renderCreds(state.bootstrap.credentials);
     const note = state.bootstrap?.workspace?.sync_note;
     if (note) toast(note, 5000);
@@ -880,6 +948,9 @@ function renderHome() {
   setStageMode("home");
   const b = state.bootstrap;
   const s = b.stats;
+  const fmt = b.formats?.active || b.channel?.content_format || "check_als";
+  const isCheck = fmt === "check_als";
+  const active = activeInProgressProject();
   const goal = Math.max(1, s.goal || 100);
   const pct = Math.min(100, Math.round((s.day / goal) * 100));
   const ringC = 2 * Math.PI * 54;
@@ -892,7 +963,11 @@ function renderHome() {
       <div class="panel soft">
         <p class="kicker">Channel</p>
         <h1 class="h1">${esc(b.channel.name)}</h1>
-        <p class="lead">${esc(b.channel.tagline)} One true story a day. Research → script → Flow → voice → render.</p>
+        <p class="lead">${
+          isCheck
+            ? "Simulaciones de vida aspiracional en segunda persona. Concepto → arquitectura → script → visuales → voz."
+            : esc(b.channel.tagline) + " One true story a day. Research → script → Flow → voice → render."
+        }</p>
         <p class="lead ws-line" style="font-size:0.9rem;opacity:.85">
           Datos: <code>${esc((b.workspace && b.workspace.projects_dir) || "projects/")}</code>
           ${b.workspace && b.workspace.supabase
@@ -902,7 +977,7 @@ function renderHome() {
               : " · solo esta PC"}
         </p>
         <div class="actions">
-          <button class="btn btn-primary" id="cta-new">Create today's video</button>
+          <button class="btn btn-primary" id="cta-new">${isCheck ? "Elegir fantasía de vida" : "Create today's video"}</button>
           <button class="btn btn-ghost" id="cta-lib">Browse library</button>
           ${b.workspace && b.workspace.supabase ? `
           <button class="btn btn-ghost" id="cta-push">Subir a la nube</button>
@@ -943,6 +1018,19 @@ function renderHome() {
         </div>
       </div>
     </section>
+    ${
+      active
+        ? `<div class="panel" style="margin-bottom:1.2rem;border-left:4px solid var(--accent)">
+          <p class="kicker">Video en producción</p>
+          <h3>${esc(active.title)}</h3>
+          <p class="lead">Episodio ${String(active.episode_number).padStart(3, "0")} · ${esc(active.ui_step || "in progress")}</p>
+          <div class="actions">
+            <button class="btn btn-primary" data-open="${esc(active.id)}">Continuar este video</button>
+            <button class="btn btn-ghost" id="cta-concepts">Ver conceptos</button>
+          </div>
+        </div>`
+        : ""
+    }
     <div class="section-head">
       <div>
         <h2>Recent episodes</h2>
@@ -959,6 +1047,16 @@ function renderHome() {
     location.hash = "library";
     go("library");
   };
+  const ctaConcepts = $("#cta-concepts");
+  if (ctaConcepts) {
+    ctaConcepts.onclick = () => {
+      location.hash = "ideas";
+      go("ideas");
+    };
+  }
+  stage().querySelectorAll("[data-open]").forEach((btn) => {
+    btn.onclick = () => openProject(btn.dataset.open);
+  });
   const syncMsg = $("#sync-msg");
   const bindSync = (id, path, label) => {
     const btn = $(id);
@@ -1024,16 +1122,28 @@ function renderHome() {
 
 async function renderIdeas() {
   setStageMode("home");
-  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  loadIdeasCache();
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "check_als";
   const isCheck = fmt === "check_als";
+  const active = activeInProgressProject();
   stage().innerHTML = `
     <p class="kicker">${isCheck ? "Check · Concept" : "New episode"}</p>
-    <h1 class="h1">${isCheck ? "Pick a life fantasy" : "Pick a story engine"}</h1>
+    <h1 class="h1">${isCheck ? "Elegí una fantasía de vida" : "Pick a story engine"}</h1>
     <p class="lead">${
       isCheck
-        ? "Ranked Aspirational Life Simulations. Inspect title, thumbnail concept, hook and scores — then choose one."
+        ? "Simulaciones aspiracionales rankeadas. Título, thumbnail, hook y scores — elegí una y seguí produciendo sin perder la lista."
         : "Five true-story angles. Choose one, or drop your own topic."
     }</p>
+    ${
+      active
+        ? `<div class="panel" style="margin-bottom:1rem;border-left:4px solid var(--accent)">
+          <p class="kicker">Video principal en curso</p>
+          <h3>${esc(active.title)}</h3>
+          <p class="lead">Ep. ${String(active.episode_number).padStart(3, "0")} · ${esc(active.ui_step || "in progress")}</p>
+          <button class="btn btn-primary" data-open-active="${esc(active.id)}">Abrir este episodio</button>
+        </div>`
+        : ""
+    }
     <div class="actions" style="margin-bottom:1.2rem">
       <label class="tag" style="display:inline-flex;gap:0.4rem;align-items:center">
         Format
@@ -1042,7 +1152,7 @@ async function renderIdeas() {
           <option value="documentary"${!isCheck ? " selected" : ""}>Documentary</option>
         </select>
       </label>
-      <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generate concepts" : "Generate ideas"}</button>
+      <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generar conceptos (10)" : "Generate ideas"}</button>
       <button class="btn btn-ghost" id="manual">I have a topic</button>
       <button class="btn btn-ghost" id="back-home">Back</button>
     </div>
@@ -1063,6 +1173,8 @@ async function renderIdeas() {
     location.hash = "";
     go("home");
   };
+  const openActive = $("[data-open-active]");
+  if (openActive) openActive.onclick = () => openProject(openActive.dataset.openActive);
   $("#fmt-select").onchange = async () => {
     const next = $("#fmt-select").value;
     try {
@@ -1077,6 +1189,8 @@ async function renderIdeas() {
         if (data.channel) state.bootstrap.channel = { ...(state.bootstrap.channel || {}), ...data.channel };
       }
       state.ideas = [];
+      state.pickedConceptId = "";
+      saveIdeasCache();
       renderIdeas();
     } catch (e) {
       toast(e.message);
@@ -1110,25 +1224,32 @@ async function renderIdeas() {
   else {
     $("#ideas").innerHTML = `
       <div class="panel">
-        <p class="lead">No ${isCheck ? "concepts" : "ideas"} yet. Press <strong>Generate</strong> when you want suggestions — it does not run automatically.</p>
+        <p class="lead">Todavía no hay ${isCheck ? "conceptos" : "ideas"}. Tocá <strong>Generar conceptos</strong> — trae ~10 fantasías rankeadas (tarda 1–3 min).</p>
       </div>`;
   }
 }
 
 async function loadIdeas(force) {
-  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "check_als";
+  const want = fmt === "check_als" ? 10 : 5;
   try {
-    const data = await withBusy(fmt === "check_als" ? "Scoring life fantasies…" : "Finding story engines…", () =>
+    const data = await withBusy(fmt === "check_als" ? "Generando fantasías de vida…" : "Finding story engines…", () =>
       api("/api/ideas", {
         method: "POST",
-        body: JSON.stringify({ count: 5, content_format: fmt }),
+        body: JSON.stringify({ count: want, content_format: fmt }),
         timeoutMs: 240000,
       })
     );
     state.contentFormat = data.content_format || fmt;
     state.ideas = data.concepts?.length ? data.concepts : data.ideas || [];
+    saveIdeasCache();
     paintIdeas();
-    if (force) toast(state.contentFormat === "check_als" ? "Concepts ready" : "Ideas ready");
+    if (!state.ideas.length) {
+      $("#ideas").innerHTML = `<div class="notice bad">No llegaron conceptos. Revisá OPENAI_API_KEY y probá de nuevo.</div>`;
+      toast("Sin conceptos — probá otra vez");
+      return;
+    }
+    if (force) toast(fmt === "check_als" ? `${state.ideas.length} conceptos listos` : "Ideas ready");
   } catch (e) {
     toast(e.message);
     $("#ideas").innerHTML = `<div class="notice bad">${esc(e.message)}</div>`;
@@ -1138,7 +1259,7 @@ async function loadIdeas(force) {
 function paintIdeas() {
   const host = $("#ideas");
   if (!host) return;
-  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "documentary";
+  const fmt = state.contentFormat || state.bootstrap?.formats?.active || "check_als";
   if (fmt === "check_als") {
     paintCheckConcepts(host);
     return;
@@ -1172,7 +1293,8 @@ function paintIdeas() {
           })
         );
         state.project = data.project;
-        state.ideas = [];
+        state.activeProjectId = data.project.id;
+        saveIdeasCache();
         location.hash = `project/${data.project.id}`;
         go("project");
         await refreshBootstrap();
@@ -1186,6 +1308,7 @@ function paintIdeas() {
 function paintCheckConcepts(host) {
   const sorted = [...state.ideas].sort((a, b) => (b.overall_score || 0) - (a.overall_score || 0));
   state.ideas = sorted;
+  saveIdeasCache();
   host.innerHTML = sorted
     .map((c, i) => {
       const scores = c.scores || {};
@@ -1195,9 +1318,12 @@ function paintCheckConcepts(host) {
         .join("");
       const thumb = c.thumbnail_concept || {};
       const coh = c.coherence || {};
+      const cid = String(c.id || "");
+      const isPicked = state.pickedConceptId && cid && state.pickedConceptId === cid;
       return `
-      <article class="idea idea-check">
+      <article class="idea idea-check${isPicked ? " idea-picked" : ""}"${isPicked ? ' style="outline:2px solid var(--accent);outline-offset:2px"' : ""}>
         <div class="tags" style="margin-bottom:0.4rem">
+          ${isPicked ? '<span class="tag" style="background:var(--accent);color:#fff">Video principal</span>' : ""}
           <span class="tag">${esc(c.story_category || "—")}</span>
           <span class="tag">score ${esc(c.overall_score ?? "—")}</span>
           <span class="tag">${esc(c.ending_direction || "")}</span>
@@ -1219,7 +1345,7 @@ function paintCheckConcepts(host) {
         </details>
         <div class="tags">${scoreBits}</div>
         <div class="actions">
-          <button class="btn btn-primary" data-pick="${i}">Select concept</button>
+          <button class="btn btn-primary" data-pick="${i}">${isPicked ? "Abrir episodio" : "Elegir este concepto"}</button>
           <button class="btn btn-ghost" data-regen="title" data-i="${i}">Regen title</button>
           <button class="btn btn-ghost" data-regen="thumbnail" data-i="${i}">Regen thumb</button>
           <button class="btn btn-ghost" data-regen="hook" data-i="${i}">Regen hook</button>
@@ -1232,18 +1358,26 @@ function paintCheckConcepts(host) {
   host.querySelectorAll("[data-pick]").forEach((btn) => {
     btn.onclick = async () => {
       const concept = state.ideas[Number(btn.dataset.pick)];
+      const cid = String(concept?.id || "");
+      if (state.pickedConceptId && cid && state.pickedConceptId === cid && state.activeProjectId) {
+        await openProject(state.activeProjectId);
+        return;
+      }
       try {
-        const data = await withBusy("Creating Check episode…", () =>
+        const data = await withBusy("Creando episodio Check…", () =>
           api("/api/projects", {
             method: "POST",
             body: JSON.stringify({ concept, content_format: "check_als" }),
           })
         );
         state.project = data.project;
-        state.ideas = [];
+        state.pickedConceptId = cid || state.pickedConceptId;
+        state.activeProjectId = data.project.id;
+        saveIdeasCache();
         location.hash = `project/${data.project.id}`;
         go("project");
         await refreshBootstrap();
+        toast("Episodio creado — la lista de conceptos sigue en Ideas");
       } catch (e) {
         toast(e.message);
       }
@@ -1262,6 +1396,7 @@ function paintCheckConcepts(host) {
           })
         );
         state.ideas[i] = data.package;
+        saveIdeasCache();
         paintIdeas();
         toast(`${part} updated`);
       } catch (e) {
@@ -1320,19 +1455,34 @@ function renderProject() {
   if (step === "images") step = "flow";
   // Subs are burned into the episode during render — no separate step.
   if (step === "subs") step = "render";
-  const steps = ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render"];
-  const stepLabel = {
-    topic: "1 Tema",
-    research: "2 Info",
-    story: "3 Historia",
-    script: "4 Guion",
-    flow: "5 Pedir imgs",
-    voice: "6 Voz",
-    music: "7 Música",
-    preview: "8 Prueba",
-    render: "9 Video",
-    done: "9 Video",
-  };
+  const isCheck = p.content_format === "check_als" || p.mode === "check_als";
+  if (isCheck && (step === "research")) step = "story";
+  const steps = isCheck
+    ? ["topic", "story", "script", "flow", "voice", "music", "preview", "render"]
+    : ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render"];
+  const stepLabel = isCheck
+    ? {
+        topic: "1 Premisa",
+        story: "2 Historia",
+        script: "3 Guion",
+        flow: "4 Imgs",
+        voice: "5 Voz",
+        music: "6 Música",
+        preview: "7 Prueba",
+        render: "8 Video",
+      }
+    : {
+        topic: "1 Tema",
+        research: "2 Info",
+        story: "3 Historia",
+        script: "4 Guion",
+        flow: "5 Pedir imgs",
+        voice: "6 Voz",
+        music: "7 Música",
+        preview: "8 Prueba",
+        render: "9 Video",
+        done: "9 Video",
+      };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
     <p class="kicker">Episodio ${String(p.episode_number).padStart(3, "0")}</p>
@@ -1362,9 +1512,15 @@ function renderProject() {
       };
     });
   const ws = $("#ws");
+    if (isCheck && ["voice", "music", "preview", "render"].includes(step)) {
+      return paintCheckLocked(ws, p, step, "Revisá el guion y los prompts. Todavía no voz ni render.");
+    }
+    if (isCheck && !p.check_story_approved && step !== "topic" && step !== "story") {
+      return paintCheckLocked(ws, p, step);
+    }
   if (step === "topic") return paintStory(ws, p);
   if (step === "research") return paintResearch(ws, p);
-  if (step === "story") return paintStoryPlan(ws, p);
+  if (step === "story") return isCheck ? paintCheckStory(ws, p) : paintStoryPlan(ws, p);
   if (step === "script") return paintScript(ws, p);
   if (step === "flow" || step === "images") return paintFlow(ws, p);
   if (step === "voice") return paintVoice(ws, p);
@@ -1379,19 +1535,20 @@ function renderProject() {
 
 function paintStory(ws, p) {
   const idea = p.idea || {};
+  const isCheck = p.content_format === "check_als" || p.mode === "check_als";
   ws.innerHTML = `
     <div class="panel">
-      <p class="kicker">Topic</p>
+      <p class="kicker">${isCheck ? "Premisa" : "Topic"}</p>
       <p>${esc(idea.story || p.topic)}</p>
       <p style="margin-top:0.8rem"><strong>Hook</strong> — ${esc(idea.hook || "—")}</p>
       <div class="actions">
-        <button class="btn btn-primary" id="to-research">Continue to research</button>
+        <button class="btn btn-primary" id="to-research">${isCheck ? "Ir a Historia" : "Continue to research"}</button>
       </div>
     </div>`;
   $("#to-research").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
-      body: JSON.stringify({ step: "research" }),
+      body: JSON.stringify({ step: isCheck ? "story" : "research" }),
     });
     state.project = data.project;
     renderProject();
@@ -1446,6 +1603,180 @@ function paintResearch(ws, p) {
   };
   $("#save-research").onclick = () => save(false);
   $("#skip-research").onclick = () => save(true);
+}
+
+function paintCheckLocked(ws, p, step, extra) {
+  const msg = extra || `Fase 2 se detiene en la revisión humana de la HISTORIA. ${step} todavía no está habilitado.`;
+  ws.innerHTML = `
+    <div class="panel workspace">
+      <div class="notice">${esc(msg)}</div>
+      <p class="lead">Historia aprobada desbloquea Guion + Imágenes (prompts). Voz y render siguen después de tu revisión.</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="go-story">Volver a Historia</button>
+      </div>
+    </div>`;
+  $("#go-story").onclick = async () => {
+    const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+      method: "PATCH",
+      body: JSON.stringify({ step: "story" }),
+    });
+    state.project = data.project;
+    renderProject();
+  };
+}
+
+function money(n) {
+  if (n === null || n === undefined || n === "") return "—";
+  const v = Number(n);
+  if (!Number.isFinite(v)) return esc(n);
+  const sign = v < 0 ? "-" : "";
+  const a = Math.abs(v);
+  if (a >= 1000000) return `${sign}$${(a / 1000000).toFixed(2)}M`;
+  return `${sign}$${Math.round(a).toLocaleString("en-US")}`;
+}
+
+function paintCheckStory(ws, p) {
+  const cs = p.check_story || {};
+  const review = cs.review || {};
+  const overview = review.overview || {};
+  const quality = cs.quality || {};
+  const scores = quality.scores || review.quality_scores || {};
+  const flags = quality.flags || review.quality_flags || [];
+  const loops = review.open_loops || [];
+  const timeline = review.timeline || [];
+  const major = review.major_events || [];
+  const rewards = review.rewards || [];
+  const setbacks = review.setbacks || [];
+  const ending = review.ending || {};
+  const fw = review.final_world || {};
+  const fantasy = overview.fantasy || {};
+  const vehicle = overview.vehicle || {};
+  const world = overview.world || {};
+  const prot = overview.protagonist || {};
+  const hard = quality.hard_fails || review.hard_fails || [];
+  const acq = review.acquisition || {};
+  const ledger = review.ownership_ledger || fw.ledger || {};
+  const generated = Boolean(cs.generated);
+  const approved = Boolean(p.check_story_approved || cs.approved);
+
+  const scoreBits = Object.keys(scores)
+    .map((k) => `<span class="tag ${scores[k] === "flag" ? "bad" : ""}">${esc(k)} ${esc(scores[k])}</span>`)
+    .join("");
+  const flagBits = flags.length
+    ? flags.map((f) => `<div class="notice bad">[${esc(f.code)}] ${esc(f.detail || "")} ${f.beat_id ? "· " + esc(f.beat_id) : ""}</div>`).join("")
+    : `<div class="notice ok">Sin flags de calidad.</div>`;
+  const loopBits = loops.length
+    ? loops
+        .map(
+          (l) =>
+            `<li><strong>${esc(l.id || "")}</strong> — ${esc(l.question || "")} · abre ${esc(l.opened_at || "—")} · ${esc(l.status || "open")} · cierra ${esc(l.closed_at || "—")}</li>`
+        )
+        .join("")
+    : "<li>Todavía no hay loops.</li>";
+  const timeBits = timeline
+    .map((row) => {
+      const life = row.life_change ? ` · ${esc(row.life_change)}` : "";
+      return `<tr>
+        <td>${esc(row.time || "")}</td>
+        <td>${esc(row.event || "")}</td>
+        <td>${money(row.cash)}</td>
+        <td>${esc(row.ownership ?? "—")}%</td>
+        <td>${money(row.team_value)}</td>
+        <td>${money(row.team_debt)}</td>
+        <td>${esc(row.attendance ?? "—")}</td>
+        <td>${esc(row.record || "—")}</td>
+        <td>${life}</td>
+      </tr>`;
+    })
+    .join("");
+  const majorBits = major.map((b) => `<li><strong>[${esc(b.beat_id)}] ${esc(b.purpose || "")}</strong> — ${esc(b.event || "")}</li>`).join("");
+  const rewardBits = rewards.map((b) => `<li>[${esc(b.beat_id)}] ${esc(b.event || "")}</li>`).join("") || "<li>—</li>";
+  const seasons = review.season_history || (fw.season_history) || [];
+  const seasonBits = seasons.map((s) =>
+    `<li>T${esc(s.season)} ${esc(s.record || "")} · ${esc(s.playoff_result || "")} · att ${esc(s.attendance_avg ?? "—")} · ${esc((s.major_events || []).join(", "))}</li>`
+  ).join("") || "<li>—</li>";
+  const setbackBits = setbacks.map((b) => `<li>[${esc(b.beat_id)}] <em>${esc(b.category || b.kind || "")}</em> ${esc(b.event || "")}</li>`).join("") || "<li>—</li>";
+
+  ws.innerHTML = `
+    <div class="panel workspace">
+      ${approved ? `<div class="notice ok">Historia aprobada. Ya podés ir a Guion. Todavía no hay voz ni render.</div>` : ""}
+      ${generated && !approved ? `<div class="notice">Revisá la película. Approve Story desbloquea el guion.</div>` : ""}
+      <div class="actions">
+        <button class="btn btn-accent" id="gen-check-story">${generated ? "Regenerate Story" : "Generate Story Architecture"}</button>
+        ${generated && !hard.length ? `<button class="btn btn-primary" id="approve-check-story">Approve Story</button>` : ""}
+      </div>
+      ${hard.length ? `<div class="notice bad">No está lista para review: hay hard fails. Regenerar o reparar primero.</div>` : ""}
+      <p class="kicker">Story Overview</p>
+      <p><strong>${esc(world.team_name || p.title || "")}</strong> · ${esc(world.league_name || "")} · ${esc(world.city || "")}</p>
+      <p>${esc(fantasy.surface_desire || "")}</p>
+      <p class="muted">${esc(acq.summary || vehicle.acquisition_structure || vehicle.core_mechanism || "")}</p>
+      <p>Ledger: vos ${esc(ledger.protagonist ?? "—")}% · inversores ${esc(ledger.investors ?? "—")}% · vendedor ${esc(ledger.seller ?? "—")}%</p>
+      ${hard.length ? hard.map((f) => `<div class="notice bad">HARD [${esc(f.code)}] ${esc(f.detail || "")}</div>`).join("") : ""}
+      <p>Protagonista interno: ${esc(prot.age || "")} · ${esc(prot.starting_life || "")}</p>
+      <div class="tags">${scoreBits}</div>
+      <details ${generated ? "open" : ""}>
+        <summary>Synopsis</summary>
+        <pre class="shot" style="white-space:pre-wrap;max-height:420px;overflow:auto">${esc(cs.synopsis || "Generá la arquitectura para leer la película.")}</pre>
+      </details>
+      <details ${generated ? "open" : ""}>
+        <summary>Timeline</summary>
+        <div class="check-table-wrap">
+          <table class="check-table">
+            <thead><tr><th>Tiempo</th><th>Evento</th><th>Cash</th><th>Own</th><th>Valor</th><th>Deuda</th><th>Público</th><th>Record</th><th>Vida</th></tr></thead>
+            <tbody>${timeBits || `<tr><td colspan="9">—</td></tr>`}</tbody>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>Season history</summary>
+        <p class="muted">debt_risk: ${esc(review.debt_risk_state || fw.debt_risk_state || "—")} · championships: ${esc(fw.championships ?? fw.sports?.championships ?? "—")}</p>
+        <ul>${seasonBits}</ul>
+      </details>
+      <details>
+        <summary>Major events</summary>
+        <ul>${majorBits || "<li>—</li>"}</ul>
+      </details>
+      <div class="two-col">
+        <div><p class="kicker">Rewards</p><ul>${rewardBits}</ul></div>
+        <div><p class="kicker">Setbacks</p><ul>${setbackBits}</ul></div>
+      </div>
+      <details>
+        <summary>Open loops</summary>
+        <ul>${loopBits}</ul>
+      </details>
+      <details>
+        <summary>Ending + mundo final</summary>
+        <p>${esc(ending.scene || overview.ending || "—")}</p>
+        <p>${esc(ending.final_state || "")}</p>
+        <p class="muted">${esc(ending.unresolved || "")}</p>
+        <p>AGE ${esc(fw.age ?? "—")} · CASH ${money(fw.cash)} · OWN ${esc(fw.ownership ?? "—")}% · VAL ${money(fw.team_value)} · DEBT ${money(fw.team_debt)} · ATT ${esc(fw.attendance ?? "—")} · ${esc(fw.job || "")} · ${esc(fw.home || "")}</p>
+      </details>
+      <p class="kicker">Quality flags</p>
+      ${flagBits}
+    </div>`;
+
+  $("#gen-check-story").onclick = async () => {
+    try {
+      const data = await withBusy("Construyendo la película (blueprint + beats)…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/story/generate`, { method: "POST", timeoutMs: 720000 })
+      );
+      state.project = data.project;
+      toast("Story Architecture lista — leé la synopsis antes de aprobar");
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  $("#approve-check-story")?.addEventListener("click", async () => {
+    try {
+      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/story/approve`, { method: "POST" });
+      state.project = data.project;
+      toast("Historia aprobada. Siguiente: Guion.");
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  });
 }
 
 function paintStoryPlan(ws, p) {
@@ -1550,7 +1881,8 @@ function paintScript(ws, p) {
   const tw = Number(p.target_words) || 2000;
   const plan = p.story_plan || {};
   const planReady = Boolean(plan.central_story) && Array.isArray(plan.beats) && plan.beats.length > 0;
-  if (!p.story_plan_approved) {
+  const checkApproved = (p.content_format === "check_als" || p.mode === "check_als") && p.check_story_approved;
+  if (!p.story_plan_approved && !checkApproved) {
     ws.innerHTML = `
       <div class="panel workspace">
         <div class="notice">Falta marcar el Story Plan como aprobado (no es lo mismo que guardar Research).</div>
@@ -1652,6 +1984,7 @@ async function paintFlow(ws, p) {
   ws.innerHTML = `<div class="panel"><p class="lead">Cargando plan de imágenes…</p></div>`;
   let plan = null;
   let shots = null;
+  let coverage = {};
   try {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/flow`);
     state.shots = data.shots;
@@ -1659,6 +1992,7 @@ async function paintFlow(ws, p) {
     if (data.project) state.project = data.project;
     plan = data.visual_plan;
     shots = data.shots;
+    coverage = data.asset_coverage || {};
   } catch (e) {
     ws.innerHTML = `
       <div class="panel workspace">
@@ -1678,26 +2012,59 @@ async function paintFlow(ws, p) {
   const batches = (plan && plan.flow_batches) || (shots && shots.flow_batches) || [];
   const visuals = (plan && plan.visuals) || (shots && shots.shots) || [];
   const total = stats.total || visuals.length || 0;
+  const isCheckFlow = p.content_format === "check_als" || p.mode === "check_als";
+  const covRows = coverage.slot_plan || [];
+  const covBySlot = Object.fromEntries(covRows.map((r) => [Number(r.slot), r]));
+  const prog = coverage.production_progress || {};
+  const fullPack = coverage.full_still_pack || coverage.production_batches?.["all-stills"] || {};
+  const p01Pack = coverage.production_batches?.["p0-p1"] || coverage.production_batch || {};
+  const totalSlots = prog.total_slots || total;
+  const importedExact = prog.imported_exact ?? prog.generated_imported ?? 0;
+  const missingExact = prog.missing_exact_assets ?? Math.max(0, totalSlots - importedExact);
+  const fallbackAvail = prog.fallback_coverage_available ?? prog.temporarily_covered_by_reuse ?? 0;
 
   ws.innerHTML = `
     <div class="panel workspace">
-      <div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
+      ${isCheckFlow ? `<div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
+        <h2 style="margin:0 0 0.5rem">Producción Check — un still por slot</h2>
+        <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
+          <li><strong>Cada slot = su imagen.</strong> Generá <code>001.png</code> para el slot 001, etc.</li>
+          <li><strong>P0 → P1 → P2 → P3</strong> es solo orden de generación, no permiso para saltear slots.</li>
+          <li><strong>Smart Reuse</strong> solo entra si falta el still exacto — contingencia, no objetivo.</li>
+          <li>Pack completo: <code>flow-pack/batches/all-stills/</code> · batch opcional: <code>p0-p1/</code></li>
+        </ol>
+      </div>` : `<div class="panel soft" style="margin-bottom:1.2rem;border:2px solid var(--ink,#111)">
         <h2 style="margin:0 0 0.5rem">Qué tenés que hacer acá (paso a paso)</h2>
         <ol style="margin:0;padding-left:1.2rem;line-height:1.55">
           <li><strong>Un bloque = un momento.</strong> “Le va bien”, “Se cae”, etc. Pedí ~10 fotos de ESE clima, no un orden 1-2-3.</li>
           <li><strong>Copiá el pedido del bloque</strong> → Flow. Si las mezcla, da igual: son intercambiables.</li>
           <li><strong>Subí varias de una</strong> con “Subir varias a este bloque”. Se acomodan solas en los recuadros vacíos.</li>
         </ol>
-        <p class="lead" style="margin-top:0.75rem;margin-bottom:0">
-          No hay que matchear “imagen 7 = prompt 7”.
-        </p>
-      </div>
+        <p class="lead" style="margin-top:0.75rem;margin-bottom:0">No hay que matchear “imagen 7 = prompt 7”.</p>
+      </div>`}
 
-      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena.</p>
+      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. ${isCheckFlow ? "Generá e importá un still por slot. Todavía no generes voz." : "Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena."}</p>
+      ${isCheckFlow ? `<div class="panel soft" style="margin:1rem 0;border:1px solid var(--line,#ccc)">
+        <strong>STILLS — ${totalSlots} visual slots</strong>
+        <div class="ff-episode-meta">Generated/imported: <strong>${importedExact} / ${totalSlots}</strong></div>
+        <div class="ff-episode-meta">Exact coverage: <strong>${importedExact}</strong> · Missing exact assets: <strong>${missingExact}</strong></div>
+        <div class="ff-episode-meta">Potential fallback coverage: <strong>${fallbackAvail}</strong> <span style="opacity:0.75">(solo mientras falte el still propio)</span></div>
+        <div class="ff-episode-meta">Prompts ready: <strong>${prog.prompts_ready ?? totalSlots}</strong></div>
+      </div>
+      <div class="panel soft" id="p0p1-pack" style="margin:1rem 0">
+        <strong>Batch opcional P0 + P1</strong> (${(p01Pack.shots || p01Pack.prompts || 24)} prompts prioritarios)
+        <p class="lead" style="margin:0.4rem 0"><code>flow-pack/batches/p0-p1/</code> — podés empezar acá, pero el objetivo sigue siendo <strong>100 stills únicos</strong>.</p>
+        <div class="actions" id="p0p1-actions"></div>
+      </div>
+      <div class="panel soft" style="margin:1rem 0">
+        <strong>Full still generation pack</strong> — ${fullPack.prompts_ready ?? totalSlots} prompts
+        <p class="lead" style="margin:0.4rem 0"><code>flow-pack/batches/all-stills/</code> · <code>manifest.json</code> + <code>prompts/001.txt</code> … <code>100.txt</code></p>
+      </div>
+      <div id="reuse-review"></div>` : ""}
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
-        <button class="btn btn-primary" id="to-voice">Seguir a la voz</button>
+        ${isCheckFlow ? "" : `<button class="btn btn-primary" id="to-voice">Seguir a la voz</button>`}
       </div>
 
       <h2 style="margin-top:1.6rem">A) Caras que se repiten</h2>
@@ -1711,18 +2078,74 @@ async function paintFlow(ws, p) {
     </div>`;
 
   $("#rebuild").onclick = () => rebuildFlow();
-  $("#to-voice").onclick = async () => {
-    try {
-      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
-        method: "PATCH",
-        body: JSON.stringify({ step: "voice" }),
+  if (isCheckFlow) {
+    const pack = coverage.production_batch || {};
+    const shots = pack.shots || [];
+    const actions = $("#p0p1-actions");
+    if (actions) {
+      actions.innerHTML = shots
+        .map((id) => `<button class="btn btn-soft" data-copy-p01="${esc(String(id))}">Copiar ${esc(String(id))}</button>`)
+        .join(" ");
+      actions.querySelectorAll("[data-copy-p01]").forEach((btn) => {
+        btn.onclick = async () => {
+          try {
+            const data = await api(`/api/projects/${encodeURIComponent(p.id)}/visuals/${Number(btn.dataset.copyP01)}/prompt`);
+            await navigator.clipboard.writeText(data.prompt || "");
+            toast(`Prompt ${btn.dataset.copyP01} copiado`);
+          } catch (e) {
+            toast(e.message);
+          }
+        };
       });
-      state.project = data.project;
-      renderProject();
-    } catch (e) {
-      toast(e.message);
     }
-  };
+    const reviewHost = $("#reuse-review");
+    const reviews = (coverage.reuse_reviews || []).filter((r) => r.status === "REUSED" || r.status === "REVIEW_REUSE");
+    const missingRows = (coverage.slot_plan || []).filter((r) => String(r.status || "").includes("MISSING"));
+    const showReview = Number(importedExact) > 0;
+    if (reviewHost && showReview) {
+      const missingCards = missingRows
+        .map((r) => {
+          const n = Number(r.slot);
+          return `<article class="shot"><strong>MISSING EXACT ${pad3(n)}</strong><div class="ff-episode-meta">${esc(String(r.reason || "").slice(0, 140))}</div></article>`;
+        })
+        .join("");
+      const reuseCards = reviews
+        .map((r) => {
+          const srcNum = Number(String(r.source_asset || "").split("_").pop());
+          const n = Number(r.target_slot);
+          const label = r.status === "REVIEW_REUSE" ? "REVIEW FALLBACK" : "FALLBACK";
+          return `<article class="shot">
+            <strong>${label} slot ${pad3(n)}</strong>
+            <div class="ff-episode-meta">falta still ${pad3(n)} · source ${esc(String(r.source_asset))} · score ${esc(String(r.reuse_score))}</div>
+            <div class="ff-episode-meta">${esc(String(r.semantic_reason || "").slice(0, 160))}</div>
+            <div class="slot-frame"><img class="slot-thumb" src="/api/projects/${encodeURIComponent(p.id)}/images/${srcNum}?v=${IMG_BOOT}" alt="" loading="lazy" /></div>
+            <button type="button" class="btn btn-ghost" data-disable-reuse="${n}">No reutilizar</button>
+          </article>`;
+        })
+        .join("");
+      reviewHost.innerHTML = `
+        <h2 style="margin-top:1.6rem">Revisión fallback (solo slots sin still propio)</h2>
+        <p class="lead">Importá <code>NNN.png</code> y el slot vuelve a EXACT automáticamente.</p>
+        <div class="list">${reuseCards || `<div class="notice">Ningún fallback activo.</div>`}</div>
+        <h3 style="margin-top:1.2rem">Missing exact (${missingRows.length})</h3>
+        <div class="list">${missingCards || `<div class="notice">Nada missing.</div>`}</div>`;
+    }
+  }
+  const toVoice = $("#to-voice");
+  if (toVoice) {
+    toVoice.onclick = async () => {
+      try {
+        const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+          method: "PATCH",
+          body: JSON.stringify({ step: "voice" }),
+        });
+        state.project = data.project;
+        renderProject();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  }
 
   $("#masters").innerHTML = masters.length
     ? masters.map((m) => masterCard(m, p.id)).join("")
@@ -1737,7 +2160,7 @@ async function paintFlow(ws, p) {
           const done = b.imported || 0;
           const byNum = Object.fromEntries(visuals.map((v) => [Number(v.number), v]));
           const slots = (b.visual_numbers || [])
-            .map((n) => slotCard(byNum[Number(n)] || { number: n, visual_type: "FLOW_REENACTMENT" }, p.id))
+            .map((n) => slotCard(byNum[Number(n)] || { number: n, visual_type: "FLOW_REENACTMENT" }, p.id, "", covBySlot[Number(n)], isCheckFlow))
             .join("");
           const mood = b.moment_label || b.label || `Bloque ${bi + 1}`;
           return `
@@ -1775,6 +2198,22 @@ async function paintFlow(ws, p) {
   });
   bindSlotUploads($("#batches"), p.id);
   bindDeleteAll($("#delete-all-stills"), p.id);
+  ws.querySelectorAll("[data-disable-reuse]").forEach((btn) => {
+    btn.onclick = async () => {
+      try {
+        await api(`/api/projects/${encodeURIComponent(p.id)}/visuals/${btn.dataset.disableReuse}/reuse`, {
+          method: "POST",
+          body: JSON.stringify({ disable_reuse: true }),
+        });
+        toast("Reuse desactivado en este slot");
+        state.shots = null;
+        state.visualPlan = null;
+        renderProject();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  });
 
   $("#batches").querySelectorAll("[data-expand-batch]").forEach((btn) => {
     btn.onclick = () => {

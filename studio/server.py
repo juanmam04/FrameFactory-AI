@@ -1697,7 +1697,7 @@ def _flow_payload(project_id: str, p: dict[str, Any]) -> dict[str, Any]:
 
 
 class IdeasBody(BaseModel):
-    count: int = 5
+    count: int = 10
     content_format: str = ""
     categories: list[str] = Field(default_factory=list)
 
@@ -1879,9 +1879,9 @@ def _ensure_channel(preferred_format: str | None = None) -> tuple[dict[str, Any]
     if not want:
         env_fmt = (os.getenv("FRAMEFACTORY_CONTENT_FORMAT") or "").strip()
         want = normalize_content_format(env_fmt) if env_fmt else None
-    if want == FORMAT_CHECK_ALS:
-        return _activate_format(FORMAT_CHECK_ALS)
-    return _activate_format(FORMAT_DOCUMENTARY)
+    if want == FORMAT_DOCUMENTARY:
+        return _activate_format(FORMAT_DOCUMENTARY)
+    return _activate_format(FORMAT_CHECK_ALS)
 
 
 def _ensure_documentary_channel() -> None:
