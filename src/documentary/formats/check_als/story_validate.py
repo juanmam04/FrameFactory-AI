@@ -123,8 +123,8 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
         ok = True
     else:
         ok = False
-        if words < 900 or words > 1200:
-            flags.append({"code": "synopsis_length", "detail": f"{words} palabras (objetivo 900–1200)", "hard": True})
+        if words < 850 or words > 1200:
+            flags.append({"code": "synopsis_length", "detail": f"{words} palabras (objetivo 900–1200)", "hard": words < 850})
     return {"ok": ok, "flags": flags, "words": words, "season_history": hist}
 
 

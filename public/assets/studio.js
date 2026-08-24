@@ -1606,13 +1606,19 @@ function paintResearch(ws, p) {
 }
 
 function paintCheckLocked(ws, p, step, extra) {
-  const msg = extra || `Fase 2 se detiene en la revisión humana de la HISTORIA. ${step} todavía no está habilitado.`;
+  const cs = p.check_story || {};
+  const review = cs.review || {};
+  const generated = Boolean(cs.generated);
+  const approved = Boolean(p.check_story_approved || cs.approved);
+  const hasStory = generated || Boolean(cs.synopsis) || Number(cs.beat_count || 0) > 0 || (review.timeline || []).length > 0;
+  const msg = extra || `Aprobá la historia para desbloquear ${step}.`;
   ws.innerHTML = `
     <div class="panel workspace">
       <div class="notice">${esc(msg)}</div>
-      <p class="lead">Historia aprobada desbloquea Guion + Imágenes (prompts). Voz y render siguen después de tu revisión.</p>
+      <p class="lead">Historia aprobada desbloquea Guion + Imágenes (prompts). Voz y render siguen después.</p>
       <div class="actions">
         <button class="btn btn-primary" id="go-story">Volver a Historia</button>
+        ${generated && !approved ? `<button class="btn btn-accent" id="approve-from-lock">Aprobar historia → Guion</button>` : ""}
       </div>
     </div>`;
   $("#go-story").onclick = async () => {
@@ -1623,6 +1629,16 @@ function paintCheckLocked(ws, p, step, extra) {
     state.project = data.project;
     renderProject();
   };
+  $("#approve-from-lock")?.addEventListener("click", async () => {
+    try {
+      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/story/approve`, { method: "POST" });
+      state.project = data.project;
+      toast("Historia aprobada. Ya podés ir a Guion.");
+      renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  });
 }
 
 function money(n) {
@@ -1653,7 +1669,10 @@ function paintCheckStory(ws, p) {
   const vehicle = overview.vehicle || {};
   const world = overview.world || {};
   const prot = overview.protagonist || {};
-  const hard = quality.hard_fails || review.hard_fails || [];
+  const hardRaw = quality.hard_fails || review.hard_fails || [];
+  const hardFromFlags = flags.filter((f) => f.hard);
+  const hard = hardRaw.length ? hardRaw : hardFromFlags;
+  const hasStory = generated || Boolean(cs.synopsis) || Number(cs.beat_count || 0) > 0 || timeline.length > 0;
   const acq = review.acquisition || {};
   const ledger = review.ownership_ledger || fw.ledger || {};
   const generated = Boolean(cs.generated);
@@ -1700,12 +1719,12 @@ function paintCheckStory(ws, p) {
   ws.innerHTML = `
     <div class="panel workspace">
       ${approved ? `<div class="notice ok">Historia aprobada. Ya podés ir a Guion. Todavía no hay voz ni render.</div>` : ""}
-      ${generated && !approved ? `<div class="notice">Revisá la película. Approve Story desbloquea el guion.</div>` : ""}
+      ${generated && !approved ? `<div class="notice">Revisá la película. Cuando estés conforme, aprobá la historia para desbloquear el guion.</div>` : ""}
       <div class="actions">
-        <button class="btn btn-accent" id="gen-check-story">${generated ? "Regenerate Story" : "Generate Story Architecture"}</button>
-        ${generated && !hard.length ? `<button class="btn btn-primary" id="approve-check-story">Approve Story</button>` : ""}
+        <button class="btn btn-accent" id="gen-check-story">${hasStory ? "Regenerate Story" : "Generate Story Architecture"}</button>
+        ${hasStory && !approved ? `<button class="btn btn-primary" id="approve-check-story">${hard.length ? "Continuar al guion →" : "Aprobar historia → Guion"}</button>` : ""}
       </div>
-      ${hard.length ? `<div class="notice bad">No está lista para review: hay hard fails. Regenerar o reparar primero.</div>` : ""}
+      ${hard.length ? `<div class="notice bad">Hay ${hard.length} advertencia(s) — podés regenerar o tocar <strong>Continuar al guion</strong>.</div>` : ""}
       <p class="kicker">Story Overview</p>
       <p><strong>${esc(world.team_name || p.title || "")}</strong> · ${esc(world.league_name || "")} · ${esc(world.city || "")}</p>
       <p>${esc(fantasy.surface_desire || "")}</p>
@@ -1767,7 +1786,13 @@ function paintCheckStory(ws, p) {
       toast(e.message);
     }
   };
-  $("#approve-check-story")?.addEventListener("click", async () => {
+  const approveStory = async () => {
+    if (hard.length) {
+      const ok = confirm(
+        `Hay ${hard.length} advertencia(s) en la historia.\n\n¿Continuar al guion igual?`
+      );
+      if (!ok) return;
+    }
     try {
       const data = await api(`/api/projects/${encodeURIComponent(p.id)}/story/approve`, { method: "POST" });
       state.project = data.project;
@@ -1776,7 +1801,8 @@ function paintCheckStory(ws, p) {
     } catch (e) {
       toast(e.message);
     }
-  });
+  };
+  $("#approve-check-story")?.addEventListener("click", () => approveStory());
 }
 
 function paintStoryPlan(ws, p) {
@@ -3313,7 +3339,7 @@ async function refreshBootstrap() {
     state.bootstrap?.formats?.active ||
     state.bootstrap?.channel?.content_format ||
     state.contentFormat ||
-    "documentary";
+    "check_als";
   if (prev && prev.openai?.status && prev.openai.status !== "unchecked") {
     state.bootstrap.credentials = prev;
   }
