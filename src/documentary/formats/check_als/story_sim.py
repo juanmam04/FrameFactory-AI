@@ -1242,10 +1242,16 @@ def infer_ops_from_beat(beat: dict[str, Any], world: dict[str, Any]) -> list[dic
             "te convertís en dueño",
             "te conviertes en dueño",
         )
-        if any(w in blob for w in launch_hints):
+        if any(w in blob for w in launch_hints) or (
+            "lanz" in blob and any(w in blob for w in ("empresa", "negocio", "marca", "canal", "estudio"))
+        ):
             add("launch_company")
         elif any(w in blob for w in buy_hints):
             add("acquire_team")
+        elif any(w in blob for w in ("empresa", "negocio", "startup", "agencia")) and any(
+            w in blob for w in ("firmás", "firmas", "escritura", "socios", "lanz")
+        ):
+            add("launch_company")
     if "campeonat" in blob or "anillo" in blob or "ganás la liga" in blob or "ganas la liga" in blob:
         if championship_allowed(world):
             add("championship_won")
@@ -1352,14 +1358,18 @@ def repair_architecture(
     rows = [dict(b) for b in beats or [] if isinstance(b, dict)]
     if not rows:
         return []
-    has_acq = any(
-        any(str((op or {}).get("op") or "") in ("acquire_team", "launch_company") for op in (b.get("ops") or []) if isinstance(op, dict))
-        or any(w in str(b.get("event") or "").lower() for w in ("firm", "compr", "adquir", "escritura", "lanz", "fund"))
+    has_acq_op = any(
+        any(
+            str((op or {}).get("op") or (op or {}).get("type") or "") in ("acquire_team", "launch_company")
+            for op in (b.get("ops") or [])
+            if isinstance(op, dict)
+        )
         for b in rows
     )
     acq = (blueprint.get("business_or_vehicle") or {}).get("acquisition") or {}
-    if not has_acq and len(rows) >= 4:
-        target = rows[3]
+    # Only real ops count. Event text like "lanzás" without ops used to skip inject → acquisition_missing.
+    if not has_acq_op and len(rows) >= 3:
+        target = rows[min(3, len(rows) - 1)]
         ops = list(target.get("ops") or [])
         if mode == "business":
             ops.insert(
@@ -1373,7 +1383,8 @@ def repair_architecture(
                     "debt_assumed": acq.get("debt_assumed") or 0,
                 },
             )
-            target["event"] = target.get("event") or "Lanzás la empresa: tu cash, inversores, y el 60%."
+            if not str(target.get("event") or "").strip():
+                target["event"] = "Lanzás la empresa: tu cash, inversores, y el 60%."
         else:
             ops.insert(
                 0,
@@ -1389,11 +1400,41 @@ def repair_architecture(
                     "seller_financing": acq.get("seller_financing") or 200000,
                 },
             )
-            target["event"] = target.get("event") or "Firmás la compra: un peso, la deuda, y el 51%."
+            if not str(target.get("event") or "").strip():
+                target["event"] = "Firmás la compra: un peso, la deuda, y el 51%."
         target["ops"] = ops
         target["story_purpose"] = "first_commitment"
         target["reward_or_setback"] = "reward:owns_team" if mode == "sports_team" else "reward:company_launched"
         target["metric_reveal"] = ["OWNERSHIP", "CASH", "TEAM_DEBT"]
+        has_acq_op = True
+
+    # If ops exist but ownership never reaches control (bad pct), force a controlling stake on first acquire/launch.
+    if has_acq_op:
+        for b in rows:
+            ops = [o for o in (b.get("ops") or []) if isinstance(o, dict)]
+            fixed = []
+            for o in ops:
+                op = dict(o)
+                name = str(op.get("op") or op.get("type") or "")
+                if name in ("acquire_team", "launch_company"):
+                    if not op.get("op"):
+                        op["op"] = name
+                    pct = 0.0
+                    try:
+                        pct = float(op.get("your_pct") or op.get("your_ownership") or 0)
+                    except (TypeError, ValueError):
+                        pct = 0.0
+                    if pct < 40:
+                        if mode == "business":
+                            op["your_pct"] = float(acq.get("your_ownership") or 60)
+                            op["investor_pct"] = float(acq.get("investor_ownership") or 40)
+                            op["seller_pct"] = 0
+                        else:
+                            op["your_pct"] = float(acq.get("your_ownership") or 51)
+                            op["investor_pct"] = float(acq.get("investor_ownership") or 39)
+                            op["seller_pct"] = float(acq.get("seller_retained") or 10)
+                fixed.append(op)
+            b["ops"] = fixed
 
     for i, b in enumerate(rows):
         ops = [o for o in (b.get("ops") or []) if isinstance(o, dict)]

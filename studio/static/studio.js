@@ -340,6 +340,20 @@ const DL = {
       this.paint();
       return;
     }
+    // Fail fast if the MP4 isn't there (Vercel project without render, or still encoding).
+    try {
+      const probe = await fetch(url, { method: "HEAD", credentials: "same-origin" });
+      if (probe.status === 404) {
+        toast("Todavía no hay video para bajar — terminá el render primero");
+        return;
+      }
+      if (!probe.ok && probe.status !== 405) {
+        // Some hosts reject HEAD; continue and let ranged GET decide.
+        console.warn("download HEAD", probe.status);
+      }
+    } catch (e) {
+      console.warn("download probe", e);
+    }
     const saved = (await this.getMeta(id).catch(() => null)) || {};
     const job = {
       id,
@@ -366,19 +380,32 @@ const DL = {
     const piece = 2 * 1024 * 1024;
     try {
       if (!job.total) {
-        const head = await fetch(job.url, { method: "HEAD" });
+        const head = await fetch(job.url, { method: "HEAD", credentials: "same-origin" });
+        if (head.status === 404) throw new Error("El video aún no está listo (404)");
         const len = Number(head.headers.get("content-length") || 0);
         if (len > 0) job.total = len;
       }
       if (!job.total) {
-        const probe = await fetch(job.url, { headers: { Range: "bytes=0-0" } });
+        const probe = await fetch(job.url, { headers: { Range: "bytes=0-0" }, credentials: "same-origin" });
+        if (probe.status === 404) throw new Error("El video aún no está listo (404)");
         const cr = probe.headers.get("content-range") || "";
         const m = /\/(\d+)$/.exec(cr);
         if (m) job.total = Number(m[1]);
         else job.total = Number(probe.headers.get("content-length") || 0);
         await probe.arrayBuffer();
       }
-      if (!job.total) throw new Error("No pude medir el tamaño del video");
+      if (!job.total) {
+        // Last resort: full fetch (small files / hosts without Range).
+        const full = await fetch(job.url, { credentials: "same-origin" });
+        if (!full.ok) throw new Error(full.status === 404 ? "El video aún no está listo" : "No pude bajar el video");
+        const blob = await full.blob();
+        await this.saveBlob(job.filename, blob);
+        await this.delMeta(job.id);
+        this.jobs.delete(job.id);
+        this.paint();
+        toast("Descarga lista");
+        return;
+      }
       await this.setMeta(job.id, {
         url: job.url,
         filename: job.filename,
@@ -389,7 +416,7 @@ const DL = {
       });
       while (job.received < job.total && !job.abort) {
         const end = Math.min(job.total - 1, job.received + piece - 1);
-        const res = await fetch(job.url, { headers: { Range: `bytes=${job.received}-${end}` } });
+        const res = await fetch(job.url, { headers: { Range: `bytes=${job.received}-${end}` }, credentials: "same-origin" });
         if (!(res.ok || res.status === 206)) {
           throw new Error("Se cortó la descarga");
         }

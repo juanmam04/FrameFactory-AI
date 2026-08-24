@@ -174,7 +174,13 @@ def validate_hard_gates(
         if _num((before.get("ownership_ledger") or {}).get("protagonist")) <= 0.5 and _num(ledger.get("protagonist")) >= 40:
             acquired = True
         ops = beat.get("ops") or []
-        if vehicle_mode == "business" and any(str((o or {}).get("op") or "") in ("launch_company",) for o in ops if isinstance(o, dict)):
+        op_names = {str((o or {}).get("op") or "") for o in ops if isinstance(o, dict)}
+        if op_names & {"launch_company", "acquire_team"}:
+            acquired = True
+        if bool((after.get("acquisition") or {}).get("closed")):
+            acquired = True
+        ms = after.get("milestones") or []
+        if "owns_team" in ms or "company_launched" in ms:
             acquired = True
         blob = _txt(beat)
         if vehicle_mode == "sports_team" and any(w in blob for w in ("campeonat", "campeón", "campeon ", "anillo")):
@@ -263,8 +269,19 @@ def validate_hard_gates(
         if age_a + 0.01 < age_b:
             fails.append({"code": "age_backwards", "beat_id": bid, "detail": f"{age_b}→{age_a}", "hard": True})
 
+    end_own = _num((end.get("ownership_ledger") or {}).get("protagonist"))
+    if end_own >= 40 or bool((end.get("acquisition") or {}).get("closed")):
+        acquired = True
+    end_ms = end.get("milestones") or []
+    if "owns_team" in end_ms or "company_launched" in end_ms:
+        acquired = True
     if not acquired:
-        fails.append({"code": "acquisition_missing", "detail": "nunca pasa ownership 0→control", "hard": True})
+        detail = (
+            "nunca pasa ownership 0→control (falta launch_company / acquire_team)"
+            if vehicle_mode == "business"
+            else "nunca pasa ownership 0→control"
+        )
+        fails.append({"code": "acquisition_missing", "detail": detail, "hard": True})
     val0 = _num(((start.get("team") or {}).get("valuation")))
     val1 = _num(((end.get("team") or {}).get("valuation")))
     att0 = _num(((start.get("team") or {}).get("attendance")))

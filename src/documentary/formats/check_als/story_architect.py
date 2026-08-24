@@ -374,12 +374,24 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
     if hard:
         # Deterministic repair pass — never hand the UI a broken "final" story.
         raw_beats = repair_beat_ops(raw_beats, mode=vmode)
+        raw_beats = repair_architecture(blueprint=blueprint, beats=raw_beats, mode=vmode)
         if vmode == "business":
             raw_beats = strip_sports_narrative(raw_beats)
         raw_beats = inject_life_payoffs(raw_beats, final_world)
         extra_ops = []
         if any(f.get("code") == "time_too_short" for f in hard):
             extra_ops.append({"op": "advance_time", "months": 36})
+        if any(f.get("code") == "acquisition_missing" for f in hard) and raw_beats:
+            # Nuclear inject on beat 4 (or last) if still missing after repair_architecture.
+            idx = min(3, len(raw_beats) - 1)
+            ops = list(raw_beats[idx].get("ops") or [])
+            names = {str((o or {}).get("op") or (o or {}).get("type") or "") for o in ops if isinstance(o, dict)}
+            if "launch_company" not in names and "acquire_team" not in names:
+                if vmode == "business":
+                    ops.insert(0, {"op": "launch_company", "your_cash": 8000, "investor_cash": 40000, "your_pct": 60, "investor_pct": 40, "debt_assumed": 0})
+                else:
+                    ops.insert(0, {"op": "acquire_team", "your_cash": 15000, "investor_cash": 85000, "your_pct": 51, "investor_pct": 39, "seller_pct": 10, "debt_assumed": 650000, "asking_price": 1})
+                raw_beats[idx]["ops"] = ops
         if extra_ops and raw_beats:
             ops = list(raw_beats[-1].get("ops") or [])
             ops.extend(extra_ops)

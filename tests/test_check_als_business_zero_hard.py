@@ -33,6 +33,22 @@ def test_scrub_sports_removes_playoffs():
     assert "básquet" not in low and "basquet" not in low
 
 
+def test_text_only_lanz_gets_launch_op_injected():
+    from src.documentary.formats.check_als.story_sim import repair_architecture
+
+    beats = [
+        {"beat_id": "b01", "event": "Arrancás el día", "ops": []},
+        {"beat_id": "b02", "event": "Ves la oportunidad", "ops": []},
+        {"beat_id": "b03", "event": "Hablás con inversores", "ops": []},
+        {"beat_id": "b04", "event": "Lanzás la empresa y firmás con socios", "ops": []},  # text only — no op
+        {"beat_id": "b05", "event": "Crece", "ops": [{"op": "advance_time", "months": 3}]},
+    ]
+    fixed = repair_architecture(blueprint={"business_or_vehicle": {"acquisition": {}}}, beats=beats, mode="business")
+    ops4 = [str(o.get("op")) for o in (fixed[3].get("ops") or []) if isinstance(o, dict)]
+    assert "launch_company" in ops4, ops4
+    assert float(fixed[3]["ops"][0].get("your_pct") or 0) >= 40
+
+
 def test_business_force_pre_wipes_650k_debt():
     w = empty_world_state()
     assert float((w.get("finance") or {}).get("team_debt") or 0) == 650000
