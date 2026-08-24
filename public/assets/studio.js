@@ -1672,11 +1672,11 @@ function paintCheckStory(ws, p) {
   const hardRaw = quality.hard_fails || review.hard_fails || [];
   const hardFromFlags = flags.filter((f) => f.hard);
   const hard = hardRaw.length ? hardRaw : hardFromFlags;
+  const generated = Boolean(cs.generated);
+  const approved = Boolean(p.check_story_approved || cs.approved);
   const hasStory = generated || Boolean(cs.synopsis) || Number(cs.beat_count || 0) > 0 || timeline.length > 0;
   const acq = review.acquisition || {};
   const ledger = review.ownership_ledger || fw.ledger || {};
-  const generated = Boolean(cs.generated);
-  const approved = Boolean(p.check_story_approved || cs.approved);
 
   const scoreBits = Object.keys(scores)
     .map((k) => `<span class="tag ${scores[k] === "flag" ? "bad" : ""}">${esc(k)} ${esc(scores[k])}</span>`)
