@@ -845,6 +845,43 @@ label.field {
   overflow-wrap: anywhere;
 }
 
+.pull-refresh-indicator {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  background: var(--ink);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 16px 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  transition: transform 280ms var(--ease);
+  pointer-events: none;
+}
+.pull-refresh-indicator.visible {
+  transform: translateX(-50%) translateY(0);
+}
+.pull-refresh-indicator.releasing {
+  background: var(--accent);
+}
+.pull-refresh-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 860px) {
   .hero { grid-template-columns: minmax(0, 1fr); }
   .top {

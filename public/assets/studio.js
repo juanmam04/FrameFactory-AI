@@ -3371,6 +3371,11 @@ window.addEventListener("hashchange", () => {
   let pulling = false;
   const threshold = 80;
   
+  const indicator = document.createElement("div");
+  indicator.className = "pull-refresh-indicator";
+  indicator.innerHTML = '<div class="pull-refresh-spinner"></div><span>Jalá para recargar</span>';
+  document.body.appendChild(indicator);
+  
   document.addEventListener("touchstart", (e) => {
     if (window.scrollY === 0 && e.touches.length === 1) {
       startY = e.touches[0].pageY;
@@ -3383,8 +3388,16 @@ window.addEventListener("hashchange", () => {
     currentY = e.touches[0].pageY;
     const pullDistance = currentY - startY;
     
-    if (pullDistance > threshold && window.scrollY === 0) {
-      document.body.style.overflow = "hidden";
+    if (pullDistance > 20 && window.scrollY === 0) {
+      indicator.classList.add("visible");
+      const text = indicator.querySelector("span");
+      if (pullDistance > threshold) {
+        text.textContent = "Soltá para recargar";
+        indicator.classList.add("releasing");
+      } else {
+        text.textContent = "Jalá para recargar";
+        indicator.classList.remove("releasing");
+      }
     }
   }, { passive: true });
   
@@ -3392,10 +3405,13 @@ window.addEventListener("hashchange", () => {
     if (!pulling) return;
     
     const pullDistance = currentY - startY;
-    document.body.style.overflow = "";
     
     if (pullDistance > threshold && window.scrollY === 0) {
-      location.reload();
+      const text = indicator.querySelector("span");
+      text.textContent = "Recargando...";
+      setTimeout(() => location.reload(), 200);
+    } else {
+      indicator.classList.remove("visible", "releasing");
     }
     
     pulling = false;
