@@ -1823,8 +1823,22 @@ function paintCheckStory(ws, p) {
     try {
       const data = await api(`/api/projects/${encodeURIComponent(p.id)}/story/approve`, { method: "POST" });
       state.project = data.project;
-      toast("Historia aprobada. Siguiente: Guion.");
+      toast("Historia aprobada — escribiendo guion…");
       renderProject();
+      try {
+        const scripted = await withBusy("Escribiendo guion desde la historia…", () =>
+          api(`/api/projects/${encodeURIComponent(p.id)}/script/generate`, {
+            method: "POST",
+            timeoutMs: 290000,
+          })
+        );
+        state.project = scripted.project;
+        toast("Guion listo");
+        renderProject();
+      } catch (ge) {
+        toast(ge.message || "No se pudo generar el guion — tocá Generate script");
+        renderProject();
+      }
     } catch (e) {
       toast(e.message);
     }
@@ -1993,8 +2007,11 @@ function paintScript(ws, p) {
     </div>`;
   $("#gen-script").onclick = async () => {
     try {
-      const data = await withBusy("Writing from Story Plan (1 draft + quality if needed)…", () =>
-        api(`/api/projects/${encodeURIComponent(p.id)}/script/generate`, { method: "POST" })
+      const data = await withBusy("Escribiendo guion (puede tardar ~2 min)…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/script/generate`, {
+          method: "POST",
+          timeoutMs: 290000,
+        })
       );
       state.project = data.project;
       toast("Script ready");

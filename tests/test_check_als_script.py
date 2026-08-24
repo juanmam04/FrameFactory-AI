@@ -21,6 +21,7 @@ def test_unapproved_story_blocks_script(tmp_path, monkeypatch):
 
 def test_tuteo_and_championship_validation():
     facts = {
+        "vehicle_mode": "sports_team",
         "acquisition": {
             "asking_price": 1,
             "debt_assumed": 650000,
@@ -41,6 +42,26 @@ def test_tuteo_and_championship_validation():
     )
     ok2, hard2, _ = validate_check_script(fixed, facts, strict_length=False)
     assert ok2, hard2
+
+
+def test_business_facts_no_basket_defaults():
+    from src.documentary.formats.check_als.script import locked_story_facts, pad_script_from_beats
+    from src.script_generator import count_words
+
+    arch = {
+        "blueprint": {"business_or_vehicle": {"acquisition": {"your_ownership": 60, "debt_assumed": 0}}},
+        "final_world": {
+            "ownership_ledger": {"protagonist": 60, "investors": 40, "seller": 0},
+            "acquisition": {"closed": True, "your_ownership": 60},
+        },
+        "beats": [{"beat_id": "b01", "time": "DÍA 1", "event": f"Evento {i} del negocio"} for i in range(30)],
+    }
+    facts = locked_story_facts(arch, mode="business")
+    assert facts["acquisition"]["debt_assumed"] == 0
+    assert float(facts["acquisition"]["your_ownership"]) == 60
+    assert "estadio" not in " ".join(facts["must_include_scenes"]).lower()
+    padded = pad_script_from_beats("Tienes 22 años. Lanzas la empresa.", facts, min_words=1100)
+    assert count_words(padded) >= 1100
 
 
 def test_check_image_prompt_is_specific():
