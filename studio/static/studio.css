@@ -844,7 +844,10 @@ label.field {
     padding-bottom: 0.15rem;
   }
   .top-brand { min-width: 0; }
-  .top-status { width: auto; }
+  .top-status { 
+    width: auto;
+    flex-wrap: wrap;
+  }
   .top-nav {
     position: static;
     left: auto;
@@ -865,6 +868,21 @@ label.field {
     padding: 1rem 0.9rem 7rem;
   }
   .ws-line { display: none; }
+  .ff-video-split {
+    grid-template-columns: 1fr;
+  }
+  .ff-block {
+    padding: 1.1rem 1.2rem;
+  }
+  .ff-block-head {
+    flex-wrap: wrap;
+  }
+  .ff-split-rule {
+    font-size: 0.72rem;
+  }
+  .edit-picks {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -890,7 +908,10 @@ label.field {
     text-align: center;
   }
   .ep { width: 48px; height: 48px; border-radius: 14px; }
-  .actions { gap: 0.5rem; }
+  .actions { 
+    gap: 0.5rem;
+    flex-direction: column;
+  }
   .actions .btn,
   .slot-actions .btn,
   .slot-upload {
@@ -909,14 +930,17 @@ label.field {
   }
   .stepper::-webkit-scrollbar { display: none; }
   .step { white-space: nowrap; flex: 0 0 auto; }
-  .day-card .meta { gap: 0.35rem; }
+  .day-card .meta { 
+    gap: 0.35rem;
+    grid-template-columns: 1fr;
+  }
   .day-card .meta strong { font-size: 1rem; }
   .day-dial { width: 140px; height: 140px; }
   .day-dial-num strong { font-size: 2.7rem; }
   .field textarea,
   .field input,
   .field select {
-    font-size: 16px; /* iOS: no zoom on focus */
+    font-size: 16px;
     padding: 0.85rem 0.9rem;
   }
   .script-box { min-height: 240px; }
@@ -944,11 +968,172 @@ label.field {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-.tag.bad { color: var(--danger); }
-.check-table-wrap { overflow: auto; max-height: 360px; margin: 0.5rem 0 1rem; }
-.check-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-.check-table th, .check-table td { text-align: left; padding: 0.35rem 0.45rem; border-bottom: 1px solid var(--line, #e5e7eb); vertical-align: top; }
-.check-table th { position: sticky; top: 0; background: var(--panel, #fff); }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+    white-space: nowrap;
+  }
+  .top-brand strong {
+    font-size: 1.15rem;
+  }
+  .top-brand small {
+    font-size: 0.72rem;
+  }
+  .ff-block-head h2 {
+    font-size: 1.15rem;
+  }
+  .ff-player {
+    width: 100%;
+    border-radius: 10px;
+  }
+  .idea-grid {
+    gap: 0.7rem;
+  }
+  .idea {
+    padding: 1rem 1.1rem;
+  }
+  .idea h3 {
+    font-size: 1.05rem;
+  }
+}
 
+@media (max-width: 480px) {
+  .top {
+    padding: 0.85rem 1rem;
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-top: max(0.85rem, env(safe-area-inset-top));
+  }
+  .top-brand strong {
+    font-size: 1.05rem;
+  }
+  .top-brand small {
+    font-size: 0.68rem;
+  }
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.7rem;
+  }
+  .stage {
+    padding: 0.85rem 0.75rem 6rem;
+  }
+  .h1 {
+    font-size: 1.35rem;
+  }
+  .lead {
+    font-size: 0.88rem;
+  }
+  .kicker {
+    font-size: 0.7rem;
+  }
+  .panel,
+  .day-card {
+    padding: 0.95rem 0.85rem;
+    border-radius: 16px;
+  }
+  .day-dial {
+    width: 120px;
+    height: 120px;
+  }
+  .day-dial-num strong {
+    font-size: 2.3rem;
+  }
+  .day-dial-num em {
+    font-size: 0.68rem;
+  }
+  .day-of {
+    font-size: 0.85rem;
+  }
+  .day-card .meta {
+    gap: 0.3rem;
+  }
+  .day-card .meta div {
+    padding: 0.5rem 0.4rem 0.45rem;
+  }
+  .day-card .meta span {
+    font-size: 0.58rem;
+  }
+  .day-card .meta strong {
+    font-size: 0.95rem;
+  }
+  .btn {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.95rem;
+  }
+  .row {
+    padding: 0.8rem;
+    border-radius: 16px;
+  }
+  .row h3 {
+    font-size: 0.95rem;
+  }
+  .row p {
+    font-size: 0.8rem;
+  }
+  .ep {
+    width: 44px;
+    height: 44px;
+    font-size: 0.9rem;
+  }
+  .section-head h2 {
+    font-size: 0.98rem;
+  }
+  .section-head p {
+    font-size: 0.82rem;
+  }
+  .ff-block {
+    padding: 0.95rem 1rem;
+  }
+  .ff-block-head h2 {
+    font-size: 1.05rem;
+  }
+  .ff-block-tag {
+    font-size: 0.68rem;
+    padding: 0.25rem 0.55rem;
+  }
+  .pill {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.55rem;
+  }
+  .overlay-card {
+    padding: 1.2rem 1.4rem;
+  }
+  .toast {
+    font-size: 0.88rem;
+    padding: 0.75rem 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .top-brand strong {
+    font-size: 0.98rem;
+  }
+  .top-brand small {
+    font-size: 0.65rem;
+  }
+  .nav-link {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+  }
+  .h1 {
+    font-size: 1.2rem;
+  }
+  .lead {
+    font-size: 0.82rem;
+  }
+  .stage {
+    padding: 0.75rem 0.65rem 5rem;
+  }
+  .panel,
+  .day-card {
+    padding: 0.85rem 0.75rem;
+  }
+  .btn {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  .day-dial {
+    width: 110px;
+    height: 110px;
+  }
+  .day-dial-num strong {
+    font-size: 2rem;
+  }
+}
