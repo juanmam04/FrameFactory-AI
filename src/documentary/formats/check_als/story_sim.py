@@ -583,7 +583,7 @@ def _archive_season(w: dict[str, Any], *, major_event: str = "") -> None:
         sports["playoff_history"] = ph
 
 
-def force_pre_acquisition(world: dict[str, Any]) -> dict[str, Any]:
+def force_pre_acquisition(world: dict[str, Any], *, mode: str = "sports_team") -> dict[str, Any]:
     w = derive_world(world)
     w["ownership_ledger"] = empty_ownership_ledger()
     w["acquisition"]["closed"] = False
@@ -608,16 +608,27 @@ def force_pre_acquisition(world: dict[str, Any]) -> dict[str, Any]:
     w["finance"]["overdraft_allowed"] = False
     w["finance"]["financing_open"] = False
     if _num(w["life"].get("personal_cash")) <= 0:
-        w["life"]["personal_cash"] = 18400
-    if _i(w["team"].get("attendance")) <= 0:
-        w["team"]["attendance"] = 620
-    if _i(w["team"].get("capacity")) <= 0:
-        w["team"]["capacity"] = 4800
-    if _i(w["finance"].get("team_debt")) <= 0:
-        w["finance"]["team_debt"] = 650000
-        w["finance"]["debt_service"] = 52000
-    if _i(w["finance"].get("payroll")) <= 0:
-        w["finance"]["payroll"] = 210000
+        w["life"]["personal_cash"] = 18400 if mode == "sports_team" else 12000
+    if mode == "business":
+        if _i(w["team"].get("attendance")) <= 0:
+            w["team"]["attendance"] = 0
+        if _i(w["team"].get("capacity")) <= 0:
+            w["team"]["capacity"] = 0
+        if _i(w["finance"].get("team_debt")) <= 0:
+            w["finance"]["team_debt"] = 0
+            w["finance"]["debt_service"] = 0
+        if _i(w["finance"].get("payroll")) <= 0:
+            w["finance"]["payroll"] = 0
+    else:
+        if _i(w["team"].get("attendance")) <= 0:
+            w["team"]["attendance"] = 620
+        if _i(w["team"].get("capacity")) <= 0:
+            w["team"]["capacity"] = 4800
+        if _i(w["finance"].get("team_debt")) <= 0:
+            w["finance"]["team_debt"] = 650000
+            w["finance"]["debt_service"] = 52000
+        if _i(w["finance"].get("payroll")) <= 0:
+            w["finance"]["payroll"] = 210000
     return derive_world(w)
 
 
@@ -682,6 +693,21 @@ def _apply_one_op(w: dict[str, Any], op: str, raw: dict[str, Any], beat_id: str)
         if pay:
             _cash_add(w, -pay, kind="debt_payment", reason="servicio de deuda", beat_id=beat_id, source="team", destination="creditors")
             _debt_add(w, -pay, kind="debt_payment", reason="servicio de deuda", beat_id=beat_id)
+        return w
+
+    if op == "launch_company":
+        raw = dict(raw)
+        raw.setdefault("your_cash", raw.get("your_cash_contribution") or 8000)
+        raw.setdefault("investor_cash", raw.get("local_investors_cash") or 40000)
+        raw.setdefault("your_pct", raw.get("your_ownership") or 60)
+        raw.setdefault("investor_pct", raw.get("investor_ownership") or 40)
+        raw.setdefault("debt_assumed", 0)
+        raw.setdefault("asking_price", 0)
+        w = _apply_one_op(w, "acquire_team", raw, beat_id)
+        loc = w.get("locations") or {}
+        loc["office"] = loc.get("office") or "tu habitación convertida en set de grabación"
+        w["locations"] = loc
+        _hit(w, "company_launched")
         return w
 
     if op == "acquire_team":
@@ -1293,37 +1319,52 @@ def repair_architecture(
     *,
     blueprint: dict[str, Any],
     beats: list[dict[str, Any]],
+    mode: str = "sports_team",
 ) -> list[dict[str, Any]]:
     rows = [dict(b) for b in beats or [] if isinstance(b, dict)]
     if not rows:
         return []
     has_acq = any(
-        any(str((op or {}).get("op") or "") == "acquire_team" for op in (b.get("ops") or []) if isinstance(op, dict))
-        or any(w in str(b.get("event") or "").lower() for w in ("firm", "compr", "adquir", "escritura"))
+        any(str((op or {}).get("op") or "") in ("acquire_team", "launch_company") for op in (b.get("ops") or []) if isinstance(op, dict))
+        or any(w in str(b.get("event") or "").lower() for w in ("firm", "compr", "adquir", "escritura", "lanz", "fund"))
         for b in rows
     )
     acq = (blueprint.get("business_or_vehicle") or {}).get("acquisition") or {}
     if not has_acq and len(rows) >= 4:
         target = rows[3]
         ops = list(target.get("ops") or [])
-        ops.insert(
-            0,
-            {
-                "op": "acquire_team",
-                "your_cash": acq.get("your_cash_contribution") or 15000,
-                "investor_cash": acq.get("local_investors_cash") or 85000,
-                "your_pct": acq.get("your_ownership") or 51,
-                "investor_pct": acq.get("investor_ownership") or 39,
-                "seller_pct": acq.get("seller_retained") or 10,
-                "debt_assumed": acq.get("debt_assumed") or 650000,
-                "asking_price": acq.get("asking_price") or 1,
-                "seller_financing": acq.get("seller_financing") or 200000,
-            },
-        )
+        if mode == "business":
+            ops.insert(
+                0,
+                {
+                    "op": "launch_company",
+                    "your_cash": acq.get("your_cash_contribution") or 8000,
+                    "investor_cash": acq.get("local_investors_cash") or 40000,
+                    "your_pct": acq.get("your_ownership") or 60,
+                    "investor_pct": acq.get("investor_ownership") or 40,
+                    "debt_assumed": acq.get("debt_assumed") or 0,
+                },
+            )
+            target["event"] = target.get("event") or "Lanzás la empresa: tu cash, inversores, y el 60%."
+        else:
+            ops.insert(
+                0,
+                {
+                    "op": "acquire_team",
+                    "your_cash": acq.get("your_cash_contribution") or 15000,
+                    "investor_cash": acq.get("local_investors_cash") or 85000,
+                    "your_pct": acq.get("your_ownership") or 51,
+                    "investor_pct": acq.get("investor_ownership") or 39,
+                    "seller_pct": acq.get("seller_retained") or 10,
+                    "debt_assumed": acq.get("debt_assumed") or 650000,
+                    "asking_price": acq.get("asking_price") or 1,
+                    "seller_financing": acq.get("seller_financing") or 200000,
+                },
+            )
+            target["event"] = target.get("event") or "Firmás la compra: un peso, la deuda, y el 51%."
         target["ops"] = ops
-        target["event"] = target.get("event") or "Firmás la compra: un peso, la deuda, y el 51%."
         target["story_purpose"] = "first_commitment"
-        target["reward_or_setback"] = "reward:owns_team"
+        target["reward_or_setback"] = "reward:owns_team" if mode == "sports_team" else "reward:company_launched"
         target["metric_reveal"] = ["OWNERSHIP", "CASH", "TEAM_DEBT"]
 
     for i, b in enumerate(rows):
@@ -1545,16 +1586,27 @@ def rewrite_downgraded_championship(beats: list[dict[str, Any]]) -> list[dict[st
     return out
 
 
-def sync_loop_payoffs(beats: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def sync_loop_payoffs(beats: list[dict[str, Any]], *, mode: str = "sports_team") -> list[dict[str, Any]]:
     """Pay important loops when the world already answered them."""
     rules = [
-        (("comprarlo", "adquir", "podrás compr"), ("acquire_team", "owns_team"), "cerraste la compra"),
-        (("cerrar", "quiebra", "salvar", "flote", "evitar que cierre"), ("owns_team", "acquire_team"), "el equipo no cerró: es tuyo"),
-        (("entrenador", "coach"), ("hire_coach", "coach_hired", "first_win"), "el nuevo coach movió al equipo"),
-        (("sponsor", "patrocin"), ("sponsor_deal", "first_sponsor"), "llegó un sponsor real"),
-        (("estadio", "lleno", "asistencia"), ("sold_out", "ticket_night"), "el estadio se llena"),
-        (("competir", "playoff", "de verdad"), ("playoffs", "playoff_berth", "playoffs_qualified", "championship", "finals"), "el equipo compitió de verdad"),
+        (("comprarlo", "adquir", "podrás compr"), ("acquire_team", "owns_team", "launch_company", "company_launched"), "cerraste la compra"),
+        (("lanz", "fund", "empresa", "negocio"), ("launch_company", "company_launched", "first_client"), "la empresa arrancó"),
+        (("renunc", "trabajo", "oficina"), ("quit_job",), "dejaste el trabajo"),
+        (("viral", "views", "suscript", "cliente"), ("viral_hit", "first_client", "sponsor_deal"), "creció de verdad"),
     ]
+    if mode == "sports_team":
+        rules.extend([
+            (("cerrar", "quiebra", "salvar", "flote", "evitar que cierre"), ("owns_team", "acquire_team"), "el equipo no cerró: es tuyo"),
+            (("entrenador", "coach"), ("hire_coach", "coach_hired", "first_win"), "el nuevo coach movió al equipo"),
+            (("estadio", "lleno", "asistencia"), ("sold_out", "ticket_night"), "el estadio se llena"),
+            (("competir", "playoff", "de verdad"), ("playoffs", "playoff_berth", "playoffs_qualified", "championship", "finals"), "el equipo compitió de verdad"),
+        ])
+    else:
+        rules.extend([
+            (("cash", "caja", "runway"), ("owner_injection", "investor_injection", "sponsor_deal", "credit_line"), "la caja aguantó"),
+            (("deuda", "debt"), ("pay_debt", "credit_line", "bridge_loan"), "la deuda dejó de ser letal"),
+        ])
+    rules.append((("sponsor", "patrocin"), ("sponsor_deal", "first_sponsor"), "llegó un sponsor real"))
     seen_ops: set[str] = set()
     seen_ms: set[str] = set()
     for b in beats or []:
@@ -1596,4 +1648,72 @@ def sync_loop_payoffs(beats: list[dict[str, Any]]) -> list[dict[str, Any]]:
                         "question": loop.get("question"),
                     }
     return beats
+
+
+SPORTS_WORDS = (
+    "campeonato",
+    "campeon",
+    "playoff",
+    "playoffs",
+    "estadio",
+    "canasta",
+    "entrenador",
+    "temporada",
+    "básquet",
+    "basquet",
+    "liga",
+    "anillo",
+    "vestuario",
+    "utilería en el estadio",
+)
+
+
+def strip_sports_narrative(beats: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Remove sports ops and scrub sports language from business-mode beats."""
+    sports_ops = {
+        "game_played", "game_won", "game_lost", "win_game", "lose_game", "season_stretch",
+        "new_season", "playoffs_qualified", "playoff_berth", "playoff_round_won",
+        "playoff_eliminated", "final_reached", "championship_won", "championship",
+        "injury", "player_signed", "sign_player", "player_released", "hire_coach",
+        "coach_hired", "coach_fired", "ticket_night",
+    }
+    out = []
+    for b in beats or []:
+        row = dict(b)
+        ops = [o for o in (row.get("ops") or []) if isinstance(o, dict) and str(o.get("op") or "") not in sports_ops]
+        row["ops"] = ops
+        for key in ("event", "cause", "consequence", "visual_opportunity"):
+            text = str(row.get(key) or "")
+            low = text.lower()
+            if any(w in low for w in SPORTS_WORDS):
+                for w in SPORTS_WORDS:
+                    text = re.sub(rf"(?i)\b{re.escape(w)}\w*\b", "crecimiento", text)
+                row[key] = text
+        out.append(row)
+    return out
+
+
+def repair_beat_ops(beats: list[dict[str, Any]], *, mode: str = "sports_team") -> list[dict[str, Any]]:
+    """Ensure money ops have amounts so the simulator logs financial_events."""
+    out = []
+    for b in beats or []:
+        row = dict(b)
+        ops = []
+        for raw in row.get("ops") or []:
+            if not isinstance(raw, dict):
+                continue
+            op = dict(raw)
+            name = str(op.get("op") or "").lower()
+            if name in ("equity_sale", "sell_equity", "dilution"):
+                if not op.get("pct") and not op.get("percent"):
+                    op["pct"] = 10
+                if not op.get("cash"):
+                    op["cash"] = 25000 if mode == "business" else 50000
+            if name in ("launch_company", "acquire_team"):
+                op.setdefault("your_cash", 8000 if mode == "business" else 15000)
+                op.setdefault("investor_cash", 40000 if mode == "business" else 85000)
+            ops.append(op)
+        row["ops"] = ops
+        out.append(row)
+    return out
 

@@ -23,8 +23,17 @@ from src.documentary.formats.check_als.story_sim import (
     force_pre_acquisition,
     inject_life_payoffs,
     repair_architecture,
+    repair_beat_ops,
     rewrite_downgraded_championship,
+    strip_sports_narrative,
     sync_loop_payoffs,
+)
+from src.documentary.formats.check_als.story_vehicle import (
+    beats_system,
+    blueprint_system,
+    default_open_loops,
+    phase_specs,
+    vehicle_mode,
 )
 from src.documentary.formats.check_als.story_validate import assemble_review, validate_story_quality
 from src.documentary.openai_key import openai_api_key
@@ -166,36 +175,32 @@ def generate_check_story(
     client = OpenAI(api_key=key)
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     user_ctx = _project_context(project)
+    vmode = vehicle_mode(project)
+    user_ctx["vehicle_mode"] = vmode
+    user_ctx["instruction"] += (
+        " MODO NEGOCIO: empresa/creator — cero básquet/playoffs/campeonato."
+        if vmode == "business"
+        else " MODO DEPORTE: equipo de básquet ficticio."
+    )
 
-    raw_bp = _chat_json(client, model, BLUEPRINT_SYSTEM, user_ctx, temperature=0.8, timeout=180.0, max_tokens=7000)
+    raw_bp = _chat_json(client, model, blueprint_system(vmode), user_ctx, temperature=0.8, timeout=180.0, max_tokens=7000)
     blueprint, _syn_unused, initial_world, initial_story, initial_prog = _extract_blueprint_bundle(raw_bp)
-    initial_world = force_pre_acquisition(initial_world)
+    initial_world = force_pre_acquisition(initial_world, mode=vmode)
     if not (initial_story.get("open_loops") or []):
-        initial_story["open_loops"] = [
-            {"id": "buy", "question": "¿realmente podrás comprarlo?", "opened_at": "start", "status": "open", "important": True, "expected_payoff_window": "adquisición"},
-            {"id": "save_team", "question": "¿podrás evitar que cierre?", "opened_at": "start", "status": "open", "important": True, "expected_payoff_window": "año 1"},
-            {"id": "debt", "question": "¿podrás hacer que el equipo sea lo suficientemente sano como para que la deuda deje de amenazar su existencia?", "opened_at": "start", "status": "open", "important": True, "expected_payoff_window": "año 2-4"},
-            {"id": "coach", "question": "¿funcionará el nuevo entrenador?", "opened_at": "start", "status": "open", "important": True, "expected_payoff_window": "primera temporada seria"},
-            {"id": "compete", "question": "¿puede este equipo competir de verdad?", "opened_at": "start", "status": "open", "important": True, "expected_payoff_window": "playoffs/final"},
-            {"id": "how_far", "question": "¿qué tan lejos puede llegar?", "opened_at": "start", "status": "open", "important": False, "intentional_unresolved": True, "expected_payoff_window": "futuro"},
-        ]
+        initial_story["open_loops"] = default_open_loops(vmode)
     ending_type = str(blueprint.get("ending_type") or "triumphant").lower()
     if ending_type not in ("triumphant", "open_future", "comeback", "empire_continues"):
         blueprint["ending_type"] = "triumphant"
         ending_type = "triumphant"
 
-    phase_specs = [
-        ("p1", "Tramo 1 AGE 22: vida ordinaria → oportunidad → CÓMO se compra (ops: acquire_team) → oh shit, sos dueño. 14-16 beats. Temporada 1 puede arrancar mal. NO campeonato. Abrí loops. Un setback no-lesión."),
-        ("p2", "Tramo 2 AGE 22-23: reality hits, first proof, la vida EMPIEZA a cambiar. Cerrá Temporada 1 con season_stretch + record real + new_season si corresponde. 14-16 beats. NO campeonato."),
-        ("p3", "Tramo 3 AGE 23-25: apuesta de DUEÑO (roster/facilities), owner_crisis, costos, arranque flojo, decisión (inyectar / vender equity / recortar / apostar). Progreso deportivo de otra temporada (new_season + season_stretch). Primer gran payoff de vida. 14-18 beats. Championship solo si el snapshot lo permite."),
-        ("p4", "Tramo 4 AGE 25-27: recovery, corrida deportiva (playoffs/final si el state lo gana), debt_risk pasa a manageable/healthy AUNQUE quede deuda, payoff de vida, 1 loop a futuro intencional. ending_type=" + ending_type + ". 14-18 beats. No moraleja. No prosa de modelo."),
-    ]
+    phase_specs_list = phase_specs(vmode, ending_type)
     beats: list[dict[str, Any]] = []
     world = deepcopy(initial_world)
     story = deepcopy(initial_story)
     prog = deepcopy(initial_prog)
     start_id = 1
-    for phase_id, brief in phase_specs:
+    beats_sys = beats_system(vmode)
+    for phase_id, brief in phase_specs_list:
         payload = {
             "phase": phase_id,
             "brief": brief,
@@ -213,13 +218,13 @@ def generate_check_story(
             "beats_so_far": _beats_summary(beats),
             "milestones_hit": (world.get("milestones") or []),
         }
-        raw = _chat_json(client, model, BEATS_SYSTEM, payload, temperature=0.7, timeout=180.0, max_tokens=12000)
+        raw = _chat_json(client, model, beats_sys, payload, temperature=0.7, timeout=180.0, max_tokens=12000)
         act_beats = _extract_beats(raw, start_id)
         if len(act_beats) < 12:
             raw = _chat_json(
                 client,
                 model,
-                BEATS_SYSTEM + "\nDevolvé 15-18 beats. Cada uno con ops. No resumas años en un beat.",
+                beats_sys + "\nDevolvé 15-18 beats. Cada uno con ops. No resumas años en un beat.",
                 payload,
                 temperature=0.5,
                 timeout=180.0,
@@ -294,12 +299,14 @@ def generate_check_story(
 
 
 def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any]) -> dict[str, Any]:
+    vmode = vehicle_mode(project)
     blueprint = architecture.get("blueprint") if isinstance(architecture.get("blueprint"), dict) else empty_blueprint()
-    initial_world = force_pre_acquisition(_merge(empty_world_state(), architecture.get("initial_world")))
+    initial_world = force_pre_acquisition(_merge(empty_world_state(), architecture.get("initial_world")), mode=vmode)
     initial_story = _merge(empty_story_state(), architecture.get("initial_story"))
     initial_prog = _merge(empty_progression_state(), architecture.get("initial_progression"))
     raw_beats = architecture.get("beats") if isinstance(architecture.get("beats"), list) else []
-    raw_beats = repair_architecture(blueprint=blueprint, beats=raw_beats)
+    raw_beats = repair_beat_ops(raw_beats, mode=vmode)
+    raw_beats = repair_architecture(blueprint=blueprint, beats=raw_beats, mode=vmode)
     beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
     final_world = beats[-1]["world_state_after"] if beats else initial_world
     patched = inject_life_payoffs(raw_beats, final_world)
@@ -307,8 +314,11 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
         raw_beats = patched
         beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
         final_world = beats[-1]["world_state_after"] if beats else initial_world
+    if vmode == "business":
+        beats = strip_sports_narrative(beats)
+        raw_beats = strip_sports_narrative(raw_beats)
     beats = rewrite_downgraded_championship(beats)
-    beats = sync_loop_payoffs(beats)
+    beats = sync_loop_payoffs(beats, mode=vmode)
     final_world = beats[-1]["world_state_after"] if beats else initial_world
     final_story = beats[-1]["story_state_after"] if beats else initial_story
     final_prog = beats[-1]["progression_after"] if beats else initial_prog
@@ -337,10 +347,11 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
         final_world=final_world,
         initial_prog=initial_prog,
         final_prog=final_prog,
+        vehicle_mode=vmode,
     )
     hard = quality.get("hard_fails") or [f for f in (quality.get("flags") or []) if f.get("hard")]
     if hard and client and model:
-        # one targeted repair pass on missing life/time, then re-validate
+        raw_beats = repair_beat_ops(raw_beats, mode=vmode)
         raw_beats = inject_life_payoffs(raw_beats, final_world)
         extra_ops = []
         if any(f.get("code") == "time_too_short" for f in hard):
@@ -350,8 +361,10 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             ops.extend(extra_ops)
             raw_beats[-1]["ops"] = ops
         beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
+        if vmode == "business":
+            beats = strip_sports_narrative(beats)
         beats = rewrite_downgraded_championship(beats)
-        beats = sync_loop_payoffs(beats)
+        beats = sync_loop_payoffs(beats, mode=vmode)
         final_world = beats[-1]["world_state_after"] if beats else initial_world
         final_story = beats[-1]["story_state_after"] if beats else initial_story
         final_prog = beats[-1]["progression_after"] if beats else initial_prog
@@ -364,6 +377,7 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             final_world=final_world,
             initial_prog=initial_prog,
             final_prog=final_prog,
+            vehicle_mode=vmode,
         )
         hard = quality.get("hard_fails") or [f for f in (quality.get("flags") or []) if f.get("hard")]
         # Persist even if gates fail: the human reads the movie. Approval is separate.

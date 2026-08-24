@@ -95,18 +95,27 @@ def transformation_diff(initial: dict[str, Any], final: dict[str, Any], beats: l
     }
 
 
-def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[str, Any], final: dict[str, Any]) -> dict[str, Any]:
+def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[str, Any], final: dict[str, Any], *, vehicle_mode: str = "sports_team") -> dict[str, Any]:
     flags: list[dict[str, Any]] = []
     text = synopsis or ""
     words = len(re.findall(r"\S+", text))
     low = text.lower()
-    needed = {
-        "acquisition": ("peso", "$1", "deuda", "51", "porcentaje", "inversores", "seller", "financi", "asumi"),
-        "personal": ("renunci", "departamento", "padres", "oficina", "mud"),
-        "setback": ("deuda", "crisis", "vence", "sponsor", "lesion", "lesión", "multa", "instal"),
-        "payoff": ("playoff", "lleno", "sold", "palco", "dueño", "valor"),
-        "final_life": ("años", "age", "ahora", "hoy", "estadio"),
-    }
+    if vehicle_mode == "business":
+        needed = {
+            "launch": ("lanz", "fund", "empresa", "startup", "negocio", "creador"),
+            "personal": ("renunci", "departamento", "oficina", "mud", "casa"),
+            "setback": ("crisis", "deuda", "cash", "cliente", "compet"),
+            "payoff": ("contrato", "sponsor", "viral", "millón", "equipo", "oficina"),
+            "final_life": ("años", "ahora", "hoy", "dueño", "founder"),
+        }
+    else:
+        needed = {
+            "acquisition": ("peso", "$1", "deuda", "51", "porcentaje", "inversores", "seller", "financi", "asumi"),
+            "personal": ("renunci", "departamento", "padres", "oficina", "mud"),
+            "setback": ("deuda", "crisis", "vence", "sponsor", "lesion", "lesión", "multa", "instal"),
+            "payoff": ("playoff", "lleno", "sold", "palco", "dueño", "valor"),
+            "final_life": ("años", "age", "ahora", "hoy", "estadio"),
+        }
     for name, keys in needed.items():
         if not any(k in low for k in keys):
             flags.append({"code": "synopsis_missing", "detail": f"falta {name} concreto"})
@@ -116,8 +125,10 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
             break
     sports = (final or {}).get("sports") or {}
     champs = int(sports.get("championships") or 0)
-    if any(w in low for w in ("campeonat", "campeón", "campeon", "anillo")) and champs < 1:
+    if vehicle_mode == "sports_team" and any(w in low for w in ("campeonat", "campeón", "campeon", "anillo")) and champs < 1:
         flags.append({"code": "championship_inconsistent", "detail": "synopsis dice campeonato y sports_state no", "hard": True})
+    if vehicle_mode == "business" and any(w in low for w in ("campeonat", "playoff", "básquet", "basquet", "estadio")):
+        flags.append({"code": "sports_in_business_story", "detail": "synopsis de negocio menciona deporte", "hard": True})
     hist = sports.get("season_history") or []
     if 900 <= words <= 1200 and not any(f.get("code") == "synopsis_missing" for f in flags):
         ok = True
@@ -134,6 +145,7 @@ def validate_hard_gates(
     initial_world: dict[str, Any],
     final_world: dict[str, Any],
     blueprint: dict[str, Any],
+    vehicle_mode: str = "sports_team",
 ) -> dict[str, Any]:
     fails: list[dict[str, Any]] = []
     start = initial_world or {}
@@ -154,13 +166,17 @@ def validate_hard_gates(
             fails.append({"code": "ownership_total", "beat_id": bid, "detail": f"sum={total}", "hard": True})
         if _num((before.get("ownership_ledger") or {}).get("protagonist")) <= 0.5 and _num(ledger.get("protagonist")) >= 40:
             acquired = True
+        ops = beat.get("ops") or []
+        if vehicle_mode == "business" and any(str((o or {}).get("op") or "") in ("launch_company",) for o in ops if isinstance(o, dict)):
+            acquired = True
         blob = _txt(beat)
-        if any(w in blob for w in ("campeonat", "campeón", "campeon ", "anillo")):
+        if vehicle_mode == "sports_team" and any(w in blob for w in ("campeonat", "campeón", "campeon ", "anillo")):
             champ_text = True
             sports = after.get("sports") or {}
             if not championship_allowed(after) and _num(sports.get("championships")) < 1:
                 fails.append({"code": "championship_inconsistent", "beat_id": bid, "detail": "campeonato sin temporada", "hard": True})
-        ops = beat.get("ops") or []
+        if vehicle_mode == "business" and any(w in blob for w in ("campeonat", "playoff", "básquet", "basquet", "estadio")):
+            fails.append({"code": "sports_in_business_story", "beat_id": bid, "detail": "beat de negocio menciona deporte", "hard": True})
         if any(str((o or {}).get("op")) in ("equity_sale", "sell_equity", "dilution") for o in ops if isinstance(o, dict)):
             equity_sale = True
             bown = _num((before.get("ownership_ledger") or {}).get("protagonist"))
@@ -182,6 +198,7 @@ def validate_hard_gates(
             fails.append({"code": "negative_cash", "beat_id": bid, "detail": f"team_cash={cash} sin financiamiento", "hard": True})
         money_ops = {
             "acquire_team",
+            "launch_company",
             "sponsor_deal",
             "sponsor",
             "ticket_night",
@@ -243,22 +260,23 @@ def validate_hard_gates(
     age1 = _num(((end.get("time") or {}).get("protagonist_age")) or age0)
     if age1 < age0 + 2:
         fails.append({"code": "time_too_short", "detail": f"edad {age0}→{age1} (hace falta una vida de varios años)", "hard": True})
-    if champ_text:
+    if vehicle_mode == "sports_team" and champ_text:
         rec = (end.get("sports") or {})
         hist = rec.get("season_history") or []
         hist_champ = any(bool(h.get("championship")) for h in hist if isinstance(h, dict))
         if _num(rec.get("championships")) < 1 and str(rec.get("playoff_status")) != "champion" and not hist_champ:
             fails.append({"code": "championship_inconsistent", "detail": "texto de campeonato vs sports_state", "hard": True})
     sports_end = end.get("sports") or {}
-    rec_games = _num(sports_end.get("games_played"))
-    rec_w = _num(sports_end.get("wins"))
-    rec_l = _num(sports_end.get("losses"))
-    if rec_games and abs(rec_games - (rec_w + rec_l)) > 0.5:
-        fails.append({"code": "season_record_inconsistent", "detail": f"{rec_w}-{rec_l} vs games={rec_games}", "hard": True})
-    hist = sports_end.get("season_history") or []
-    playoff_narrated = any("playoff" in _txt(b).lower() for b in beats or [])
-    if playoff_narrated and rec_games <= 0 and not hist:
-        fails.append({"code": "season_record_inconsistent", "detail": "playoffs narrados sin temporada en sports_state", "hard": True})
+    if vehicle_mode == "sports_team":
+        rec_games = _num(sports_end.get("games_played"))
+        rec_w = _num(sports_end.get("wins"))
+        rec_l = _num(sports_end.get("losses"))
+        if rec_games and abs(rec_games - (rec_w + rec_l)) > 0.5:
+            fails.append({"code": "season_record_inconsistent", "detail": f"{rec_w}-{rec_l} vs games={rec_games}", "hard": True})
+        hist = sports_end.get("season_history") or []
+        playoff_narrated = any("playoff" in _txt(b).lower() for b in beats or [])
+        if playoff_narrated and rec_games <= 0 and not hist:
+            fails.append({"code": "season_record_inconsistent", "detail": "playoffs narrados sin temporada en sports_state", "hard": True})
     ledger_end = end.get("ownership_ledger") or {}
     if ledger_end and abs(ledger_total(ledger_end) - 100.0) > 0.6:
         fails.append({"code": "ownership_total", "detail": f"final sum={ledger_total(ledger_end)}", "hard": True})
@@ -389,6 +407,7 @@ def validate_story_quality(
     final_world: dict[str, Any],
     initial_prog: dict[str, Any],
     final_prog: dict[str, Any],
+    vehicle_mode: str = "sports_team",
 ) -> dict[str, Any]:
     flags: list[dict[str, Any]] = []
     scores: dict[str, Any] = {}
@@ -564,7 +583,7 @@ def validate_story_quality(
             flags.append({"code": "missing_ending", "detail": "no hay escena/estado final"})
 
     words = len(re.findall(r"\S+", synopsis or ""))
-    syn_rep = validate_synopsis(synopsis, blueprint, initial_world, final_world)
+    syn_rep = validate_synopsis(synopsis, blueprint, initial_world, final_world, vehicle_mode=vehicle_mode)
     if syn_rep.get("flags"):
         flags.extend(syn_rep["flags"])
     scores["synopsis"] = "pass" if syn_rep.get("ok") else "fail"
@@ -575,7 +594,7 @@ def validate_story_quality(
     if env_changes < 3 and env_start == env_end:
         flags.append({"code": "life_not_visual", "detail": "pocos cambios visibles de vida/entorno"})
 
-    hard = validate_hard_gates(beats, initial_world=initial_world, final_world=final_world, blueprint=blueprint)
+    hard = validate_hard_gates(beats, initial_world=initial_world, final_world=final_world, blueprint=blueprint, vehicle_mode=vehicle_mode)
     flags.extend(hard["fails"])
     scores["continuity"] = "pass" if hard["ok"] else "fail"
     soft = validate_continuity(beats, initial_world=initial_world)
