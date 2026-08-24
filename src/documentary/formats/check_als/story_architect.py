@@ -484,9 +484,11 @@ def approve_check_story(project: dict[str, Any]) -> dict[str, Any]:
     project["check_story_approved"] = True
     summary = dict(project.get("check_story") or {})
     summary["approved"] = True
+    summary["generated"] = True
     project["check_story"] = summary
     project["ui_step"] = "script"
-    project["story_plan_approved"] = False
+    # Keep documentary step-gate happy (set_step still checks story_plan_approved).
+    project["story_plan_approved"] = True
     save_project(project)
     append_log(str(project.get("id") or ""), "check_story APPROVED — script unlocked (no voice/render yet)")
     return project

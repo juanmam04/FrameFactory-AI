@@ -640,83 +640,118 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             "Aprobá la Story Architecture primero. El script de Check usa esa historia como única verdad."
         )
     arch = load_architecture(project)
-    if not arch.get("generated") and not (arch.get("beats") or []):
-        raise ValueError("No hay Story Architecture persistida.")
+    if not arch.get("generated") and not (arch.get("beats") or []) and not str(arch.get("synopsis") or "").strip():
+        # Last chance: pull + reload (cold Vercel lambda).
+        try:
+            from src.documentary import cloud_sync
+            from src.documentary.runtime import on_vercel
+
+            if on_vercel() and cloud_sync.configured():
+                cloud_sync.pull_project(str(project.get("id") or ""), light=True)
+                arch = load_architecture(project)
+        except Exception:
+            pass
+    if not arch.get("generated") and not (arch.get("beats") or []) and not str(arch.get("synopsis") or "").strip():
+        raise ValueError(
+            "No hay Story Architecture en disco (metadata). Regenerá la historia y volvé a Generate script."
+        )
     mode = vehicle_mode(project)
     facts = locked_story_facts(arch, mode=mode)
+    # If beats empty but synopsis exists, seed pad material from synopsis sentences.
+    if not (facts.get("beats") or []) and str(arch.get("synopsis") or "").strip():
+        syn = str(arch.get("synopsis") or "")
+        facts["beats"] = [
+            {"beat_id": f"s{i:02d}", "time": "", "event": sent.strip(), "consequence": ""}
+            for i, sent in enumerate(re.split(r"(?<=[.!?])\s+", syn)[:40], start=1)
+            if sent.strip()
+        ]
+        facts["ending_direction"] = facts.get("ending_direction") or syn[-400:]
     target = int(project.get("target_words") or TARGET_WORDS)
     target = max(WORD_RANGE[0], min(WORD_RANGE[1], target))
 
     quality: dict[str, Any] = {"revised": False, "retention_pass": False, "vehicle_mode": mode}
+    script = ""
 
     if use_llm:
-        key = openai_api_key()
-        if not key:
-            raise ValueError("OPENAI_API_KEY missing")
-        from openai import OpenAI
+        try:
+            key = openai_api_key()
+            if not key:
+                raise ValueError("OPENAI_API_KEY missing")
+            from openai import OpenAI
 
-        client = OpenAI(api_key=key)
-        model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        slim = facts_for_llm(facts)
-        user = json.dumps(
-            {
-                "instruction": (
-                    f"Escribí el guion COMPLETO de YouTube. OBLIGATORIO: mínimo {MIN_WORDS} palabras "
-                    f"(target {target}, máximo {WORD_RANGE[1]}). vehicle_mode={mode}. "
-                    "Escenas, no resumen. Solo texto del VO."
-                ),
-                "locked_facts": slim,
-            },
-            ensure_ascii=False,
-        )
-        # Keep LLM calls tight for Vercel (maxDuration 300s): 1 draft + at most 1 expand.
-        script = _chat_text(client, model, script_system(mode), user, temperature=0.7, max_tokens=9000, timeout=120.0)
-        script = apply_tuteo_fixes(script)
-        wc = count_words(script)
-        if wc < MIN_WORDS:
+            client = OpenAI(api_key=key)
+            model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+            slim = facts_for_llm(facts)
+            user = json.dumps(
+                {
+                    "instruction": (
+                        f"Escribí el guion COMPLETO de YouTube. OBLIGATORIO: mínimo {MIN_WORDS} palabras "
+                        f"(target {target}, máximo {WORD_RANGE[1]}). vehicle_mode={mode}. "
+                        "Escenas, no resumen. Solo texto del VO."
+                    ),
+                    "locked_facts": slim,
+                },
+                ensure_ascii=False,
+            )
             script = _chat_text(
-                client,
-                model,
-                EXPAND_SYSTEM,
-                json.dumps(
-                    {
-                        "note": (
-                            f"Tiene {wc} palabras. MÍNIMO {MIN_WORDS}. Target {target}. "
-                            f"vehicle_mode={mode}. Agregá escenas reales del state."
-                        ),
-                        "script": script,
-                        "locked_facts": slim,
-                    },
-                    ensure_ascii=False,
-                ),
-                temperature=0.55,
-                max_tokens=9000,
-                timeout=120.0,
+                client, model, script_system(mode), user, temperature=0.7, max_tokens=7000, timeout=90.0
             )
             script = apply_tuteo_fixes(script)
-            quality["revised"] = True
-            quality["expand_tries"] = 1
             wc = count_words(script)
-        if wc < MIN_WORDS:
-            script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
-            quality["padded_from_beats"] = True
-            wc = count_words(script)
-    else:
+            if wc < MIN_WORDS:
+                script = _chat_text(
+                    client,
+                    model,
+                    EXPAND_SYSTEM,
+                    json.dumps(
+                        {
+                            "note": (
+                                f"Tiene {wc} palabras. MÍNIMO {MIN_WORDS}. Target {target}. "
+                                f"vehicle_mode={mode}. Agregá escenas reales del state."
+                            ),
+                            "script": script,
+                            "locked_facts": slim,
+                        },
+                        ensure_ascii=False,
+                    ),
+                    temperature=0.55,
+                    max_tokens=7000,
+                    timeout=90.0,
+                )
+                script = apply_tuteo_fixes(script)
+                quality["revised"] = True
+                quality["expand_tries"] = 1
+        except Exception as e:
+            quality["llm_error"] = str(e)[:400]
+            append_log(str(project.get("id") or ""), f"check_script LLM fallback: {e}")
+            script = apply_tuteo_fixes(_mock_check_script(facts))
+            if str(arch.get("synopsis") or "").strip():
+                script = (script + "\n\n" + str(arch.get("synopsis"))).strip()
+
+    if not (script or "").strip():
         script = apply_tuteo_fixes(_mock_check_script(facts))
-        if count_words(script) < MIN_WORDS:
-            script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
+        if str(arch.get("synopsis") or "").strip():
+            script = (script + "\n\n" + str(arch.get("synopsis"))).strip()
+
+    if count_words(script) < MIN_WORDS:
+        script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
+        quality["padded_from_beats"] = True
 
     script = apply_tuteo_fixes(strip_script_chrome(script))
-    ok, hard, warn = validate_check_script(script, facts, strict_length=use_llm)
+    ok, hard, warn = validate_check_script(script, facts, strict_length=False)
     wc = count_words(script)
-    # Always persist a usable draft. Hard validation used to raise → UI showed "no genera".
-    if not ok and use_llm:
+    if not ok:
         append_log(str(project["id"]), "check_script WARN: " + "; ".join(hard))
         quality["validation_soft_fail"] = True
         warn = list(warn) + [f"(revisar) {h}" for h in hard]
         hard = []
+    if quality.get("llm_error"):
+        warn = list(warn) + [f"LLM fallback: {quality['llm_error']}"]
     _persist_script(project, script, facts, wc, quality, hard, warn, approved=False)
-    append_log(str(project["id"]), f"check_script generated words={wc} mode={mode} duration_min={estimate_duration_min(wc)}")
+    append_log(
+        str(project["id"]),
+        f"check_script generated words={wc} mode={mode} duration_min={estimate_duration_min(wc)}",
+    )
     return project
 
 

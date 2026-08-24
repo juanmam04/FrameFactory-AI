@@ -1528,14 +1528,24 @@ function renderProject() {
   stage()
     .querySelectorAll("[data-step]")
     .forEach((btn) => {
-      btn.onclick = () => {
+      btn.onclick = async () => {
         const next = btn.dataset.step;
         state.project.ui_step = next;
         renderProject();
-        api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
-          method: "PATCH",
-          body: JSON.stringify({ step: next }),
-        }).catch((e) => toast(e.message));
+        try {
+          const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+            method: "PATCH",
+            body: JSON.stringify({ step: next }),
+          });
+          if (data?.project) {
+            state.project = data.project;
+            if (String(data.project.ui_step || "") !== next) {
+              renderProject();
+            }
+          }
+        } catch (e) {
+          toast(e.message);
+        }
       };
     });
   const ws = $("#ws");
@@ -2005,7 +2015,7 @@ function paintScript(ws, p) {
         <textarea id="script" class="script-box">${esc(p.script)}</textarea>
       </div>
     </div>`;
-  $("#gen-script").onclick = async () => {
+  const runGenScript = async () => {
     try {
       const data = await withBusy("Escribiendo guion (puede tardar ~2 min)…", () =>
         api(`/api/projects/${encodeURIComponent(p.id)}/script/generate`, {
@@ -2014,12 +2024,22 @@ function paintScript(ws, p) {
         })
       );
       state.project = data.project;
-      toast("Script ready");
+      const words = String(data.project?.script || "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean).length;
+      toast(words ? `Guion listo (~${words} palabras)` : "Guion vacío — reintentá");
       renderProject();
     } catch (e) {
-      toast(e.message);
+      toast(e.message || "Error al generar guion");
     }
   };
+  $("#gen-script").onclick = () => runGenScript();
+  // Auto-kick once if Check story is approved and textarea is empty.
+  if (checkApproved && !String(p.script || "").trim() && !ws.dataset.autogenScript) {
+    ws.dataset.autogenScript = "1";
+    runGenScript();
+  }
   $("#save-script").onclick = async () => {
     try {
       const data = await api(`/api/projects/${encodeURIComponent(p.id)}/script`, {

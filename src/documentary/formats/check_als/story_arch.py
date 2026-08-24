@@ -832,6 +832,31 @@ def load_architecture(project: dict[str, Any]) -> dict[str, Any]:
     if not pid:
         return empty
     meta = project_dir(pid) / "metadata"
+
+    def _ensure_meta() -> None:
+        # On Vercel, cold lambdas only have what we pull — story lives under metadata/.
+        if (meta / "beats.json").is_file() or (meta / "story_synopsis.md").is_file():
+            return
+        try:
+            from src.documentary.runtime import on_vercel
+            from src.documentary import cloud_sync
+
+            if on_vercel() and cloud_sync.configured():
+                cloud_sync.pull_project(pid, light=True)
+                for name in (
+                    "beats.json",
+                    "story_blueprint.json",
+                    "world_state.json",
+                    "story_synopsis.md",
+                    "story_review.json",
+                    "story_quality.json",
+                ):
+                    cloud_sync.pull_one(pid, f"metadata/{name}", force=False)
+        except Exception:
+            pass
+
+    _ensure_meta()
+
     def _read(name: str, default: Any) -> Any:
         path = meta / name
         if not path.is_file():
@@ -865,7 +890,7 @@ def load_architecture(project: dict[str, Any]) -> dict[str, Any]:
         initial_prog or empty_progression_state(),
         raw_beats if isinstance(raw_beats, list) else [],
     )
-    generated = bool(beats or (isinstance(blueprint, dict) and blueprint.get("inciting_incident")))
+    generated = bool(beats or (isinstance(blueprint, dict) and blueprint.get("inciting_incident")) or synopsis.strip())
     return {
         "blueprint": blueprint if isinstance(blueprint, dict) else empty_blueprint(),
         "initial_world": initial_world or empty_world_state(),

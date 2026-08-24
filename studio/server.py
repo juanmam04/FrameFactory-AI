@@ -559,8 +559,12 @@ def create_app() -> FastAPI:
             step = "flow"
         if step == "subs":
             step = "render"
-        # Cannot jump to Script without an approved Story Plan
-        if step == "script" and not (p.get("story_plan_approved") or (p.get("story_plan") or {}).get("approved")):
+        # Cannot jump to Script without an approved Story Plan (Check uses check_story_approved)
+        check_ok = str(p.get("content_format") or p.get("mode") or "") == FORMAT_CHECK_ALS and bool(
+            p.get("check_story_approved") or (p.get("check_story") or {}).get("approved")
+        )
+        story_ok = bool(p.get("story_plan_approved") or (p.get("story_plan") or {}).get("approved") or check_ok)
+        if step == "script" and not story_ok:
             step = "story"
         p["ui_step"] = step
         save_project(p)
@@ -635,6 +639,11 @@ def create_app() -> FastAPI:
     @app.post("/api/projects/{project_id}/script/generate")
     def script_generate(project_id: str):
         try:
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(lambda: cloud_sync.pull_project(project_id, light=True))
             p = generate_documentary_script(load_project(project_id), use_llm=True)
             return {"project": _project_full(p)}
         except Exception as e:
