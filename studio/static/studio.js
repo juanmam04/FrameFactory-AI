@@ -109,7 +109,9 @@ async function api(path, opts = {}) {
       throw new Error(
         path.includes("/api/bootstrap")
           ? "Tardó demasiado en abrir. Tocá Reintentar."
-          : "Se cortó la espera. Si el video quedó, va a aparecer para descargar."
+          : path.includes("/api/ideas")
+            ? "La generación de conceptos tardó demasiado. Tocá Generate de nuevo."
+            : "Se cortó la espera. Si el video quedó, va a aparecer para descargar."
       );
     }
     throw new Error("No se pudo conectar. Probá de nuevo.");
@@ -1144,6 +1146,8 @@ async function loadIdeas(force) {
       api("/api/ideas", {
         method: "POST",
         body: JSON.stringify({ count: 5, content_format: fmt }),
+        // Under Vercel maxDuration (300s). Without this the spinner never ends if the function dies.
+        timeoutMs: 240000,
       })
     );
     state.contentFormat = data.content_format || fmt;

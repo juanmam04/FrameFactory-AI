@@ -179,16 +179,22 @@ def generate_concept_packages(
     story_select_count: int | None = None,
 ) -> list[dict[str, Any]]:
     """Public API: return up to `count` eligible ranked concepts (may be fewer)."""
+    # Studio /api/ideas uses count≈5. Cap the pipeline so it returns instead of hanging.
+    target = max(1, int(count))
+    if raw_seed_count is None and target < 10:
+        raw_seed_count = max(target * 2, 8)
+    if story_select_count is None and target < 10:
+        story_select_count = min(target + 2, 6)
     result = generate_concepts_v2(
         profile,
         prior_videos=prior_videos,
-        count=count,
+        count=target,
         categories=categories,
         use_llm=use_llm,
         raw_seed_count=raw_seed_count,
         story_select_count=story_select_count,
     )
-    return list(result.get("eligible_ranked") or [])[:count]
+    return list(result.get("eligible_ranked") or [])[:target]
 
 
 def generate_concepts_v2(
@@ -213,8 +219,20 @@ def generate_concepts_v2(
     cats = _categories(p, categories)
     prior = list(prior_videos or [])
     target = max(1, int(count))
-    seed_target = int(raw_seed_count) if raw_seed_count is not None else (40 if target >= 10 else max(target * 4, 16))
-    shortlist_n = int(story_select_count) if story_select_count is not None else (15 if target >= 10 else min(15, max(target + 3, 8)))
+    # Studio asks for ~5 concepts. Keep the LLM budget small so /api/ideas
+    # finishes under Vercel maxDuration (300s) instead of spinning forever.
+    if raw_seed_count is not None:
+        seed_target = int(raw_seed_count)
+    elif target >= 10:
+        seed_target = 40
+    else:
+        seed_target = max(target * 2, 8)
+    if story_select_count is not None:
+        shortlist_n = int(story_select_count)
+    elif target >= 10:
+        shortlist_n = 15
+    else:
+        shortlist_n = min(target + 2, 6)
     stats: dict[str, Any] = {
         "raw_requested": seed_target,
         "raw_generated": 0,
@@ -252,6 +270,7 @@ def generate_concepts_v2(
     stats["raw_unique"] = len(seeds)
 
     stories: list[dict[str, Any]] = []
+    eligible_needed = shortlist_n + (1 if target < 10 else 3)
     for idx, seed in enumerate(seeds, 1):
         print(f"[v2] story core {idx}/{len(seeds)}", flush=True)
         story = _discover_story_resilient(client, model, seed, stats)
@@ -263,6 +282,13 @@ def generate_concepts_v2(
             stats["story_cores_eligible"] = int(stats["story_cores_eligible"]) + 1
         else:
             stats["story_cores_rejected"] = int(stats["story_cores_rejected"]) + 1
+        if int(stats["story_cores_eligible"]) >= eligible_needed:
+            print(
+                f"[v2] early stop story cores: eligible={stats['story_cores_eligible']} "
+                f"needed={eligible_needed}",
+                flush=True,
+            )
+            break
 
     eligible_stories = [s for s in stories if s.get("story_eligible")]
     shortlist, skipped = select_diverse_stories(eligible_stories, shortlist_n)
