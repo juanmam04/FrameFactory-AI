@@ -91,7 +91,7 @@ def check_als_profile() -> dict[str, Any]:
                 "overlay_language": OVERLAY_LANGUAGE,
                 "image_prompt_language": IMAGE_PROMPT_LANGUAGE,
                 "narration_perspective": "second_person",
-                "target_words": 2200,
+                "target_words": 1800,
                 "target_duration_min": [12, 18],
                 "visual_style": VISUAL_STYLE_ID,
                 "visual_provider": "external_manual",

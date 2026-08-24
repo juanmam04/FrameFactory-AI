@@ -889,7 +889,7 @@ def package_to_project_fields(package: dict[str, Any]) -> dict[str, Any]:
         "concept": pkg,
         "language": CONTENT_LANGUAGE,
         "target_duration_min": [12, 18],
-        "target_words": 2200,
+        "target_words": 1800,
     }
 
 

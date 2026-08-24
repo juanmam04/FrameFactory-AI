@@ -12,8 +12,9 @@ from src.documentary.openai_key import openai_api_key
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 from src.script_generator import count_words
 
-TARGET_WORDS = 2100
-WORD_RANGE = (1900, 2300)
+TARGET_WORDS = 1800
+MIN_WORDS = 1100
+WORD_RANGE = (MIN_WORDS, 2300)
 WPM = 150  # spoken Spanish TTS pacing
 
 VOSEO_FIXES = (
@@ -89,7 +90,7 @@ ESCRIBES UN GUION PARA SER ESCUCHADO. Español de España/Latino neutro. Tú/te/
 El espectador ES el protagonista. No un documental. No un profesor. No un narrador motivacional. No ChatGPT. No un artículo. No un resumen empresarial.
 
 FORMA:
-- 1900–2300 palabras. Target 2100. 12–15 minutos. Preferí 13 minutos excelentes, no 18 inflados.
+- Mínimo 1100 palabras. Rango 1100–2300. Target 1800. ~12–15 minutos. Preferí un guion denso, no inflado.
 - Párrafos cortos (1–4 oraciones). Escenas, no inventario.
 - Segunda persona constante.
 - Cifras: cuando den dopamina o tensión. Spoken in Spanish in the VO ("seiscientos cincuenta mil dólares"). No saturar.
@@ -132,7 +133,7 @@ Reescribí el guion SIN agregar relleno y SIN cambiar hechos/números/records.
 Cada ~30–45 segundos (≈75–110 palabras) tiene que haber un cambio o una pregunta que el espectador quiera pagar.
 Si un tramo no cambia nada: recortar o reordenar.
 Conservá cold open, payoff de la compra temprano, momentos aspiracionales, millonario-en-papel, final del teléfono.
-Tú/te. Nunca vos. 1900–2300 palabras. Solo el guion."""
+Tú/te. Nunca vos. Mínimo 1100 palabras (rango 1100–2300). Solo el guion."""
 
 
 def locked_story_facts(arch: dict[str, Any]) -> dict[str, Any]:
@@ -257,9 +258,9 @@ def locked_story_facts(arch: dict[str, Any]) -> dict[str, Any]:
 EXPAND_SYSTEM = """Eres guionista de Check. El guion está CORTO.
 
 Expandí con ESCENAS concretas del state (no relleno, no moraleja, no inventario).
-Más momentos: reunión de compra, utilero, mal arranque, inyección, un partido, playoffs, sold out, renuncia, mudanza, familia, millonario-en-papel, final del teléfono.
-Tú/te. Nunca vos. Conservá TODOS los números y records. championships=0.
-Target 2050–2250 palabras. Devolvé el guion completo, no un parche.
+Más momentos concretos de la historia aprobada: compra/lanzamiento, setbacks, payoffs de vida, decisiones, final.
+Tú/te. Nunca vos. Conservá TODOS los números y hechos locked.
+Mínimo 1100 palabras. Target ~1800. Devolvé el guion completo, no un parche.
 Solo el texto del guion."""
 
 
@@ -367,14 +368,14 @@ def validate_check_script(
 
     if strict_length:
         lo, hi = WORD_RANGE
-        if wc < lo:
-            hard.append(f"corto: {wc} palabras (target {lo}–{hi})")
+        if wc < MIN_WORDS:
+            hard.append(f"corto: {wc} palabras (mínimo {MIN_WORDS}, target {lo}–{hi})")
         elif wc > hi + 150:
             hard.append(f"largo: {wc} palabras (target {lo}–{hi})")
         elif wc > hi:
             warn.append(f"un poco largo: {wc} palabras")
-    elif wc < 80:
-        warn.append(f"draft corto: {wc} palabras")
+    elif wc < MIN_WORDS:
+        warn.append(f"draft corto: {wc} palabras (mínimo {MIN_WORDS})")
 
     if "oferta" not in low and "comprarte" not in low:
         warn.append("el final de la oferta de adquisición puede faltar")
@@ -542,8 +543,8 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         user = json.dumps(
             {
                 "instruction": (
-                    f"Escribí el guion COMPLETO de YouTube. OBLIGATORIO: {target} palabras "
-                    f"(mínimo {WORD_RANGE[0]}, máximo {WORD_RANGE[1]}). "
+                    f"Escribí el guion COMPLETO de YouTube. OBLIGATORIO: mínimo {MIN_WORDS} palabras "
+                    f"(target {target}, máximo {WORD_RANGE[1]}). "
                     "Escenas, no resumen. Solo texto del VO."
                 ),
                 "locked_facts": slim,
@@ -553,14 +554,18 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         script = _chat_text(client, model, SCRIPT_SYSTEM, user, temperature=0.7, max_tokens=9000)
         script = apply_tuteo_fixes(script)
         wc = count_words(script)
-        if wc < WORD_RANGE[0]:
+        expand_tries = 0
+        while wc < MIN_WORDS and expand_tries < 3:
             script = _chat_text(
                 client,
                 model,
                 EXPAND_SYSTEM,
                 json.dumps(
                     {
-                        "note": f"Tiene {wc} palabras. Llevalo a {target}. No inventes campeonato.",
+                        "note": (
+                            f"Tiene {wc} palabras. MÍNIMO {MIN_WORDS}. Target {target}. "
+                            "Agregá escenas reales del state hasta pasar el piso."
+                        ),
                         "script": script,
                         "locked_facts": slim,
                     },
@@ -571,16 +576,18 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             )
             script = apply_tuteo_fixes(script)
             quality["revised"] = True
-        wc = count_words(script)
-        if wc >= 1600:
+            expand_tries += 1
+            quality["expand_tries"] = expand_tries
+            wc = count_words(script)
+        if wc >= max(1600, MIN_WORDS):
             kept = script
             revised = _chat_text(
                 client,
                 model,
-                RETENTION_SYSTEM + f"\nNO bajes de {WORD_RANGE[0]} palabras. Si recortás, reemplazá con otra escena real.",
+                RETENTION_SYSTEM + f"\nNO bajes de {MIN_WORDS} palabras. Si recortás, reemplazá con otra escena real.",
                 json.dumps(
                     {
-                        "note": f"Pasada de retención. Palabras actuales: {count_words(script)}. Piso {WORD_RANGE[0]}.",
+                        "note": f"Pasada de retención. Palabras actuales: {count_words(script)}. Piso {MIN_WORDS}.",
                         "script": script,
                         "locked_facts": {k: slim[k] for k in slim if k != "beats"},
                     },
@@ -590,21 +597,21 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
                 max_tokens=9000,
             )
             revised = apply_tuteo_fixes(revised)
-            if count_words(revised) >= WORD_RANGE[0]:
+            if count_words(revised) >= MIN_WORDS:
                 script = revised
                 quality["retention_pass"] = True
             else:
                 script = kept
                 quality["retention_discarded_shrink"] = True
         wc = count_words(script)
-        if wc < WORD_RANGE[0]:
+        if wc < MIN_WORDS:
             script = _chat_text(
                 client,
                 model,
                 EXPAND_SYSTEM,
                 json.dumps(
                     {
-                        "note": f"Todavía corto ({wc}). Target {target}. Más escenas del state.",
+                        "note": f"Todavía bajo el mínimo ({wc} < {MIN_WORDS}). Target {target}. Más escenas del state.",
                         "script": script,
                         "locked_facts": slim,
                     },
@@ -614,7 +621,12 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
                 max_tokens=9000,
             )
             script = apply_tuteo_fixes(script)
-            quality["expanded_twice"] = True
+            quality["expanded_final"] = True
+            wc = count_words(script)
+        if wc < MIN_WORDS:
+            raise ValueError(
+                f"El guion quedó en {wc} palabras (mínimo {MIN_WORDS}). Regenerá el script."
+            )
     else:
         script = apply_tuteo_fixes(_mock_check_script(facts))
 
