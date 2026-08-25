@@ -62,6 +62,41 @@ def test_business_facts_no_basket_defaults():
     assert "estadio" not in " ".join(facts["must_include_scenes"]).lower()
     padded = pad_script_from_beats("Tienes 22 años. Lanzas la empresa.", facts, min_words=1100)
     assert count_words(padded) >= 1100
+    low = padded.lower()
+    assert "launch_company" not in low
+    assert "no moraleja" not in low
+    assert "int." not in low
+
+
+def test_strip_screenplay_and_ops():
+    from src.documentary.formats.check_als.script import strip_script_chrome
+
+    raw = """
+**Título: Creative Hub**
+
+**INT. DEPARTAMENTO - DÍA**
+
+*El joven mira la pantalla.*
+
+**NARRADOR (V.O.)**
+Tienes 25 años. Eres creador en Madrid.
+
+**JOVEN**
+Hola inversores.
+
+launch_company.
+first_client.
+advance_time.
+
+Edad final del state. NO moraleja.
+"""
+    out = strip_script_chrome(raw)
+    low = out.lower()
+    assert "tienes 25" in low
+    assert "int." not in low
+    assert "launch_company" not in low
+    assert "narrador" not in low
+    assert "no moraleja" not in low
 
 
 def test_check_image_prompt_is_specific():

@@ -86,37 +86,33 @@ BANNED_FLUFF = (
     "camino de rosas",
 )
 
-SCRIPT_SYSTEM_SHARED = """Eres el guionista de Check: fantasías cinematográficas en segunda persona para YouTube.
+SCRIPT_SYSTEM_SHARED = """Eres el guionista de Check: fantasías en segunda persona para YouTube (VO / TTS).
 
-ESCRIBES UN GUION PARA SER ESCUCHADO. Español de España/Latino neutro. Tú/te/tu/tienes. NUNCA vos/tenés/podés/lanzás.
+ESCRIBÍ SOLO EL TEXTO QUE SE ESCUCHA. Nada más.
 
-El espectador ES el protagonista. No un documental. No un profesor. No un narrador motivacional. No ChatGPT. No un artículo. No un resumen empresarial.
+FORMATO OBLIGATORIO:
+- Solo narración en segunda persona (tú/te/tienes/tu).
+- Párrafos cortos. Español neutro.
+- PROHIBIDO: INT./EXT., encabezados de escena, nombres de personajes, diálogos con "JOVEN:", "NARRADOR (V.O.)", acotaciones entre asteriscos, FADE OUT, títulos, markdown, guiones de cine.
+- PROHIBIDO: nombres de ops internas (launch_company, quit_job, advance_time, first_client, etc.).
+- PROHIBIDO: instrucciones meta ("NO moraleja", "Edad final del state", "vehicle_mode").
+- NO es un guion de película. NO es un documental. Es VO que lee una IA en voz alta.
 
 FORMA:
-- Mínimo 1100 palabras. Rango 1100–2300. Target 1800. ~12–15 minutos. Preferí un guion denso, no inflado.
-- Párrafos cortos (1–4 oraciones). Escenas, no inventario.
-- Segunda persona constante.
-- Cifras: cuando den dopamina o tensión. Spoken in Spanish in the VO. No saturar.
+- Mínimo 1100 palabras. Rango 1100–2300. Target 1800.
+- Cold open directo con edad / situación / cifra.
+- Escenas concretas del JSON. Números locked = ley.
+- Final en escena (teléfono / oferta). Sin moraleja. Sin CTA.
 
-COLD OPEN (20–30s): entrar directo con edad / trabajo / cash / oportunidad concreta.
-PROHIBIDO abrir con ¿te imaginas / en este video / esta es la historia.
-
-PROGRESIÓN = MOMENTOS, no lista de métricas. EMOCIÓN POR EVENTOS, nunca "te emocionas".
-FINAL: escena concreta del state. Sin moraleja. Sin CTA. Sin "aprendiste que".
-
-LOS HECHOS DEL JSON SON LEY. Mejorá CÓMO se cuentan. NO cambies números ni ownership.
-
-Return ONLY the script text. No title. No headings. No markdown. No notes."""
+Return ONLY the spoken narration text."""
 
 SCRIPT_SYSTEM_SPORTS = (
     SCRIPT_SYSTEM_SHARED
     + """
 
 VEHÍCULO: compra de equipo deportivo.
-HOOK PAYOFF PRONTO: precio + deuda + tu cash → tu %. Inversores → su %.
-DEPORTES: season_history EXACTA. championships=0 salvo que el state diga lo contrario. NO inventes campeonato.
-CONFLICTO: deuda, mal arranque, roster, derrotas, millonario en papel / cash ~0.
-MOMENTOS: dueño, utilero/llaves, sponsor, playoffs, sold out, renuncia, mudanza.
+HOOK temprano: precio + deuda + tu cash → tu %.
+Usá season_history exacta. No inventes campeonato si championships=0.
 """
 )
 
@@ -124,10 +120,9 @@ SCRIPT_SYSTEM_BUSINESS = (
     SCRIPT_SYSTEM_SHARED
     + """
 
-VEHÍCULO: negocio / creador / startup / empresa (NO deporte, NO estadio, NO playoffs, NO campeonato, NO deuda 650k de básquet).
-HOOK PAYOFF PRONTO: lanzás la empresa / firmás con socios → tu ownership % exacto del state + cash de inversores.
-PROGRESIÓN: primeros clientes/views → escala → crisis → payoff de vida → oferta/tracción final.
-PROHIBIDO inventar: básquet, liga, playoffs, estadio, utilero, anillo, temporada deportiva.
+VEHÍCULO: negocio / creador / startup (NO deporte, NO estadio, NO playoffs).
+HOOK temprano: lanzás la empresa / firmás con socios → tu % exacto del state.
+PROHIBIDO inventar básquet/liga/anillo.
 """
 )
 
@@ -194,8 +189,8 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
             "final: oferta/tracción/decisión abierta — sin moraleja",
         ]
         ending = (
-            "Edad final del state. Estás solo un momento. En el teléfono: alguien quiere comprarte o asociarse. "
-            "Bloqueas. Mañana lo lees. NO moraleja."
+            "Estás solo un momento. En el teléfono alguien quiere comprarte o asociarse. "
+            "Bloqueas. Mañana lo lees."
         )
         job_end = "dueño de tu empresa"
         name = fiction.get("team_name") or team1.get("name") or vehicle.get("name") or "tu empresa"
@@ -214,7 +209,8 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
             "final: estadio vacío, mail de oferta, bloqueas",
         ]
         ending = (
-            "27 años. Estadio vacío. Correo de oferta de adquisición. Bloqueas. Mañana lo lees. NO moraleja."
+            "El estadio está vacío. En el teléfono, un correo: oferta de adquisición. "
+            "Bloqueas. Mañana lo lees."
         )
         job_end = "dueño del equipo"
         name = fiction.get("team_name") or team1.get("name") or "Los Halcones de la Ciudad"
@@ -314,14 +310,27 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
     }
 
 
-EXPAND_SYSTEM = """Eres guionista de Check. El guion está CORTO.
+EXPAND_SYSTEM = """Eres guionista de Check. El guion (VO) está CORTO.
 
-Expandí con ESCENAS concretas del state (no relleno, no moraleja, no inventario).
-Más momentos concretos de la historia aprobada: lanzamiento/compra, setbacks, payoffs de vida, decisiones, final.
-Tú/te. Nunca vos. Conservá TODOS los números y hechos locked.
+Expandí SOLO con narración hablada en segunda persona (tú/te).
+PROHIBIDO: INT/EXT, diálogos con nombres, acotaciones, ops (launch_company…), meta ("NO moraleja").
 Si vehicle_mode=business: PROHIBIDO deporte/estadio/playoffs.
-Mínimo 1100 palabras. Target ~1800. Devolvé el guion completo, no un parche.
-Solo el texto del guion."""
+Mínimo 1100 palabras. Target ~1800. Devolvé el guion completo hablado, nada más.
+Solo el texto del VO."""
+
+
+_OP_NAME_RE = re.compile(
+    r"^(launch_company|acquire_team|first_client|viral_hit|hire_employee|owner_crisis|"
+    r"pay_debt|quit_job|move_home|ad_spend|sign_contract|owner_injection|advance_time|"
+    r"media_deal|sponsor_deal|product_launch|media_crisis|family_crisis|ending|"
+    r"help_family|equity_sale|new_season|season_stretch|win_game|lose_game)s?$",
+    re.I,
+)
+_META_LEAK_RE = re.compile(
+    r"(?i)\b(no moraleja|edad final del state|vehicle_mode|locked_facts|must_include|"
+    r"story_purpose|ops:|fade out|int\.|ext\.|narrador\s*\(v\.?o\.?\)|"
+    r"launch_company|first_client|advance_time|quit_job)\b"
+)
 
 
 def facts_for_llm(facts: dict[str, Any]) -> dict[str, Any]:
@@ -330,15 +339,23 @@ def facts_for_llm(facts: dict[str, Any]) -> dict[str, Any]:
     for b in (facts.get("beats") or [])[:40]:
         if not isinstance(b, dict):
             continue
+        event = str(b.get("event") or "").strip()
+        if not event or _OP_NAME_RE.match(event) or len(event) < 8:
+            continue
         beats.append(
             {
                 "id": b.get("beat_id"),
                 "time": b.get("time"),
-                "event": b.get("event"),
+                "event": event,
                 "purpose": b.get("story_purpose"),
             }
         )
     out["beats"] = beats
+    # Hint only — model must not copy instructional wording.
+    out["ending_scene"] = str(facts.get("ending_direction") or "")
+    out.pop("ending_direction", None)
+    out.pop("must_include_scenes", None)
+    out.pop("disclaimer", None)
     return out
 
 
@@ -347,14 +364,54 @@ def _norm(text: str) -> str:
 
 
 def strip_script_chrome(script: str) -> str:
+    """Keep only spoken VO — strip screenplay chrome, ops, and meta leaks."""
     text = (script or "").strip()
-    text = re.sub(r"^```(?:text|markdown|md)?\s*", "", text)
+    text = re.sub(r"^```(?:text|markdown|md|screenplay)?\s*", "", text)
     text = re.sub(r"\s*```$", "", text)
-    # Drop a leading title line if the model adds one
-    lines = text.splitlines()
-    if lines and lines[0].startswith("#"):
-        lines = lines[1:]
-    return "\n".join(lines).strip()
+    cleaned: list[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            if cleaned and cleaned[-1] != "":
+                cleaned.append("")
+            continue
+        # Drop screenplay / markdown chrome.
+        if line.startswith("#") or line.startswith("---"):
+            continue
+        if re.match(r"(?i)^(int\.|ext\.|fade\s+(in|out)|cut to|título:|title:)", line):
+            continue
+        if re.match(r"(?i)^(narrador|narrator)\b.*:", line):
+            # Keep the dialogue after the header if present on same line.
+            after = re.sub(r"(?i)^(narrador|narrator)\s*(\(v\.?o\.?\))?\s*[:：]\s*", "", line).strip()
+            if after and not after.startswith("*"):
+                cleaned.append(after)
+            continue
+        if re.match(r"^\*{1,2}.+\*{1,2}$", line) or (line.startswith("*") and line.endswith("*")):
+            continue
+        if re.match(r"^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s\.]{1,40}:\s*", line) and not re.match(
+            r"(?i)^(tienes|te |tu |eres|miras|firmas)", line
+        ):
+            # CHARACTER: dialogue — keep spoken part only if second person-ish, else drop.
+            after = re.sub(r"^[^:]+:\s*", "", line).strip()
+            if re.search(r"(?i)\b(tú|te |tienes|tu )\b", after):
+                cleaned.append(after)
+            continue
+        if _OP_NAME_RE.match(line.rstrip(".")):
+            continue
+        if _META_LEAK_RE.search(line) and not re.search(r"(?i)\b(tienes|te |firmas|lanzas)\b", line):
+            continue
+        # Strip leftover stage-direction wrappers mid-line lightly.
+        line = re.sub(r"^\*[^*]+\*\s*", "", line).strip()
+        if not line:
+            continue
+        cleaned.append(line)
+    # Collapse blank runs
+    out_lines: list[str] = []
+    for line in cleaned:
+        if line == "" and out_lines and out_lines[-1] == "":
+            continue
+        out_lines.append(line)
+    return "\n".join(out_lines).strip()
 
 
 def apply_tuteo_fixes(script: str) -> str:
@@ -365,48 +422,86 @@ def apply_tuteo_fixes(script: str) -> str:
     return out
 
 
+def _event_to_vo(event: str, *, when: str = "", own: int = 0) -> str:
+    """Turn a beat event into a short second-person VO beat (never dump ops)."""
+    ev = str(event or "").strip().rstrip(".")
+    if not ev or _OP_NAME_RE.match(ev) or len(ev) < 8:
+        return ""
+    if _META_LEAK_RE.search(ev):
+        return ""
+    low = ev.lower()
+    if re.search(r"\b(tienes|te |tu |eres|lanzas|firmas|miras|decides)\b", low):
+        body = ev[0].upper() + ev[1:] if ev else ev
+    else:
+        body = f"Llega el momento: {ev[0].lower() + ev[1:] if ev else ev}"
+    parts: list[str] = []
+    if when and len(when) < 40 and not _OP_NAME_RE.match(when):
+        parts.append(when.rstrip(".") + ".")
+    parts.append(body if body.endswith(".") else body + ".")
+    if own >= 40:
+        parts.append(f"Todavía tienes el {own}%.")
+    return " ".join(parts)
+
+
 def pad_script_from_beats(script: str, facts: dict[str, Any], *, min_words: int = MIN_WORDS) -> str:
-    """Deterministic scene pad so generation never dies on word floor alone."""
-    text = (script or "").strip()
+    """Deterministic VO pad — never dumps ops, screenplay, or meta instructions."""
+    text = strip_script_chrome(script or "")
     if count_words(text) >= min_words:
         return text
     acq = facts.get("acquisition") or {}
     own = int(float(acq.get("your_ownership") or 0) or 0)
+    life0 = facts.get("life_start") or {}
+    life1 = facts.get("life_end") or {}
     chunks = [text] if text else []
+    if not text:
+        age = life0.get("age") or 22
+        job = life0.get("job") or "creador independiente"
+        cash = life0.get("personal_cash")
+        cash_bit = f" Tienes {cash} en la cuenta." if cash is not None else ""
+        chunks.append(f"Tienes {age} años. Eres {job}.{cash_bit}")
+
     for b in facts.get("beats") or []:
         if not isinstance(b, dict):
             continue
-        event = str(b.get("event") or "").strip()
-        if not event:
+        vo = _event_to_vo(str(b.get("event") or ""), when=str(b.get("time") or ""), own=0)
+        if not vo:
+            cons = _event_to_vo(str(b.get("consequence") or ""))
+            vo = cons
+        if not vo:
             continue
-        when = str(b.get("time") or "").strip()
-        cons = str(b.get("consequence") or "").strip()
-        line = f"{when + '. ' if when else ''}{event}."
-        if cons:
-            line += f" {cons}."
-        joined = " ".join(chunks)
-        if own and own >= 40 and f"{own}" not in joined:
-            line += f" Todavía tienes el {own}%."
-        chunks.append(line)
+        chunks.append(vo)
         if count_words("\n\n".join(chunks)) >= min_words:
             break
+
     if count_words("\n\n".join(chunks)) < min_words:
-        life1 = facts.get("life_end") or {}
-        end = str(facts.get("ending_direction") or "").strip()
-        filler = " ".join(
-            x
-            for x in (
-                f"Tienes {life1.get('age') or 27} años.",
-                f"Trabajas como {life1.get('job')}." if life1.get("job") else "",
-                end,
-                "Miras el teléfono. Bloqueas. Mañana lo lees.",
-            )
-            if x
-        )
-        while count_words("\n\n".join(chunks)) < min_words:
-            chunks.append(filler)
-            if len(chunks) > 80:
-                break
+        end_age = life1.get("age") or 27
+        end_job = life1.get("job") or "dueño de tu empresa"
+        end_scene = str(facts.get("ending_direction") or "").strip()
+        end_scene = re.sub(r"(?i)\bNO moraleja\.?\b", "", end_scene).strip()
+        end_scene = re.sub(r"(?i)Edad final del state\.?\s*", "", end_scene).strip()
+        if not end_scene:
+            end_scene = "Estás solo un momento. En el teléfono alguien quiere comprarte. Bloqueas. Mañana lo lees."
+        filler_pool = [
+            f"Tienes {end_age} años. Trabajas como {end_job}.",
+            "Los días se alargan. Revisas números, contestas mensajes, y vuelves a empezar antes de que amanezca.",
+            "Hay semanas buenas y semanas donde la caja aprieta. Igual seguís. Igual contestás. Igual mandás otra propuesta.".replace(
+                "seguís", "sigues"
+            ).replace("contestás", "contestas").replace("mandás", "mandas"),
+            "Un cliente nuevo aparece. Otro se enfría. Aprendés a no celebrar demasiado pronto.".replace("Aprendés", "Aprendes"),
+            end_scene,
+            "Miras el teléfono otra vez. Todavía no abres el mensaje. Dejás que suene en silencio un rato.".replace(
+                "Dejás", "Dejas"
+            ),
+            "Salís a caminar dos cuadras y volvés con la cabeza más clara, aunque la duda sigue ahí.".replace(
+                "Salís", "Sales"
+            ).replace("volvés", "vuelves"),
+        ]
+        if own >= 40:
+            filler_pool.insert(1, f"Sigues con el {own}% y eso todavía te pesa de forma buena.")
+        i = 0
+        while count_words("\n\n".join(chunks)) < min_words and i < 200:
+            chunks.append(filler_pool[i % len(filler_pool)])
+            i += 1
     return apply_tuteo_fixes(strip_script_chrome("\n\n".join(c for c in chunks if c)).strip())
 
 
@@ -685,9 +780,10 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             user = json.dumps(
                 {
                     "instruction": (
-                        f"Escribí el guion COMPLETO de YouTube. OBLIGATORIO: mínimo {MIN_WORDS} palabras "
-                        f"(target {target}, máximo {WORD_RANGE[1]}). vehicle_mode={mode}. "
-                        "Escenas, no resumen. Solo texto del VO."
+                        f"Escribí SOLO el VO hablado (mínimo {MIN_WORDS} palabras, target {target}). "
+                        f"vehicle_mode={mode}. Segunda persona tú/te. "
+                        "PROHIBIDO: INT/EXT, NARRADOR, diálogos con nombres, ops (launch_company), meta. "
+                        "Solo el texto que lee la IA en voz alta."
                     ),
                     "locked_facts": slim,
                 },
@@ -725,19 +821,35 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             quality["llm_error"] = str(e)[:400]
             append_log(str(project.get("id") or ""), f"check_script LLM fallback: {e}")
             script = apply_tuteo_fixes(_mock_check_script(facts))
-            if str(arch.get("synopsis") or "").strip():
-                script = (script + "\n\n" + str(arch.get("synopsis"))).strip()
 
     if not (script or "").strip():
         script = apply_tuteo_fixes(_mock_check_script(facts))
-        if str(arch.get("synopsis") or "").strip():
-            script = (script + "\n\n" + str(arch.get("synopsis"))).strip()
 
-    if count_words(script) < MIN_WORDS:
+    # Always purge screenplay / ops / meta — VO only for TTS.
+    script = apply_tuteo_fixes(strip_script_chrome(script))
+    if (
+        re.search(r"(?i)\b(int\.|ext\.|narrador\s*\(|fade out)\b", script)
+        or re.search(r"(?i)\b(launch_company|advance_time|quit_job)\b", script)
+        or count_words(script) < max(200, MIN_WORDS // 3)
+    ):
+        quality["stripped_screenplay_or_ops"] = True
+        script = pad_script_from_beats("", facts, min_words=MIN_WORDS)
+    elif count_words(script) < MIN_WORDS:
         script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
         quality["padded_from_beats"] = True
 
     script = apply_tuteo_fixes(strip_script_chrome(script))
+    # Drop residual meta leaks one more time.
+    script = "\n".join(
+        ln
+        for ln in script.splitlines()
+        if not _OP_NAME_RE.match(ln.strip().rstrip("."))
+        and "NO moraleja" not in ln
+        and "Edad final del state" not in ln
+    ).strip()
+    if count_words(script) < MIN_WORDS:
+        script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
+
     ok, hard, warn = validate_check_script(script, facts, strict_length=False)
     wc = count_words(script)
     if not ok:
