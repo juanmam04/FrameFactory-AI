@@ -2035,10 +2035,14 @@ function paintScript(ws, p) {
     }
   };
   $("#gen-script").onclick = () => runGenScript();
-  // Auto-kick once if Check story is approved and textarea is empty.
-  if (checkApproved && !String(p.script || "").trim() && !ws.dataset.autogenScript) {
-    ws.dataset.autogenScript = "1";
-    runGenScript();
+  // Auto-kick once per project if Check story is approved and textarea is empty.
+  if (checkApproved && !String(p.script || "").trim()) {
+    const key = `ff-autogen-script:${p.id}`;
+    if (!sessionStorage.getItem(key) && !ws.dataset.autogenScript) {
+      ws.dataset.autogenScript = "1";
+      sessionStorage.setItem(key, "1");
+      runGenScript();
+    }
   }
   $("#save-script").onclick = async () => {
     try {
