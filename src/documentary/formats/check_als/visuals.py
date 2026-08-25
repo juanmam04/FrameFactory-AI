@@ -1,4 +1,4 @@
-"""Check ALS visual layer: 2D cinematic illustrated stills + locked bibles. Prompts only."""
+"""Check ALS visual layer: high-quality stickman 2D stills + locked character/location bibles."""
 from __future__ import annotations
 
 import json
@@ -8,56 +8,79 @@ from typing import Any
 from src.documentary.formats.check_als.editorial import VISUAL_DIRECTION, VISUAL_STYLE_ID
 from src.documentary.project import project_dir
 
+# Locked house style — matches Check / ALS POV stickman channels (round white head, dot eyes,
+# bold outlines, flat color) with RICH environments that stay consistent shot-to-shot.
 CHECK_STYLE = (
-    "2D cinematic illustrated storytelling, simple expressive protagonist, detailed environments, "
-    "clean linework, cinematic lighting, strong depth, consistent proportions, mature not childish. "
-    "Not anime, not clipart, not stock-photo look, not hyperrealistic random humans."
+    "High-quality 2D stickman cartoon illustration for YouTube POV storytelling. "
+    "Characters: classic stickman body (thin limbs, simplified torso) with a LARGE round WHITE head, "
+    "tiny black-dot eyes, simple line eyebrows/mouth, solid flat hair shapes (no strand detail), "
+    "bold black outlines, flat cel colors with light shading. Clothing is readable and specific. "
+    "Environments: HIGH DETAIL — shops, offices, apartments, counters, props, depth layers — "
+    "same polish as premium webcomic/animation stills, NOT crude MS Paint stick figures. "
+    "Not anime, not 3D, not photoreal, not clipart, not stock photo, not chibi, not mascot redesign."
 )
 
 PROTAGONIST_BIBLE = (
-    "Same Latino man throughout, ages 22 to 27: short dark brown hair, lean build, simple expressive face, "
-    "readable eyes, clean linework, not a model, not a cartoon mascot. "
-    "Age 22: cheap office collared shirt, dark trousers, worn backpack. "
-    "After ownership: same face, slightly sharper haircut, dark green-and-gold team jacket over a casual shirt. "
-    "Age 27: same person five years older, faint stubble, more tired eyes, same hairline and jaw. "
-    "Never swap ethnicity, never redesign the face."
+    "LOCKED PROTAGONIST (YOU) — same stickman in EVERY frame: large round white head, black-dot eyes, "
+    "simple line mouth, thick spiky black hair as a solid shape, thin stick limbs, lean proportions. "
+    "Identity never changes: same face, same hair silhouette, same body proportions. "
+    "AGE 22 wardrobe: cheap office collared shirt or hoodie, dark trousers, worn backpack. "
+    "After ownership / business launch: same face + hair; wardrobe upgrades modestly "
+    "(team jacket green-and-gold OR creator/startup casual — still the SAME stickman). "
+    "AGE 27: same character five years older — slightly tired eyes, faint stubble lines optional, "
+    "SAME hair spike pattern and head shape. Never swap ethnicity, never redesign into a realistic human, "
+    "never change hair color/style mid-story."
+)
+
+SUPPORTING_STICKMAN = (
+    "All supporting people are the SAME stickman system: round white heads, dot eyes, bold outlines, "
+    "flat hair blocks, simple clothes. Each named role keeps ONE locked design for the whole episode."
 )
 
 ARENA_BIBLE = (
-    "Same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, 4800-seat bowl, "
-    "same roof shape, same tunnel to the court, same floor orientation. "
-    "Early: peeling paint, empty stands, yellowed lights, water stains, old wood floor. "
-    "Later: same architecture, better lighting, fresh paint, packed then sold-out stands. "
-    "The building evolves; it does not become a different NBA arena."
+    "LOCKED LOCATION — same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, "
+    "4800-seat bowl, same roof, same tunnel, same floor orientation. "
+    "Early: peeling paint, empty stands, yellowed lights. Later: same architecture, better lights, packed stands. "
+    "Building evolves; it NEVER becomes a different arena."
 )
 
 OFFICE_BIBLE = (
-    "Dull corporate cubicle farm: gray partitions, fluorescent lights, cheap LCD, a sad plant, plastic badge. "
-    "Not WeWork, not glass startup HQ."
+    "LOCKED LOCATION — same dull corporate cubicle farm every time: gray partitions, fluorescent lights, "
+    "cheap LCD, sad plant, plastic badge. Not WeWork, not glass HQ. Geometry and desk placement stay fixed."
 )
 
 SHARED_APT_BIBLE = (
-    "Small shared apartment: two roommates' clutter, cheap furniture, a basketball poster, city night "
-    "through a small window. Modest, lived-in, not luxury."
+    "LOCKED LOCATION — same small shared apartment: roommate clutter, cheap furniture, city night window. "
+    "Same room layout every return. Modest, lived-in, not luxury."
 )
 
 NEW_APT_BIBLE = (
-    "Simple one-bedroom of his own, four blocks from the arena: moving boxes, a window that can see arena lights "
-    "at night. Modest upgrade, not a penthouse."
+    "LOCKED LOCATION — same simple one-bedroom of his own: moving boxes early, same window view later. "
+    "Modest upgrade, not a penthouse. Layout fixed once introduced."
 )
 
 TEAM_BIBLE = (
-    "Los Halcones de la Ciudad: dark green and copper-gold, hawk mark on jerseys. Worn kits early, cleaner later. "
-    "Same uniform identity across years."
+    "Los Halcones: dark green and copper-gold, hawk mark. Same uniform identity across years."
 )
 
 COACH_BIBLE = (
-    "Head coach, early 50s, short gray-brown hair, sideline jacket, clipboard. Same man once hired. "
-    "Interim coach (if shown earlier) is a different, older, less sharp staffer."
+    "LOCKED SUPPORT — head coach stickman: early 50s, short gray-brown flat hair block, sideline jacket, clipboard. "
+    "Same design every appearance. " + SUPPORTING_STICKMAN
 )
 
 UTILERO_BIBLE = (
-    "Older stadium equipment man, about 60, keys on a ring, faded staff polo, practical shoes. Recurring extra."
+    "LOCKED SUPPORT — older equipment-man stickman ~60, keys on a ring, faded staff polo. "
+    "Same design every appearance. " + SUPPORTING_STICKMAN
+)
+
+CREATOR_HUB_BIBLE = (
+    "LOCKED LOCATION — Creative Hub / creator workspace when story is business: same small Madrid apartment-studio "
+    "or same office set once established — desk, monitors, posters, window to the street. Layout never redesigns."
+)
+
+INVESTOR_CAFE_BIBLE = (
+    "LOCKED LOCATION — same local cafe booth for investor meetings: wood table, same wall color, same window. "
+    "Reuse every meeting scene."
 )
 
 CHECK_CHARACTERS = [
@@ -118,9 +141,23 @@ CHECK_LOCATIONS = [
         "name": "Halcones locker room",
         "description": (
             "Same locker room throughout: old green metal lockers early, later a cleaner coat of paint "
-            "and better lighting but the same room geometry."
+            "and better lighting but the same room geometry. Stickman style, high-detail props."
         ),
         "visual_description": "old municipal locker room that slowly improves, same room",
+        "reference_required": True,
+    },
+    {
+        "id": "LOC_CREATOR_HUB",
+        "name": "creator hub studio",
+        "description": CREATOR_HUB_BIBLE,
+        "visual_description": CREATOR_HUB_BIBLE,
+        "reference_required": True,
+    },
+    {
+        "id": "LOC_INVESTOR_CAFE",
+        "name": "investor cafe",
+        "description": INVESTOR_CAFE_BIBLE,
+        "visual_description": INVESTOR_CAFE_BIBLE,
         "reference_required": True,
     },
 ]
@@ -136,9 +173,12 @@ def check_visual_bibles() -> dict[str, str]:
         "team_visual_bible": TEAM_BIBLE,
         "coach_visual_bible": COACH_BIBLE,
         "utilero_visual_bible": UTILERO_BIBLE,
+        "creator_hub_visual_bible": CREATOR_HUB_BIBLE,
+        "investor_cafe_visual_bible": INVESTOR_CAFE_BIBLE,
         "style": CHECK_STYLE,
         "style_id": VISUAL_STYLE_ID,
         "visual_direction": VISUAL_DIRECTION,
+        "character_system": SUPPORTING_STICKMAN,
     }
 
 
@@ -194,6 +234,12 @@ def infer_story_time(text: str, index: int, total: int) -> dict[str, Any]:
 
 def infer_location_key(text: str) -> str:
     t = _low(text)
+    if any(k in t for k in ("inversor", "investor", "café", "cafe", "reunión", "reunion")) and any(
+        k in t for k in ("café", "cafe", "mesa", "booth", "inversores", "contrato")
+    ):
+        return "investor_cafe"
+    if any(k in t for k in ("creative hub", "estudio", "canal", "contenido", "grab", "set de")):
+        return "creator_hub"
     if any(k in t for k in ("cubicle", "oficina", "badge", "escritorio", "renuncia")) and "estadio" not in t:
         return "office"
     if any(k in t for k in ("compart", "roommates", "roommate", "departamento compart")):
@@ -206,6 +252,8 @@ def infer_location_key(text: str) -> str:
         return "arena"
     if any(k in t for k in ("reunión", "reunion", "inversores", "vendedor", "contrato")):
         return "meeting"
+    if any(k in t for k in ("departamento", "madrid", "habitación", "laptop", "cliente")):
+        return "creator_hub"
     return "arena" if "halcon" in t else "city"
 
 
@@ -213,13 +261,13 @@ def location_from_key(key: str, age: int, attendance_hint: str) -> str:
     arena_state = ARENA_BIBLE
     if age <= 22 and key == "arena":
         arena_state = (
-            "Run-down municipal Halcones arena: empty or sparse stands (~620 early, later filling), "
-            "yellowed lights, peeling paint. SAME building as later sold-out years. " + ARENA_BIBLE
+            "Run-down municipal Halcones arena: empty or sparse stands, yellowed lights, peeling paint. "
+            "SAME building as later sold-out years. Stickman scene, high-detail environment. " + ARENA_BIBLE
         )
     elif key == "arena" and ("sold" in attendance_hint or age >= 23):
         arena_state = (
-            "Same Halcones municipal arena now packed toward 4800 capacity, stronger lights, "
-            "same architecture. " + ARENA_BIBLE
+            "Same Halcones municipal arena now packed, stronger lights, same architecture. "
+            "Stickman scene, high-detail environment. " + ARENA_BIBLE
         )
     mapping = {
         "office": OFFICE_BIBLE,
@@ -227,8 +275,10 @@ def location_from_key(key: str, age: int, attendance_hint: str) -> str:
         "new_apt": NEW_APT_BIBLE,
         "locker": "Halcones locker room. " + TEAM_BIBLE,
         "arena": arena_state,
-        "meeting": "A tired conference room or a cheap cafe booth in Ciudad Central, not a glass boardroom.",
-        "city": "Night streets of a mid-size fictional city near the municipal arena.",
+        "meeting": "A tired conference room in Ciudad Central — same room if reused. Stickman cast. " + SUPPORTING_STICKMAN,
+        "investor_cafe": INVESTOR_CAFE_BIBLE,
+        "creator_hub": CREATOR_HUB_BIBLE,
+        "city": "Night streets of a mid-size fictional city; same street palette when reused. Stickman protagonist.",
     }
     return mapping.get(key, arena_state)
 
@@ -252,8 +302,11 @@ def characters_for(key: str, text: str) -> list[str]:
 def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
     action = str(visual.get("action") or visual.get("description") or "the protagonist in a specific story beat").strip()
     camera = str(visual.get("camera") or visual.get("shot_type") or "medium shot").strip()
-    lighting = str(visual.get("lighting") or "cinematic motivated light").strip()
-    composition = str(visual.get("composition") or "16:9, subject off-center, strong depth, readable silhouette").strip()
+    lighting = str(visual.get("lighting") or "clean cartoon lighting with soft depth").strip()
+    composition = str(
+        visual.get("composition")
+        or "16:9, stickman subject readable, detailed environment layers, strong depth"
+    ).strip()
     loc = str(visual.get("environment") or visual.get("location") or "").strip()
     age = meta.get("protagonist_age") or 22
     state = meta.get("protagonist_state") or ""
@@ -264,28 +317,32 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
     bg = str(visual.get("background") or "").strip()
     if fg or bg:
         composition = (
-            f"{composition} Foreground: {fg or 'readable silhouette'}. "
-            f"Background: {bg or 'deep environment'}."
+            f"{composition} Foreground: {fg or 'stickman silhouette'}. "
+            f"Background: {bg or 'high-detail locked location'}."
         )
-    wardrobe = "Wardrobe matches age/state from the protagonist bible."
+    wardrobe = "Wardrobe matches age/state from the locked protagonist bible — same stickman."
     if int(age or 22) == 22 and "not yet owner" in str(state or ""):
         wardrobe = (
-            "AGE 22 wardrobe only: cheap office collared shirt, dark trousers, worn backpack. No team jacket."
+            "AGE 22 wardrobe only: cheap office shirt or hoodie, dark trousers, worn backpack. "
+            "Still the SAME white-head stickman with spiky black hair."
         )
     return (
         f"{CHECK_STYLE}\n"
-        f"STYLE LOCK (Check): {VISUAL_DIRECTION}\n"
-        f"EXACT CHARACTER: {PROTAGONIST_BIBLE} Age now: {age}. State: {state}. {wardrobe}\n"
+        f"STYLE LOCK (Check stickman): {VISUAL_DIRECTION}\n"
+        f"EXACT CHARACTER LOCK: {PROTAGONIST_BIBLE} Age now: {age}. State: {state}. {wardrobe}\n"
+        f"SUPPORT CAST RULE: {SUPPORTING_STICKMAN}\n"
         f"EXACT ACTION: {action}\n"
-        f"EXACT ENVIRONMENT: {loc}\n"
+        f"EXACT ENVIRONMENT LOCK: {loc}\n"
         f"STORY TIME: {story_time}\n"
         f"CAMERA: {camera}\n"
         f"COMPOSITION: {composition}\n"
         f"LIGHTING: {lighting}\n"
         f"IMPORTANT OBJECTS: {obj_line}\n"
-        f"CONTINUITY: Same protagonist face and hair. Same Halcones arena architecture when in stadium. "
-        f"{wardrobe} Do not invent a new man or a new building.\n"
-        f"AVOID: anime, stock photo, photoreal random faces, clipart, collage, readable UI text, watermarks."
+        f"CONTINUITY HARD RULES: Same protagonist head/hair/proportions in every shot. "
+        f"Same location geometry when returning to a place. Locations are rich and consistent — "
+        f"do not invent a new shop, office, or arena mid-story. {wardrobe}\n"
+        f"AVOID: photoreal faces, anime eyes, 3D render, clipart, redesigning the stickman, "
+        f"changing hair, random new locations, watermarks, readable UI text."
     )
 
 
@@ -338,8 +395,9 @@ def apply_check_visual_layer(project: dict[str, Any], plan: dict[str, Any]) -> d
         v["lighting"] = lighting
         v["important_objects"] = objects
         v["continuity_notes"] = (
-            f"Reuse protagonist CHAR_YOU. Location lock: {loc_key}. "
-            f"Arena architecture constant. Age {meta['protagonist_age']}."
+            f"Reuse stickman CHAR_YOU (white round head, spiky black hair). "
+            f"Location lock: {loc_key}. Age {meta['protagonist_age']}. "
+            f"Do not redesign character or location."
         )
         prompt = compose_image_prompt(v, meta)
         sig = re.sub(r"\s+", " ", (v.get("action") or "")[:80] + loc_key)

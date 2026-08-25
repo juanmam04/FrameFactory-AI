@@ -15,11 +15,13 @@ OVERLAY_LANGUAGE = "es"
 # Visual model prompts stay English when that yields better generations
 IMAGE_PROMPT_LANGUAGE = "en"
 
-VISUAL_STYLE_ID = "check_2d_cinematic"
+VISUAL_STYLE_ID = "check_stickman_2d"
 VISUAL_DIRECTION = (
-    "2D cinematic illustrated storytelling: clean linework, expressive simple characters, "
-    "detailed environments, strong lighting, readable silhouettes, consistent proportions. "
-    "Not childish, not clipart, not stock, not anime, not inconsistent hyperrealism."
+    "High-quality 2D stickman cartoon (YouTube POV / webcomic grade): round white heads, "
+    "black-dot eyes, simple line faces, solid hair shapes, thin stick limbs, bold black outlines, "
+    "flat cel color. Environments are detailed and consistent across the episode — same shops, "
+    "offices, apartments, arenas. Characters never redesign mid-story. "
+    "Not childish clipart, not photoreal, not anime, not 3D."
 )
 
 DEFAULT_CATEGORIES = (

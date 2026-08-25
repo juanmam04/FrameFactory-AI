@@ -110,10 +110,12 @@ def test_check_image_prompt_is_specific():
         },
         {"protagonist_age": 22, "protagonist_state": "new owner", "story_time": "AGE 22"},
     )
-    assert "2D cinematic illustrated" in prompt
-    assert "Not anime" in prompt
-    assert "keys" in prompt.lower()
-    assert "young entrepreneur in basketball arena" not in prompt.lower()
+    low = prompt.lower()
+    assert "stickman" in low
+    assert "white" in low and "head" in low
+    assert "keys" in low
+    assert "young entrepreneur in basketball arena" not in low
+    assert "photoreal" in low  # in AVOID list
 
 
 def test_apply_check_visual_layer_schema(tmp_path, monkeypatch):
@@ -165,4 +167,5 @@ def test_apply_check_visual_layer_schema(tmp_path, monkeypatch):
             "image_prompt",
         ):
             assert key in s
-        assert "2D cinematic" in s["image_prompt"]
+        assert "stickman" in s["image_prompt"].lower()
+        assert "Location lock:" in s["continuity_notes"]

@@ -19,6 +19,8 @@ _BIBLE_BY_FAMILY = {
     "arena": ["protagonist_visual_bible", "arena_visual_bible", "team_visual_bible"],
     "home": ["protagonist_visual_bible"],
     "city": ["protagonist_visual_bible"],
+    "creator_hub": ["protagonist_visual_bible", "creator_hub_visual_bible"],
+    "investor_cafe": ["protagonist_visual_bible", "investor_cafe_visual_bible"],
 }
 
 
@@ -35,6 +37,10 @@ def _bible_refs(sem: dict[str, Any], visual: dict[str, Any]) -> list[str]:
         out.append("shared_apartment_visual_bible")
     if loc in ("new_apartment", "new_apt"):
         out.append("new_apartment_visual_bible")
+    if loc in ("creator_hub", "studio") or fam == "creator_hub":
+        out.append("creator_hub_visual_bible")
+    if loc in ("investor_cafe",) or fam == "investor_cafe":
+        out.append("investor_cafe_visual_bible")
     if sem.get("hero_id") == "utilero_keys" or "utilero" in str(visual.get("script_text") or "").lower():
         out.append("utilero_visual_bible")
     if sem.get("visual_subject") == "coach":
