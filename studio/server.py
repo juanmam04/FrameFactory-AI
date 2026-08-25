@@ -918,7 +918,7 @@ def create_app() -> FastAPI:
         try:
             load_project(project_id)
             if not force_id:
-                raise ValueError("Falta la cara (CHAR_001).")
+                raise ValueError("Falta el id de referencia (ej. CHAR_YOU o CHAR_001).")
             eid = normalize_master_id(force_id)
             raw = b""
             fname = "upload.jpg"

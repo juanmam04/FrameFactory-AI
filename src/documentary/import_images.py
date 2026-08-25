@@ -98,7 +98,8 @@ def write_compressed_named(dest_root: Path, stem: str, data: bytes, filename: st
     return dest
 
 
-_MASTER_ID_RE = re.compile(r"^[A-Za-z]{2,8}_\d{3}$")
+# Documentary: CHAR_001 / LOC_003. Check ALS: CHAR_YOU / LOC_OFFICE / LOC_CREATOR_HUB.
+_MASTER_ID_RE = re.compile(r"^[A-Za-z]{2,12}_[A-Za-z0-9_]{2,40}$")
 
 
 def normalize_master_id(ref_id: str) -> str:
