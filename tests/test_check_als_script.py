@@ -116,6 +116,35 @@ def test_check_image_prompt_is_specific():
     assert "keys" in low
     assert "young entrepreneur in basketball arena" not in low
     assert "photoreal" in low  # in AVOID list
+    assert "text hard ban" in low
+    assert "subtitle" in low
+
+
+def test_check_prompt_appends_text_ban_to_cached_prompt():
+    from src.documentary.formats.check_als.visuals import format_check_prompt
+
+    out = format_check_prompt(
+        {
+            "image_prompt": "stickman in office, medium shot",
+            "action": "Los primeros días son desafiantes y sientes miedo.",
+        },
+        {},
+    )
+    assert "TEXT HARD BAN" in out
+    assert "stickman in office" in out
+
+
+def test_vo_like_action_is_not_painted_literally():
+    prompt = compose_image_prompt(
+        {
+            "action": "Los primeros días son desafiantes. Sientes que has tomado una decisión audaz.",
+            "camera": "medium shot",
+            "environment": "rainy city park bench at night",
+        },
+        {"protagonist_age": 22, "protagonist_state": "early days", "story_time": "AGE 22"},
+    )
+    assert "do NOT write these words on the image" in prompt
+    assert "TEXT HARD BAN" in prompt
 
 
 def test_apply_check_visual_layer_schema(tmp_path, monkeypatch):

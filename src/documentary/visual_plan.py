@@ -778,8 +778,10 @@ def format_batch_prompt(
             "- protagonist visible and doing the action;",
             "- period-accurate wardrobe, phones, cars, interiors;",
             "- every frame is the SAME emotional beat from a new angle;",
-            "- no readable text unless requested; no logos; no collage;",
-            "- no stock office crowd.",
+            "- CLEAN plate: NO subtitles, captions, titles, lower-thirds, speech bubbles,",
+            "  logos, watermarks, or any readable on-image text (Spanish or English);",
+            "  voiceover/subs are added later in editing — never burn words into the frame;",
+            "- no collage; no stock office crowd.",
         ]
     )
     return "\n".join(lines).strip() + "\n"
@@ -834,14 +836,17 @@ def format_single_prompt(
     if str((bible or {}).get("format") or "") == "check_als":
         from src.documentary.formats.check_als.visuals import format_check_prompt
 
-        return str(visual.get("image_prompt") or format_check_prompt(visual, bible))
-    return (
+        # Always go through format_check_prompt so TEXT HARD BAN is appended to cached prompts.
+        return format_check_prompt(visual, bible)
+    body = (
         "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\n"
         "Photoreal. No collage. No crowded office stock.\n"
+        "CLEAN plate: no subtitles, captions, titles, or any burned-in text (added later in edit).\n"
         f"STYLE: {_style_text(bible)[:280]}\n"
         f"DIRECTOR: {FLOW_DIRECTOR_RULES}\n\n"
         f"{format_scene_line(visual, bible=bible, masters=masters)}\n"
     )
+    return body
 
 
 def batch_references(

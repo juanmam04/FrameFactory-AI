@@ -37,6 +37,14 @@ SUPPORTING_STICKMAN = (
     "flat hair blocks, simple clothes. Each named role keeps ONE locked design for the whole episode."
 )
 
+# Captions/VO belong in the edit — Flow loves to burn Spanish lines into the plate.
+NO_ON_IMAGE_TEXT = (
+    "TEXT HARD BAN (critical): CLEAN plate only. ZERO on-image lettering of any kind — "
+    "no subtitles, captions, lower-thirds, titles, speech bubbles, watermarks, logos, "
+    "UI chrome, posters with readable words, Spanish or English sentences, burned dialogue. "
+    "Never write narration on the image. Voiceover and subtitles are added later in editing."
+)
+
 ARENA_BIBLE = (
     "LOCKED LOCATION — same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, "
     "4800-seat bowl, same roof, same tunnel, same floor orientation. "
@@ -301,6 +309,12 @@ def characters_for(key: str, text: str) -> list[str]:
 
 def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
     action = str(visual.get("action") or visual.get("description") or "the protagonist in a specific story beat").strip()
+    # If action is actually VO/narration, treat it as beat mood only — never as words to paint.
+    if _looks_like_vo_line(action):
+        action = (
+            f"Show the protagonist living this beat visually (do NOT write these words on the image): "
+            f"mood/context only — {action[:220]}"
+        )
     camera = str(visual.get("camera") or visual.get("shot_type") or "medium shot").strip()
     lighting = str(visual.get("lighting") or "clean cartoon lighting with soft depth").strip()
     composition = str(
@@ -342,8 +356,31 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
         f"Same location geometry when returning to a place. Locations are rich and consistent — "
         f"do not invent a new shop, office, or arena mid-story. {wardrobe}\n"
         f"AVOID: photoreal faces, anime eyes, 3D render, clipart, redesigning the stickman, "
-        f"changing hair, random new locations, watermarks, readable UI text."
+        f"changing hair, random new locations, watermarks, readable UI text, "
+        f"subtitles, captions, burned-in dialogue, any on-image words.\n"
+        f"{NO_ON_IMAGE_TEXT}"
     )
+
+
+def _looks_like_vo_line(text: str) -> bool:
+    t = (text or "").strip()
+    if len(t) < 28:
+        return False
+    low = t.lower()
+    vo_markers = (
+        "tú ", " tu ", "tienes ", "sientes ", "pero no", "los primeros",
+        "con un equipo", "en un mundo", "la empresa", "tu decisión",
+        "you ", "you're ", "you feel", "you have",
+    )
+    if any(m in f" {low}" for m in vo_markers):
+        return True
+    # Long Spanish sentence without camera/visual verbs → likely narration.
+    if re.search(r"[áéíóúñ¿¡]", low) and not re.search(
+        r"\b(shot|camera|close-up|medium|wide|stickman|foreground|sitting|standing|holding)\b",
+        low,
+    ):
+        return True
+    return False
 
 
 def format_check_prompt(visual: dict[str, Any], bible: dict[str, Any] | None = None) -> str:
@@ -352,6 +389,11 @@ def format_check_prompt(visual: dict[str, Any], bible: dict[str, Any] | None = N
         "protagonist_state": visual.get("protagonist_state"),
         "story_time": visual.get("story_time"),
     }
+    base = str(visual.get("image_prompt") or "").strip()
+    if base and "TEXT HARD BAN" in base:
+        return base
+    if base:
+        return f"{base.rstrip()}\n\n{NO_ON_IMAGE_TEXT}"
     return compose_image_prompt(visual, meta)
 
 
@@ -550,11 +592,22 @@ def _persist_prompts(project: dict[str, Any], plan: dict[str, Any], scenes: list
         json.dumps(plan.get("check_bibles") or {}, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     (fp / "visual-plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
-    lines = ["# Check image prompts", "", f"Scenes: {len(scenes)}", ""]
+    lines = [
+        "# Check image prompts",
+        "",
+        f"Scenes: {len(scenes)}",
+        "",
+        "IMPORTANT: Copy ONLY the Flow prompt block into Google Flow.",
+        "Never paste the VO line — Flow will burn it as a subtitle.",
+        "",
+    ]
     for s in scenes:
         lines.append(f"## {s.get('scene_id')} · {s.get('story_time')}")
-        lines.append(s.get("script_text") or "")
-        lines.append("")
+        vo = str(s.get("script_text") or "").strip()
+        if vo:
+            lines.append(f"VO (audio only — DO NOT paste into Flow): {vo}")
+            lines.append("")
+        lines.append("### Flow prompt")
         lines.append(s.get("image_prompt") or "")
         lines.append("")
     (fp / "image-prompts.md").write_text("\n".join(lines), encoding="utf-8")

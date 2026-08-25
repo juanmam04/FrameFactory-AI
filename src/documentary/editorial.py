@@ -143,5 +143,6 @@ FLOW_DIRECTOR_RULES = (
     "into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. "
     "If the beat is a filing, show the document in someone's hands, not a room of extras. "
     "Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. "
-    "No collage. No readable logos. Not a stock photo."
+    "No collage. No readable logos. Not a stock photo. "
+    "CLEAN plate only: never burn subtitles, captions, titles, or any on-image lettering — those come in editing."
 )

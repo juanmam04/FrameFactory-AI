@@ -21,6 +21,7 @@ VISUAL_DIRECTION = (
     "black-dot eyes, simple line faces, solid hair shapes, thin stick limbs, bold black outlines, "
     "flat cel color. Environments are detailed and consistent across the episode — same shops, "
     "offices, apartments, arenas. Characters never redesign mid-story. "
+    "No on-image text, subtitles, or captions (those are added in editing). "
     "Not childish clipart, not photoreal, not anime, not 3D."
 )
 

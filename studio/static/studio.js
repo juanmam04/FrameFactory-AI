@@ -805,7 +805,7 @@ function bindSlotUploads(root, projectId) {
       try {
         const data = await api(`/api/projects/${encodeURIComponent(projectId)}/visuals/${n}/prompt`);
         await navigator.clipboard.writeText(data.prompt || "");
-        toast(`Prompt ${pad3(n)} copiado. Pegalo en Flow, generá UNA, y subila acá.`);
+        toast(`Prompt ${pad3(n)} copiado. Pegalo en Flow (sin subtítulos en la imagen). Generá UNA y subila.`);
       } catch (e) {
         toast(e.message);
       }
