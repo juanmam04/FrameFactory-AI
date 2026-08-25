@@ -821,7 +821,8 @@ def fill_thumbnail_gaps(package: dict[str, Any]) -> dict[str, Any]:
         out["background"] = _norm(ws.get("starting_location") or core.get("starting_situation") or "")[:80]
     if len(_norm(out.get("thumbnail_prompt"))) < 40:
         out["thumbnail_prompt"] = (
-            f"2D cinematic illustration: {_norm(out.get('main_visual'))[:120]}. "
+            f"High-quality 2D stickman cartoon: {_norm(out.get('main_visual'))[:120]}. "
+            f"Round white head, dot eyes, bold outlines, locked location."
             "Simple expressive protagonist, strong contrast, detailed environment, no busy text."
         )
     package["thumbnail_concept"] = strip_ad_thumbnail_text(out)

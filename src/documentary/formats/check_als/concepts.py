@@ -1535,7 +1535,8 @@ def _local_regenerate(base: dict[str, Any], part: str) -> dict[str, Any]:
             "background": "desorden específico del trabajo",
             "text_if_any": "",
             "thumbnail_prompt": (
-                f"2D cinematic illustration: {eng.get('specific_opportunity') or pkg.get('premise')}. "
+                f"High-quality 2D stickman cartoon illustration: {eng.get('specific_opportunity') or pkg.get('premise')}. "
+                f"Round white head, black-dot eyes, bold outlines, detailed consistent location."
                 "Simple expressive protagonist, strong contrast, few elements, detailed environment, no busy text."
             ),
         }
