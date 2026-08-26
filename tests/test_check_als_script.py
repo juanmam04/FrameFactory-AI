@@ -118,6 +118,8 @@ def test_check_image_prompt_is_specific():
     assert "photoreal" in low  # in AVOID list
     assert "text hard ban" in low
     assert "subtitle" in low
+    assert "face lock" in low
+    assert "suicidal" in low
 
 
 def test_check_prompt_appends_text_ban_to_cached_prompt():
@@ -140,11 +142,33 @@ def test_vo_like_action_is_not_painted_literally():
             "action": "Los primeros días son desafiantes. Sientes que has tomado una decisión audaz.",
             "camera": "medium shot",
             "environment": "rainy city park bench at night",
+            "moment_id": "rise",
+            "moment_label": "Le va bien",
+            "emotion": "hopeful determination, slight smile",
         },
         {"protagonist_age": 22, "protagonist_state": "early days", "story_time": "AGE 22"},
     )
     assert "do NOT write these words on the image" in prompt
     assert "TEXT HARD BAN" in prompt
+    assert "FACE LOCK" in prompt
+    assert "hopeful" in prompt.lower() or "smile" in prompt.lower()
+
+
+def test_peak_prompt_forbids_sad_default_face():
+    prompt = compose_image_prompt(
+        {
+            "action": "stickman on packed arena stands",
+            "moment_id": "peak",
+            "moment_label": "En la cima",
+            "emotion": "proud joy",
+            "environment": "sold-out Halcones arena",
+        },
+        {"protagonist_age": 26, "protagonist_state": "owner", "story_time": "AGE 26"},
+    )
+    assert "FACE LOCK" in prompt
+    assert "smile" in prompt.lower()
+    assert "FORBIDDEN" in prompt
+    assert "En la cima" in prompt
 
 
 def test_apply_check_visual_layer_schema(tmp_path, monkeypatch):

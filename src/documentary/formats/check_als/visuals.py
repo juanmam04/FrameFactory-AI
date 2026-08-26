@@ -45,6 +45,29 @@ NO_ON_IMAGE_TEXT = (
     "Never write narration on the image. Voiceover and subtitles are added later in editing."
 )
 
+_FACE_BY_MOMENT = {
+    "rise": (
+        "FACE LOCK: slight hopeful smile OR calm determined mouth; open / bright dot eyes; "
+        "eyebrows neutral-up. FORBIDDEN: downturned suicidal mouth, dead eyes, crying, hollow despair."
+    ),
+    "peak": (
+        "FACE LOCK: clear smile or proud calm grin; energetic eyebrows. "
+        "FORBIDDEN: sad face, depressed mouth, looking like giving up."
+    ),
+    "crack": (
+        "FACE LOCK: worried frown, tight mouth, tense eyebrows — stress readable. "
+        "Not smiling; also not suicidal blank stare."
+    ),
+    "collapse": (
+        "FACE LOCK: shocked or devastated — downturned mouth allowed; eyes wide or heavy. "
+        "One clear emotion of loss, not generic depression on every beat."
+    ),
+    "aftermath": (
+        "FACE LOCK: quiet tired neutral / soft acceptance; small closed mouth. "
+        "NOT theatrical suicide-face; quieter than collapse."
+    ),
+}
+
 ARENA_BIBLE = (
     "LOCKED LOCATION — same municipal basketball arena throughout: brick exterior, faded 'Halcones' sign, "
     "4800-seat bowl, same roof, same tunnel, same floor orientation. "
@@ -340,11 +363,19 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
             "AGE 22 wardrobe only: cheap office shirt or hoodie, dark trousers, worn backpack. "
             "Still the SAME white-head stickman with spiky black hair."
         )
+    mid = str(visual.get("moment_id") or "").strip() or "rise"
+    face = str(
+        visual.get("face_direction") or _FACE_BY_MOMENT.get(mid) or _FACE_BY_MOMENT["rise"]
+    ).strip()
+    emotion = str(visual.get("emotion") or "").strip() or "lived-in story beat"
+    mood_label = str(visual.get("moment_label") or mid)
     return (
         f"{CHECK_STYLE}\n"
         f"STYLE LOCK (Check stickman): {VISUAL_DIRECTION}\n"
         f"EXACT CHARACTER LOCK: {PROTAGONIST_BIBLE} Age now: {age}. State: {state}. {wardrobe}\n"
         f"SUPPORT CAST RULE: {SUPPORTING_STICKMAN}\n"
+        f"STORY CLIMATE: {mood_label} ({mid}). Emotion beat: {emotion}.\n"
+        f"{face}\n"
         f"EXACT ACTION: {action}\n"
         f"EXACT ENVIRONMENT LOCK: {loc}\n"
         f"STORY TIME: {story_time}\n"
@@ -357,7 +388,8 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
         f"do not invent a new shop, office, or arena mid-story. {wardrobe}\n"
         f"AVOID: photoreal faces, anime eyes, 3D render, clipart, redesigning the stickman, "
         f"changing hair, random new locations, watermarks, readable UI text, "
-        f"subtitles, captions, burned-in dialogue, any on-image words.\n"
+        f"subtitles, captions, burned-in dialogue, any on-image words, "
+        f"default depressed/suicidal stickman face when the climate is rise or peak.\n"
         f"{NO_ON_IMAGE_TEXT}"
     )
 
@@ -411,6 +443,10 @@ def apply_check_visual_layer(project: dict[str, Any], plan: dict[str, Any]) -> d
 
     seen_prompts: dict[str, int] = {}
     scenes: list[dict[str, Any]] = []
+    # Tag climates before composing prompts (Spanish VO → rise/peak/crack/…).
+    from src.documentary.visual_plan import _tag_moments
+
+    _tag_moments(visuals)
     for i, v in enumerate(visuals, start=1):
         narr = str(v.get("narration_segment") or v.get("narration") or v.get("script_text") or "").strip()
         meta = infer_story_time(narr + " " + str(v.get("action") or ""), i, total)
@@ -546,17 +582,21 @@ def _lighting_for(key: str, text: str) -> str:
 
 def _emotion_for(text: str) -> str:
     t = _low(text)
-    if "oferta" in t or "vacío" in t or "vacio" in t:
-        return "quiet, unresolved"
-    if "renuncia" in t:
-        return "decisive, small"
-    if "sold" in t or "lleno" in t:
-        return "crowded heat"
-    if "deuda" in t or "derrota" in t:
-        return "pressure"
-    if "llaves" in t or "jefe" in t:
-        return "disbelief made physical"
-    return "lived-in"
+    if re.search(r"sold out|no entra|lleno|gloria|palco|campeon|campeón", t):
+        return "proud joy, big night energy"
+    if re.search(r"oferta|vac[ií]o despu[eé]s|bloqueas|mañana lo lees", t):
+        return "quiet unresolved reflection"
+    if re.search(r"renuncia|badge|firm|51|llaves|utilero|arranca|oportunidad", t):
+        return "hopeful determination, slight smile"
+    if re.search(r"deuda|acreedor|inyectas|presi[oó]n|crisis|miedo", t):
+        return "tight worry, pressure behind the eyes"
+    if re.search(r"quiebra|eliminado|se cae|desastre|perdiste", t):
+        return "shock / devastation"
+    if re.search(r"oficina|cub[ií]culo|tienes 22|compart", t):
+        return "ordinary-day calm, mildly restless — NOT depressed"
+    if "playoff" in t or "victoria" in t or "mud" in t:
+        return "forward motion, quiet confidence"
+    return "alive and present — match the story climate, never default suicide-face"
 
 
 def _visual_qc(scenes: list[dict[str, Any]]) -> dict[str, Any]:

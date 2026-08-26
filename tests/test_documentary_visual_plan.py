@@ -54,13 +54,39 @@ def _fake_visuals(n_flow: int, *, archival_at: list[int] | None = None):
 
 
 def test_batch_grouping_23_flow():
-    visuals = [{"number": i, "visual_type": "FLOW_REENACTMENT"} for i in range(1, 24)]
+    # Same climate so batches split by size, not by mixed moment arcs.
+    visuals = [
+        {
+            "number": i,
+            "visual_type": "FLOW_REENACTMENT",
+            "narration": "They founded the company and launched a community vision in 2010.",
+        }
+        for i in range(1, 24)
+    ]
     batches = group_flow_batches(visuals, batch_size=10)
     assert len(batches) == 3
     assert batches[0]["visual_numbers"] == list(range(1, 11))
     assert batches[1]["visual_numbers"] == list(range(11, 21))
     assert batches[2]["visual_numbers"] == [21, 22, 23]
     assert batches[0].get("interchangeable") is True
+
+
+def test_check_spanish_moments_are_not_all_rise():
+    visuals = [
+        {"number": 1, "visual_type": "FLOW_REENACTMENT", "narration": "Tienes 22 años. Trabajás en una oficina."},
+        {"number": 2, "visual_type": "FLOW_REENACTMENT", "narration": "Inyectás tu plata y la deuda te come."},
+        {"number": 3, "visual_type": "FLOW_REENACTMENT", "narration": "Sold out: no entra más gente al estadio."},
+        {"number": 4, "visual_type": "FLOW_REENACTMENT", "narration": "Quiebra. Todo se derrumba. Perdiste todo."},
+        {"number": 5, "visual_type": "FLOW_REENACTMENT", "narration": "Años después, millonario de papel, vacío después."},
+    ]
+    batches = group_flow_batches(visuals, batch_size=10)
+    by = {b["moment_id"]: b["moment_label"] for b in batches}
+    assert "rise" in by and by["rise"] == "Le va bien"
+    assert "crack" in by and by["crack"] == "Se resquebraja"
+    assert "peak" in by and by["peak"] == "En la cima"
+    assert "collapse" in by and by["collapse"] == "Se cae"
+    assert "aftermath" in by and by["aftermath"] == "Qué quedó"
+    assert len(by) >= 4
 
 
 def test_batches_group_by_moment_not_timeline():

@@ -151,6 +151,33 @@ def build_visual_plan(
         plan = apply_check_visual_layer(project, plan)
         visuals = plan.get("visuals") or visuals
         bible = plan.get("visual_bible") or bible
+        # Retag climates from Spanish VO + rebuild Flow blocks (rise/peak/crack/…).
+        flow_batches = group_flow_batches(visuals, batch_size=batch_size)
+        masters = plan.get("master_references") or masters
+        for b in flow_batches:
+            b["prompt"] = format_batch_prompt(b, visuals, bible, masters)
+            b["references_needed"] = batch_references(b, visuals, masters)
+        plan["flow_batches"] = flow_batches
+        plan["visuals"] = visuals
+        stats = summarize_visuals(visuals, flow_batches, masters)
+        plan["stats"] = stats
+        for v in visuals:
+            if str(v.get("visual_type") or "") == "FLOW_REENACTMENT":
+                v["flow_prompt"] = format_single_prompt(v, bible, masters)
+                if v.get("image_prompt"):
+                    # Refresh stored prompt with face lock after moment retag.
+                    from src.documentary.formats.check_als.visuals import compose_image_prompt
+
+                    meta = {
+                        "protagonist_age": v.get("protagonist_age"),
+                        "protagonist_state": v.get("protagonist_state"),
+                        "story_time": v.get("story_time"),
+                    }
+                    prompt = compose_image_prompt(v, meta)
+                    v["image_prompt"] = prompt
+                    v["flow_prompt"] = prompt
+                    v["prompt"] = prompt
+        plan["visuals"] = visuals
         stats = plan.get("stats") or stats
 
     root = project_dir(str(project["id"]))
@@ -378,7 +405,7 @@ _CANNED_STILL = re.compile(
 )
 
 _MOMENT_RULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
-    ("aftermath", "Qué quedó", ("spac", "2021", "layoff", "laid off", "covid", "pandemic", "remote work", "listed via")),
+    ("aftermath", "Qué quedó", (" spacs", "spac ", "spac,", "2021", "layoff", "laid off", "covid", "pandemic", "remote work", "listed via")),
     (
         "collapse",
         "Se cae",
@@ -408,6 +435,162 @@ _MOMENT_RULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         ("founded", "launch", "2010", "2014", "community", "vision", "series d", "gig economy", "opened", "started"),
     ),
 )
+# Check ALS / Spanish VO — checked after English documentary cues.
+_MOMENT_RULES_ES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    (
+        "aftermath",
+        "Qué quedó",
+        (
+            "años después",
+            "qué quedó",
+            "vacío después",
+            "mañana lo lees",
+            "bloqueas",
+            "papel millonario",
+            "millonario de papel",
+            "27 años",
+            "veintisiete",
+        ),
+    ),
+    (
+        "collapse",
+        "Se cae",
+        (
+            "quiebra",
+            "bancarrota",
+            "eliminado",
+            "no hay anillo",
+            "cero campeonatos",
+            "se cae",
+            "se derrumba",
+            "todo se rompe",
+            "desastre",
+            "te echan",
+            "perdiste todo",
+        ),
+    ),
+    (
+        "crack",
+        "Se resquebraja",
+        (
+            "deuda",
+            "acreedor",
+            "préstamo",
+            "prestamo",
+            "inyectas",
+            "cuenta personal queda en cero",
+            "diluci",
+            "crisis",
+            "presión",
+            "se pierde",
+            "derrota",
+            "14-18",
+            "no cierra",
+            "miedo",
+            "ansiedad",
+            "no dormís",
+            "no dormis",
+            "ansiedad",
+        ),
+    ),
+    (
+        "peak",
+        "En la cima",
+        (
+            "sold out",
+            "no entra más",
+            "no entra mas",
+            "estadio lleno",
+            "gradas llenas",
+            "4800",
+            "cuatro mil",
+            "palco",
+            "campeon",
+            "campeón",
+            "gloria",
+            "en la cima",
+            "primera vez no ves huecos",
+        ),
+    ),
+    (
+        "rise",
+        "Le va bien",
+        (
+            "firmás",
+            "firmas",
+            "llaves",
+            "utilero",
+            "51%",
+            "cincuenta y uno",
+            "dueño",
+            "renuncia",
+            "badge",
+            "arranca",
+            "oportunidad",
+            "playoff",
+            "primera victoria",
+            "mudás",
+            "mudas",
+            "es tuyo",
+            "equipo sólido",
+            "visión clara",
+            "vision clara",
+            "tienes 22",
+            "oficina",
+        ),
+    ),
+)
+_MOOD_TO_MOMENT: dict[str, str] = {
+    "neutral": "rise",
+    "curiosity": "rise",
+    "opportunity": "rise",
+    "hope": "rise",
+    "progress": "rise",
+    "determination": "rise",
+    "relief": "rise",
+    "comeback": "rise",
+    "confidence": "peak",
+    "success": "peak",
+    "happiness": "peak",
+    "celebration": "peak",
+    "glory": "peak",
+    "wealth": "peak",
+    "power": "peak",
+    "freedom": "peak",
+    "tension": "crack",
+    "pressure": "crack",
+    "anxiety": "crack",
+    "fear": "crack",
+    "risk": "crack",
+    "failure": "collapse",
+    "sadness": "collapse",
+    "loneliness": "collapse",
+    "despair": "collapse",
+    "crisis": "collapse",
+    "bankruptcy": "collapse",
+    "reflection": "aftermath",
+    "nostalgia": "aftermath",
+}
+_CHECK_FN_TO_MOMENT: dict[str, str] = {
+    "setup": "rise",
+    "opportunity": "rise",
+    "decision": "rise",
+    "commitment": "rise",
+    "progress": "rise",
+    "proof": "peak",
+    "reward": "peak",
+    "payoff": "peak",
+    "climax": "peak",
+    "setback": "crack",
+    "escalation": "crack",
+    "risk": "crack",
+    "crisis": "collapse",
+    "loss": "collapse",
+    "recovery": "rise",
+    "comeback": "rise",
+    "reflection": "aftermath",
+    "ending": "aftermath",
+}
 _FN_MOMENT = {
     "hook": "collapse",
     "setup": "rise",
@@ -427,11 +610,48 @@ _MOMENT_LABEL = {
     "aftermath": "Qué quedó",
 }
 _MOMENT_DIRECTOR = {
-    "rise": "ALL stills = the climb. Energy, cheap beginnings, belief. Nobody is ruined yet.",
-    "peak": "ALL stills = the high. Money, jet, the number, the illusion it will last.",
-    "crack": "ALL stills = the hairline fracture. Papers, doubt, 2am, the room going quiet.",
-    "collapse": "ALL stills = it breaking. Night, empty, the phone, the exit. No victory lap.",
-    "aftermath": "ALL stills = what is left. Quiet, leftover rooms, the smaller number.",
+    "rise": (
+        "ALL stills = the climb. Energy, cheap beginnings, belief. Nobody is ruined yet. "
+        "FACE: hopeful / determined — slight smile or calm focus. NEVER depressed or suicidal face."
+    ),
+    "peak": (
+        "ALL stills = the high. Money, crowd, the number, the illusion it will last. "
+        "FACE: proud smile or clear joy. NOT sad, NOT hollow-eyed."
+    ),
+    "crack": (
+        "ALL stills = the hairline fracture. Papers, doubt, 2am, the room going quiet. "
+        "FACE: worried / tense — stressed, not theatrical despair."
+    ),
+    "collapse": (
+        "ALL stills = it breaking. Night, empty, the phone, the exit. No victory lap. "
+        "FACE: shock or devastation OK here — still readable, not gore."
+    ),
+    "aftermath": (
+        "ALL stills = what is left. Quiet, leftover rooms, the smaller number. "
+        "FACE: tired acceptance / soft neutral — not suicidal every frame."
+    ),
+}
+_FACE_BY_MOMENT = {
+    "rise": (
+        "FACE LOCK: slight hopeful smile OR calm determined mouth; open / bright dot eyes; "
+        "eyebrows neutral-up. FORBIDDEN: downturned suicidal mouth, dead eyes, crying, hollow despair."
+    ),
+    "peak": (
+        "FACE LOCK: clear smile or proud calm grin; energetic eyebrows. "
+        "FORBIDDEN: sad face, depressed mouth, looking like giving up."
+    ),
+    "crack": (
+        "FACE LOCK: worried frown, tight mouth, tense eyebrows — stress readable. "
+        "Not smiling; also not suicidal blank stare."
+    ),
+    "collapse": (
+        "FACE LOCK: shocked or devastated — downturned mouth allowed; eyes wide or heavy. "
+        "One clear emotion of loss, not generic depression on every beat."
+    ),
+    "aftermath": (
+        "FACE LOCK: quiet tired neutral / soft acceptance; small closed mouth. "
+        "NOT theatrical suicide-face; quieter than collapse."
+    ),
 }
 
 # Angles inside one moment — same climate, different camera. Not a sequence.
@@ -526,10 +746,11 @@ def _prop_from_narration(visual: dict[str, Any]) -> str:
 
 
 def _tag_moments(visuals: list[dict[str, Any]]) -> None:
-    for v in visuals:
+    total = max(1, len(visuals))
+    for i, v in enumerate(visuals):
         text = " ".join(
             str(v.get(k) or "")
-            for k in ("narration_segment", "narration", "description", "action")
+            for k in ("narration_segment", "narration", "description", "action", "script_text")
         ).lower()
         mid = ""
         label = ""
@@ -538,11 +759,65 @@ def _tag_moments(visuals: list[dict[str, Any]]) -> None:
                 mid, label = kid, lab
                 break
         if not mid:
+            for kid, lab, keys in _MOMENT_RULES_ES:
+                if any(k in text for k in keys):
+                    mid, label = kid, lab
+                    break
+        if not mid:
             fn = str(v.get("story_function") or v.get("function") or "").lower()
-            mid = _FN_MOMENT.get(fn, "rise")
-            label = _MOMENT_LABEL.get(mid, "Le va bien")
+            if fn in _FN_MOMENT:
+                mid = _FN_MOMENT[fn]
+            elif fn in _CHECK_FN_TO_MOMENT:
+                mid = _CHECK_FN_TO_MOMENT[fn]
+            if mid:
+                label = _MOMENT_LABEL.get(mid, label)
+        if not mid:
+            mood = str(v.get("mood") or (v.get("scene_semantics") or {}).get("mood") or "").lower()
+            check_fn = str(
+                v.get("story_function")
+                or (v.get("scene_semantics") or {}).get("story_function")
+                or ""
+            ).lower()
+            if not mood or not check_fn:
+                try:
+                    from src.documentary.formats.check_als.asset_reuse import infer_mood_function
+
+                    m2, f2, _ = infer_mood_function(v)
+                    mood = mood or str(m2 or "").lower()
+                    check_fn = check_fn or str(f2 or "").lower()
+                except Exception:
+                    pass
+            if mood in _MOOD_TO_MOMENT:
+                mid = _MOOD_TO_MOMENT[mood]
+            elif check_fn in _CHECK_FN_TO_MOMENT:
+                mid = _CHECK_FN_TO_MOMENT[check_fn]
+            if mid:
+                label = _MOMENT_LABEL.get(mid, "Le va bien")
+        if not mid:
+            # Arc by position — never dump the whole episode into "Le va bien".
+            frac = (i + 1) / total
+            if frac <= 0.22:
+                mid = "rise"
+            elif frac <= 0.42:
+                mid = "rise"
+            elif frac <= 0.58:
+                mid = "crack"
+            elif frac <= 0.78:
+                mid = "peak"
+            elif frac <= 0.90:
+                mid = "collapse"
+            else:
+                mid = "aftermath"
+            label = _MOMENT_LABEL[mid]
         v["moment_id"] = mid
-        v["moment_label"] = label
+        v["moment_label"] = label or _MOMENT_LABEL.get(mid, "Le va bien")
+        face = _FACE_BY_MOMENT.get(mid, "")
+        if face:
+            v["face_direction"] = face
+
+
+def face_direction_for_moment(moment_id: str) -> str:
+    return _FACE_BY_MOMENT.get(str(moment_id or "rise"), _FACE_BY_MOMENT["rise"])
 
 
 def _still_from_vo(

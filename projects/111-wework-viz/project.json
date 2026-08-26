@@ -1,0 +1,109 @@
+{
+  "id": "111-wework-viz",
+  "slug": "wework-viz",
+  "mode": "documentary",
+  "content_format": "documentary",
+  "title": "WeWork Viz",
+  "topic": "WeWork visual test",
+  "language": "en",
+  "target_words": 2000,
+  "target_duration_min": [
+    11,
+    15
+  ],
+  "research_notes": "Adam Neumann SoftBank IPO S-1",
+  "sources": [],
+  "research_skipped": false,
+  "script": "In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. In September 2019 the IPO collapsed. Adam Neumann founded WeWork in 2010. SoftBank invested billions. The S-1 filing revealed losses. ",
+  "fact_check_status": "pending",
+  "script_approved": true,
+  "story_plan": {
+    "central_story": "IPO collapse",
+    "approved": true,
+    "beats": [
+      {
+        "id": 1,
+        "event": "IPO pulled",
+        "priority": "essential"
+      },
+      {
+        "id": 2,
+        "event": "SoftBank invests",
+        "priority": "essential"
+      }
+    ],
+    "selected_beat_ids": [
+      1,
+      2
+    ],
+    "characters": [
+      {
+        "name": "Adam Neumann",
+        "role_in_story": "CEO"
+      }
+    ]
+  },
+  "story_plan_approved": true,
+  "check_story": {},
+  "check_story_approved": false,
+  "voice_speed": 1.2,
+  "music_path": "",
+  "music_volume": 0.08,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "session_id": "",
+  "episode_number": 111,
+  "idea": {},
+  "concept": {},
+  "creative_profile_snapshot": {},
+  "ui_step": "flow",
+  "checkpoints": {
+    "script_ready": false,
+    "flow_pack_ready": true,
+    "images_imported": false,
+    "voice_ready": false,
+    "assembly_ready": false,
+    "render_ready": false,
+    "captions_ready": false
+  },
+  "import_report": {},
+  "youtube": {},
+  "preview": {},
+  "errors": [],
+  "created_at": "2026-08-26T02:38:55Z",
+  "updated_at": "2026-08-26T02:39:00Z",
+  "visual_analysis": {
+    "shot_count": 40,
+    "path": "flow-pack/visual_analysis.json"
+  },
+  "visual_plan": {
+    "stats": {
+      "total": 40,
+      "flow": 40,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 40
+      },
+      "flow_batches": 5,
+      "master_references": 2
+    },
+    "batch_count": 5,
+    "path": "flow-pack/visual-plan.json"
+  },
+  "flow_pack": {
+    "shot_count": 40,
+    "batch_size": 10,
+    "stats": {
+      "total": 40,
+      "flow": 40,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 40
+      },
+      "flow_batches": 5,
+      "master_references": 2
+    }
+  }
+}

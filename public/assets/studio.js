@@ -805,7 +805,7 @@ function bindSlotUploads(root, projectId) {
       try {
         const data = await api(`/api/projects/${encodeURIComponent(projectId)}/visuals/${n}/prompt`);
         await navigator.clipboard.writeText(data.prompt || "");
-        toast(`Prompt ${pad3(n)} copiado. Pegalo en Flow, generá UNA, y subila acá.`);
+        toast(`Prompt ${pad3(n)} copiado. Pegalo en Flow (sin subtítulos en la imagen). Generá UNA y subila.`);
       } catch (e) {
         toast(e.message);
       }
@@ -2137,7 +2137,7 @@ async function paintFlow(ws, p) {
         <p class="lead" style="margin-top:0.75rem;margin-bottom:0">No hay que matchear “imagen 7 = prompt 7”.</p>
       </div>`}
 
-      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. ${isCheckFlow ? "Generá e importá un still por slot. Todavía no generes voz." : "Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena."}</p>
+      <p class="lead">Este episodio necesita <strong>${total} imágenes</strong>. ${isCheckFlow ? "Generá e importá un still por slot. Cuando tengas imágenes (aunque no estén todas), seguí a la voz." : "Todas se piden a Google Flow — incluso papeles, titulares y pantallas, como foto en escena."}</p>
       ${isCheckFlow ? `<div class="panel soft" style="margin:1rem 0;border:1px solid var(--line,#ccc)">
         <strong>STILLS — ${totalSlots} visual slots</strong>
         <div class="ff-episode-meta">Generated/imported: <strong>${importedExact} / ${totalSlots}</strong></div>
@@ -2158,7 +2158,7 @@ async function paintFlow(ws, p) {
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
-        ${isCheckFlow ? "" : `<button class="btn btn-primary" id="to-voice">Seguir a la voz</button>`}
+        <button class="btn btn-primary" id="to-voice">Seguir a la voz</button>
       </div>
 
       <h2 style="margin-top:1.6rem">A) Caras que se repiten</h2>

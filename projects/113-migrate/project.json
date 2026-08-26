@@ -1,0 +1,84 @@
+{
+  "id": "113-migrate",
+  "slug": "migrate",
+  "mode": "documentary",
+  "content_format": "documentary",
+  "title": "Migrate",
+  "topic": "Migrate",
+  "language": "en",
+  "target_words": 2000,
+  "target_duration_min": [
+    11,
+    15
+  ],
+  "research_notes": "notes",
+  "sources": [],
+  "research_skipped": false,
+  "script": "A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. A true company story with Adam Neumann and SoftBank and an IPO. ",
+  "fact_check_status": "approved",
+  "script_approved": true,
+  "story_plan": {},
+  "story_plan_approved": false,
+  "check_story": {},
+  "check_story_approved": false,
+  "voice_speed": 1.2,
+  "music_path": "",
+  "music_volume": 0.08,
+  "subtitles_enabled": true,
+  "batch_size": 10,
+  "flow_shot_index": 0,
+  "flow_batch_index": 0,
+  "session_id": "",
+  "episode_number": 113,
+  "idea": {},
+  "concept": {},
+  "creative_profile_snapshot": {},
+  "ui_step": "flow",
+  "checkpoints": {
+    "script_ready": true,
+    "flow_pack_ready": true,
+    "images_imported": false,
+    "voice_ready": false,
+    "assembly_ready": false,
+    "render_ready": false,
+    "captions_ready": false
+  },
+  "import_report": {},
+  "youtube": {},
+  "preview": {},
+  "errors": [],
+  "created_at": "2026-08-26T02:39:13Z",
+  "updated_at": "2026-08-26T02:39:16Z",
+  "visual_analysis": {
+    "shot_count": 40,
+    "path": "flow-pack/visual_analysis.json"
+  },
+  "visual_plan": {
+    "stats": {
+      "total": 40,
+      "flow": 40,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 40
+      },
+      "flow_batches": 6,
+      "master_references": 1
+    },
+    "batch_count": 6,
+    "path": "flow-pack/visual-plan.json"
+  },
+  "flow_pack": {
+    "shot_count": 40,
+    "batch_size": 10,
+    "stats": {
+      "total": 40,
+      "flow": 40,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 40
+      },
+      "flow_batches": 6,
+      "master_references": 1
+    }
+  }
+}

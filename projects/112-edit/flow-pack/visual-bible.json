@@ -1,0 +1,35 @@
+{
+  "global_style": "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk with one person — not the same open-plan office thirty times. Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup.",
+  "characters": [
+    {
+      "id": "CHAR_001",
+      "name": "Founder",
+      "role": "CEO",
+      "description": "",
+      "visual_description": "Documentary reconstruction of Founder, period-accurate wardrobe, photorealistic — illustration/reconstruction, not claimed archival photo",
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "reference_required": true,
+      "appears_in_shots": [],
+      "periods": [
+        ""
+      ],
+      "master_reference_filename": "CHAR_001.png"
+    }
+  ],
+  "locations": [],
+  "important_objects": [
+    {
+      "id": "OBJ_001",
+      "name": "Financial document",
+      "description": "Balance sheet / pitch deck / report",
+      "visual_description": "Printed financial report or laptop screen with charts, no readable logos",
+      "appears_in_shots": [],
+      "appearance_strategy": "FLOW_REENACTMENT",
+      "master_reference_filename": "OBJ_001.png",
+      "periods": []
+    }
+  ],
+  "timeline_periods": [],
+  "visual_style": "Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 3am, courthouse steps, a single desk with one person — not the same open-plan office thirty times. Avoid generic stock: crowded coworking, people at laptops, handshake, glass conference room, CEO staring at camera, generic skyline, abstract money. No cartoon, meme text, watermark, logo soup.",
+  "period_rules": []
+}
