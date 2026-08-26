@@ -83,12 +83,20 @@ def _connect(*, autocommit: bool = False):
     # Always prefer a writeable endpoint — this module upserts blobs / sessions.
     url = _writable_url(url)
     # Supabase pooler works better with prepare_threshold=None (PgBouncer).
-    return psycopg.connect(
+    conn = psycopg.connect(
         _connect_url(url),
         prepare_threshold=None,
         connect_timeout=8,
         autocommit=autocommit,
     )
+    # Supabase Session pooler sometimes starts with default_transaction_read_only=on
+    # even on a primary (pg_is_in_recovery=false). Force a writeable session.
+    try:
+        conn.execute("SET default_transaction_read_only TO off")
+        conn.execute("SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE")
+    except Exception:
+        pass
+    return conn
 
 
 def ensure_schema() -> None:
@@ -101,10 +109,16 @@ def ensure_schema() -> None:
                 cur.execute("SHOW transaction_read_only")
                 row = cur.fetchone()
                 if row and str(row[0]).lower() in {"on", "true", "1"}:
+                    # One more hard nudge (some poolers ignore the SET in _connect).
+                    cur.execute("SET default_transaction_read_only TO off")
+                    cur.execute("SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE")
+                    cur.execute("SHOW transaction_read_only")
+                    row = cur.fetchone()
+                if row and str(row[0]).lower() in {"on", "true", "1"}:
                     raise RuntimeError(
-                        "Postgres está en solo lectura (réplica / Transaction pooler). "
-                        "En Vercel/Supabase usá DATABASE_URL del Session pooler o Direct "
-                        "(puerto 5432), no :6543 ni una URL *-ro*/replica."
+                        "Postgres sigue en solo lectura después de SET READ WRITE. "
+                        "En Supabase → Database usá Direct connection (db.<ref>.supabase.co:5432) "
+                        "o Session pooler; evitá Transaction pooler (:6543) y URLs *-ro*."
                     )
                 cur.execute(
                     """
