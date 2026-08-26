@@ -45,17 +45,49 @@ def _connect_url(url: str) -> str:
     return url
 
 
-def _connect():
+def _writable_url(url: str) -> str:
+    """
+    Prefer a writeable endpoint for DDL / upserts.
+
+    Supabase Transaction pooler (:6543) and read-replica URLs often land in
+    default_transaction_read_only=on → CREATE TABLE fails.
+    Session pooler / direct (:5432) can write.
+    """
+    u = (url or "").strip()
+    if not u:
+        return u
+    # Explicit read-only / replica hints
+    low = u.lower()
+    if "read-only" in low or "readonly" in low or "-ro." in low or "replica" in low:
+        # Best-effort: strip common replica markers when possible
+        u = (
+            u.replace("-ro.", ".")
+            .replace("read-only.", ".")
+            .replace("readonly.", ".")
+            .replace("-replica.", ".")
+        )
+    # Transaction pooler → session pooler (same host, port 5432)
+    if ":6543/" in u or u.rstrip("/").endswith(":6543"):
+        u = u.replace(":6543/", ":5432/").replace(":6543?", ":5432?")
+        if u.rstrip("/").endswith(":6543"):
+            u = u[: u.rfind(":6543")] + ":5432" + u[u.rfind(":6543") + 5 :]
+    return u
+
+
+def _connect(*, autocommit: bool = False):
     import psycopg
 
     url = database_url()
     if not url:
         raise RuntimeError("DATABASE_URL no configurada (.env.local)")
+    # Always prefer a writeable endpoint — this module upserts blobs / sessions.
+    url = _writable_url(url)
     # Supabase pooler works better with prepare_threshold=None (PgBouncer).
     return psycopg.connect(
         _connect_url(url),
         prepare_threshold=None,
         connect_timeout=8,
+        autocommit=autocommit,
     )
 
 
@@ -63,26 +95,47 @@ def ensure_schema() -> None:
     global _schema_ok
     if _schema_ok:
         return
-    with _connect() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS ff_blobs (
-                  project_id TEXT NOT NULL,
-                  rel_path TEXT NOT NULL,
-                  sha256 TEXT NOT NULL,
-                  content BYTEA NOT NULL,
-                  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                  PRIMARY KEY (project_id, rel_path)
-                );
-                CREATE TABLE IF NOT EXISTS ff_sessions_store (
-                  id TEXT PRIMARY KEY DEFAULT 'default',
-                  payload JSONB NOT NULL,
-                  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-                );
-                """
-            )
-        conn.commit()
+    try:
+        with _connect(autocommit=True) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SHOW transaction_read_only")
+                row = cur.fetchone()
+                if row and str(row[0]).lower() in {"on", "true", "1"}:
+                    raise RuntimeError(
+                        "Postgres está en solo lectura (réplica / Transaction pooler). "
+                        "En Vercel/Supabase usá DATABASE_URL del Session pooler o Direct "
+                        "(puerto 5432), no :6543 ni una URL *-ro*/replica."
+                    )
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS ff_blobs (
+                      project_id TEXT NOT NULL,
+                      rel_path TEXT NOT NULL,
+                      sha256 TEXT NOT NULL,
+                      content BYTEA NOT NULL,
+                      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                      PRIMARY KEY (project_id, rel_path)
+                    )
+                    """
+                )
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS ff_sessions_store (
+                      id TEXT PRIMARY KEY DEFAULT 'default',
+                      payload JSONB NOT NULL,
+                      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                    )
+                    """
+                )
+    except Exception as e:
+        msg = str(e).lower()
+        if "read-only" in msg or "readonly" in msg:
+            raise RuntimeError(
+                "cannot execute CREATE TABLE in a read-only transaction — "
+                "DATABASE_URL apunta a un endpoint de solo lectura. "
+                "Cambiala a Session pooler o Direct connection (puerto 5432) en Supabase → Database."
+            ) from e
+        raise
     _schema_ok = True
 
 
