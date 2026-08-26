@@ -413,12 +413,15 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
         "done": bool((project.get("youtube") or {}).get("title")),
     }
     if str(project.get("content_format") or project.get("mode") or "") == "check_als":
+        # Premise already chosen when the Check episode exists.
+        flags["topic"] = True
         flags["research"] = True
-        flags["story"] = bool(
+        story_ok = bool(
             project.get("check_story_approved")
             or (project.get("check_story") or {}).get("generated")
             or (project.get("check_story") or {}).get("approved")
         )
+        flags["story"] = story_ok
         if not project.get("check_story_approved"):
             flags["script"] = False
             flags["flow"] = False
@@ -426,11 +429,14 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
             flags["voice"] = False
             flags["music"] = False
             flags["render"] = False
-            return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": "story"}
+            return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": "story" if story_ok or has_topic else "topic"}
         flags["story"] = True
         flags["script"] = has_script and approved
-        current = "script" if not (has_script and approved) else "flow"
-        return {"steps": list(PROGRESS_STEPS), "flags": flags, "current": current}
+        # Pack or any stills unlocks Flow; voice onward follows normal checkpoints.
+        flags["flow"] = bool(flow or images_partial or images_full or voice or approved)
+        flags["images"] = images_full or (images_partial and voice) or voice
+        flags["preview"] = voice
+        # Fall through to shared current-step walk (don't freeze forever on "flow").
     current = "done"
     for step in PROGRESS_STEPS:
         if step == "done":

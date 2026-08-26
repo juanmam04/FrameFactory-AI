@@ -98,6 +98,16 @@ FORMATO OBLIGATORIO:
 - PROHIBIDO: instrucciones meta ("NO moraleja", "Edad final del state", "vehicle_mode").
 - NO es un guion de película. NO es un documental. Es VO que lee una IA en voz alta.
 
+IMPACTO ASPIRACIONAL (crítico para el viewer):
+- Cuando el state llega a millonario / sold-out / major_success / ownership real, el VO DEBE hacer SENTIR el salto.
+- No alcanza con decir "vales X millones". El viewer tiene que VER/OÍR el contraste con el día 1.
+- Obligatorio en el pico (≥3 beats sensoriales concretos, ganados por la trama): casa/departamento nuevo vs el de antes,
+  ropa o status distinto, padres/familia en un lugar que antes no podían, auto o viaje ganado, cena/lugar que antes
+  no te salía, estadio/oficina/estudio lleno, gente que ahora te busca.
+- Podés mantener la ironía cash-bajo vs paper-alto, PERO primero mostrá el lujo/status ganado; después el contraste.
+- PROHIBIDO: flex vacío repetido (Lamborghini/jet en cada párrafo). SÍ: 1–2 momentos de lujo extremo que duelan de envidia.
+- Si el state dice éxito extremo y el VO sigue en oficina gris / depto triste / cara de derrota, FALLASTE.
+
 FORMA:
 - Mínimo 1100 palabras. Rango 1100–2300. Target 1800.
 - Cold open directo con edad / situación / cifra.
@@ -186,6 +196,7 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
             "crisis o setback (caja, dilución, burnout)",
             "renuncia o mudanza si existen en el state",
             "escala concreta sin inventar deporte",
+            "IMPACTO DE CIMA: ≥3 beats sensoriales de éxito ganado (oficina/casa/status/viajes/gente que te busca) antes del final",
             "final: oferta/tracción/decisión abierta — sin moraleja",
         ]
         ending = (
@@ -205,7 +216,8 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
             "mal arranque + deuda",
             "progresión deportiva EXACTA por temporada",
             "sold out / renuncia / mudanza en el tiempo real del state",
-            "millonario en papel vs cash personal ~0",
+            "IMPACTO DE CIMA: ≥3 beats sensoriales de éxito ganado (casa nueva, status, familia, packed venue, gente que te busca) — no solo el número de millones",
+            "después del impacto: millonario en papel vs cash personal bajo (ironía), sin borrar el lujo ya mostrado",
             "final: estadio vacío, mail de oferta, bloqueas",
         ]
         ending = (
@@ -574,9 +586,46 @@ def validate_check_script(
         warn.append("posible spill deportivo en guion business")
 
     end_nw = (facts.get("life_end") or {}).get("net_worth")
-    if end_nw and float(end_nw) >= 1_000_000:
+    try:
+        nw_val = float(str(end_nw).replace(",", "").replace("$", "").strip()) if end_nw not in (None, "") else 0.0
+    except (TypeError, ValueError):
+        nw_val = 0.0
+    if nw_val >= 1_000_000:
         if "millon" not in low and "45" not in text:
             warn.append("el payoff millonario-en-papel puede estar débil")
+        lifestyle_hits = sum(
+            1
+            for k in (
+                "departamento",
+                "casa",
+                "mud",
+                "palco",
+                "sold out",
+                "lleno",
+                "padres",
+                "familia",
+                "cena",
+                "auto",
+                "traje",
+                "oficina propia",
+                "viaje",
+                "primera clase",
+                "penthouse",
+                "suite",
+                "chofer",
+                "te buscan",
+                "quieren comprarte",
+                "te llaman",
+            )
+            if k in low
+        )
+        if lifestyle_hits < 2:
+            hard.append(
+                "pico millonario sin impacto de vida: faltan beats sensoriales "
+                "(casa/status/familia/venue lleno/gente que te busca). El número solo no alcanza."
+            )
+        elif lifestyle_hits < 3:
+            warn.append("pico de éxito poco sensorial — sumá un beat más de contraste día-1 vs ahora")
 
     if strict_length:
         lo, hi = WORD_RANGE
@@ -783,7 +832,10 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
                         f"Escribí SOLO el VO hablado (mínimo {MIN_WORDS} palabras, target {target}). "
                         f"vehicle_mode={mode}. Segunda persona tú/te. "
                         "PROHIBIDO: INT/EXT, NARRADOR, diálogos con nombres, ops (launch_company), meta. "
-                        "Solo el texto que lee la IA en voz alta."
+                        "Solo el texto que lee la IA en voz alta. "
+                        "IMPACTO: cuando llegás a millonario / sold-out / major_success, "
+                        "mostrá ≥3 beats sensoriales de lujo/status GANADO (contraste con el día 1). "
+                        "No digas solo el número de millones — el viewer tiene que ENVIDIAR la vida."
                     ),
                     "locked_facts": slim,
                 },

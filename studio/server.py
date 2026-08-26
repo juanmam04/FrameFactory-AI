@@ -660,13 +660,8 @@ def create_app() -> FastAPI:
     @app.post("/api/projects/{project_id}/script/approve")
     def script_approve(project_id: str):
         try:
+            # Approve only — do NOT build Flow pack here (user generates separately).
             p = approve_script(load_project(project_id))
-            # auto flow pack like Streamlit path often does
-            try:
-                export_flow_pack(p, use_llm=True, rebuild_visuals=True)
-                p = load_project(project_id)
-            except Exception:
-                pass
             p["ui_step"] = "flow"
             save_project(p)
             return {"project": _project_full(p)}

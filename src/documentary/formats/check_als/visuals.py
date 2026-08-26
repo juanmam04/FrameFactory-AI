@@ -27,6 +27,8 @@ PROTAGONIST_BIBLE = (
     "AGE 22 wardrobe: cheap office collared shirt or hoodie, dark trousers, worn backpack. "
     "After ownership / business launch: same face + hair; wardrobe upgrades modestly "
     "(team jacket green-and-gold OR creator/startup casual — still the SAME stickman). "
+    "PEAK / multimillion success wardrobe: visibly upgraded SAME stickman — tailored jacket or sharp coat, "
+    "nice watch silhouette, cleaner shoes; still white head + spiky black hair (never a new character). "
     "AGE 27: same character five years older — slightly tired eyes, faint stubble lines optional, "
     "SAME hair spike pattern and head shape. Never swap ethnicity, never redesign into a realistic human, "
     "never change hair color/style mid-story."
@@ -86,8 +88,16 @@ SHARED_APT_BIBLE = (
 )
 
 NEW_APT_BIBLE = (
-    "LOCKED LOCATION — same simple one-bedroom of his own: moving boxes early, same window view later. "
-    "Modest upgrade, not a penthouse. Layout fixed once introduced."
+    "LOCKED LOCATION — own apartment once introduced: early = moving boxes, simple one-bedroom. "
+    "At PEAK wealth the SAME address upgrades in finish (better furniture, city night view, cleaner light) — "
+    "still the same layout, never a random palace swap. Layout fixed once introduced."
+)
+
+PEAK_LIFESTYLE_IMPACT = (
+    "PEAK LIFESTYLE IMPACT (mandatory when climate is peak / glory / multimillion): "
+    "the FRAME must scream earned success vs day-one poverty — packed venue, private dining, "
+    "parents in better seats, upgraded apartment interior, sharp wardrobe, people waiting on YOU. "
+    "Not a sad cubicle. Not empty arena gloom. One clear envy beat the viewer can screenshot."
 )
 
 TEAM_BIBLE = (
@@ -369,6 +379,14 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
     ).strip()
     emotion = str(visual.get("emotion") or "").strip() or "lived-in story beat"
     mood_label = str(visual.get("moment_label") or mid)
+    peak_block = ""
+    if mid in {"peak", "glory"} or "cima" in mood_label.lower() or "millon" in _low(action + " " + emotion):
+        peak_block = f"{PEAK_LIFESTYLE_IMPACT}\n"
+        if "AGE 22 wardrobe only" in wardrobe or "cheap office" in wardrobe.lower():
+            wardrobe = (
+                "PEAK wardrobe: tailored jacket or sharp casual over the SAME stickman body; "
+                "nice watch silhouette; cleaner shoes — still white round head + spiky black hair."
+            )
     return (
         f"{CHECK_STYLE}\n"
         f"STYLE LOCK (Check stickman): {VISUAL_DIRECTION}\n"
@@ -376,6 +394,7 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
         f"SUPPORT CAST RULE: {SUPPORTING_STICKMAN}\n"
         f"STORY CLIMATE: {mood_label} ({mid}). Emotion beat: {emotion}.\n"
         f"{face}\n"
+        f"{peak_block}"
         f"EXACT ACTION: {action}\n"
         f"EXACT ENVIRONMENT LOCK: {loc}\n"
         f"STORY TIME: {story_time}\n"
@@ -389,7 +408,8 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
         f"AVOID: photoreal faces, anime eyes, 3D render, clipart, redesigning the stickman, "
         f"changing hair, random new locations, watermarks, readable UI text, "
         f"subtitles, captions, burned-in dialogue, any on-image words, "
-        f"default depressed/suicidal stickman face when the climate is rise or peak.\n"
+        f"default depressed/suicidal stickman face when the climate is rise or peak, "
+        f"keeping peak-success frames in cheap cubicle gloom.\n"
         f"{NO_ON_IMAGE_TEXT}"
     )
 

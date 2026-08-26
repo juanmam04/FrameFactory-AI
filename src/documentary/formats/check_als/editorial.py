@@ -492,7 +492,9 @@ concrete_hook en ESPAÑOL, una frase vivida (no pitch):
 - "Compras una lavandería por $1 y el segundo local te enseña el sistema."
 - "Los palcos del estadio están vacíos entre semana y nadie cobra por usarlos."
 
-NUNCA: Imagina que…, dilemas éticos, revolucionar la industria, Lamborghini/jet en todas.
+NUNCA: Imagina que…, dilemas éticos, revolucionar la industria.
+NUNCA spam de Lamborghini/jet en cada beat — SÍ un climax de status ganado que el viewer envidie
+(casa, packed venue, familia en mejor lugar, gente que ahora te busca).
 NUNCA techo = el mismo local arreglado / "empoderar la comunidad" como fantasía principal.
 
 Return ONLY JSON."""

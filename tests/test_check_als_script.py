@@ -38,10 +38,28 @@ def test_tuteo_and_championship_validation():
     fixed = apply_tuteo_fixes(
         "Tienes 22 años. Firmas. Te quedas con el 51 por ciento. "
         "La deuda es de 650000 dólares. Todavía no hay campeonato. "
-        "Alguien manda una oferta. Bloqueas el teléfono."
+        "Te mudas a un departamento propio. Sold out: el estadio está lleno y tus padres están en el palco. "
+        "Cenas en un lugar que antes no te salía. En el papel vales 45 millones. "
+        "Alguien manda una oferta. Quieren comprarte. Bloqueas el teléfono."
     )
     ok2, hard2, _ = validate_check_script(fixed, facts, strict_length=False)
     assert ok2, hard2
+
+
+def test_millionaire_peak_requires_lifestyle_impact():
+    facts = {
+        "vehicle_mode": "sports_team",
+        "acquisition": {"asking_price": 1, "debt_assumed": 650000, "your_ownership": 51},
+        "championships": 0,
+        "life_end": {"net_worth": 45_000_000},
+    }
+    thin = (
+        "Tienes 22 años. Firmas el 51 por ciento. La deuda es 650000. "
+        "En el papel vales 45 millones de dólares. Alguien manda una oferta. Bloqueas."
+    )
+    ok, hard, _ = validate_check_script(thin, facts, strict_length=False)
+    assert not ok
+    assert any("impacto de vida" in h.lower() for h in hard)
 
 
 def test_business_facts_no_basket_defaults():
@@ -169,6 +187,8 @@ def test_peak_prompt_forbids_sad_default_face():
     assert "smile" in prompt.lower()
     assert "FORBIDDEN" in prompt
     assert "En la cima" in prompt
+    assert "PEAK LIFESTYLE IMPACT" in prompt
+    assert "cubicle gloom" in prompt.lower() or "envy" in prompt.lower()
 
 
 def test_apply_check_visual_layer_schema(tmp_path, monkeypatch):

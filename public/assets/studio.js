@@ -1549,12 +1549,18 @@ function renderProject() {
       };
     });
   const ws = $("#ws");
-    if (isCheck && ["voice", "music", "preview", "render"].includes(step)) {
-      return paintCheckLocked(ws, p, step, "Revisá el guion y los prompts. Todavía no voz ni render.");
-    }
-    if (isCheck && !p.check_story_approved && step !== "topic" && step !== "story") {
-      return paintCheckLocked(ws, p, step);
-    }
+  // Check: story must be approved before script/flow. Voice+render are fully unlocked after that.
+  if (isCheck && !p.check_story_approved && !["topic", "story"].includes(step)) {
+    return paintCheckLocked(ws, p, step);
+  }
+  if (isCheck && ["voice", "music", "preview", "render"].includes(step) && !p.script_approved) {
+    return paintCheckLocked(
+      ws,
+      p,
+      step,
+      "Aprobá el guion primero. Después podés generar voz y seguir al video."
+    );
+  }
   if (step === "topic") return paintStory(ws, p);
   if (step === "research") return paintResearch(ws, p);
   if (step === "story") return isCheck ? paintCheckStory(ws, p) : paintStoryPlan(ws, p);
@@ -1649,19 +1655,21 @@ function paintCheckLocked(ws, p, step, extra) {
   const approved = Boolean(p.check_story_approved || cs.approved);
   const hasStory = generated || Boolean(cs.synopsis) || Number(cs.beat_count || 0) > 0 || (review.timeline || []).length > 0;
   const msg = extra || `Aprobá la historia para desbloquear ${step}.`;
+  const goTarget = String(extra || "").toLowerCase().includes("guion") ? "script" : "story";
+  const goLabel = goTarget === "script" ? "Ir a Guion" : "Volver a Historia";
   ws.innerHTML = `
     <div class="panel workspace">
       <div class="notice">${esc(msg)}</div>
-      <p class="lead">Historia aprobada desbloquea Guion + Imágenes (prompts). Voz y render siguen después.</p>
+      <p class="lead">Historia → Guion → Imágenes → Voz → Música → Prueba → Video. Podés avanzar con imágenes parciales.</p>
       <div class="actions">
-        <button class="btn btn-primary" id="go-story">Volver a Historia</button>
+        <button class="btn btn-primary" id="go-story">${goLabel}</button>
         ${hasStory && !approved ? `<button class="btn btn-accent" id="approve-from-lock">Aprobar historia → Guion</button>` : ""}
       </div>
     </div>`;
   $("#go-story").onclick = async () => {
     const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
       method: "PATCH",
-      body: JSON.stringify({ step: "story" }),
+      body: JSON.stringify({ step: goTarget }),
     });
     state.project = data.project;
     renderProject();
@@ -2008,8 +2016,10 @@ function paintScript(ws, p) {
       <div class="actions">
         <button class="btn btn-accent" id="gen-script">Generate script</button>
         <button class="btn btn-ghost" id="save-script">Save edits</button>
-        <button class="btn btn-primary" id="approve">Approve → Flow</button>
+        <button class="btn btn-primary" id="approve">Aprobar guion</button>
+        <button class="btn btn-accent" id="gen-flow" ${p.script_approved ? "" : "disabled"} title="${p.script_approved ? "" : "Primero aprobá el guion"}">Generar Flow</button>
       </div>
+      <p class="lead" style="margin-top:0.5rem">Aprobar y Generar Flow son pasos separados. Aprobá cuando el texto esté bien; generá el plan de imágenes cuando quieras.</p>
       <div class="field">
         <label>Narration (~${tw} words · flexible 1800–2200)</label>
         <textarea id="script" class="script-box">${esc(p.script)}</textarea>
@@ -2062,12 +2072,29 @@ function paintScript(ws, p) {
         method: "PUT",
         body: JSON.stringify({ script: $("#script").value }),
       });
-      const data = await withBusy("Approving & building Flow pack…", () =>
+      const data = await withBusy("Aprobando guion…", () =>
         api(`/api/projects/${encodeURIComponent(p.id)}/script/approve`, { method: "POST" })
       );
       state.project = data.project;
-      toast("Approved");
+      toast("Guion aprobado — ahora podés Generar Flow");
       renderProject();
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  $("#gen-flow").onclick = async () => {
+    try {
+      if ($("#script")?.value != null) {
+        await api(`/api/projects/${encodeURIComponent(p.id)}/script`, {
+          method: "PUT",
+          body: JSON.stringify({ script: $("#script").value }),
+        });
+      }
+      if (!state.project?.script_approved && !p.script_approved) {
+        toast("Primero aprobá el guion");
+        return;
+      }
+      await rebuildFlow();
     } catch (e) {
       toast(e.message);
     }
@@ -2091,9 +2118,9 @@ async function paintFlow(ws, p) {
     ws.innerHTML = `
       <div class="panel workspace">
         <h2>Todavía no hay plan de imágenes</h2>
-        <p class="lead">Primero aprobá el guion. Después tocá el botón de abajo.</p>
+        <p class="lead">El guion ya puede estar aprobado. Acá solo generás el Flow (prompts + slots).</p>
         <div class="actions">
-          <button class="btn btn-accent" id="rebuild">Crear plan de imágenes</button>
+          <button class="btn btn-accent" id="rebuild">Generar Flow</button>
         </div>
         <div class="notice">${esc(e.message || "")}</div>
       </div>`;
