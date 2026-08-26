@@ -1,6 +1,148 @@
 {
   "version": 1,
+  "active_id": "20260826_150618_d61a33f0",
   "sessions": [
+    {
+      "id": "20260826_150618_d61a33f0",
+      "title": "Check — Aspirational Life Simulations",
+      "created_at": "2026-08-26T15:06:18",
+      "updated_at": "2026-08-26T15:06:20",
+      "memory_summary": "Channel: Check ALS. EN, second person, 12–18 min, fictional life progression.",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Check — Aspirational Life Simulations ready."
+        }
+      ],
+      "creative_profile": {
+        "style": "simulaciones aspiracionales de vida — ficción cinematográfica en segunda persona",
+        "content_type": "check_als",
+        "workflow": "check_als",
+        "avoid": [
+          "educación de negocios / tutoriales para enriquecerse",
+          "encuadre documental / historia real",
+          "biografías de personas reales como columna vertebral",
+          "gritos motivacionales / tono MrBeast",
+          "relleno genérico de IA y jerga corporativa",
+          "morales obvias / finales de lecciones aprendidas",
+          "aperturas Hoy vamos a / En este video / Bienvenidos de nuevo",
+          "estética de cartoon infantil",
+          "slideshow de mansiones sin historia",
+          "español de traducción (embarcarte en un viaje, navegar los desafíos, etc.)"
+        ],
+        "niche": "Historias ficticias en segunda persona donde vives una vida extraordinaria: construir empresas, riqueza, imperios, carreras, poder, libertad y regresos. Progresión y fantasía — no consejos.",
+        "audience": {
+          "who": "Espectadores de YouTube en español que quieren sentir una vida extraordinaria, no un curso",
+          "pain_points": "Aburridos de los consejos; con hambre de progresión y riesgo",
+          "reading_level": "general"
+        },
+        "tone": "calmado, seguro, cinematográfico, cercano, ligeramente dramático",
+        "hook_style": "Entra en la vida de inmediato en segunda persona (tú): edad, dinero, casa, luego oportunidad/problema. Sin intro de canal.",
+        "pacing": "Algo significativo cada 20–40 segundos",
+        "narrator_preference": "male_sharp",
+        "language_register": "Español internacional/natural (LatAm + España), oraciones cortas, cadencia hablada. Tú/te/tienes/eres. No vos por defecto.",
+        "topics_to_avoid": "Biografías reales como trama; tutoriales para enriquecerse; lujo vacío sin decisiones",
+        "topics_to_focus": [
+          "entrepreneurship",
+          "wealth",
+          "career",
+          "acquisition",
+          "empire",
+          "technology",
+          "freedom",
+          "power",
+          "sports_business",
+          "comeback",
+          "rise_and_fall"
+        ],
+        "title_style": "Títulos en español nativo para YouTube; POV: + verbo en segunda persona cuando suene natural; fantasía clara; sin claims documentales falsos",
+        "thumbnail_style": "Una situación, un estado del protagonista, un contraste, pocos elementos, lectura instantánea. Campos editoriales en español; thumbnail_prompt en inglés. Solo prompt — Check no genera imágenes.",
+        "channel": {
+          "name": "Check — Aspirational Life Simulations",
+          "tagline": "Progresión sobre consejos. Fantasía con suficiente realismo para sentirse vivible. · Fantasías cinematográficas en segunda persona de vidas extraordinarias.",
+          "content_pillars": "entrepreneurship, wealth, career, acquisition, empire, technology, freedom, power, sports_business, comeback, rise_and_fall",
+          "goal_count": 100,
+          "language": "es",
+          "target_words": 1800,
+          "target_duration_min": [
+            12,
+            18
+          ],
+          "visual_provider": "external_manual",
+          "content_format": "check_als",
+          "narration_language": "es",
+          "title_language": "es",
+          "hook_language": "es",
+          "script_language": "es",
+          "overlay_language": "es",
+          "image_prompt_language": "en",
+          "narration_perspective": "second_person",
+          "visual_style": "check_stickman_2d"
+        },
+        "script": {
+          "structure_preference": "bucle de dopamina: deseo → esfuerzo → progreso → recompensa → problema → decisión → progreso mayor",
+          "forbidden_phrases": "Bienvenidos de nuevo; En este video; Hoy vamos a; Imagina si; Aquí van cinco lecciones; Suscríbete; historia con moraleja; lecciones aprendidas; embarcarte en un viaje; navegar los desafíos; contra todo pronóstico",
+          "cta_style": "ninguno en narración",
+          "opening_style": "Cold open en segunda persona: estado de vida + oportunidad",
+          "narration_perspective": "second_person",
+          "language": "es"
+        },
+        "video": {
+          "primary_format": "youtube_long_16_9",
+          "target_length_category": "long_12_18",
+          "aspect_notes": "16:9",
+          "content_type": "check_als",
+          "narration_format": "second_person_als",
+          "content_format": "check_als",
+          "visual_style": "check_stickman_2d",
+          "language": "es"
+        },
+        "visual": {
+          "look": "High-quality 2D stickman cartoon (YouTube POV / webcomic grade): round white heads, black-dot eyes, simple line faces, solid hair shapes, thin stick limbs, bold black outlines, flat cel color. Environments are detailed and consistent across the episode — same shops, offices, apartments, arenas. Characters never redesign mid-story. No on-image text, subtitles, or captions (those are added in editing). Not childish clipart, not photoreal, not anime, not 3D.",
+          "color_mood": "Progresivo: grind apagado al inicio → luz/éxito más ricos después",
+          "shot_preferences": "establishing / wide / medium / close / OTS / POV insert / detail — nunca el mismo stare centrado",
+          "b_roll_style": "Recompensas de estilo de vida ganadas por la historia: casa, auto, oficina, viaje — no lujo aleatorio",
+          "reference_moodboards": "Avatar del protagonista + masters de locación antes del batch de escenas",
+          "image_prompt_language": "en"
+        },
+        "editing": {
+          "cut_rhythm": "dirigido por progresión; cambio cada 20–40s",
+          "transitions_default": "ken burns suave + fades cortos",
+          "lower_thirds": "overlays de métricas solo en hitos (Fase 5); display_value vs spoken_value",
+          "subtitles_intent": "burned_optional",
+          "music_role": "arco emocional (fase posterior)",
+          "pacing_visual": "Anclado a la voz; stills siguen beats",
+          "notes_for_ai_director": "Check no genera imágenes in-app. Exporta prompts (EN) para ilustración externa. Continuidad de avatar + locaciones es obligatoria. Contenido/voz/captions en español."
+        },
+        "idea_generation": {
+          "brief": "Paquetes de concepto completos en español: idea + títulos + thumbnail + hook, una fantasía.",
+          "angles_to_favor": "Transformación de vida medible; decisiones; crisis; recompensas visibles",
+          "angles_to_avoid": "Consejos; documental; biografía; flex vacío sin progresión",
+          "categories": [
+            "entrepreneurship",
+            "wealth",
+            "career",
+            "acquisition",
+            "empire",
+            "technology",
+            "freedom",
+            "power",
+            "sports_business",
+            "comeback",
+            "rise_and_fall"
+          ]
+        },
+        "notes_freeform": "CONTENT LANGUAGE = es. Image prompts = en si conviene al modelo. IDs/schemas internos = en. PHASE 2 NOTE: world_state es la fuente de verdad para beats, hechos del script, métricas, overlays y prompts visuales. Cualquier contradicción debe fallar QC. Overlays futuros: display_value (pantalla) vs spoken_value (TTS natural).",
+        "content_format": "check_als",
+        "language": "es",
+        "narration_language": "es",
+        "title_language": "es",
+        "hook_language": "es",
+        "script_language": "es",
+        "overlay_language": "es",
+        "image_prompt_language": "en"
+      }
+    },
     {
       "id": "20260812_134822_6c78dd6b",
       "title": "100 Days — Business Documentaries",
@@ -1249,6 +1391,5 @@
         "narrator_preference": "male_sharp"
       }
     }
-  ],
-  "active_id": "20260812_134822_6c78dd6b"
+  ]
 }

@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,13 @@ _SKIP_SUFFIXES = {".pyc", ".pyo"}
 _MAX_FILE_BYTES = 200 * 1024 * 1024  # 200 MB (stills / audio)
 _MAX_VIDEO_BYTES = 512 * 1024 * 1024  # 512 MB (long 1080p episode)
 _schema_ok = False
+_circuit_until = 0.0
+_circuit_reason = ""
+_CIRCUIT_SEC = 180.0
+
+
+class CloudUnavailable(RuntimeError):
+    """Supabase / Postgres is down; callers should keep working from local disk."""
 
 
 def _load_env() -> None:
@@ -34,8 +42,74 @@ def database_url() -> str:
     return (os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL") or "").strip()
 
 
-def configured() -> bool:
+def url_configured() -> bool:
     return bool(database_url())
+
+
+def _sync_disabled_by_env() -> bool:
+    return os.getenv("FF_CLOUD_SYNC", "1").strip().lower() in {"0", "false", "off", "no"}
+
+
+def _circuit_open() -> bool:
+    return time.monotonic() < _circuit_until
+
+
+def circuit_status() -> dict[str, Any]:
+    open_ = _circuit_open()
+    return {
+        "open": open_,
+        "reason": _circuit_reason if open_ else "",
+        "retry_in_sec": max(0, int(_circuit_until - time.monotonic())) if open_ else 0,
+    }
+
+
+def _trip_circuit(reason: str, *, seconds: float | None = None) -> None:
+    global _circuit_until, _circuit_reason, _schema_ok
+    _schema_ok = False
+    _circuit_until = time.monotonic() + float(seconds if seconds is not None else _CIRCUIT_SEC)
+    _circuit_reason = (reason or "Supabase offline").strip()[:240]
+
+
+def clear_circuit() -> None:
+    global _circuit_until, _circuit_reason
+    _circuit_until = 0.0
+    _circuit_reason = ""
+
+
+def _is_fatal_db(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    needles = (
+        "not accepting connections",
+        "hot standby",
+        "diskfull",
+        "no space left",
+        "could not extend file",
+        "connection refused",
+        "could not connect",
+        "connection failed",
+        "timeout expired",
+        "server closed the connection",
+        "terminating connection due to administrator",
+        "the database system is starting up",
+        "too many connections",
+        "ssl connection has been closed",
+    )
+    return any(n in msg for n in needles)
+
+
+def configured() -> bool:
+    """True when cloud sync should run (URL set, not disabled, circuit closed)."""
+    if _sync_disabled_by_env():
+        return False
+    if not url_configured():
+        return False
+    if _circuit_open():
+        return False
+    return True
+
+
+def available() -> bool:
+    return configured()
 
 
 def _connect_url(url: str) -> str:
@@ -77,18 +151,29 @@ def _writable_url(url: str) -> str:
 def _connect(*, autocommit: bool = False):
     import psycopg
 
+    if _circuit_open():
+        raise CloudUnavailable(_circuit_reason or "Supabase offline (circuit open)")
+    if _sync_disabled_by_env():
+        raise CloudUnavailable("Cloud sync desactivado (FF_CLOUD_SYNC=0)")
+
     url = database_url()
     if not url:
         raise RuntimeError("DATABASE_URL no configurada (.env.local)")
     # Always prefer a writeable endpoint — this module upserts blobs / sessions.
     url = _writable_url(url)
-    # Supabase pooler works better with prepare_threshold=None (PgBouncer).
-    conn = psycopg.connect(
-        _connect_url(url),
-        prepare_threshold=None,
-        connect_timeout=8,
-        autocommit=autocommit,
-    )
+    try:
+        # Supabase pooler works better with prepare_threshold=None (PgBouncer).
+        conn = psycopg.connect(
+            _connect_url(url),
+            prepare_threshold=None,
+            connect_timeout=6,
+            autocommit=autocommit,
+        )
+    except Exception as exc:
+        if _is_fatal_db(exc):
+            _trip_circuit(str(exc))
+            raise CloudUnavailable(str(exc)[:240]) from exc
+        raise
     # Supabase Session pooler sometimes starts with default_transaction_read_only=on
     # even on a primary (pg_is_in_recovery=false). Force a writeable session.
     try:
@@ -99,10 +184,21 @@ def _connect(*, autocommit: bool = False):
     return conn
 
 
+def _soft(exc: BaseException) -> CloudUnavailable:
+    if isinstance(exc, CloudUnavailable):
+        return exc
+    if _is_fatal_db(exc):
+        _trip_circuit(str(exc))
+        return CloudUnavailable(str(exc)[:240])
+    return CloudUnavailable(str(exc)[:240])
+
+
 def ensure_schema() -> None:
     global _schema_ok
     if _schema_ok:
         return
+    if _circuit_open() or _sync_disabled_by_env():
+        raise CloudUnavailable(_circuit_reason or "Supabase offline")
     try:
         with _connect(autocommit=True) as conn:
             with conn.cursor() as cur:
@@ -141,6 +237,8 @@ def ensure_schema() -> None:
                     )
                     """
                 )
+    except CloudUnavailable:
+        raise
     except Exception as e:
         msg = str(e).lower()
         if "read-only" in msg or "readonly" in msg:
@@ -149,8 +247,11 @@ def ensure_schema() -> None:
                 "DATABASE_URL apunta a un endpoint de solo lectura. "
                 "Cambiala a Session pooler o Direct connection (puerto 5432) en Supabase → Database."
             ) from e
+        if _is_fatal_db(e):
+            raise _soft(e) from e
         raise
     _schema_ok = True
+    clear_circuit()
 
 
 def _utc_now() -> str:
@@ -221,31 +322,43 @@ def _upsert_files(project_id: str, files: list[Path], root: Path) -> tuple[int, 
 
 def delete_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
     """Remove specific files from Supabase so deletes actually stick."""
-    ensure_schema()
-    rels = [str(p).replace("\\", "/") for p in rel_paths if str(p).strip()]
-    if not rels:
-        return {"ok": True, "deleted": 0, "at": _utc_now()}
-    with _connect(autocommit=True) as conn:
-        with conn.cursor() as cur:
-            placeholders = ",".join(["%s"] * len(rels))
-            cur.execute(
-                f"DELETE FROM ff_blobs WHERE project_id = %s AND rel_path IN ({placeholders})",
-                (project_id, *rels),
-            )
-            n = cur.rowcount or 0
-    return {"ok": True, "deleted": n, "at": _utc_now()}
+    if not configured():
+        return {"ok": False, "deleted": 0, "skipped": True, "error": _circuit_reason or "cloud offline", "at": _utc_now()}
+    try:
+        ensure_schema()
+        rels = [str(p).replace("\\", "/") for p in rel_paths if str(p).strip()]
+        if not rels:
+            return {"ok": True, "deleted": 0, "at": _utc_now()}
+        with _connect(autocommit=True) as conn:
+            with conn.cursor() as cur:
+                placeholders = ",".join(["%s"] * len(rels))
+                cur.execute(
+                    f"DELETE FROM ff_blobs WHERE project_id = %s AND rel_path IN ({placeholders})",
+                    (project_id, *rels),
+                )
+                n = cur.rowcount or 0
+        return {"ok": True, "deleted": n, "at": _utc_now()}
+    except Exception as exc:
+        err = _soft(exc)
+        return {"ok": False, "deleted": 0, "error": str(err), "at": _utc_now()}
 
 
 def delete_image_blobs(project_id: str) -> dict[str, Any]:
-    ensure_schema()
-    with _connect(autocommit=True) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "DELETE FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
-                (project_id, "images/%"),
-            )
-            n = cur.rowcount or 0
-    return {"ok": True, "deleted": n, "at": _utc_now()}
+    if not configured():
+        return {"ok": False, "deleted": 0, "skipped": True, "error": _circuit_reason or "cloud offline", "at": _utc_now()}
+    try:
+        ensure_schema()
+        with _connect(autocommit=True) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                    (project_id, "images/%"),
+                )
+                n = cur.rowcount or 0
+        return {"ok": True, "deleted": n, "at": _utc_now()}
+    except Exception as exc:
+        err = _soft(exc)
+        return {"ok": False, "deleted": 0, "error": str(err), "at": _utc_now()}
 
 
 def purge_render_clips(*, keep_project_id: str | None = None) -> dict[str, Any]:
@@ -297,17 +410,38 @@ def purge_other_project_clips(keep_project_id: str) -> dict[str, Any]:
 
 def push_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
     """Upload only the given relative files (e.g. project.json, images/007.png)."""
-    ensure_schema()
-    root = projects_root() / project_id
-    files = [root / rel for rel in rel_paths if (root / rel).is_file()]
-    uploaded, skipped = _upsert_files(project_id, files, root) if files else (0, 0)
-    return {
-        "project_id": project_id,
-        "uploaded": uploaded,
-        "unchanged": skipped,
-        "total_local": len(files),
-        "at": _utc_now(),
-    }
+    if not configured():
+        return {
+            "ok": False,
+            "project_id": project_id,
+            "uploaded": 0,
+            "unchanged": 0,
+            "skipped": True,
+            "error": _circuit_reason or "cloud offline",
+            "at": _utc_now(),
+        }
+    try:
+        ensure_schema()
+        root = projects_root() / project_id
+        files = [root / rel for rel in rel_paths if (root / rel).is_file()]
+        uploaded, skipped = _upsert_files(project_id, files, root) if files else (0, 0)
+        return {
+            "ok": True,
+            "project_id": project_id,
+            "uploaded": uploaded,
+            "unchanged": skipped,
+            "total_local": len(files),
+            "at": _utc_now(),
+        }
+    except Exception as exc:
+        err = _soft(exc)
+        return {
+            "ok": False,
+            "project_id": project_id,
+            "uploaded": 0,
+            "error": str(err),
+            "at": _utc_now(),
+        }
 
 
 def push_project(project_id: str, *, include_images: bool = False) -> dict[str, Any]:
@@ -340,117 +474,154 @@ _LIGHT_PREFIXES = (
 
 def pull_project(project_id: str, *, light: bool = False) -> dict[str, Any]:
     """Pull remote blobs. Never SELECT all BYTEA in one query (statement timeout)."""
-    ensure_schema()
     root = projects_root() / project_id
     root.mkdir(parents=True, exist_ok=True)
-    if light:
-        paths = [
-            "project.json",
-            "flow-pack/shot-list.json",
-            "flow-pack/visual-plan.json",
-            "flow-pack/story-bible.json",
-        ]
+    if not configured():
+        return {
+            "project_id": project_id,
+            "written": 0,
+            "total_remote": 0,
+            "skipped": True,
+            "error": _circuit_reason or "cloud offline",
+            "at": _utc_now(),
+        }
+    try:
+        ensure_schema()
+        if light:
+            paths = [
+                "project.json",
+                "flow-pack/shot-list.json",
+                "flow-pack/visual-plan.json",
+                "flow-pack/story-bible.json",
+            ]
+            with _connect() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT rel_path FROM ff_blobs
+                        WHERE project_id = %s
+                          AND (
+                            rel_path = 'project.json'
+                            OR rel_path LIKE 'script/%%'
+                            OR rel_path LIKE 'metadata/%%'
+                            OR rel_path IN (
+                              'flow-pack/shot-list.json',
+                              'flow-pack/visual-plan.json',
+                              'flow-pack/story-bible.json'
+                            )
+                          )
+                        """,
+                        (project_id,),
+                    )
+                    paths = [str(r[0]) for r in cur.fetchall()] or paths
+        else:
+            paths = list_rel_paths(project_id)
+        written = 0
+        for rel_s in paths:
+            if light and not any(rel_s == p or rel_s.startswith(p) for p in _LIGHT_PREFIXES):
+                continue
+            path = root / rel_s
+            if path.is_file() and path.stat().st_size > 0:
+                continue
+            if pull_one(project_id, rel_s, force=True):
+                written += 1
+        return {
+            "project_id": project_id,
+            "written": written,
+            "total_remote": len(paths),
+            "at": _utc_now(),
+        }
+    except Exception as exc:
+        err = _soft(exc)
+        return {
+            "project_id": project_id,
+            "written": 0,
+            "total_remote": 0,
+            "error": str(err),
+            "at": _utc_now(),
+        }
+
+
+def push_sessions() -> dict[str, Any]:
+    if not configured():
+        return {"ok": False, "skipped": True, "error": _circuit_reason or "cloud offline", "at": _utc_now()}
+    try:
+        ensure_schema()
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        if not SESSIONS_PATH.is_file():
+            payload: dict[str, Any] = {"sessions": [], "active_id": None}
+        else:
+            payload = json.loads(SESSIONS_PATH.read_text(encoding="utf-8"))
         with _connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT rel_path FROM ff_blobs
-                    WHERE project_id = %s
-                      AND (
-                        rel_path = 'project.json'
-                        OR rel_path LIKE 'script/%%'
-                        OR rel_path LIKE 'metadata/%%'
-                        OR rel_path IN (
-                          'flow-pack/shot-list.json',
-                          'flow-pack/visual-plan.json',
-                          'flow-pack/story-bible.json'
-                        )
-                      )
+                    INSERT INTO ff_sessions_store (id, payload, updated_at)
+                    VALUES ('default', %s::jsonb, NOW())
+                    ON CONFLICT (id) DO UPDATE SET
+                      payload = EXCLUDED.payload,
+                      updated_at = NOW()
                     """,
-                    (project_id,),
+                    (json.dumps(payload),),
                 )
-                paths = [str(r[0]) for r in cur.fetchall()] or paths
-    else:
-        paths = list_rel_paths(project_id)
-    written = 0
-    for rel_s in paths:
-        if light and not any(rel_s == p or rel_s.startswith(p) for p in _LIGHT_PREFIXES):
-            continue
-        path = root / rel_s
-        if path.is_file() and path.stat().st_size > 0:
-            continue
-        if pull_one(project_id, rel_s, force=True):
-            written += 1
-    return {
-        "project_id": project_id,
-        "written": written,
-        "total_remote": len(paths),
-        "at": _utc_now(),
-    }
-
-
-def push_sessions() -> dict[str, Any]:
-    ensure_schema()
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    if not SESSIONS_PATH.is_file():
-        payload: dict[str, Any] = {"sessions": [], "active_id": None}
-    else:
-        payload = json.loads(SESSIONS_PATH.read_text(encoding="utf-8"))
-    with _connect() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO ff_sessions_store (id, payload, updated_at)
-                VALUES ('default', %s::jsonb, NOW())
-                ON CONFLICT (id) DO UPDATE SET
-                  payload = EXCLUDED.payload,
-                  updated_at = NOW()
-                """,
-                (json.dumps(payload),),
-            )
-        conn.commit()
-    return {"ok": True, "sessions": len(payload.get("sessions") or []), "at": _utc_now()}
+            conn.commit()
+        return {"ok": True, "sessions": len(payload.get("sessions") or []), "at": _utc_now()}
+    except Exception as exc:
+        err = _soft(exc)
+        return {"ok": False, "error": str(err), "at": _utc_now()}
 
 
 def list_rel_paths(project_id: str, prefix: str = "") -> list[str]:
-    ensure_schema()
-    with _connect() as conn:
-        with conn.cursor() as cur:
-            if prefix:
-                cur.execute(
-                    "SELECT rel_path FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
-                    (project_id, prefix + "%"),
-                )
-            else:
-                cur.execute(
-                    "SELECT rel_path FROM ff_blobs WHERE project_id = %s",
-                    (project_id,),
-                )
-            return [str(r[0]) for r in cur.fetchall()]
+    if not configured():
+        return []
+    try:
+        ensure_schema()
+        with _connect() as conn:
+            with conn.cursor() as cur:
+                if prefix:
+                    cur.execute(
+                        "SELECT rel_path FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                        (project_id, prefix + "%"),
+                    )
+                else:
+                    cur.execute(
+                        "SELECT rel_path FROM ff_blobs WHERE project_id = %s",
+                        (project_id,),
+                    )
+                return [str(r[0]) for r in cur.fetchall()]
+    except Exception as exc:
+        _soft(exc)
+        return []
 
 
 def pull_prefix(project_id: str, prefix: str) -> int:
     """Download blobs under prefix. Lists paths first so resume does not reload files already on disk."""
-    ensure_schema()
-    root = projects_root() / project_id
-    with _connect() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT rel_path FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
-                (project_id, prefix + "%"),
-            )
-            rows = cur.fetchall()
-    written = 0
-    for (rel,) in rows:
-        rel_s = str(rel)
-        if ".thumb." in rel_s:
-            continue
-        path = root / rel_s
-        if path.is_file() and path.stat().st_size > 0:
-            continue
-        if pull_one(project_id, rel_s, force=True):
-            written += 1
-    return written
+    if not configured():
+        return 0
+    try:
+        ensure_schema()
+        root = projects_root() / project_id
+        with _connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT rel_path FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
+                    (project_id, prefix + "%"),
+                )
+                rows = cur.fetchall()
+        written = 0
+        for (rel,) in rows:
+            rel_s = str(rel)
+            if ".thumb." in rel_s:
+                continue
+            dest = root / rel_s
+            if dest.is_file() and dest.stat().st_size > 0:
+                continue
+            if pull_one(project_id, rel_s, force=True):
+                written += 1
+        return written
+    except Exception as exc:
+        _soft(exc)
+        return 0
 
 
 def blob_size(project_id: str, rel_path: str) -> int:
@@ -516,22 +687,28 @@ def iter_blob(
 
 def pull_one(project_id: str, rel_path: str, *, force: bool = False) -> bool:
     """Download a single blob to disk. Used for still thumbnails."""
-    ensure_schema()
     dest = projects_root() / project_id / rel_path
     if not force and dest.is_file() and dest.stat().st_size > 0:
         return True
-    with _connect() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT content FROM ff_blobs WHERE project_id = %s AND rel_path = %s",
-                (project_id, rel_path),
-            )
-            row = cur.fetchone()
-    if not row:
-        return False
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_bytes(bytes(row[0]))
-    return True
+    if not configured():
+        return dest.is_file() and dest.stat().st_size > 0
+    try:
+        ensure_schema()
+        with _connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT content FROM ff_blobs WHERE project_id = %s AND rel_path = %s",
+                    (project_id, rel_path),
+                )
+                row = cur.fetchone()
+        if not row:
+            return False
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(bytes(row[0]))
+        return True
+    except Exception as exc:
+        _soft(exc)
+        return dest.is_file() and dest.stat().st_size > 0
 
 
 def pull_sessions() -> dict[str, Any]:
@@ -645,14 +822,29 @@ def pull_all(*, light: bool = False) -> dict[str, Any]:
 
 def status() -> dict[str, Any]:
     _load_env()
-    ok = configured()
+    circ = circuit_status()
     info: dict[str, Any] = {
-        "configured": ok,
+        "configured": url_configured(),
+        "available": configured(),
+        "circuit": circ,
         "projects_root": str(PROJECTS_ROOT),
         "supabase_url": (os.getenv("SUPABASE_URL") or "").strip() or None,
     }
-    if not ok:
+    if _sync_disabled_by_env():
+        info["ok"] = False
+        info["detail"] = "Cloud sync desactivado (FF_CLOUD_SYNC=0). Usando disco local."
+        return info
+    if not url_configured():
+        info["ok"] = False
         info["detail"] = "Falta DATABASE_URL en .env.local"
+        return info
+    if circ["open"]:
+        info["ok"] = False
+        info["detail"] = (
+            "Supabase caído — trabajando en local. "
+            f"{circ['reason'][:120]} "
+            f"(reintento en ~{circ['retry_in_sec']}s)"
+        )
         return info
     try:
         ensure_schema()
@@ -662,6 +854,9 @@ def status() -> dict[str, Any]:
         info["remote_count"] = len(remote)
         info["detail"] = "Conectado a Supabase"
     except Exception as exc:  # noqa: BLE001 — surface to Studio UI
+        err = _soft(exc) if _is_fatal_db(exc) or isinstance(exc, CloudUnavailable) else exc
         info["ok"] = False
-        info["detail"] = str(exc)
+        info["available"] = False
+        info["circuit"] = circuit_status()
+        info["detail"] = str(err)[:240]
     return info

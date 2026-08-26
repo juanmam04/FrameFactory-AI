@@ -275,7 +275,13 @@ def create_app() -> FastAPI:
                 if cloud_sync.configured():
                     idx = cloud_sync.pull_home_index(timeout_sec=5.0)
                     if not idx.get("ok") and idx.get("error"):
-                        sync_note = str(idx.get("error") or "")
+                        sync_note = str(idx.get("error") or "")[:160]
+                else:
+                    circ = cloud_sync.circuit_status()
+                    if circ.get("open"):
+                        sync_note = "Supabase offline — usando proyectos locales."
+                    elif cloud_sync.url_configured():
+                        sync_note = "Cloud sync en pausa."
             except Exception as sync_exc:
                 sync_note = str(sync_exc)[:160]
             sess, profile = _ensure_channel()
@@ -322,7 +328,7 @@ def create_app() -> FastAPI:
                             or ""
                         ).strip()
                     ),
-                    "supabase": bool((os.getenv("DATABASE_URL") or "").strip()),
+                    "supabase": bool((os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL") or "").strip()),
                     "sync_note": sync_note,
                 },
                 "stats": stats,
