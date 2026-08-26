@@ -225,7 +225,7 @@ def delete_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
     rels = [str(p).replace("\\", "/") for p in rel_paths if str(p).strip()]
     if not rels:
         return {"ok": True, "deleted": 0, "at": _utc_now()}
-    with _connect() as conn:
+    with _connect(autocommit=True) as conn:
         with conn.cursor() as cur:
             placeholders = ",".join(["%s"] * len(rels))
             cur.execute(
@@ -233,20 +233,65 @@ def delete_paths(project_id: str, rel_paths: list[str]) -> dict[str, Any]:
                 (project_id, *rels),
             )
             n = cur.rowcount or 0
-        conn.commit()
     return {"ok": True, "deleted": n, "at": _utc_now()}
 
 
 def delete_image_blobs(project_id: str) -> dict[str, Any]:
     ensure_schema()
-    with _connect() as conn:
+    with _connect(autocommit=True) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 "DELETE FROM ff_blobs WHERE project_id = %s AND rel_path LIKE %s",
                 (project_id, "images/%"),
             )
             n = cur.rowcount or 0
-        conn.commit()
+    return {"ok": True, "deleted": n, "at": _utc_now()}
+
+
+def purge_render_clips(*, keep_project_id: str | None = None) -> dict[str, Any]:
+    """Drop intermediate encode clips from Postgres (they fill the free-tier disk)."""
+    ensure_schema()
+    with _connect(autocommit=True) as conn:
+        with conn.cursor() as cur:
+            if keep_project_id:
+                cur.execute(
+                    """
+                    DELETE FROM ff_blobs
+                    WHERE rel_path LIKE 'render/clips/%%'
+                      AND project_id <> %s
+                    """,
+                    (keep_project_id,),
+                )
+                other = cur.rowcount or 0
+                cur.execute(
+                    """
+                    DELETE FROM ff_blobs
+                    WHERE project_id = %s
+                      AND rel_path LIKE 'render/clips/%%'
+                    """,
+                    (keep_project_id,),
+                )
+                own = cur.rowcount or 0
+                return {"ok": True, "deleted_other": other, "deleted_own": own, "at": _utc_now()}
+            cur.execute("DELETE FROM ff_blobs WHERE rel_path LIKE 'render/clips/%%'")
+            n = cur.rowcount or 0
+    return {"ok": True, "deleted": n, "at": _utc_now()}
+
+
+def purge_other_project_clips(keep_project_id: str) -> dict[str, Any]:
+    """Free space for resume: keep only the active project's clips."""
+    ensure_schema()
+    with _connect(autocommit=True) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                DELETE FROM ff_blobs
+                WHERE rel_path LIKE 'render/clips/%%'
+                  AND project_id <> %s
+                """,
+                (keep_project_id,),
+            )
+            n = cur.rowcount or 0
     return {"ok": True, "deleted": n, "at": _utc_now()}
 
 
@@ -294,16 +339,22 @@ _LIGHT_PREFIXES = (
 
 
 def pull_project(project_id: str, *, light: bool = False) -> dict[str, Any]:
+    """Pull remote blobs. Never SELECT all BYTEA in one query (statement timeout)."""
     ensure_schema()
     root = projects_root() / project_id
     root.mkdir(parents=True, exist_ok=True)
-    written = 0
-    with _connect() as conn:
-        with conn.cursor() as cur:
-            if light:
+    if light:
+        paths = [
+            "project.json",
+            "flow-pack/shot-list.json",
+            "flow-pack/visual-plan.json",
+            "flow-pack/story-bible.json",
+        ]
+        with _connect() as conn:
+            with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT rel_path, sha256, content FROM ff_blobs
+                    SELECT rel_path FROM ff_blobs
                     WHERE project_id = %s
                       AND (
                         rel_path = 'project.json'
@@ -318,28 +369,22 @@ def pull_project(project_id: str, *, light: bool = False) -> dict[str, Any]:
                     """,
                     (project_id,),
                 )
-            else:
-                cur.execute(
-                    "SELECT rel_path, sha256, content FROM ff_blobs WHERE project_id = %s",
-                    (project_id,),
-                )
-            rows = cur.fetchall()
-    for rel, digest, content in rows:
-        rel_s = str(rel)
+                paths = [str(r[0]) for r in cur.fetchall()] or paths
+    else:
+        paths = list_rel_paths(project_id)
+    written = 0
+    for rel_s in paths:
         if light and not any(rel_s == p or rel_s.startswith(p) for p in _LIGHT_PREFIXES):
             continue
-        path = root / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        if path.is_file():
-            existing = path.read_bytes()
-            if _sha256(existing) == digest:
-                continue
-        path.write_bytes(bytes(content))
-        written += 1
+        path = root / rel_s
+        if path.is_file() and path.stat().st_size > 0:
+            continue
+        if pull_one(project_id, rel_s, force=True):
+            written += 1
     return {
         "project_id": project_id,
         "written": written,
-        "total_remote": len(rows),
+        "total_remote": len(paths),
         "at": _utc_now(),
     }
 

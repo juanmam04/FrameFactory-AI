@@ -3119,22 +3119,38 @@ function paintRender(ws, p) {
     if (paintRender._poll) clearTimeout(paintRender._poll);
     paintRender._lastUpdate = paintRender._lastUpdate || Date.now();
     paintRender._lastPercent = paintRender._lastPercent ?? null;
+    paintRender._lastKbDone = paintRender._lastKbDone ?? null;
+    paintRender._noClipResumes = paintRender._noClipResumes || 0;
     const tick = async () => {
       if (state.project?.ui_step !== "render") return;
       try {
         const prev = paintRender._kind;
         const next = await api(`/api/projects/${id}/video/status`);
         paint(next);
-        
-        // Watchdog: si lleva >10min sin cambios en %, forzar resume
+
         const now = Date.now();
         const stuckMs = now - (paintRender._lastUpdate || now);
         const stuckMin = stuckMs / 60000;
         const pct = next.percent || 0;
-        const changed = pct !== paintRender._lastPercent;
+        const kbDone = Number(next.kb_done || 0);
+        const changed = pct !== paintRender._lastPercent || kbDone !== paintRender._lastKbDone;
         if (changed) {
           paintRender._lastUpdate = now;
           paintRender._lastPercent = pct;
+          if (kbDone !== paintRender._lastKbDone) {
+            paintRender._lastKbDone = kbDone;
+            paintRender._noClipResumes = 0;
+          }
+        }
+        // Stop infinite resume when encode never advances clips (server bug / DB lock).
+        const stalledClips =
+          (next.stage === "encode" || next.need_continue) &&
+          kbDone <= 1 &&
+          paintRender._noClipResumes >= 4;
+        if (stalledClips) {
+          toast("El render no avanza en el servidor. Frenalo y regenerá en local, o reintentá más tarde.");
+          paintRender._poll = null;
+          return;
         }
         const heavy = next.stage === "encode" || next.stage === "captions_prep" || next.stage === "captions_burn";
         const stuckLimit = heavy ? 4.2 : 1.5;
@@ -3142,20 +3158,24 @@ function paintRender(ws, p) {
           console.warn(`Render stuck at ${pct}% for ${stuckMin.toFixed(1)} min — forcing resume`);
           paintRender._resuming = true;
           paintRender._lastUpdate = now;
+          if (kbDone <= 1 && (next.stage === "encode" || next.stage === "captions_prep")) {
+            paintRender._noClipResumes = (paintRender._noClipResumes || 0) + 1;
+          }
           toast("Detecté que se trabó — reintentando...");
           api(`/api/projects/${id}/render?resume=1`, { method: "POST", timeoutMs: 280000 })
             .finally(() => {
               paintRender._resuming = false;
             });
         }
-        
+
         if (next.need_continue && !paintRender._resuming) {
           paintRender._resuming = true;
+          if (kbDone <= 1) paintRender._noClipResumes = (paintRender._noClipResumes || 0) + 1;
           toast("Sigue en segundo plano…");
           api(`/api/projects/${id}/render?resume=1`, { method: "POST", timeoutMs: 280000 })
             .then((r) => {
               paintRender._resuming = false;
-              if (r && r.continue && state.project?.ui_step === "render") {
+              if (r && r.continue && state.project?.ui_step === "render" && (paintRender._noClipResumes || 0) < 4) {
                 paintRender._kickAgain = setTimeout(() => {
                   api(`/api/projects/${id}/render?resume=1`, { method: "POST", timeoutMs: 280000 }).catch(() => {});
                 }, 800);

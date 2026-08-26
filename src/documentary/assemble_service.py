@@ -393,7 +393,23 @@ def _push_clip_dir(project_id: str) -> None:
     rels = [f"render/clips/{p.name}" for p in root.glob("*.mp4") if p.is_file()]
     if not rels:
         return
-    cloud_sync.push_paths(project_id, rels)
+    try:
+        cloud_sync.purge_other_project_clips(project_id)
+    except Exception:
+        pass
+    try:
+        cloud_sync.push_paths(project_id, rels)
+    except Exception as err:
+        # Disk full: drop every project's clips and retry once so resume can advance.
+        msg = str(err).lower().replace(" ", "")
+        if "disk" in msg or "nospace" in msg or "diskfull" in msg:
+            try:
+                cloud_sync.purge_render_clips(keep_project_id=None)
+            except Exception:
+                pass
+            cloud_sync.push_paths(project_id, rels)
+        else:
+            raise
 
 
 def assemble_and_render(
@@ -482,6 +498,14 @@ def assemble_and_render(
         save_project(project)
         append_log(pid, f"render ok → {result} {quality_label} captions={burned}")
         log_path.write_text(f"OK {result}\n", encoding="utf-8")
+        # Intermediate clips are only for resume — free Postgres once final exists.
+        try:
+            from src.documentary import cloud_sync
+
+            if cloud_sync.configured():
+                cloud_sync.purge_render_clips(keep_project_id=pid)
+        except Exception as purge_err:
+            append_log(pid, f"clip purge after done: {purge_err}")
         return Path(result)
 
     def _try_burn() -> bool:
@@ -563,7 +587,10 @@ def assemble_and_render(
         project["render"] = rec0
         save_project(project)
 
-        if not _whisper_aligned(project):
+        # On resume into encode/burn, never re-burn the ~90s Whisper budget — that
+        # used to leave Vercel stuck forever at "foto 1/73" with 0 clips.
+        skip_captions_prep = resume and stage in {"encode", "captions_burn"}
+        if not skip_captions_prep and not _whisper_aligned(project):
             touch_render_progress(
                 project,
                 message="2/4 Alineando subtítulos con la narración…",
@@ -591,7 +618,12 @@ def assemble_and_render(
                         total=len(images),
                     )
                     return None
-                raise
+                # Soft fail: estimate captions and continue encoding so the episode can finish.
+                append_log(pid, f"captions whisper failed → estimate, continue encode: {cap_err}")
+                try:
+                    generate_captions(project, force=True, allow_whisper=False, require_whisper=False)
+                except Exception:
+                    pass
             append_log(pid, f"captions srt ready source={(project.get('captions') or {}).get('source')}")
             if vercel and (_time.monotonic() - t0) > 90:
                 _mark_need_continue(
@@ -608,7 +640,8 @@ def assemble_and_render(
         _last_push = [0.0]
         elapsed = _time.monotonic() - t0
         left = 275.0 - elapsed
-        deadline = (_time.monotonic() + max(25.0, left - 70.0)) if vercel else None
+        # Keep enough room to finish ≥1 clip per lambda (was max(25, left-70) → often 0 progress).
+        deadline = (_time.monotonic() + max(110.0, left - 35.0)) if vercel else None
 
         def _on_clip_progress(done: int, total: int) -> None:
             _abort_if_cancelled(pid)

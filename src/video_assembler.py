@@ -259,6 +259,7 @@ def _slideshow_editorial(
     clips: list[Path] = []
     cache: dict[tuple[str, str], Path] = {}
     styles = ("push", "pull", "pan")
+    encoded_this_run = 0
     try:
         for i, img in enumerate(imgs):
             if callable(abort):
@@ -272,12 +273,19 @@ def _slideshow_editorial(
                     fps=fps, crf=crf, look=look, fade=fade,
                 )
                 if not mp4_is_complete(clip):
-                    if deadline_mono is not None and time.monotonic() >= float(deadline_mono):
+                    # Always finish ≥1 new clip per invocation so Vercel resume cannot
+                    # spin forever at foto 0 when the deadline already expired.
+                    if (
+                        deadline_mono is not None
+                        and time.monotonic() >= float(deadline_mono)
+                        and encoded_this_run > 0
+                    ):
                         raise EditorialPaused(i, len(imgs))
                     _encode_one_still(
                         ff, img, clip, seg, width, height, style, fade, frames, i,
                         fps=fps, crf=crf, preset=preset, look=look,
                     )
+                    encoded_this_run += 1
                 cache[key] = clip
             clips.append(clip)
             if callable(on_progress):
