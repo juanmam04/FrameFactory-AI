@@ -1,4 +1,4 @@
-"""YouTube packaging for a documentary episode: title, description, thumbnail prompt."""
+"""YouTube packaging: title, description, thumbnail prompt (documentary + Check ALS)."""
 from __future__ import annotations
 
 import json
@@ -6,6 +6,23 @@ import os
 from typing import Any
 
 from src.documentary.project import project_dir, save_project
+
+
+def _is_check(project: dict[str, Any]) -> bool:
+    return str(project.get("content_format") or project.get("mode") or "") == "check_als"
+
+
+def _check_concept(project: dict[str, Any]) -> dict[str, Any]:
+    for key in ("check_concept", "selected_concept", "idea"):
+        raw = project.get(key)
+        if isinstance(raw, dict) and (raw.get("title") or raw.get("thumbnail_concept") or raw.get("hook")):
+            return raw
+    cs = project.get("check_story") if isinstance(project.get("check_story"), dict) else {}
+    for key in ("concept", "selected_concept", "seed"):
+        raw = cs.get(key)
+        if isinstance(raw, dict) and (raw.get("title") or raw.get("thumbnail_concept")):
+            return raw
+    return {}
 
 
 def generate_youtube_pack(project: dict[str, Any]) -> dict[str, Any]:
@@ -48,6 +65,8 @@ def save_youtube_pack(project: dict[str, Any], pack: dict[str, Any]) -> dict[str
 
 
 def _fallback(project: dict[str, Any]) -> dict[str, Any]:
+    if _is_check(project):
+        return _fallback_check(project)
     title = str(project.get("title") or project.get("topic") or "True story").strip()[:100]
     topic = str(project.get("topic") or title).strip()
     who = _lead_name(project)
@@ -62,6 +81,59 @@ def _fallback(project: dict[str, Any]) -> dict[str, Any]:
         "thumbnail_text": _short_overlay(title),
         "thumbnail_prompt": _fallback_thumb_prompt(topic, who),
     }
+
+
+def _fallback_check(project: dict[str, Any]) -> dict[str, Any]:
+    concept = _check_concept(project)
+    thumb = concept.get("thumbnail_concept") if isinstance(concept.get("thumbnail_concept"), dict) else {}
+    title = str(
+        concept.get("title") or project.get("title") or project.get("topic") or "POV Check"
+    ).strip()[:120]
+    alts = []
+    for x in concept.get("title_options") or concept.get("alt_titles") or []:
+        if isinstance(x, dict):
+            t = str(x.get("text") or x.get("title") or "").strip()
+        else:
+            t = str(x or "").strip()
+        if t and t != title:
+            alts.append(t[:120])
+    hook = ""
+    for h in concept.get("hook_options") or []:
+        if isinstance(h, dict):
+            hook = str(h.get("text") or h.get("hook") or "").strip()
+        else:
+            hook = str(h or "").strip()
+        if hook:
+            break
+    if not hook:
+        hook = str(concept.get("hook") or concept.get("concrete_hook") or "").strip()
+    fantasy = str(concept.get("life_transformation") or concept.get("end_state") or "").strip()
+    desc_bits = [hook or title, "", fantasy or str(project.get("topic") or "").strip(), "", "Check — fantasía en segunda persona."]
+    overlay = str(thumb.get("text_if_any") or "").strip() or _short_overlay(title)
+    prompt = str(thumb.get("thumbnail_prompt") or "").strip() or _fallback_check_thumb(title, thumb)
+    return {
+        "title": title,
+        "alt_titles": alts[:3],
+        "description": "\n".join(b for b in desc_bits if b is not None).strip()[:4000],
+        "thumbnail_text": overlay[:32],
+        "thumbnail_prompt": prompt[:2000],
+    }
+
+
+def _fallback_check_thumb(title: str, thumb: dict[str, Any]) -> str:
+    main = str(thumb.get("main_visual") or title).strip()[:160]
+    contrast = str(thumb.get("central_contrast") or "").strip()[:120]
+    obj = str(thumb.get("key_object") or "").strip()[:80]
+    return (
+        "YouTube thumbnail, 16:9, high-quality 2D stickman cartoon (round white head, black-dot eyes, "
+        "spiky black hair, bold outlines). CLOSE-UP of YOU the stickman filling ~50% of the frame, "
+        f"emotion readable at phone size. Beat: {main}. "
+        f"{('Contrast: ' + contrast + '. ') if contrast else ''}"
+        f"{('Key object: ' + obj + '. ') if obj else ''}"
+        "Rich detailed environment, strong contrast, envy/curiosity slap. "
+        "Leave one third clean for overlay text later. "
+        "NO burned-in text, logos, collage, photoreal faces, anime."
+    )
 
 
 def _lead_name(project: dict[str, Any]) -> str:
@@ -89,14 +161,22 @@ def _fallback_thumb_prompt(topic: str, who: str) -> str:
 
 def _short_overlay(title: str) -> str:
     words = [w for w in title.replace("—", " ").split() if w]
-    pick = [w for w in words if any(ch.isdigit() for ch in w) or w.upper() in {"IPO", "CEO", "SOLD", "BROKE", "FELL"}]
+    pick = [
+        w
+        for w in words
+        if any(ch.isdigit() for ch in w)
+        or w.upper() in {"IPO", "CEO", "SOLD", "BROKE", "FELL", "POV", "$1", "MILLÓN", "MILLON"}
+    ]
     if pick:
         return " ".join((pick + words)[:3]).upper()[:28]
-    return " ".join(words[:3]).upper()[:28] or "THE FALL"
+    return " ".join(words[:3]).upper()[:28] or "POV"
 
 
 def _generate_llm(project: dict[str, Any], api_key: str) -> dict[str, Any] | None:
     from openai import OpenAI
+
+    if _is_check(project):
+        return _generate_llm_check(project, api_key)
 
     title0 = str(project.get("title") or "").strip()
     topic = str(project.get("topic") or title0).strip()
@@ -151,6 +231,63 @@ def _generate_llm(project: dict[str, Any], api_key: str) -> dict[str, Any] | Non
             {"role": "user", "content": user},
         ],
         temperature=0.75,
+        max_tokens=1100,
+    )
+    raw = (r.choices[0].message.content or "").strip()
+    blob = raw[raw.find("{") : raw.rfind("}") + 1] if "{" in raw else ""
+    data = json.loads(blob) if blob else {}
+    if not isinstance(data, dict) or not str(data.get("title") or "").strip():
+        return None
+    alts = data.get("alt_titles") if isinstance(data.get("alt_titles"), list) else []
+    return {
+        "title": str(data.get("title") or "").strip()[:120],
+        "alt_titles": [str(x).strip()[:120] for x in alts if str(x).strip()][:3],
+        "description": str(data.get("description") or "").strip()[:4000],
+        "thumbnail_text": str(data.get("thumbnail_text") or "").strip()[:32],
+        "thumbnail_prompt": str(data.get("thumbnail_prompt") or "").strip()[:2000],
+    }
+
+
+def _generate_llm_check(project: dict[str, Any], api_key: str) -> dict[str, Any] | None:
+    from openai import OpenAI
+
+    concept = _check_concept(project)
+    thumb = concept.get("thumbnail_concept") if isinstance(concept.get("thumbnail_concept"), dict) else {}
+    title0 = str(concept.get("title") or project.get("title") or "").strip()
+    topic = str(project.get("topic") or title0).strip()
+    script = str(project.get("script") or "").strip()[:3000]
+    client = OpenAI(api_key=api_key)
+    system = (
+        "Escribís el pack de YouTube para Check: fantasías aspiracionales en segunda persona (tú/te), canal español.\n"
+        "Return ONLY JSON: title, alt_titles (2 strings), description, thumbnail_text, thumbnail_prompt.\n"
+        "title: español, clickable, POV cuando ayude, número o contraste si es verdad. Sin mentir. Sin 'suscribite'.\n"
+        "description: español. Primera línea = gancho. 2 párrafos cortos. Sin CTA de suscripción.\n"
+        "thumbnail_text: 2–4 palabras overlay (puede ser número/$). MAYÚSCULAS. No la frase entera del título.\n"
+        "thumbnail_prompt: INGLÉS para Google Flow. Miniatura YouTube 16:9, stickman 2D "
+        "(round white head, black-dot eyes, spiky black hair, bold outlines) — NOT photoreal. "
+        "Cara grande ~50% del frame + un objeto/contraste de ESTA historia. "
+        "Sin texto quemado, logos ni collage. Dejá un tercio limpio para overlay."
+    )
+    user = json.dumps(
+        {
+            "working_title": title0,
+            "topic": topic,
+            "concept_title": concept.get("title"),
+            "hook": concept.get("hook") or concept.get("concrete_hook"),
+            "end_state": concept.get("end_state"),
+            "life_transformation": concept.get("life_transformation"),
+            "thumbnail_concept": thumb,
+            "script_excerpt": script,
+        },
+        ensure_ascii=False,
+    )
+    r = client.chat.completions.create(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        temperature=0.7,
         max_tokens=1100,
     )
     raw = (r.choices[0].message.content or "").strip()

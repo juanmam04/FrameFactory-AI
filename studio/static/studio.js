@@ -1485,8 +1485,8 @@ function renderProject() {
   const isCheck = p.content_format === "check_als" || p.mode === "check_als";
   if (isCheck && (step === "research")) step = "story";
   const steps = isCheck
-    ? ["topic", "story", "script", "flow", "voice", "music", "preview", "render"]
-    : ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render"];
+    ? ["topic", "story", "script", "flow", "voice", "music", "preview", "render", "publish"]
+    : ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render", "publish"];
   const stepLabel = isCheck
     ? {
         topic: "1 Premisa",
@@ -1497,6 +1497,7 @@ function renderProject() {
         music: "6 Música",
         preview: "7 Prueba",
         render: "8 Video",
+        publish: "9 YouTube",
       }
     : {
         topic: "1 Tema",
@@ -1508,7 +1509,8 @@ function renderProject() {
         music: "7 Música",
         preview: "8 Prueba",
         render: "9 Video",
-        done: "9 Video",
+        publish: "10 YouTube",
+        done: "10 YouTube",
       };
   const flags = p.progress?.flags || {};
   stage().innerHTML = `
@@ -1571,7 +1573,6 @@ function renderProject() {
   if (step === "preview") return paintPreview(ws, p);
   if (step === "render") return paintRender(ws, p);
   if (step === "subs") return paintRender(ws, p);
-  if (step === "publish" || step === "done") return paintRender(ws, p);
   if (step === "publish" || step === "done") return paintPublish(ws, p);
   paintResearch(ws, p);
 }
@@ -3096,6 +3097,7 @@ function paintRender(ws, p) {
         <button class="btn btn-accent" id="render" ${running ? "disabled" : ""}>${done ? "Volver a renderizar" : running ? "Armando…" : "Renderizar episodio"}</button>
         ${running ? `<button class="btn btn-danger" id="cancel-render">Frenar</button>` : ""}
         ${done ? downloadVideoButton(p.id, captions ? "Descargar video (con subtítulos)" : "Descargar video") : ""}
+        ${done ? `<button class="btn btn-primary" id="to-publish">Seguir a YouTube</button>` : ""}
         <button class="btn btn-soft" id="to-preview">Ver prueba 20s</button>
         <button class="btn btn-ghost" id="home">Volver al inicio</button>
       </div>
@@ -3103,6 +3105,14 @@ function paintRender(ws, p) {
     paintRender._uiReady = true;
     bindActions(st, kind, captions);
     wireDownloads(ws);
+    $("#to-publish")?.addEventListener("click", async () => {
+      const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
+        method: "PATCH",
+        body: JSON.stringify({ step: "publish" }),
+      });
+      state.project = data.project;
+      renderProject();
+    });
   };
 
   const startPoll = () => {
@@ -3336,11 +3346,16 @@ function paintSubs(ws, p) {
 
 function paintPublish(ws, p) {
   const y = p.youtube || {};
+  const isCheck = p.content_format === "check_als" || p.mode === "check_als";
   const alts = (y.alt_titles || []).join("\n");
   ws.innerHTML = `
     <div class="panel workspace">
       <h2 style="margin-top:0">YouTube</h2>
-      <p class="lead">Título y miniatura pensados para que alguien pare el scroll. No un still más del video.</p>
+      <p class="lead">${
+        isCheck
+          ? "Título, descripción y prompt de miniatura (stickman) para subir el episodio. Copiá y pegá en YouTube / Flow."
+          : "Título y miniatura pensados para que alguien pare el scroll. No un still más del video."
+      }</p>
       <div class="actions" style="margin-bottom:1rem">
         <button class="btn btn-accent" id="gen-yt">Generar con IA</button>
         <button class="btn btn-ghost" id="save-yt">Guardar</button>
@@ -3360,12 +3375,12 @@ function paintPublish(ws, p) {
         <button class="btn btn-soft" id="copy-desc" style="margin-top:0.45rem">Copiar descripción</button>
       </div>
       <div class="field">
-        <label>Texto overlay (2–4 palabras, se lee en el celular)</label>
+        <label>Texto overlay (2–4 palabras${isCheck ? ", español OK" : ""}, se lee en el celular)</label>
         <input id="yt-thumb-text" value="${esc(y.thumbnail_text || "")}" />
         <button class="btn btn-soft" id="copy-thumb-text" style="margin-top:0.45rem">Copiar overlay</button>
       </div>
       <div class="field">
-        <label>Prompt de miniatura — cara grande + un objeto de la historia (Google Flow)</label>
+        <label>Prompt de miniatura — ${isCheck ? "stickman + contraste (Google Flow)" : "cara grande + un objeto de la historia (Google Flow)"}</label>
         <textarea id="yt-thumb" rows="8">${esc(y.thumbnail_prompt || "")}</textarea>
         <button class="btn btn-soft" id="copy-thumb" style="margin-top:0.45rem">Copiar prompt</button>
       </div>

@@ -436,6 +436,7 @@ def derive_progress(project: dict[str, Any]) -> dict[str, Any]:
         flags["flow"] = bool(flow or images_partial or images_full or voice or approved)
         flags["images"] = images_full or (images_partial and voice) or voice
         flags["preview"] = voice
+        flags["publish"] = bool((project.get("youtube") or {}).get("title")) or rendered
         # Fall through to shared current-step walk (don't freeze forever on "flow").
     current = "done"
     for step in PROGRESS_STEPS:
