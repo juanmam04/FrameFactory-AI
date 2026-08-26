@@ -70,6 +70,39 @@ def build_srt(script: str, duration_sec: float) -> str:
     return "\n".join(lines).strip() + "\n"
 
 
+def captions_language(project: dict[str, Any] | None = None) -> str:
+    """Whisper language for caption alignment (Check ALS / ES → es)."""
+    if not isinstance(project, dict):
+        return "en"
+    for key in ("language", "locale", "lang"):
+        raw = str(project.get(key) or "").strip().lower()
+        if raw.startswith("es") or raw in {"spanish", "spa", "castellano"}:
+            return "es"
+        if raw.startswith("en") or raw in {"english", "eng"}:
+            return "en"
+    voice = project.get("voice") if isinstance(project.get("voice"), dict) else {}
+    raw = str(voice.get("language") or voice.get("locale") or "").strip().lower()
+    if raw.startswith("es") or raw in {"spanish", "spa"}:
+        return "es"
+    fmt = str(
+        project.get("format")
+        or project.get("format_id")
+        or ((project.get("channel") or {}) if isinstance(project.get("channel"), dict) else {}).get("format")
+        or ""
+    ).lower()
+    if "check" in fmt or "als" in fmt:
+        return "es"
+    # Script heuristic: leading Spanish POV openings.
+    script = project.get("script")
+    text = script if isinstance(script, str) else ""
+    if not text and isinstance(script, dict):
+        text = str(script.get("full_text") or script.get("text") or "")
+    head = (text or "")[:80].lower()
+    if head.startswith("tienes ") or "años" in head[:40]:
+        return "es"
+    return "en"
+
+
 def whisper_srt_from_audio(audio: Path, *, language: str = "en") -> str:
     """Build SRT from what was actually spoken (Whisper segments)."""
     from openai import OpenAI
@@ -208,7 +241,7 @@ def captions_for_window(project: dict[str, Any], window_sec: float) -> Path:
                 src = head if head.is_file() and head.stat().st_size > 0 else audio
             else:
                 src = audio
-            srt = whisper_srt_from_audio(src, language="en")
+            srt = whisper_srt_from_audio(src, language=captions_language(project))
             append_log(pid, f"preview captions whisper window={limit:.0f}s cues={len(srt_to_cues(srt))}")
             return _write_window(srt)
         except Exception as e:
@@ -301,7 +334,7 @@ def generate_captions(
     err = ""
     if allow_whisper and audio.is_file() and audio.stat().st_size > 0:
         try:
-            srt = whisper_srt_from_audio(audio, language="en")
+            srt = whisper_srt_from_audio(audio, language=captions_language(project))
             source = "whisper"
             append_log(pid, f"captions aligned via whisper cues={len(srt_to_cues(srt))}")
         except Exception as e:
@@ -443,6 +476,18 @@ def apply_captions_file(
         raise RuntimeError("El SRT no tiene carteles.")
     last_err = ""
 
+    def _ffmpeg_has_filter(name: str) -> bool:
+        try:
+            r = subprocess.run([ff, "-hide_banner", "-filters"], capture_output=True, text=True, timeout=20)
+            needle = f" {name} "
+            return needle in f" {r.stdout} "
+        except Exception:
+            return False
+
+    has_libass = _ffmpeg_has_filter("subtitles") or _ffmpeg_has_filter("ass")
+    # Without libass (common on Homebrew/Vercel builds), PNG overlays are the real path.
+    use_overlays_first = prefer_overlays or not has_libass
+
     def _try_overlays() -> Path | None:
         nonlocal last_err
         try:
@@ -521,7 +566,11 @@ def apply_captions_file(
             dest.unlink(missing_ok=True)
         return None
 
-    order = (_try_overlays, _try_ass, _try_drawtext) if prefer_overlays else (_try_ass, _try_overlays, _try_drawtext)
+    order = (
+        (_try_overlays, _try_ass, _try_drawtext)
+        if use_overlays_first
+        else (_try_ass, _try_overlays, _try_drawtext)
+    )
     for fn in order:
         got = fn()
         if got is not None:
@@ -845,66 +894,80 @@ def _burn_with_overlays(
     big: bool = False,
     merge_max: int = 48,
 ) -> Path:
-    """Burn captions without libass: overlay PIL PNGs (works with imageio-ffmpeg on Vercel)."""
+    """Burn captions without libass: overlay PIL PNGs (works with imageio-ffmpeg on Vercel).
+
+    FFmpeg filter graphs choke with hundreds of overlays, so we burn in batches of
+    `_OVERLAY_BATCH` and chain the outputs. Older code kept only the first 36 cues,
+    which made Spanish episodes lose all captions after ~2 minutes.
+    """
     import shutil
     import subprocess
     import tempfile
 
-    cues = _merge_cues(cues, max_n=merge_max)
+    cues = _merge_cues(cues, max_n=max(1, int(merge_max or 48)))
     if not cues:
         raise RuntimeError("No hay carteles para quemar.")
-    # Cap overlays so ffmpeg filter graphs stay manageable on short clips.
-    if len(cues) > 36:
-        cues = cues[:36]
     bar_h = (140 if width >= 1600 else 110) if big else (120 if width >= 1600 else 96)
+    batch_size = 30
     tmp = Path(tempfile.mkdtemp(prefix="ff-subs-"))
     try:
-        cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(src)]
-        parts: list[str] = []
-        last = "0:v"
-        for i, cue in enumerate(cues):
-            png = tmp / f"c{i:03d}.png"
-            _cue_png(cue.get("text") or "", png, width=width, height=bar_h, big=big)
-            cmd.extend(["-i", str(png)])
-            start = _srt_sec(str(cue.get("start") or "0"))
-            end = _srt_sec(str(cue.get("end") or "0"))
-            out = f"v{i}"
-            parts.append(
-                f"[{last}][{i + 1}:v]overlay=0:H-h-36:enable='between(t,{start:.3f},{end:.3f})'[{out}]"
+        current = src
+        n_batches = (len(cues) + batch_size - 1) // batch_size
+        for b, start_i in enumerate(range(0, len(cues), batch_size)):
+            chunk = cues[start_i : start_i + batch_size]
+            out_path = dest if b == n_batches - 1 else (tmp / f"pass_{b:02d}.mp4")
+            if out_path.exists():
+                out_path.unlink(missing_ok=True)
+            cmd = [ff, "-hide_banner", "-loglevel", "error", "-y", "-i", str(current)]
+            parts: list[str] = []
+            last = "0:v"
+            for i, cue in enumerate(chunk):
+                png = tmp / f"b{b:02d}_c{i:03d}.png"
+                _cue_png(cue.get("text") or "", png, width=width, height=bar_h, big=big)
+                cmd.extend(["-i", str(png)])
+                start = _srt_sec(str(cue.get("start") or "0"))
+                end = _srt_sec(str(cue.get("end") or "0"))
+                if end <= start:
+                    end = start + 1.2
+                label = f"v{i}"
+                parts.append(
+                    f"[{last}][{i + 1}:v]overlay=0:H-h-36:enable='between(t,{start:.3f},{end:.3f})'[{label}]"
+                )
+                last = label
+            cmd.extend(
+                [
+                    "-filter_complex",
+                    ";".join(parts),
+                    "-map",
+                    f"[{last}]",
+                    "-map",
+                    "0:a?",
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    preset,
+                    "-crf",
+                    str(crf),
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-c:a",
+                    "copy",
+                    "-movflags",
+                    "+faststart",
+                    str(out_path),
+                ]
             )
-            last = out
-        cmd.extend(
-            [
-                "-filter_complex",
-                ";".join(parts),
-                "-map",
-                f"[{last}]",
-                "-map",
-                "0:a?",
-                "-c:v",
-                "libx264",
-                "-preset",
-                preset,
-                "-crf",
-                str(crf),
-                "-pix_fmt",
-                "yuv420p",
-                "-c:a",
-                "copy",
-                "-shortest",
-                "-movflags",
-                "+faststart",
-                str(dest),
-            ]
-        )
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=150)
-        if result.returncode != 0 or not mp4_is_complete(dest):
-            if dest.is_file():
-                dest.unlink(missing_ok=True)
-            raise RuntimeError(
-                "No se pudieron quemar los subtítulos: "
-                + ffmpeg_error_text(result.stderr or result.stdout or "ffmpeg failed")
-            )
+            # Full episodes need more wall time than a 20s preview.
+            timeout = 120 + 45 * max(1, len(chunk))
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+            if result.returncode != 0 or not mp4_is_complete(out_path):
+                if out_path.is_file():
+                    out_path.unlink(missing_ok=True)
+                raise RuntimeError(
+                    "No se pudieron quemar los subtítulos: "
+                    + ffmpeg_error_text(result.stderr or result.stdout or "ffmpeg failed")
+                )
+            current = out_path
         return dest
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
