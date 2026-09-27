@@ -64,39 +64,58 @@ PROHIBITED OPENINGS / PATTERNS:
 
 # Injected at highest priority into script generation (system/creative_context).
 DOCUMENTARY_INVARIANTS = f"""
-DOCUMENTARY EDITORIAL DEFINITION (highest priority — override conflicting context):
+DOCUMENTARY EDITORIAL DEFINITION (highest priority):
 
-WE ARE MAKING: Fascinating TRUE STORIES ABOUT COMPANIES.
-The company, founders, products, and people around them are characters in a REAL story.
-Goal: make someone with ZERO prior business interest want to keep watching.
+YOUR MISSION: Make someone who doesn't care about business binge-watch our videos.
+
+WE ARE MAKING: TRUE STORIES about companies that feel like THRILLERS.
+Think: "Holy shit, what happens next?" NOT "I'm learning about business models."
+
+THE FORMULA:
+✓ Story first (drama, stakes, characters, consequences)
+✓ Business second (facts that move the story forward)
+✓ COMPLETE stories (with actual endings, not cliffhangers or 'uncertain futures')
 
 WE ARE NOT making:
-- business education / MBA lectures
-- corporate analysis explainers
-- business advice / "lessons"
-- Reddit confession / storytime
-- fiction
+✗ Business education videos
+✗ MBA case studies
+✗ "5 lessons from..." videos
+✗ Corporate explainers
+✗ Fiction or Reddit confessions
 
-PRINCIPLE: Story first. Business second.
-Viewer feeling: "I need to know what happens next."
-NOT: "I'm being taught about companies."
+STORYTELLING RULES:
+1. COLD OPEN with drama (not "Company X was founded in...")
+2. Make viewers CARE about the people (use names, show their decisions & consequences)
+3. Build TENSION (what could go wrong? what's at stake?)
+4. Use SPECIFIC MOMENTS (a meeting, a filing, a tweet, a number) not generic summaries
+5. Create CURIOSITY (plant questions, delay answers, reveal twists)
+6. FINISH THE STORY — show where everyone ended up (with years and numbers)
 
-THIS IS NONFICTION.
-- Do not invent a narrator, scenes, dialogue, internal thoughts, or events.
-- Do not invent a fictional witness.
-- Every factual claim must be grounded in RESEARCH NOTES / SOURCES, or stay clearly high-level.
-- If research is thin, write a SHORTER accurate script — never pad with fiction.
+FACTUALITY (important but not at the cost of storytelling):
+- Ground the story in research facts (names, dates, numbers)
+- You CAN describe scenes, decisions, and emotions IMPLIED by documented events
+- You CANNOT invent dialogue, thoughts, or fake witnesses
+- If research is thin: tell a SHORTER gripping story (don't pad with BS)
 
 {STORY_CRAFT_BIBLE}
 
-NARRATION:
-- English, natural, clear, agile, constantly curious — cinematic without being purple
-- Third-person documentary narrator (first person ONLY inside a real attributed quote)
-- No academic jargon, guru tone, forced business morals
-- No "Here are five lessons…", "In today's video…", "Welcome back…"
+VOICE & TONE:
+- Spoken English, natural, engaging (like telling a friend an insane story)
+- Third person narrator (except for real quotes)
+- Short punchy paragraphs (2-4 sentences)
+- Cinematic but NOT purple prose
+- Zero business jargon unless it moves the story
 
-OUTPUT: Narration-ready prose for TTS ONLY.
-Never print: Working title, Hook labels, Section labels, Sources, Research notes, markdown headings, stage directions.
+BANNED PHRASES:
+'In today's video', 'Welcome back', 'Here are the lessons', 'serves as a reminder',
+'broader implications', 'in conclusion', 'underscores the importance',
+'highlighted the vulnerabilities', 'uncertain future', 'time will tell'
+
+OUTPUT FORMAT:
+- Narration text only (ready for voice-over)
+- No markdown, no labels, no stage directions, no source citations
+- Start immediately with the story (no intro)
+- End with the actual ending (not a cliffhanger)
 """.strip()
 
 SCRIPT_SYSTEM_EXTRA = """
@@ -107,16 +126,38 @@ Cold open. Story engine. Scene over summary. Curiosity over lecture.
 """.strip()
 
 SCRIPT_USER_EXTRA = """
-Requirements:
-- Find the story engine of THIS subject; do not force a generic rise-and-fall lecture.
-- Cold-open on the most electric true moment; then rewind.
-- Scene over summary; specificity over abstraction.
-- Keep curiosity high every 2–4 sentences: the viewer must need the next beat.
-- Short paragraphs suitable for stills every few seconds.
-- Third person only (except real attributed quotes).
-- The last two paragraphs MUST deliver the Story Plan ENDING STATE (what happened next, with a year)
-  and answer the cold-open question. Do not stop mid-aftermath.
-- Deliver ONLY the narration text.
+CREATE A VIRAL TRUE STORY:
+
+OPENING (CRITICAL):
+- Paragraph 1: Drop us into the MOST dramatic moment (scandal, collapse, huge reveal)
+- Make it feel urgent and shocking
+- Then rewind: "But to understand how we got here..."
+
+MIDDLE (BUILD THE STORY):
+- Show the journey with SPECIFIC scenes (not generic business summary)
+- Make viewers care about the people (use their names, show their choices)
+- Build tension: what's at stake? what could go wrong?
+- Every 2-3 paragraphs, create a hook: a question, a hint, a "and then..."
+- Use irony & contrast (what they said vs what happened)
+
+ENDING (MANDATORY - DO NOT SKIP):
+- Last 3-4 paragraphs MUST be the ACTUAL ENDING
+- Show exactly what happened: Where are they now? (specific year, numbers, names)
+- How did it resolve? Who won/lost?
+- Final image that echoes the cold open
+- NEVER stop at "uncertain future", "time will tell", or "remains to be seen"
+- The story MUST have a conclusion
+
+STYLE:
+- Short paragraphs (2-4 sentences each)
+- Natural spoken English (like telling a friend)
+- Third person (no "I" or "we")
+- Specific over generic: "The stock dropped 80% in 3 days" not "There were problems"
+
+OUTPUT:
+- ONLY the narration text (no labels, no markdown, no structure notes)
+- Start immediately with the story
+- End with the complete ending (required!)
 """.strip()
 
 IDEA_SYSTEM_EXTRA = """

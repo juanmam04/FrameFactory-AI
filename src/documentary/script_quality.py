@@ -106,14 +106,32 @@ def ending_is_abrupt(script: str, ending_state: str = "") -> bool:
         return True
     paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
     last = (paras[-1] if paras else text).lower()
+    
+    # Ending with a question is always abrupt
     if last.rstrip().endswith("?"):
         return True
+    
+    # Check for abrupt tail markers
+    if any(m in last for m in _ABRUPT_TAILS):
+        return True
+    
+    # If no ending_state provided, check for general resolution indicators
     state = (ending_state or "").strip()
     tail = " ".join(paras[-3:] if len(paras) >= 3 else paras).lower()
+    
+    # Look for resolution indicators (years, money, outcomes)
+    has_recent_year = bool(re.search(r"\b(202[0-9]|201[5-9])\b", tail))
+    has_outcome = bool(re.search(r"\b(today|now|currently|worth|valued|operates|closed|filed for|acquired by|sold to|merged with)\b", tail))
+    has_numbers = bool(re.search(r"\$[\d,.]+|\b\d+(?:\.\d+)?\s*(?:billion|million|employees|users|valuation)\b", tail))
+    
+    # Need at least 2 of these indicators for a proper ending
+    resolution_score = sum([has_recent_year, has_outcome, has_numbers])
+    
     if state:
+        # If we have an ending_state, check if it's reflected in the text
         years = re.findall(r"\b(?:19|20)\d{2}\b", state)
         money = re.findall(r"\$[\d,.]+|\b\d+(?:\.\d+)?\s*(?:billion|million)\b", state.lower())
-        keys = re.findall(r"\b(spac|merger|bankruptcy|acquired|listed|public|bailed|rescue)\b", state.lower())
+        keys = re.findall(r"\b(spac|merger|bankruptcy|acquired|listed|public|bailed|rescue|closed|sold|today|now)\b", state.lower())
         hits = 0
         for y in years:
             if re.search(rf"\b{re.escape(y)}\b", tail):
@@ -125,11 +143,15 @@ def ending_is_abrupt(script: str, ending_state: str = "") -> bool:
         for k in keys:
             if re.search(rf"\b{re.escape(k)}\b", tail):
                 hits += 1
-        if hits >= 1:
+        
+        # Need at least 2 matches from ending_state
+        if hits >= 2:
             return False
         if years or money or keys:
             return True
-    return any(m in last for m in _ABRUPT_TAILS)
+    
+    # Without ending_state, need high resolution score
+    return resolution_score < 2
 
 
 def close_script_ending(
@@ -144,34 +166,48 @@ def close_script_ending(
     state = (ending_state or "").strip()
     if not text or not state or not ending_is_abrupt(text, state):
         return text
+    # More compelling fallback that actually tells the ending
+    state_clean = state.rstrip('.').strip()
     fallback = (
-        f"What happened next was already on the record: {state.rstrip('.')}. "
-        "That is where this story landed."
+        f"So where did it all end up?\n\n"
+        f"{state_clean}.\n\n"
+        f"That's where this story landed."
     )
     try:
         require_openai_api_key("Script ending")
         from openai import OpenAI
 
         client = OpenAI(api_key=openai_api_key())
-        prompt = f"""The narration below STOPS too early. Write ONLY 1-2 final paragraphs to append.
+        prompt = f"""This documentary narration STOPS before the ending. Write 2-3 final paragraphs to COMPLETE the story.
 
-Rules:
-- Use ONLY these facts. Do not invent.
-- Paragraph 1: ENDING STATE as what happened next (year, number, names).
-- Paragraph 2: one image that answers the cold open. No lessons. No "in conclusion".
-- Third person. Spoken English. Return ONLY the new paragraphs — not the whole script.
+YOUR TASK: Write a satisfying conclusion that shows where everyone ended up.
 
-ENDING STATE:
+STRUCTURE:
+- Paragraph 1: Set up the transition ("So what happened next?" or "Fast forward to...")
+- Paragraph 2-3: The actual ENDING STATE with specific facts (year, numbers, where people are now)
+- Final sentence: One image or moment that echoes the opening
+
+RULES:
+- Use ONLY the facts provided in ENDING STATE and RESEARCH
+- Make it feel like a proper conclusion (not "uncertain future" or "time will tell")
+- Third person, spoken English, engaging tone
+- Specific numbers, years, names (no vague statements)
+- NO business lessons, NO "in conclusion", NO moralizing
+- Return ONLY the new paragraphs to append (not the whole script)
+
+ENDING STATE (use these facts):
 {state}
 
-COLD OPEN / HOOK:
+COLD OPEN / HOOK (echo this at the end):
 {(hook or "")[:500]}
 
-RESEARCH (optional extra facts, do not invent beyond this):
+RESEARCH (more context if needed):
 {(research_notes or "")[-2500:]}
 
-CURRENT LAST PARAGRAPHS:
+CURRENT LAST PARAGRAPHS (what the script says now):
 {" ".join(text.split()[-180:])}
+
+Write the final 2-3 paragraphs now:
 """
         r = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
