@@ -369,15 +369,22 @@ def revise_script_once(
     research_notes: str,
     review: dict[str, Any],
     target_words: int = 2000,
+    custom_prompt: str | None = None,
 ) -> str:
     """Single directed revision call. No loops."""
     require_openai_api_key("Script quality revision")
     from openai import OpenAI
 
     client = OpenAI(api_key=openai_api_key())
-    problems = "\n".join(f"- {p}" for p in (review.get("problems") or []))
-    instr = "\n".join(f"- {p}" for p in (review.get("revision_instructions") or []))
-    prompt = f"""Revise this TRUE documentary narration ONCE.
+    
+    # Use custom prompt if provided (from storytelling engine)
+    if custom_prompt:
+        prompt = custom_prompt
+    else:
+        # Fallback to original prompt
+        problems = "\n".join(f"- {p}" for p in (review.get("problems") or []))
+        instr = "\n".join(f"- {p}" for p in (review.get("revision_instructions") or []))
+        prompt = f"""Revise this TRUE documentary narration ONCE.
 
 Fix these problems:
 {problems}

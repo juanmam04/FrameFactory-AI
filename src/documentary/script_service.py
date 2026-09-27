@@ -7,6 +7,7 @@ from typing import Any
 
 from src.documentary.channel import documentary_script_context, language_from_profile
 from src.documentary.editorial import DOCUMENTARY_INVARIANTS, STORY_CRAFT_BIBLE
+from src.documentary.storytelling_engine import get_master_prompt, get_revision_prompt
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 from src.documentary.script_quality import (
     close_script_ending,
@@ -155,8 +156,10 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
 
     quality_meta: dict[str, Any] = {}
     if use_llm:
+        # Use the new storytelling engine master prompt
+        master_prompt = get_master_prompt(tema, target_words=target)
         script, wc, _mins = generar_guion(
-            tema,
+            master_prompt,
             target_words=target,
             plantilla=TEMPLATE_ID,
             creative_context=creative_context,
@@ -174,12 +177,23 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
         if needs_rev:
             append_log(str(project["id"]), "script quality FAIL → one revision")
             plan_block = story_plan_prompt_block(get_story_plan(project))
+            # Use new storytelling-focused revision
+            problems = "\n".join(f"- {p}" for p in (review.get("problems") or []))
+            instructions = "\n".join(f"- {p}" for p in (review.get("revision_instructions") or []))
+            revision_prompt = get_revision_prompt(
+                current_script=script,
+                problems=problems,
+                revision_instructions=instructions,
+                story_plan_block=plan_block,
+                research_notes=notes
+            )
             revised = revise_script_once(
                 script,
                 story_plan_block=plan_block,
                 research_notes=notes,
                 review=review,
                 target_words=target,
+                custom_prompt=revision_prompt,
             )
             rev_wc = count_words(revised)
             # Never keep a revision that collapses the draft (model often "fixes" by shortening into an essay stub).
