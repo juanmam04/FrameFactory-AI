@@ -243,15 +243,15 @@ def generate_check_story(
         }
         raw = _chat_json(client, model, beats_sys, payload, temperature=0.7, timeout=180.0, max_tokens=12000)
         act_beats = _extract_beats(raw, start_id)
-        if len(act_beats) < 12:
+        if len(act_beats) < 5:
             raw = _chat_json(
                 client,
                 model,
-                beats_sys + "\nDevolvé 15-18 beats. Cada uno con ops. No resumas años en un beat.",
+                beats_sys + "\nDevolvé 6 a 8 escenas de vida. Cada una se filma. No partas un año en trámites.",
                 payload,
                 temperature=0.5,
                 timeout=180.0,
-                max_tokens=12000,
+                max_tokens=6000,
             )
             act_beats = _extract_beats(raw, start_id)
         rebuilt = reconstruct_beats(world, story, prog, act_beats)
@@ -260,7 +260,7 @@ def generate_check_story(
             world = deepcopy(rebuilt[-1]["world_state_after"])
             story = deepcopy(rebuilt[-1]["story_state_after"])
             prog = deepcopy(rebuilt[-1]["progression_after"])
-        if phase_id != "p4":
+        if phase_id == "p1":
             gp = int((world.get("sports") or {}).get("games_played") or 0)
             if gp >= 16:
                 close = {
@@ -287,24 +287,6 @@ def generate_check_story(
                     story = deepcopy(closed[-1]["story_state_after"])
                     prog = deepcopy(closed[-1]["progression_after"])
         start_id = len(beats) + 1
-
-    if len(beats) < 45:
-        extra = _chat_json(
-            client,
-            model,
-            BEATS_SYSTEM + "\nFaltan beats. Completá huecos de vida (renuncia, mudanza, palco, viaje) y deporte (season_stretch, playoffs) sin repetir. 12-16 beats.",
-            {
-                "brief": "Relleno causal, no paja.",
-                "start_beat_number": start_id,
-                "world_snapshot": compact_world(world),
-                "beats_so_far": _beats_summary(beats),
-                "blueprint": blueprint.get("fiction_world"),
-            },
-            temperature=0.55,
-            timeout=180.0,
-            max_tokens=8000,
-        )
-        beats.extend(_extract_beats(extra, start_id))
 
     return finalize_architecture(
         project,
@@ -486,7 +468,7 @@ def _polish_synopsis_for_mode(synopsis: str, beats: list[dict[str, Any]], mode: 
     text = str(synopsis or "").strip()
     if mode == "business":
         text = scrub_sports_text(text)
-    text = expand_synopsis_to_min_words(text, beats, min_words=900)
+    text = expand_synopsis_to_min_words(text, beats, min_words=180)
     if mode == "business":
         text = scrub_sports_text(text)
     return text
@@ -586,6 +568,9 @@ def _extract_beats(raw: dict[str, Any], start_id: int) -> list[dict[str, Any]]:
         if not isinstance(beat.get("metric_reveal"), list):
             mr = beat.get("metric_reveal")
             beat["metric_reveal"] = [mr] if mr else []
+        for key in ("event", "cause", "consequence", "visual_opportunity"):
+            if beat.get(key):
+                beat[key] = plain_event(str(beat.get(key) or ""))
         out.append(beat)
     return out
 

@@ -135,17 +135,17 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
     if vehicle_mode == "business" and any(w in low for w in ("campeonat", "playoff", "básquet", "basquet", "estadio")):
         flags.append({"code": "sports_in_business_story", "detail": "synopsis de negocio menciona deporte", "hard": True})
     hist = sports.get("season_history") or []
-    # Length: soft miss between 850-899; hard only if still under 850 after polish.
-    if 900 <= words <= 1200 and not any(f.get("code") == "synopsis_missing" for f in flags):
+    # Una historia corta. Larga de más es el problema: se vuelve una planilla de escenas.
+    if 180 <= words <= 650 and not any(f.get("code") == "synopsis_missing" for f in flags):
         ok = True
     else:
         ok = False
-        if words < 850 or words > 1200:
+        if words < 180 or words > 650:
             flags.append(
                 {
                     "code": "synopsis_length",
-                    "detail": f"{words} palabras (objetivo 900–1200)",
-                    "hard": words < 850 or words > 1400,
+                    "detail": f"{words} palabras (objetivo 180–650, una película corta)",
+                    "hard": words < 120 or words > 900,
                 }
             )
     return {"ok": ok, "flags": flags, "words": words, "season_history": hist}

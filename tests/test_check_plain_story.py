@@ -15,6 +15,18 @@ SHOT = (
 )
 
 
+def test_generator_plans_a_short_life():
+    from src.documentary.formats.check_als.plain_language import SIMPLE_STORY_BRIEF
+    from src.documentary.formats.check_als.story_vehicle import phase_specs
+
+    phases = phase_specs("sports_team", "open")
+    assert len(phases) == 2
+    brief = " ".join(text for _, text in phases).lower()
+    assert "6 a 8" in brief
+    assert "planilla" in SIMPLE_STORY_BRIEF.lower()
+    assert "equity_sale" in SIMPLE_STORY_BRIEF
+
+
 def test_screenshot_is_jargon():
     assert has_jargon(SHOT)
 
@@ -64,6 +76,6 @@ def test_life_synopsis_has_no_ledger():
     assert "padres" in low
     assert "renuncias" in low
     words = len(text.split())
-    assert 900 <= words <= 1200, words
+    assert 180 <= words <= 650, words
     report = validate_synopsis(text, bp, initial, final, vehicle_mode="sports_team")
     assert report["ok"], report

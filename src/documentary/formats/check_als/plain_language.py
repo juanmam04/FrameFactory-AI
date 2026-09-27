@@ -76,21 +76,47 @@ _DEAL = re.compile(
     re.I,
 )
 
-PUBLIC_EVENT_RULES = """
-IDIOMA QUE LEE LA GENTE (event, cause, consequence, visual_opportunity):
-Español de tú: tienes, firmas, compras, vives. Prohibido el voseo (tenés, firmás, comprás, sos, vos).
-Esas frases son una escena de vida que entiende un chico que sueña y un adulto que quiere pasar un rato ahí.
-Prohibido en esas frases: equity, porcentaje, %, valuación, facturación, caja, ingresos, servicio de la deuda, seller financing, patrimonio, "51%", "millonario".
-El dinero, si aparece, se dice así: "pones tus ahorros", "la entrada es casi un regalo", "pagas la cena". Sin planilla.
-Los números (pct, debt, cash) viven solo en ops. No los copies al texto.
+SIMPLE_STORY_BRIEF = """
+ENFOQUE: una película corta de una vida, para cualquiera.
+Una sola línea, fácil de seguir: vives normal, aparece una chance, dices que sí, al principio cuesta, tu vida cambia en cosas que se ven, hay un tropiezo que se entiende sin saber de negocios, y cierra en una escena.
+TODA la historia son 8 a 14 escenas. Cada escena se puede filmar: una puerta, una fila, una renuncia, una cena, una noche llena, tus padres ahí.
+Los años pasan en una frase ("pasan dos años"). No armes una planilla de temporadas, socios, contratos ni crisis encadenadas.
+Un tropiezo, no cinco problemas de categorías distintas.
+El dinero entra una sola vez y en palabras de todos los días: pones lo que tienes ahorrado. El trato es simple.
+Prohibido como trama: porcentajes, equity, seller financing, servicio de deuda, facturación, valuación, caja, patrimonio, rondas, varios socios con cifras, "millonario en papel".
+Si el motor pide ops, son invisibles: una sola vez acquire_team o launch_company, advance_time para que pasen los años, y como mucho season_stretch o new_season para resumir un año en UNA escena. quit_job y move_home cuando la vida cambia.
+No uses equity_sale, bridge_loan, pay_debt ni credit_line como argumento. Si aparecen en ops, el texto de la escena sigue siendo vida.
+Español de tú (tienes, firmas, vives). Prohibido el voseo.
 """.strip()
+
+PUBLIC_EVENT_RULES = """
+IDIOMA DE CADA ESCENA (event, cause, consequence, visual_opportunity):
+Una frase de vida, en tú. La entiende un chico que sueña y un adulto que quiere pasar un rato ahí.
+Prohibido: equity, porcentaje, %, valuación, facturación, caja, ingresos, servicio de la deuda, seller financing, patrimonio, "51%", "millonario", voseo.
+El dinero, si sale, es: "pones tus ahorros" o "pagas la cena".
+""".strip()
+
+
+_KEEP_ACCENT = {"además", "atrás", "después", "francés", "inglés", "interés", "país", "maíz", "raíz"}
 
 
 def to_tu(text: str) -> str:
     out = str(text or "")
     for pat, rep in _VOSEO:
         out = re.sub(pat, rep, out)
-    return out
+
+    def _end(match: re.Match[str]) -> str:
+        word = match.group(0)
+        if word.lower() in _KEEP_ACCENT:
+            return word
+        stem, end = match.group(1), match.group(2)
+        if end == "ás":
+            return stem + "as"
+        if end == "és":
+            return stem + "es"
+        return stem + "es"
+
+    return re.sub(r"\b(\w{2,})(ás|és|ís)\b", _end, out)
 
 
 def has_jargon(text: str) -> bool:
@@ -277,117 +303,47 @@ def public_life_synopsis(
 
     paras = [open_para, plain_deal_sentence(sports=sports)]
     used: set[str] = set()
+    picked = 0
     for beat in beats or []:
+        if picked >= 4:
+            break
         raw = str(beat.get("event") or "").strip()
         if not raw or raw in used:
             continue
-        purpose = str(beat.get("story_purpose") or "")
-        kind = str(beat.get("reward_or_setback") or "")
-        if purpose not in {
-            "opening",
-            "inciting_incident",
-            "first_commitment",
-            "first_proof",
-            "midpoint",
-            "major_success",
-            "major_reversal",
-            "crisis",
-            "decision",
-            "climax",
-            "ending",
-        } and not kind.startswith("reward") and not kind.startswith("setback"):
-            continue
         line = plain_event(raw, sports=sports)
-        if not line or has_jargon(line) or line in used:
+        if not line or has_jargon(line) or line in " ".join(paras):
+            continue
+        if line == plain_deal_sentence(sports=sports):
             continue
         paras.append(line if line.endswith(".") else line + ".")
         used.add(raw)
-        used.add(line)
+        picked += 1
 
     hist = [h for h in (sports_state.get("season_history") or []) if isinstance(h, dict)]
-    paras.extend(_season_lines(hist, sports=sports))
+    seasons = _season_lines(hist, sports=sports)
+    if len(seasons) > 2:
+        seasons = [seasons[0], seasons[-1]]
+    paras.extend(seasons)
 
-    risk = str(((final or {}).get("finance") or {}).get("debt_risk_state") or "")
-    if sports and risk in ("manageable", "healthy"):
-        paras.append(
-            "El club sigue debiendo favores y noches, pero ya no está a punto de cerrar. "
-            "Hay gente. Hay partidos. Hay una llave que ya es tuya."
-        )
-    elif not sports and risk in ("manageable", "healthy"):
-        paras.append("Las cuentas dejan de ahogarte. No eres rico de un día para el otro. Puedes seguir.")
-
-    today = f"Hoy tienes {age1} años. " if age1 else "Hoy la vida ya es otra. "
     if sports:
         paras.append(
-            "Renuncias al trabajo de oficina cuando esto ya puede pagarte un sueldo chico, pero tuyo. "
-            "Te mudas más cerca. Tus padres vienen y se sientan donde hay lugar. "
-            "Una noche el lugar se llena y desde el túnel los ves arriba."
+            "Pasan los años. Renuncias a la oficina, te mudas más cerca y tus padres vienen a verte. "
+            "Hay un tropiezo: el equipo arranca flojo y cuesta dormir. "
+            "Después llega una noche en la que el lugar se llena. Desde el túnel los ves arriba."
         )
     else:
         paras.append(
-            "Renuncias cuando lo tuyo ya puede pagarte. Te mudas a un cuarto que es oficina y casa. "
-            "Tus padres vienen a verlo, aunque no entiendan cada detalle."
+            "Pasan los años. Renuncias al trabajo de antes y te mudas a un cuarto que ya es tuyo. "
+            "Tus padres vienen, aunque no entiendan cada detalle. Hay un mes flojo. "
+            "Después llega una noche con gente de verdad."
         )
+    today = f"Hoy tienes {age1} años. " if age1 else "Hoy "
     paras.append(
-        f"{today}Tu día a día es {job1}. Vives en {home1}. "
+        f"{today}Tu día es {job1}. Vives en {home1}. "
         f"{'El estadio' if sports else 'El lugar'} ya no es el cuarto del primer mes."
     )
-
-    if sports:
-        extras = [
-            "El primer día el utilero te alcanza las llaves del gimnasio y no sabe si llamarte jefe.",
-            "Bajas el precio de la entrada. Esa noche hay más gente en la cola que asientos rotos.",
-            "Renuncias al trabajo de oficina cuando el club ya puede pagarte un sueldo feo, pero tuyo.",
-            "Te mudas a unas cuadras del estadio. El departamento viejo queda con las cajas a las once de la noche.",
-            "Si hay palco, todavía no tiene tu apellido. Tus padres vienen igual y se sientan donde hay lugar.",
-            "Una noche no queda un asiento libre. Desde el túnel ves a tus padres arriba, en mejores butacas que el primer año.",
-            "Cenas en un lugar que a los 22 ni mirabas la carta. Pagas. Todavía miras el ticket antes de salir.",
-            "Sales con un traje que no es de oficina. El utilero te dice jefe y esta vez no es una broma.",
-            "Apuestas por el plantel y por arreglar el gimnasio. El mes siguiente el equipo arranca flojo y cuesta dormir.",
-            "Una oferta llega al teléfono. Esta vez puedes leerla mañana.",
-            "El estadio, que olía a humedad, ahora tiene fila los días de partido.",
-            "Un jugador se lastima y el vestuario se queda callado. Aprendes el nombre del médico antes que el del marcador.",
-            "Un sponsor local recorta lo que había prometido. Igual abres las puertas el viernes.",
-            "Se rompe una caldera. El partido se juega con la gente en campera. Nadie se va.",
-            "La radio saca un audio del vestuario. Al día siguiente miras a los jugadores a los ojos y sigues.",
-            "El público silba en la salida. Te quedas en el túnel hasta que se vacía la calle.",
-            "Tu familia te pide que vuelvas a la oficina. Esa noche duermes en el estadio, en el sillón del utilero.",
-            "Contratas a alguien que de verdad sabe dirigir. La primera práctica es un silencio raro, de los buenos.",
-            "Viajas a un partido lejos. El micro huele a café y a cinta. Miras la ciudad de noche por la ventana.",
-            "Tus padres entran por la puerta de los jugadores. Tu madre guarda el ticket aunque nadie se lo pide.",
-            "Hay un mes en el que cuentas las entradas una por una. Al siguiente, la fila dobla la esquina.",
-            "El cuarto de utilería deja de ser tu oficina. Te mudas a un cuarto con una ventana al campo.",
-            "Un chico te pide una foto en la puerta. Todavía llevas la mochila del trabajo viejo.",
-            "Pierdes un partido que dolía. Al otro día abres igual, porque el gimnasio no se abre solo.",
-            "Ganas uno que nadie esperaba. En el vestuario nadie grita el número. Se ríen, nada más.",
-            "La ciudad empieza a decir el nombre del equipo en el colectivo, sin que tú lo pidas.",
-            "Compras camisetas nuevas cuando las viejas ya no dan más. Huelen a tela, no a humedad.",
-            "Te sientas en la grada vacía un martes y escuchas el rebote. Ese sonido ya es tu casa.",
-            "Alguien del barrio te dice que llevó a su hijo. El hijo quiere volver el viernes.",
-            "Cierras la noche con la luz del tablero todavía prendida. Apagas tú. Te vas caminando.",
-        ]
-    else:
-        extras = [
-            "El primer cliente llega por un mensaje a medianoche. Respondes antes de pensarlo dos veces.",
-            "Renuncias cuando lo tuyo ya puede pagarte un sueldo feo, pero tuyo.",
-            "Te mudas a un cuarto donde cabe una mesa de trabajo. Las cajas quedan a las once de la noche.",
-            "Tus padres vienen a verlo. No entienden todo. Se quedan igual, y eso alcanza.",
-            "Una noche el lugar se llena. Gente de verdad, no solo tus amigos.",
-            "Cenas en un sitio que antes ni mirabas. Pagas. Todavía miras el ticket.",
-            "Hay un mes malo. Un encargo se cae. Duermes poco y al día siguiente abres igual.",
-            "Alguien quiere comprarte lo que armaste. Lees el mensaje y lo dejas para mañana.",
-            "Contratas a la primera persona que no eres tú. Le muestras dónde está el café.",
-            "Un trabajo grande sale mal en público. Al día siguiente llamas, pides perdón y lo rehaces.",
-            "Tu familia te pide que vuelvas al empleo fijo. Esa noche sigues, con la luz de la cocina.",
-            "Viajas a una reunión que antes veías en fotos. El asiento de la ventanilla es tuyo.",
-            "Guardas el primer mensaje de gracias. Lo lees en los meses flojos.",
-            "El cuarto chico se queda chico. Pasas a un lugar con puerta y con tu nombre discreto.",
-            "Un desconocido recomienda lo que haces. No le pagaste. Vuelve con otra persona.",
-            "Apuestas de más en un proyecto. El mes siguiente se traba y cuesta dormir.",
-            "Aprendes a decir que no a un encargo que te quedaba grande.",
-            "Hay una fila, chica, en la puerta. Te tiembla la mano al abrir.",
-            "Terminas el día caminando a casa. El teléfono vibra y esta vez sonríes antes de mirar.",
-            "Alguien de tu edad te dice que quiere una vida como la tuya. Te ríes, y después te callas.",
-        ]
-    body = _fit(" ".join(paras), extras)
+    body = re.sub(r"\s+", " ", " ".join(paras)).strip()
+    words = _words(body)
+    if len(words) > 520:
+        body = " ".join(words[:500]).rstrip(" ,;:") + "."
     return to_tu(body)

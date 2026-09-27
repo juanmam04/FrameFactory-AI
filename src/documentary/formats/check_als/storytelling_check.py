@@ -79,12 +79,11 @@ Estructura:
 📍 BEAT 2: LA COMPRA/LANZAMIENTO (0:30-2:00 / 200-300 palabras)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EMOCIÓN: 5/10
-PROPÓSITO: Mostrar el breakdown exacto del deal
+PROPÓSITO: Entras y la vida empieza
 
-PAYOFF TEMPRANO (CRÍTICO):
-- Números específicos del deal
-- Tu cash + inversores → tu % de ownership
-- "Te quedas con el [X]%."
+PAYOFF TEMPRANO:
+- Firmas. Pones lo que tienes ahorrado. Te quedas al mando.
+- Sin porcentajes, sin deuda, sin socios con cifras.
 
 PRIMER MOMENTO REAL:
 - Primera vez que entras / abres / recibes las llaves
@@ -358,11 +357,11 @@ ESTRUCTURA MANDATORIA (1800 PALABRAS / 12 MIN):
 REGLAS DE ESCRITURA:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ESPECIFICIDAD (crítico):
-- SIEMPRE números exactos: "15.000 dólares" NO "dinero"
-- SIEMPRE edades exactas: "22 años" NO "joven"
-- SIEMPRE porcentajes exactos: "51%" NO "la mayoría"
-- SIEMPRE records/stats si existen en el JSON
+CLARIDAD:
+- Edad exacta: "tienes 22 años".
+- El resto son escenas de vida, no cifras.
+- Prohibido decir porcentajes, deuda, equity, facturación, valuación o "en el papel vales".
+- Si el JSON trae esos números, no los leas en voz alta.
 
 SEGUNDA PERSONA:
 - Tú/te/tienes/tu/tus/eres
@@ -470,9 +469,10 @@ vehicle_mode=sports_team
 
 ESCENARIO: Compras un equipo deportivo profesional.
 
-HOOK TEMPRANO: 
-- Precio + deuda + tu cash → tu % exacto
-- Ejemplo: "$1 + 650.000 deuda + tus 15.000 → 51%"
+HOOK TEMPRANO:
+- Vives normal, aparece el equipo, firmas.
+- El dinero se dice una vez: pones lo que tienes ahorrado.
+- Prohibido el desglose de porcentajes y de deuda.
 
 USA season_history EXACTA del JSON:
 - Cada temporada con record específico

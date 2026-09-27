@@ -189,7 +189,7 @@ def test_business_finalize_offline_zero_hard_fails(tmp_projects):
     assert hard == [], f"expected zero hard fails, got {hard}"
     assert (loaded.get("quality") or {}).get("review_ready") is True
     syn = loaded.get("synopsis") or ""
-    assert len(syn.split()) >= 850
+    assert 180 <= len(syn.split()) <= 650
     low = syn.lower()
     assert "playoff" not in low
     assert "básquet" not in low and "basquet" not in low
