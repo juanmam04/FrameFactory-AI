@@ -4,7 +4,49 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 from typing import Any
+
+# Título de canal: "POV: [verbo en tú] [fantasía concreta]".
+POV_TITLES = {
+    "sports_team": "POV: Compras un equipo profesional por un dólar",
+    "business": "POV: Lanzas una empresa con 8.000 dólares",
+    "musician": "POV: Firmas un disco y llenas una gira",
+    "filmmaker": "POV: Diriges una película que llega a un festival",
+    "chef": "POV: Abres un restaurante y peleas por una estrella",
+    "creator": "POV: Conviertes un canal chico en una marca",
+    "fashion_designer": "POV: Lanzas una marca y llegas a una pasarela",
+    "athlete": "POV: Firmas tu primer contrato profesional",
+    "author": "POV: Publicas un libro que se vuelve bestseller",
+    "game_dev": "POV: Lanzas un juego indie que explota",
+    "real_estate": "POV: Compras tu primera propiedad para rentar",
+    "artist": "POV: Vendes tu primera obra y entras a una galería",
+    "photographer": "POV: Abres un estudio y cierras una campaña grande",
+    "podcaster": "POV: Lanzas un podcast que entra al top",
+    "fighter": "POV: Firmas tu primera pelea profesional",
+    "dj_producer": "POV: Publicas un tema y te llaman de un festival",
+    "esports_player": "POV: Firmas con un equipo y juegas un major",
+    "architect": "POV: Abres un estudio y levantas un edificio",
+}
+
+_TU_VERB = re.compile(
+    r"^(compras|construyes|conviertes|firmas|abres|lanzas|empiezas|creas|diriges|"
+    r"publicas|grabas|diseñas|juegas|peleas|salvas|montas|fundas|produces|escribes|"
+    r"filmas|rentas|ganas|vendes|pierdes|heredas|levantas|armas|cocinas|cantas|"
+    r"entrenas|inviertes|rescatas|conquistas|llenas|cierras|aceptas|rechazas|"
+    r"dejas|renuncias|escalas|heredas|tomas|eliges|decides)\b",
+    re.I,
+)
+
+
+def ensure_pov_title(title: str, vehicle_type: str = "") -> str:
+    """Fuerza el formato POV: + verbo en tú. Si el título no calza, usa el del vehículo."""
+    fallback = POV_TITLES.get(vehicle_type) or "POV: Empiezas desde cero y lo construyes tú"
+    raw = re.sub(r"^(pov)\s*[:\-–—]\s*", "", (title or "").strip(), flags=re.I).strip(" .")
+    if _TU_VERB.match(raw):
+        body = raw[0].upper() + raw[1:]
+        return f"POV: {body}"
+    return fallback
 
 from src.saas_creative_profile import parse_llm_json_object
 
@@ -68,6 +110,8 @@ def generate_fast_concept_batch(
             row = _fallback_package(slot, i)
         row["vehicle_type"] = slot["vehicle_type"]
         row["ending_type"] = slot["ending_type"]
+        row["title"] = ensure_pov_title(str(row.get("title") or row.get("title_concept") or ""), slot["vehicle_type"])
+        row["title_options"] = [{"text": row["title"]}]
         row["id"] = str(row.get("id") or f"{slot['vehicle_type']}-{slot['ending_type']}-{i+1}")
         from src.documentary.formats.check_als.concepts import normalize_concept_package
 
@@ -131,7 +175,13 @@ def _llm_packages(
         "salvo vehicle_type=sports_team). El último tramo de la premisa es el cierre indicado, no un final abierto genérico. "
         "Campos por package: id, vehicle_type, ending_type, title, one_line_fantasy, premise (120-180 palabras), "
         "hook (4 líneas cortas separadas por \\n\\n), starting_state, end_state, core_transformation, story_category, "
-        "thumbnail_concept {main_visual, central_contrast, emotion, thumbnail_prompt en inglés, una frase}."
+        "thumbnail_concept {main_visual, central_contrast, emotion, thumbnail_prompt en inglés, una frase}. "
+        "EL TÍTULO ES OBLIGATORIO en este formato exacto: "
+        "'POV: [verbo en tú] [fantasía concreta]'. "
+        "Ejemplos: 'POV: Compras un equipo de básquet por un dólar', "
+        "'POV: Firmas un disco y llenas una gira', "
+        "'POV: Abres un restaurante y peleas por una estrella'. "
+        "Prohibido un título sin 'POV:', en tercera persona, o tipo blog ('Cómo ser...', 'La historia de...')."
     )
     user = {
         "assignments": assignments,
@@ -198,9 +248,8 @@ def _fallback_package(slot: dict[str, str], index: int) -> dict[str, Any]:
     name = vehicle["name"]
     thing = vehicle["vehicle"]
     start = vehicle["acquisition"]
-    metric = vehicle["metrics"][0] if vehicle["metrics"] else "progreso"
     tail = ENDING_TAILS[ending]
-    title = f"POV: {name} — de cero a {metric}"
+    title = POV_TITLES.get(slot["vehicle_type"]) or f"POV: Empiezas en {thing}"
     premise = (
         f"Tienes 23 años. Trabajas en algo que no es tuyo y compartes departamento. "
         f"Tienes 12.000 dólares ahorrados. Aparece la chance de {start} en {thing}. "

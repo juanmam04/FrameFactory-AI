@@ -963,7 +963,11 @@ def package_to_project_fields(package: dict[str, Any]) -> dict[str, Any]:
     from src.documentary.formats.check_als.editorial import CONTENT_LANGUAGE
 
     pkg = normalize_concept_package(package)
-    title = pkg["title"]
+    from src.documentary.formats.check_als.fast_concepts import ensure_pov_title
+
+    title = ensure_pov_title(str(pkg.get("title") or ""), str(pkg.get("vehicle_type") or ""))
+    pkg["title"] = title
+    pkg["title_options"] = [{"text": title}]
     topic = pkg["one_line_fantasy"] or pkg["premise"] or title
     idea_legacy = {
         "title_concept": title,
