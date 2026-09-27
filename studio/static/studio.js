@@ -1512,6 +1512,20 @@ function renderLibrary() {
   });
 }
 
+function settleMobileViewport() {
+  if (!window.matchMedia("(max-width: 860px)").matches) return;
+  const meta = document.querySelector('meta[name="viewport"]');
+  if (!meta) return;
+  const locked =
+    "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover";
+  meta.setAttribute("content", "width=device-width, initial-scale=1");
+  requestAnimationFrame(() => {
+    meta.setAttribute("content", locked);
+    const x = document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    if (x) window.scrollTo(0, window.scrollY || 0);
+  });
+}
+
 function renderProject() {
   const p = state.project;
   if (!p) return go("home");
@@ -1590,6 +1604,7 @@ function renderProject() {
       };
     });
   const ws = $("#ws");
+  queueMicrotask(settleMobileViewport);
   // Check: story must be approved before script/flow. Voice+render are fully unlocked after that.
   if (isCheck && !p.check_story_approved && !["topic", "story"].includes(step)) {
     return paintCheckLocked(ws, p, step);
@@ -1793,6 +1808,18 @@ function paintCheckStory(ws, p) {
       </tr>`;
     })
     .join("");
+  const timeCards = timeline.length
+    ? timeline
+        .map(
+          (row) => `<article class="check-tl-card">
+        <strong>${esc(row.time || "—")}</strong>
+        <p>${esc(row.event || "")}</p>
+        <p class="muted">Cash ${money(row.cash)} · Own ${esc(row.ownership ?? "—")}% · Valor ${money(row.team_value)} · Deuda ${money(row.team_debt)}</p>
+        <p class="muted">Público ${esc(row.attendance ?? "—")} · Record ${esc(row.record || "—")}${row.life_change ? " · " + esc(row.life_change) : ""}</p>
+      </article>`
+        )
+        .join("")
+    : `<p class="muted">—</p>`;
   const majorBits = major.map((b) => `<li><strong>[${esc(b.beat_id)}] ${esc(b.purpose || "")}</strong> — ${esc(b.event || "")}</li>`).join("");
   const rewardBits = rewards.map((b) => `<li>[${esc(b.beat_id)}] ${esc(b.event || "")}</li>`).join("") || "<li>—</li>";
   const seasons = review.season_history || (fw.season_history) || [];
@@ -1824,6 +1851,7 @@ function paintCheckStory(ws, p) {
       </details>
       <details ${generated ? "open" : ""}>
         <summary>Timeline</summary>
+        <div class="check-timeline-cards">${timeCards}</div>
         <div class="check-table-wrap">
           <table class="check-table">
             <thead><tr><th>Tiempo</th><th>Evento</th><th>Cash</th><th>Own</th><th>Valor</th><th>Deuda</th><th>Público</th><th>Record</th><th>Vida</th></tr></thead>
