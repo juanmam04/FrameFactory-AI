@@ -498,6 +498,12 @@ def create_app() -> FastAPI:
                     content_format=FORMAT_CHECK_ALS,
                     concept=fields.get("concept"),
                 )
+                data["vehicle_type"] = str(fields.get("vehicle_type") or (fields.get("concept") or {}).get("vehicle_type") or "business")
+                data["check_ending_type"] = str(fields.get("ending_type") or (fields.get("concept") or {}).get("ending_type") or "open")
+                if isinstance(data.get("concept"), dict):
+                    data["concept"]["vehicle_type"] = data["vehicle_type"]
+                    data["concept"]["ending_type"] = data["check_ending_type"]
+                save_project(data)
             else:
                 idea = body.idea or {
                     "title_concept": body.title or body.topic,

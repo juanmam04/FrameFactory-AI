@@ -22,13 +22,20 @@ def vehicle_mode(project: dict[str, Any]) -> str:
     """
     concept = project.get("concept") if isinstance(project.get("concept"), dict) else {}
     idea = project.get("idea") if isinstance(project.get("idea"), dict) else {}
-    
-    # Reunir todo el texto relevante
+    stored = str(project.get("vehicle_type") or concept.get("vehicle_type") or "").strip()
+    if stored:
+        try:
+            from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+
+            if stored in UNIVERSAL_VEHICLES or stored in ("sports_team", "business"):
+                return stored
+        except ImportError:
+            if stored in ("sports_team", "business"):
+                return stored
+
     category = str(concept.get("story_category") or idea.get("content_pillar") or "").strip()
     premise = str(concept.get("premise") or concept.get("one_line_fantasy") or "").strip()
     topic = str(project.get("topic") or project.get("title") or concept.get("title") or "").strip()
-    
-    # Usar el detector universal
     return detect_vehicle_type(premise, topic, category)
 
 

@@ -179,12 +179,30 @@ def generate_check_story(
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     user_ctx = _project_context(project)
     vmode = vehicle_mode(project)
+    concept = project.get("concept") if isinstance(project.get("concept"), dict) else {}
+    narrative_ending = str(
+        project.get("check_ending_type") or concept.get("ending_type") or "open"
+    ).strip().lower()
+    if narrative_ending not in ("victory", "exit", "loss", "dilema", "pyrrhic", "ironic", "open", "plateau"):
+        narrative_ending = "open"
     user_ctx["vehicle_mode"] = vmode
-    user_ctx["instruction"] += (
-        " MODO NEGOCIO: empresa/creator — cero básquet/playoffs/campeonato."
-        if vmode == "business"
-        else " MODO DEPORTE: equipo de básquet ficticio."
+    user_ctx["narrative_ending"] = narrative_ending
+    if vmode == "sports_team":
+        mode_line = " MODO DEPORTE: equipo de básquet ficticio."
+    elif vmode == "business":
+        mode_line = " MODO NEGOCIO: empresa/creator — cero básquet/playoffs/campeonato."
+    else:
+        mode_line = (
+            f" MODO {vmode}: la fantasía es ESE vehículo, no un equipo de básquet ni una startup genérica. "
+            "Prohibido playoffs, estadio y campeonato salvo que el vehículo sea deporte."
+        )
+    ending_line = (
+        f" FINAL NARRATIVO OBLIGATORIO: {narrative_ending}. "
+        "El climax y blueprint.ending tienen que ser ESE cierre "
+        "(victoria total, venta, pérdida, dilema, victoria pírrica, ironía, final abierto o meseta). "
+        "No lo conviertas en 'bloqueas, mañana lo lees' si el tipo no es open."
     )
+    user_ctx["instruction"] += mode_line + ending_line
 
     raw_bp = _chat_json(client, model, blueprint_system(vmode), user_ctx, temperature=0.8, timeout=180.0, max_tokens=7000)
     blueprint, _syn_unused, initial_world, initial_story, initial_prog = _extract_blueprint_bundle(raw_bp)

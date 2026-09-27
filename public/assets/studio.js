@@ -1158,7 +1158,7 @@ async function renderIdeas() {
     <h1 class="h1">${isCheck ? "Elegí una fantasía de vida" : "Pick a story engine"}</h1>
     <p class="lead">${
       isCheck
-        ? "Simulaciones aspiracionales rankeadas. Título, thumbnail, hook y scores — elegí una y seguí produciendo sin perder la lista."
+        ? "Cinco fantasías de temas y finales distintos. Elegí una. Tarda unos minutos, no media hora."
         : "Five true-story angles. Choose one, or drop your own topic."
     }</p>
     ${
@@ -1179,7 +1179,7 @@ async function renderIdeas() {
           <option value="documentary"${!isCheck ? " selected" : ""}>Documentary</option>
         </select>
       </label>
-      <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generar conceptos (10)" : "Generate ideas"}</button>
+      <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generar 5 ideas" : "Generate ideas"}</button>
       <button class="btn btn-ghost" id="manual">I have a topic</button>
       <button class="btn btn-ghost" id="back-home">Back</button>
     </div>
@@ -1251,20 +1251,20 @@ async function renderIdeas() {
   else {
     $("#ideas").innerHTML = `
       <div class="panel">
-        <p class="lead">Todavía no hay ${isCheck ? "conceptos" : "ideas"}. Tocá <strong>Generar conceptos</strong> — trae ~10 fantasías rankeadas (tarda 1–3 min).</p>
+        <p class="lead">Todavía no hay ${isCheck ? "conceptos" : "ideas"}. Tocá <strong>Generar 5 ideas</strong>. Cada una es un tema y un final distinto. Tarda unos minutos.</p>
       </div>`;
   }
 }
 
 async function loadIdeas(force) {
   const fmt = state.contentFormat || state.bootstrap?.formats?.active || "check_als";
-  const want = fmt === "check_als" ? 10 : 5;
+  const want = 5;
   try {
     const data = await withBusy(fmt === "check_als" ? "Generando fantasías de vida…" : "Finding story engines…", () =>
       api("/api/ideas", {
         method: "POST",
         body: JSON.stringify({ count: want, content_format: fmt }),
-        timeoutMs: 240000,
+        timeoutMs: 360000,
       })
     );
     state.contentFormat = data.content_format || fmt;

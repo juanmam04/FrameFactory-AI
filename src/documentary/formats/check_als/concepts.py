@@ -183,6 +183,16 @@ def generate_concept_packages(
 ) -> list[dict[str, Any]]:
     """Public API: return up to `count` eligible ranked concepts (may be fewer)."""
     target = max(1, int(count))
+    # Studio path: 5 ideas in one or two calls. Deep v2 stays for explicit batch scripts.
+    if raw_seed_count is None and story_select_count is None and target <= 8:
+        from src.documentary.formats.check_als.fast_concepts import generate_fast_concept_batch
+
+        return generate_fast_concept_batch(
+            profile,
+            prior_videos=prior_videos,
+            count=target,
+            use_llm=use_llm,
+        )
     if raw_seed_count is None:
         raw_seed_count = min(28, max(18, target + 8))
     if story_select_count is None:

@@ -834,8 +834,11 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
     mode = vehicle_mode(project)
     facts = locked_story_facts(arch, mode=mode)
     
-    # Determinar ending_type si no está especificado
-    ending_type = project.get("ending_type") or arch.get("ending_type") or "open"
+    # El architect usa otro enum (triumphant/open_future). El cierre del VO sale del concepto.
+    concept = project.get("concept") if isinstance(project.get("concept"), dict) else {}
+    ending_type = str(
+        project.get("check_ending_type") or concept.get("ending_type") or "open"
+    ).strip().lower()
     if ending_type not in ("victory", "exit", "loss", "dilema", "pyrrhic", "ironic", "open", "plateau"):
         ending_type = "open"
     facts["ending_type"] = ending_type
