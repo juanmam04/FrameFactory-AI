@@ -39,13 +39,13 @@ def generate_story_ideas(
     p = merge_profile_disk(profile)
     fmt = normalize_content_format(content_format) if content_format else content_format_from_profile(p)
     if fmt == FORMAT_CHECK_ALS:
-        from src.documentary.formats.check_als.concepts import generate_concept_packages
+        from src.documentary.formats.check_als.fast_concepts import generate_fast_concept_batch
 
-        packages = generate_concept_packages(
+        # Siempre 5. Un cliente cacheado todavía manda count=10 y eso disparaba el pipeline largo.
+        packages = generate_fast_concept_batch(
             p,
             prior_videos=prior_videos,
-            count=count,
-            categories=categories,
+            count=5,
             use_llm=use_llm,
         )
         # UI expects a list; Check packages are self-contained.

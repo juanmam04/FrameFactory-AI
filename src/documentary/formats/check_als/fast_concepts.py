@@ -142,7 +142,7 @@ def _llm_packages(
     }
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    parsed = _once(client, model, system, user, timeout=120.0)
+    parsed = _once(client, model, system, user, timeout=75.0)
     rows = _rows(parsed)
     if len(rows) < len(slots):
         missing = assignments[len(rows) :]
@@ -152,7 +152,7 @@ def _llm_packages(
                 model,
                 system,
                 {"assignments": missing, "note": "Solo estos huecos. Mismo formato."},
-                timeout=90.0,
+                timeout=55.0,
             )
             rows.extend(_rows(extra))
         except Exception as exc:  # noqa: BLE001

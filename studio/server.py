@@ -196,10 +196,6 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 def create_app() -> FastAPI:
     app = FastAPI(title="FrameFactory Studio", docs_url="/api/docs")
     app.add_middleware(WorkspaceSyncMiddleware)
-    static_dir = ROOT / "static"
-    if static_dir.is_dir():
-        app.mount("/assets", StaticFiles(directory=str(static_dir), check_dir=False), name="assets")
-
     @app.get("/", response_class=HTMLResponse)
     def index():
         html_path = ROOT / "templates" / "index.html"
@@ -239,6 +235,21 @@ def create_app() -> FastAPI:
             headers={"Cache-Control": "no-store, max-age=0"},
         )
 
+    @app.get("/assets/studio.js")
+    def studio_js():
+        js_path = ROOT / "static" / "studio.js"
+        if not js_path.is_file():
+            raise HTTPException(404, "studio.js missing from deploy bundle")
+        return FileResponse(
+            js_path,
+            media_type="application/javascript; charset=utf-8",
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
+
+    static_dir = ROOT / "static"
+    if static_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(static_dir), check_dir=False), name="assets")
+
     @app.get("/health")
     def health():
         import os
@@ -248,7 +259,7 @@ def create_app() -> FastAPI:
             "app": "documentary-studio",
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or os.getenv("GIT_COMMIT") or "")[:12],
-            "build": "20260818-final-fix",
+            "build": "20260927-ideas5",
         }
 
     @app.get("/api/ping")
@@ -259,7 +270,7 @@ def create_app() -> FastAPI:
             "ok": True,
             "vercel": on_vercel(),
             "commit": (os.getenv("VERCEL_GIT_COMMIT_SHA") or "")[:12],
-            "build": "20260818-final-fix",
+            "build": "20260927-ideas5",
         }
 
     # ── channel / home ──────────────────────────────────────────────
