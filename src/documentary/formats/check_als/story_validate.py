@@ -13,7 +13,12 @@ from src.documentary.formats.check_als.story_arch import (
     metric_value,
     world_snapshot,
 )
+from src.documentary.formats.check_als.plain_language import plain_deal_sentence, plain_event
 from src.documentary.formats.check_als.story_sim import PURPLE_PROSE, championship_allowed, ledger_total
+
+
+def _public_event(event: Any) -> str:
+    return plain_event(str(event or ""))
 
 MORAL_PATTERNS = (
     r"aprendiste que",
@@ -102,19 +107,19 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
     low = text.lower()
     if vehicle_mode == "business":
         needed = {
-            "launch": ("lanz", "fund", "empresa", "startup", "negocio", "creador", "firma", "compr"),
-            "personal": ("renunci", "departamento", "oficina", "mud", "casa", "habitación", "habitacion"),
-            "setback": ("crisis", "deuda", "cash", "cliente", "compet", "corte", "queda"),
-            "payoff": ("contrato", "sponsor", "viral", "millón", "millon", "oficina", "equipo", "marca"),
-            "final_life": ("años", "ahora", "hoy", "dueño", "founder", "empresa"),
+            "launch": ("lanz", "fund", "empresa", "startup", "negocio", "creador", "firma", "compr", "empiez", "firmas", "ahorr"),
+            "personal": ("renunci", "departamento", "oficina", "mud", "casa", "habitación", "habitacion", "padres"),
+            "setback": ("crisis", "malo", "traba", "cae", "cuesta", "flojo", "perd"),
+            "payoff": ("contrato", "llena", "gente", "cena", "oficina", "tuyo", "mensaje"),
+            "final_life": ("años", "ahora", "hoy", "vives", "lugar"),
         }
     else:
         needed = {
-            "acquisition": ("peso", "$1", "deuda", "51", "porcentaje", "inversores", "seller", "financi", "asumi"),
-            "personal": ("renunci", "departamento", "padres", "oficina", "mud"),
-            "setback": ("deuda", "crisis", "vence", "sponsor", "lesion", "lesión", "multa", "instal"),
-            "payoff": ("playoff", "lleno", "sold", "palco", "dueño", "valor"),
-            "final_life": ("años", "age", "ahora", "hoy", "estadio"),
+            "acquisition": ("firmas", "compras", "tuyo", "ahorr", "equipo", "club"),
+            "personal": ("renunci", "departamento", "padres", "oficina", "mud", "casa"),
+            "setback": ("flojo", "vací", "vaci", "silba", "cuesta", "roto", "humedad", "callad", "duele", "pierdes"),
+            "payoff": ("playoff", "lleno", "fila", "palco", "padres", "dueño", "tuyo", "gente"),
+            "final_life": ("años", "hoy", "vives", "estadio", "lugar"),
         }
     for name, keys in needed.items():
         if not any(k in low for k in keys):
@@ -721,7 +726,7 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
             "beat_id": beat.get("beat_id"),
             "age": snap.get("age"),
             "time": beat.get("time") or snap.get("time"),
-            "event": beat.get("event"),
+            "event": _public_event(beat.get("event")),
             "cash": snap.get("cash"),
             "net_worth": snap.get("net_worth"),
             "job": snap.get("job"),
@@ -742,14 +747,14 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
             timeline.append(row)
         kind = str(beat.get("reward_or_setback") or "").lower()
         if "reward" in kind or "recompensa" in kind:
-            rewards.append({"beat_id": beat.get("beat_id"), "time": beat.get("time"), "event": beat.get("event"), "kind": kind})
+            rewards.append({"beat_id": beat.get("beat_id"), "time": beat.get("time"), "event": _public_event(beat.get("event")), "kind": kind})
         if any(x in kind for x in ("setback", "revés", "reves", "crisis", "mistake")):
             cat = kind.split(":", 1)[-1] if ":" in kind else "unspecified"
             setbacks.append(
                 {
                     "beat_id": beat.get("beat_id"),
                     "time": beat.get("time"),
-                    "event": beat.get("event"),
+                    "event": _public_event(beat.get("event")),
                     "kind": kind,
                     "category": cat,
                 }
@@ -771,7 +776,7 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
                 {
                     "beat_id": beat.get("beat_id"),
                     "purpose": beat.get("story_purpose"),
-                    "event": beat.get("event"),
+                    "event": _public_event(beat.get("event")),
                     "time": beat.get("time"),
                 }
             )
@@ -823,7 +828,9 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
                     "event": beat.get("event"),
                 }
             )
-    acq = fw.get("acquisition") or (blueprint.get("business_or_vehicle") or {}).get("acquisition") or {}
+    acq = dict(fw.get("acquisition") or (blueprint.get("business_or_vehicle") or {}).get("acquisition") or {})
+    sports_life = bool(sports.get("season_history") or sports.get("games_played") or sports.get("wins") or sports.get("losses"))
+    acq["public_summary"] = plain_deal_sentence(sports=sports_life)
     return {
         "overview": {
             "protagonist": (blueprint.get("protagonist") or {}),

@@ -1384,7 +1384,7 @@ def repair_architecture(
                 },
             )
             if not str(target.get("event") or "").strip():
-                target["event"] = "Lanzás la empresa: tu cash, inversores, y el 60%."
+                target["event"] = "Lanzas lo tuyo. Pones tus ahorros y unas personas cercanas ponen el resto."
         else:
             ops.insert(
                 0,
@@ -1401,7 +1401,10 @@ def repair_architecture(
                 },
             )
             if not str(target.get("event") or "").strip():
-                target["event"] = "Firmás la compra: un peso, la deuda, y el 51%."
+                target["event"] = (
+                    "Firmas y el equipo pasa a ser tuyo. Pones lo que tienes ahorrado. "
+                    "La entrada es casi un regalo y el club llega con las cuentas pesadas."
+                )
         target["ops"] = ops
         target["story_purpose"] = "first_commitment"
         target["reward_or_setback"] = "reward:owns_team" if mode == "sports_team" else "reward:company_launched"
@@ -1519,10 +1522,10 @@ def diversify_setbacks(beats: list[dict[str, Any]]) -> list[dict[str, Any]]:
             rows[idx]["ops"] = ops
             rows[idx]["reward_or_setback"] = "setback:ownership"
             rows[idx]["story_purpose"] = rows[idx].get("story_purpose") or "major_reversal"
-            if "dueño" not in str(rows[idx].get("event") or "").lower():
+            if "dueño" not in str(rows[idx].get("event") or "").lower() and "apuestas" not in str(rows[idx].get("event") or "").lower():
                 rows[idx]["event"] = (
-                    "Apostás por roster e instalaciones. El mes siguiente el equipo arranca 2-8 "
-                    "y el servicio de la deuda vuelve a mirarte a la cara."
+                    "Apuestas por mejores jugadores y por arreglar el gimnasio. "
+                    "El mes siguiente el equipo arranca flojo y cuesta dormir."
                 )
     return rows
 
@@ -1820,10 +1823,12 @@ def expand_synopsis_to_min_words(synopsis: str, beats: list[dict[str, Any]], *, 
     words = len(re.findall(r"\S+", text))
     if words >= min_words:
         return text
+    from src.documentary.formats.check_als.plain_language import has_jargon, plain_event
+
     extras: list[str] = []
     for b in beats or []:
-        ev = str(b.get("event") or "").strip()
-        if not ev:
+        ev = plain_event(str(b.get("event") or "").strip())
+        if not ev or has_jargon(ev):
             continue
         t = str(b.get("time") or "")
         line = f"{t}: {ev}.".strip(": ")
@@ -1835,8 +1840,8 @@ def expand_synopsis_to_min_words(synopsis: str, beats: list[dict[str, Any]], *, 
         text = (text + "\n\n" + " ".join(extras)).strip()
     while len(re.findall(r"\S+", text)) < min_words:
         text += (
-            " Seguís. Firmás. Contás plata. Movés gente. La vida cambia porque el negocio cambia,"
-            " no porque alguien diga que cambió."
+            " Sigues. El lugar abre igual. Hay una noche llena y una noche vacía."
+            " Te mudas más cerca. Tus padres vienen. Pagas la cena y miras el ticket."
         )
     return text
 

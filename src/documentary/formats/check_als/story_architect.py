@@ -31,6 +31,7 @@ from src.documentary.formats.check_als.story_sim import (
     strip_sports_narrative,
     sync_loop_payoffs,
 )
+from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, plain_event, public_life_synopsis
 from src.documentary.formats.check_als.story_vehicle import (
     beats_system,
     blueprint_system,
@@ -146,6 +147,7 @@ REGLAS:
 - Incluí recompensas aspiracionales GANADAS (renuncia, tu estadio, palco con padres, sold-out, playoffs).
 - El conflicto escala con la recompensa: apuesta chica → premio chico; apuesta grande → riesgo serio.
 - Pagá loops importantes con action=pay cuando el mundo ya respondió. Deuda: pay cuando el equipo ya no puede morir por ella.
+- """ + PUBLIC_EVENT_RULES + """
 - Este tramo NO debe repetir el anterior ni cerrar la película antes de tiempo (salvo el último tramo).
 - Español: acontecimientos. Nada de “la emoción es indescriptible”.
 
@@ -366,9 +368,9 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             client, model, blueprint, beats, initial_world, final_world, vehicle_mode=vmode
         )
     elif not synopsis:
-        synopsis = _fallback_synopsis(blueprint, beats, initial_world, final_world)
+        synopsis = _fallback_synopsis(blueprint, beats, initial_world, final_world, vehicle_mode=vmode)
     else:
-        synopsis = _ground_synopsis(synopsis, blueprint, beats, initial_world, final_world)
+        synopsis = _ground_synopsis(synopsis, blueprint, beats, initial_world, final_world, vehicle_mode=vmode)
 
     synopsis = _polish_synopsis_for_mode(synopsis, beats, vmode)
 
@@ -605,131 +607,23 @@ def _write_synopsis(
     *,
     vehicle_mode: str = "sports_team",
 ) -> str:
-    facts = []
-    for b in beats:
-        snap = b.get("world_snapshot") or {}
-        facts.append(
-            {
-                "id": b.get("beat_id"),
-                "time": b.get("time") or snap.get("time"),
-                "event": b.get("event"),
-                "ops": [o.get("op") for o in (b.get("ops") or []) if isinstance(o, dict)],
-                "payoffs": b.get("aspirational_payoffs") or [],
-                "age": snap.get("age"),
-                "job": snap.get("job"),
-                "home": snap.get("home"),
-                "own": snap.get("ownership"),
-                "val": snap.get("team_value"),
-                "debt": snap.get("team_debt"),
-                "att": snap.get("attendance"),
-                "record": snap.get("record"),
-            }
-        )
-    acq = ((blueprint.get("business_or_vehicle") or {}).get("acquisition")) or (final.get("acquisition") or {})
-    sports = (final or {}).get("sports") or {}
-    hist = sports.get("season_history") or []
-    champs = int(sports.get("championships") or 0)
-    if vehicle_mode == "business":
-        system = (
-            "Escribí una STORY SYNOPSIS de Check en español, segunda persona, 900-1200 palabras. "
-            "Fantasía de NEGOCIO / CREADOR / EMPRESA. NO es el script. "
-            "Cubrir: vida ordinaria, lanzamiento/adquisición con cifras, primer cliente o primer hit, "
-            "primer setback de cash/equipo, renuncia o mudanza, crecimiento, crisis de dueño, recovery, "
-            "contrato/sponsor grande, vida nueva. "
-            "PROHIBIDO absolutamente: básquet, playoffs, campeonato, estadio, liga deportiva, entrenador, "
-            "vestuario, temporada deportiva, anillo. "
-            "SOLO acontecimientos concretos. Sin moraleja ni prosa de modelo. "
-            "ending_type=" + str(blueprint.get("ending_type") or "triumphant") + ". "
-            "Return JSON {\"synopsis\":\"...\"}."
-        )
-    else:
-        system = (
-            "Escribí una STORY SYNOPSIS de Check en español, segunda persona, 900-1200 palabras. "
-            "Es para VIVIR la película. NO es el script. "
-            "Cubrir: vida ordinaria, adquisición con cifras, primer reality check, primer progreso, "
-            "payoff de vida, progresión deportiva por TEMPORADA, progresión financiera, setback de dueño, "
-            "recovery, corrida deportiva, payoff de deuda (la deuda ya no mata al equipo, no hace falta que sea 0), "
-            "payoff final, vida nueva. "
-            "SOLO acontecimientos concretos. La emoción sale del hecho (fila que dobla la esquina; tu padre en el palco). "
-            "PROHIBIDO: corazón que late, camino de rosas, emoción palpable/indescriptible, símbolo de perseverancia, "
-            "trabajo duro, sueño que cobra vida, nueva vida llena de posibilidades, 'todo valió la pena', moraleja. "
-            "SPORTS STATE ES LA FUENTE DE VERDAD. season_history y championships=" + str(champs) + ". "
-            + (
-                "Podés narrar el campeonato porque está en el state. "
-                if champs >= 1
-                else "PROHIBIDO decir campeonato/campeón/anillo. Narrá el playoff_result real de cada temporada. "
-            )
-            + "ending_type=" + str(blueprint.get("ending_type") or "triumphant") + ". "
-            "Return JSON {\"synopsis\":\"...\"}."
-        )
-    parsed = _chat_json(
-        client,
-        model,
-        system,
-        {
-            "acquisition": acq,
-            "world": blueprint.get("fiction_world"),
-            "ending": blueprint.get("ending"),
-            "initial_life": (initial or {}).get("life"),
-            "final_life": (final or {}).get("life"),
-            "final_sports": sports if vehicle_mode == "sports_team" else {},
-            "season_history": hist if vehicle_mode == "sports_team" else [],
-            "debt_risk_state": ((final or {}).get("finance") or {}).get("debt_risk_state"),
-            "final_finance": (final or {}).get("finance"),
-            "beats": facts,
-            "vehicle_mode": vehicle_mode,
-        },
-        temperature=0.45,
-        timeout=180.0,
-        max_tokens=5000,
-    )
-    text = str(parsed.get("synopsis") or "").strip()
-    words = len(re.findall(r"\S+", text))
-    if words < 900 or words > 1200:
-        parsed = _chat_json(
-            client,
-            model,
-            system + f"\nLa anterior tenía {words} palabras. Reescribí entre 900 y 1200. Contá. No recortes el arco.",
-            {
-                "acquisition": acq,
-                "season_history": hist if vehicle_mode == "sports_team" else [],
-                "final_sports": sports if vehicle_mode == "sports_team" else {},
-                "final_life": (final or {}).get("life"),
-                "final_finance": (final or {}).get("finance"),
-                "debt_risk_state": ((final or {}).get("finance") or {}).get("debt_risk_state"),
-                "beats": facts,
-                "draft": text,
-                "vehicle_mode": vehicle_mode,
-            },
-            temperature=0.35,
-            timeout=180.0,
-            max_tokens=5000,
-        )
-        text = str(parsed.get("synopsis") or text).strip()
-    if vehicle_mode == "business":
-        text = scrub_sports_text(text)
-    elif champs < 1:
-        text = re.sub(r"(?i)campeonato(s)?", "playoffs", text)
-        text = re.sub(r"(?i)campeón(es)?", "equipo de playoffs", text)
-        text = re.sub(r"(?i)\banillo\b", "entrada a playoffs", text)
-    return _ground_synopsis(text, blueprint, beats, initial, final)
+    # La película que lee la gente sale de la vida simulada, en español de todos los días.
+    # Los números siguen en el mundo; no se vuelcan a la synopsis.
+    del client, model
+    return _ground_synopsis("", blueprint, beats, initial, final, vehicle_mode=vehicle_mode)
 
 
-def _fallback_synopsis(blueprint: dict[str, Any], beats: list[dict[str, Any]], initial: dict[str, Any], final: dict[str, Any]) -> str:
-    acq = (final or {}).get("acquisition") or {}
-    lines = [
-        str((blueprint.get("opening") or {}).get("situation") or "Tenés 22 años y un trabajo de oficina."),
-        str(acq.get("summary") or (blueprint.get("business_or_vehicle") or {}).get("acquisition_structure") or ""),
-    ]
-    for b in beats:
-        ev = str(b.get("event") or "").strip()
-        if ev:
-            lines.append(ev)
-    text = " ".join(lines)
-    words = text.split()
-    if len(words) < 800:
-        text = text + " " + "El equipo sigue y tu vida también. " * 80
-    return _ground_synopsis(" ".join(text.split()[:1100]), blueprint, beats, initial, final)
+
+
+def _fallback_synopsis(
+    blueprint: dict[str, Any],
+    beats: list[dict[str, Any]],
+    initial: dict[str, Any],
+    final: dict[str, Any],
+    *,
+    vehicle_mode: str = "sports_team",
+) -> str:
+    return _ground_synopsis("", blueprint, beats, initial, final, vehicle_mode=vehicle_mode)
 
 
 def _strip_purple(text: str) -> str:
@@ -749,104 +643,18 @@ def _strip_purple(text: str) -> str:
     return re.sub(r"\s+", " ", out).strip()
 
 
-def _ground_synopsis(text: str, blueprint: dict[str, Any], beats: list[dict[str, Any]], initial: dict[str, Any], final: dict[str, Any]) -> str:
-    sports = (final or {}).get("sports") or {}
-    life = (final or {}).get("life") or {}
-    fin = (final or {}).get("finance") or {}
-    acq = (final or {}).get("acquisition") or {}
-    team = (final or {}).get("team") or {}
-    hist = [h for h in (sports.get("season_history") or []) if isinstance(h, dict)]
-    seen_seasons: set[int] = set()
-    compact_hist = []
-    for h in hist:
-        sn = int(h.get("season") or 0)
-        if sn in seen_seasons:
-            compact_hist[-1] = h
-        else:
-            compact_hist.append(h)
-            seen_seasons.add(sn)
-    hist = compact_hist
-    il = (initial or {}).get("life") or {}
-    fw = blueprint.get("fiction_world") or {}
-    name = team.get("name") or fw.get("team_name") or "el equipo"
-    paras = [
-        (
-            f"Tenés {(initial or {}).get('time', {}).get('protagonist_age') or 22} años. "
-            f"Trabajás de {il.get('job') or 'empleado de oficina'} y vivís en {il.get('home') or 'un departamento compartido'}. "
-            f"En la cuenta hay {il.get('personal_cash') or 18000}. Los fines de semana jugás al básquet. "
-            f"{name} está al borde de la quiebra: el gimnasio huele a humedad y las gradas no se llenan."
-        ),
-        str(acq.get("summary") or "Comprás el equipo por un peso y asumís la deuda, con inversores locales y el vendedor reteniendo un porcentaje."),
-    ]
-    used = set()
-    for b in beats:
-        ev = str(b.get("event") or "").strip()
-        if not ev or ev in used:
-            continue
-        if re.search(r"\d+\s*-\s*\d+", ev) and hist:
-            records = {str(h.get("record") or "") for h in hist}
-            if not any(r and r in ev for r in records):
-                continue
-        purpose = str(b.get("story_purpose") or "")
-        kind = str(b.get("reward_or_setback") or "")
-        if purpose in {"opening", "inciting_incident", "first_commitment", "first_proof", "midpoint", "major_success", "major_reversal", "crisis", "decision", "climax", "ending"} or kind.startswith("reward") or kind.startswith("setback"):
-            paras.append(ev.rstrip(".") + ".")
-            used.add(ev)
-    for h in hist:
-        champ = " Ganás el campeonato." if h.get("championship") else ""
-        paras.append(
-            f"Temporada {h.get('season')}: el pizarrón cierra {h.get('record')}. "
-            f"{str(h.get('playoff_result') or 'Sin playoffs').capitalize()}. "
-            f"Asistencia media {h.get('attendance_avg')}. El club factura {h.get('revenue')} y vale {h.get('team_value')}.{champ}"
-        )
-    risk = str(fin.get("debt_risk_state") or "")
-    if risk in ("manageable", "healthy"):
-        paras.append(
-            f"La deuda del club queda en {fin.get('team_debt')}, con caja {fin.get('team_cash')} "
-            f"e ingresos {fin.get('annual_revenue')}. Sigue existiendo, pero ya no puede matar al equipo."
-        )
-    age = ((final or {}).get("time") or {}).get("protagonist_age")
-    paras.append(
-        f"Hoy tenés {age} años. Tu trabajo es {life.get('job')}. Vivís en {life.get('home')}. "
-        f"En la cuenta personal hay {life.get('personal_cash')}; el patrimonio, en papel, es {life.get('personal_net_worth')}. "
-        f"Sos millonario en equity y seguís mirando la cuenta antes de una cena. "
-        f"{name} es tuyo en un {((final or {}).get('ownership_ledger') or {}).get('protagonist')}%."
-    )
-    body = " ".join(paras)
-    body = _strip_purple(body)
-    extra = []
-    for b in beats:
-        ev = str(b.get("event") or "").strip()
-        if ev and ev not in body and "La temporada queda escrita" not in ev:
-            extra.append(ev.rstrip(".") + ".")
-    pads = [
-        "El primer día como dueño el utilero te alcanza las llaves del gimnasio y no sabe si tutearte.",
-        "Bajás el precio de la entrada y esa noche hay más gente en la cola que asientos rotos.",
-        "Renunciás al trabajo de oficina cuando el club ya puede pagarte un sueldo feo, pero tuyo.",
-        "Te mudás a cuatro cuadras de la arena. El departamento viejo queda con las cajas a las once de la noche.",
-        "Si hay palco, todavía no tiene tu apellido. Tus padres vienen igual y se sientan donde hay lugar.",
-        "Una noche el estadio no tiene un asiento libre: sold out. Desde el túnel ves a tus padres arriba, "
-        "en mejores butacas que el primer año.",
-        "Cenas en un lugar que a los 22 ni mirabas la carta. Pagás. Todavía contás lo que queda en la cuenta.",
-        "Salís con un traje que no es de oficina. El utilero te dice jefe y esta vez no es una broma.",
-        "Apostás por roster e instalaciones después de una temporada decente y el mes siguiente el equipo arranca flojo.",
-        "El servicio de la deuda deja de ser una amenaza de cierre: hay caja, hay público, hay ingresos.",
-        "Una oferta llega al teléfono. Esta vez podés leerla mañana.",
-        "El estadio, que olía a humedad, ahora tiene fila los días de partido.",
-        "Seguís siendo dueño de un porcentaje y no de todo el efectivo: el paper vale millones y la cuenta, no.",
-    ]
-    extra.extend(pads)
-    words = re.findall(r"\S+", body)
-    i = 0
-    while len(words) < 920 and i < len(extra):
-        if extra[i] not in body:
-            body = body + " " + extra[i]
-            words = re.findall(r"\S+", body)
-        i += 1
-    words = re.findall(r"\S+", body)
-    if len(words) > 1200:
-        body = " ".join(words[:1185])
-    return body.strip()
+def _ground_synopsis(
+    text: str,
+    blueprint: dict[str, Any],
+    beats: list[dict[str, Any]],
+    initial: dict[str, Any],
+    final: dict[str, Any],
+    *,
+    vehicle_mode: str = "sports_team",
+) -> str:
+    del text
+    body = public_life_synopsis(blueprint, beats, initial, final, vehicle_mode=vehicle_mode)
+    return _strip_purple(body)
 
 
 def _merge(base: dict[str, Any], overlay: Any) -> dict[str, Any]:
@@ -889,10 +697,21 @@ def _chat_json(
 
 
 def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
+    from src.documentary.formats.check_als.plain_language import has_jargon, plain_event, public_life_synopsis
     from src.documentary.formats.check_als.story_arch import load_architecture
+    from src.documentary.formats.check_als.story_vehicle import vehicle_mode as _vehicle_mode
 
     arch = load_architecture(project)
-    review = arch.get("review") or assemble_review(arch) if arch.get("generated") else {}
+    review = assemble_review(arch) if arch.get("generated") else {}
+    synopsis = str(arch.get("synopsis") or "")
+    if has_jargon(synopsis):
+        synopsis = public_life_synopsis(
+            arch.get("blueprint") or {},
+            arch.get("beats") or [],
+            arch.get("initial_world") or {},
+            arch.get("final_world") or {},
+            vehicle_mode=_vehicle_mode(project),
+        )
     compact_beats = []
     for b in arch.get("beats") or []:
         compact_beats.append(
@@ -900,9 +719,9 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
                 "beat_id": b.get("beat_id"),
                 "time": b.get("time"),
                 "duration_target_s": b.get("duration_target_s"),
-                "cause": b.get("cause"),
-                "event": b.get("event"),
-                "consequence": b.get("consequence"),
+                "cause": plain_event(str(b.get("cause") or "")),
+                "event": plain_event(str(b.get("event") or "")),
+                "consequence": plain_event(str(b.get("consequence") or "")),
                 "story_purpose": b.get("story_purpose"),
                 "emotional_goal": b.get("emotional_goal"),
                 "viewer_question": b.get("viewer_question"),
@@ -917,7 +736,7 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
         "generated": bool(arch.get("generated")),
         "approved": bool(arch.get("approved") or project.get("check_story_approved")),
         "blueprint": arch.get("blueprint") or {},
-        "synopsis": arch.get("synopsis") or "",
+        "synopsis": synopsis,
         "beats": compact_beats,
         "beat_count": len(compact_beats),
         "quality": arch.get("quality") or {},

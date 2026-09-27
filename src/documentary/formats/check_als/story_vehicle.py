@@ -120,15 +120,18 @@ def blueprint_system(mode: str) -> str:
         
         vehicle_info = UNIVERSAL_VEHICLES.get(mode)
         if vehicle_info and mode not in ("sports_team", "business"):
-            # Vehículo personalizado - genera prompt universal
-            return _generate_universal_blueprint(mode, vehicle_info)
+            from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES
+
+            return _generate_universal_blueprint(mode, vehicle_info) + "\n" + PUBLIC_EVENT_RULES
     except ImportError:
         pass
     
+    from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES
+
     # Fallback tradicional
     if mode == "sports_team":
-        return _BLUEPRINT_SPORTS
-    return _BLUEPRINT_BUSINESS
+        return _BLUEPRINT_SPORTS + "\n" + PUBLIC_EVENT_RULES
+    return _BLUEPRINT_BUSINESS + "\n" + PUBLIC_EVENT_RULES
 
 
 def beats_system(mode: str) -> str:
@@ -138,15 +141,18 @@ def beats_system(mode: str) -> str:
         
         vehicle_info = UNIVERSAL_VEHICLES.get(mode)
         if vehicle_info and mode not in ("sports_team", "business"):
-            # Vehículo personalizado - genera beats universal
-            return _generate_universal_beats(mode, vehicle_info)
+            from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES
+
+            return _generate_universal_beats(mode, vehicle_info) + "\n" + PUBLIC_EVENT_RULES
     except ImportError:
         pass
-    
+
+    from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES
+
     # Fallback tradicional
     if mode == "sports_team":
-        return _BEATS_SPORTS
-    return _BEATS_BUSINESS
+        return _BEATS_SPORTS + "\n" + PUBLIC_EVENT_RULES
+    return _BEATS_BUSINESS + "\n" + PUBLIC_EVENT_RULES
 
 
 def _generate_universal_blueprint(mode: str, vehicle_info: dict) -> str:

@@ -1827,6 +1827,63 @@ function paintCheckLocked(ws, p, step, extra) {
   });
 }
 
+function plainPublicCopy(raw) {
+  let t = String(raw || "");
+  const swaps = [
+    [/Firm[aá]s la compra:[^.]*\./gi, "Firmas y el equipo pasa a ser tuyo. Pones lo que tienes ahorrado."],
+    [/\$?\d[\d.,]*\s*de precio[^.]*financia[^.]*\./gi, "Lo compras por casi nada. Pones tus ahorros. Unas personas de la ciudad ponen el resto y el dueño anterior se queda con una parte chica."],
+    [/Apost[aá]s por roster[^.]*\./gi, "Apuestas por el plantel y por arreglar el gimnasio. El mes siguiente el equipo arranca flojo y cuesta dormir."],
+    [/El servicio de la deuda[^.]*\./gi, "Las cuentas dejan de ahogar al club. Hay gente y el equipo sigue."],
+    [/Sos millonario en equity[^.]*\./gi, "La vida ya es otra, y todavía miras la cuenta antes de una cena."],
+    [/Segu[ií]s siendo dueño de un porcentaje[^.]*\./gi, "Sigues al mando."],
+    [/La deuda del club queda en[^.]*\./gi, "El club ya no está a punto de cerrar."],
+    [/En la cuenta (?:personal )?hay[^.]{0,180}\./gi, ""],
+    [/es tuyo en un\s+[\d.]+\s*%\.?/gi, "el equipo es tuyo."],
+    [/Temporada\s+(\d+)\s*:\s*el pizarr[oó]n cierra\s+([^.]+)\.\s*([^.]+)\.\s*Asistencia media\s+\d+\.\s*El club factura\s+\d+\s+y vale\s+\d+\.?/gi, "En el año $1 el equipo cierra $2. $3."],
+    [/\bTenés\b/g, "Tienes"],
+    [/\btenés\b/g, "tienes"],
+    [/\bTrabajás\b/g, "Trabajas"],
+    [/\btrabajás\b/g, "trabajas"],
+    [/\bVivís\b/g, "Vives"],
+    [/\bvivís\b/g, "vives"],
+    [/\bFirmás\b/g, "Firmas"],
+    [/\bfirmás\b/g, "firmas"],
+    [/\bComprás\b/g, "Compras"],
+    [/\bcomprás\b/g, "compras"],
+    [/\bBajás\b/g, "Bajas"],
+    [/\bbajás\b/g, "bajas"],
+    [/\bRenunciás\b/g, "Renuncias"],
+    [/\brenunciás\b/g, "renuncias"],
+    [/\bApostás\b/g, "Apuestas"],
+    [/\bapostás\b/g, "apuestas"],
+    [/\bseguís\b/g, "sigues"],
+    [/\bSeguís\b/g, "Sigues"],
+    [/\bpodés\b/g, "puedes"],
+    [/\bPodés\b/g, "Puedes"],
+    [/\bSos\b/g, "Eres"],
+    [/\bsos\b/g, "eres"],
+    [/\bPagás\b/g, "Pagas"],
+    [/\bpagás\b/g, "pagas"],
+    [/\bSalís\b/g, "Sales"],
+    [/\bsalís\b/g, "sales"],
+    [/\bmirás\b/g, "miras"],
+    [/\bcontás\b/g, "cuentas"],
+    [/\bponés\b/g, "pones"],
+    [/\bquedás\b/g, "quedas"],
+    [/\bVos\b/g, "Tú"],
+    [/\bvos\b/g, "tú"],
+    [/\bjugás\b/g, "juegas"],
+    [/\bmudás\b/g, "mudas"],
+  ];
+  for (const [pat, rep] of swaps) t = t.replace(pat, rep);
+  t = t
+    .split(/(?<=\.)\s+/)
+    .filter((s) => !/equity|factur|servicio de la deuda|patrimonio|inversores|valuaci|%\s|%\./i.test(s))
+    .join(" ");
+  t = t.replace(/\s+/g, " ").trim();
+  return t;
+}
+
 function money(n) {
   if (n === null || n === undefined || n === "") return "—";
   const v = Number(n);
@@ -1862,7 +1919,6 @@ function paintCheckStory(ws, p) {
   const approved = Boolean(p.check_story_approved || cs.approved);
   const hasStory = generated || Boolean(cs.synopsis) || Number(cs.beat_count || 0) > 0 || timeline.length > 0;
   const acq = review.acquisition || {};
-  const ledger = review.ownership_ledger || fw.ledger || {};
 
   const scoreBits = Object.keys(scores)
     .map((k) => `<span class="tag ${scores[k] === "flag" ? "bad" : ""}">${esc(k)} ${esc(scores[k])}</span>`)
@@ -1878,19 +1934,21 @@ function paintCheckStory(ws, p) {
         )
         .join("")
     : "<li>Todavía no hay loops.</li>";
+  const lifeLine = (row) => {
+    const bits = [];
+    if (row.record && row.record !== "—" && row.record !== "0-0") bits.push(`Marcador ${row.record}`);
+    if (row.attendance) bits.push(`Gente ${row.attendance}`);
+    if (row.job) bits.push(row.job);
+    if (row.home) bits.push(row.home);
+    if (row.life_change) bits.push(row.life_change);
+    return bits.join(" · ");
+  };
   const timeBits = timeline
     .map((row) => {
-      const life = row.life_change ? ` · ${esc(row.life_change)}` : "";
       return `<tr>
         <td>${esc(row.time || "")}</td>
-        <td>${esc(row.event || "")}</td>
-        <td>${money(row.cash)}</td>
-        <td>${esc(row.ownership ?? "—")}%</td>
-        <td>${money(row.team_value)}</td>
-        <td>${money(row.team_debt)}</td>
-        <td>${esc(row.attendance ?? "—")}</td>
-        <td>${esc(row.record || "—")}</td>
-        <td>${life}</td>
+        <td>${esc(plainPublicCopy(row.event || ""))}</td>
+        <td>${esc(lifeLine(row) || "—")}</td>
       </tr>`;
     })
     .join("");
@@ -1899,20 +1957,19 @@ function paintCheckStory(ws, p) {
         .map(
           (row) => `<article class="check-tl-card">
         <strong>${esc(row.time || "—")}</strong>
-        <p>${esc(row.event || "")}</p>
-        <p class="muted">Cash ${money(row.cash)} · Own ${esc(row.ownership ?? "—")}% · Valor ${money(row.team_value)} · Deuda ${money(row.team_debt)}</p>
-        <p class="muted">Público ${esc(row.attendance ?? "—")} · Record ${esc(row.record || "—")}${row.life_change ? " · " + esc(row.life_change) : ""}</p>
+        <p>${esc(plainPublicCopy(row.event || ""))}</p>
+        <p class="muted">${esc(lifeLine(row) || "")}</p>
       </article>`
         )
         .join("")
     : `<p class="muted">—</p>`;
-  const majorBits = major.map((b) => `<li><strong>[${esc(b.beat_id)}] ${esc(b.purpose || "")}</strong> — ${esc(b.event || "")}</li>`).join("");
-  const rewardBits = rewards.map((b) => `<li>[${esc(b.beat_id)}] ${esc(b.event || "")}</li>`).join("") || "<li>—</li>";
+  const majorBits = major.map((b) => `<li><strong>[${esc(b.beat_id)}] ${esc(b.purpose || "")}</strong> — ${esc(plainPublicCopy(b.event || ""))}</li>`).join("");
+  const rewardBits = rewards.map((b) => `<li>[${esc(b.beat_id)}] ${esc(plainPublicCopy(b.event || ""))}</li>`).join("") || "<li>—</li>";
   const seasons = review.season_history || (fw.season_history) || [];
   const seasonBits = seasons.map((s) =>
-    `<li>T${esc(s.season)} ${esc(s.record || "")} · ${esc(s.playoff_result || "")} · att ${esc(s.attendance_avg ?? "—")} · ${esc((s.major_events || []).join(", "))}</li>`
+    `<li>Año ${esc(s.season)} · marcador ${esc(s.record || "")} · ${esc(s.playoff_result || "")}</li>`
   ).join("") || "<li>—</li>";
-  const setbackBits = setbacks.map((b) => `<li>[${esc(b.beat_id)}] <em>${esc(b.category || b.kind || "")}</em> ${esc(b.event || "")}</li>`).join("") || "<li>—</li>";
+  const setbackBits = setbacks.map((b) => `<li>[${esc(b.beat_id)}] <em>${esc(b.category || b.kind || "")}</em> ${esc(plainPublicCopy(b.event || ""))}</li>`).join("") || "<li>—</li>";
 
   ws.innerHTML = `
     <div class="panel workspace">
@@ -1925,23 +1982,22 @@ function paintCheckStory(ws, p) {
       ${hard.length ? `<div class="notice bad">Hay ${hard.length} advertencia(s) — podés regenerar o tocar <strong>Continuar al guion</strong>.</div>` : ""}
       <p class="kicker">Story Overview</p>
       <p><strong>${esc(world.team_name || p.title || "")}</strong> · ${esc(world.league_name || "")} · ${esc(world.city || "")}</p>
-      <p>${esc(fantasy.surface_desire || "")}</p>
-      <p class="muted">${esc(acq.summary || vehicle.acquisition_structure || vehicle.core_mechanism || "")}</p>
-      <p>Ledger: vos ${esc(ledger.protagonist ?? "—")}% · inversores ${esc(ledger.investors ?? "—")}% · vendedor ${esc(ledger.seller ?? "—")}%</p>
+      <p>${esc(plainPublicCopy(fantasy.surface_desire || ""))}</p>
+      <p class="muted">${esc(plainPublicCopy(acq.public_summary || acq.summary || vehicle.acquisition_structure || vehicle.core_mechanism || ""))}</p>
       ${hard.length ? hard.map((f) => `<div class="notice bad">HARD [${esc(f.code)}] ${esc(f.detail || "")}</div>`).join("") : ""}
       <p>Protagonista interno: ${esc(prot.age || "")} · ${esc(prot.starting_life || "")}</p>
       <div class="tags">${scoreBits}</div>
       <details ${generated ? "open" : ""}>
         <summary>Synopsis</summary>
-        <pre class="shot" style="white-space:pre-wrap;max-height:420px;overflow:auto">${esc(cs.synopsis || "Generá la arquitectura para leer la película.")}</pre>
+        <pre class="shot" style="white-space:pre-wrap;max-height:420px;overflow:auto">${esc(plainPublicCopy(cs.synopsis || "") || "Genera la historia para leer la película.")}</pre>
       </details>
       <details ${generated ? "open" : ""}>
         <summary>Timeline</summary>
         <div class="check-timeline-cards">${timeCards}</div>
         <div class="check-table-wrap">
           <table class="check-table">
-            <thead><tr><th>Tiempo</th><th>Evento</th><th>Cash</th><th>Own</th><th>Valor</th><th>Deuda</th><th>Público</th><th>Record</th><th>Vida</th></tr></thead>
-            <tbody>${timeBits || `<tr><td colspan="9">—</td></tr>`}</tbody>
+            <thead><tr><th>Tiempo</th><th>Qué pasa</th><th>Tu vida</th></tr></thead>
+            <tbody>${timeBits || `<tr><td colspan="3">—</td></tr>`}</tbody>
           </table>
         </div>
       </details>
@@ -1964,7 +2020,7 @@ function paintCheckStory(ws, p) {
       </details>
       <details>
         <summary>Ending + mundo final</summary>
-        <p>${esc(ending.scene || overview.ending || "—")}</p>
+        <p>${esc(plainPublicCopy(ending.scene || overview.ending || "—"))}</p>
         <p>${esc(ending.final_state || "")}</p>
         <p class="muted">${esc(ending.unresolved || "")}</p>
         <p>AGE ${esc(fw.age ?? "—")} · CASH ${money(fw.cash)} · OWN ${esc(fw.ownership ?? "—")}% · VAL ${money(fw.team_value)} · DEBT ${money(fw.team_debt)} · ATT ${esc(fw.attendance ?? "—")} · ${esc(fw.job || "")} · ${esc(fw.home || "")}</p>
