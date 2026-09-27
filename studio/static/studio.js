@@ -1370,14 +1370,29 @@ function paintCheckConcepts(host) {
       const vehicleType = c.vehicle_type || "business";
       const vehicleName = c.vehicle_name || vehicleType.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
       const emoji = vehicleEmoji[vehicleType] || "💼";
+      
+      const endingEmoji = {
+        victory: "🏆",
+        exit: "💰",
+        loss: "💔",
+        dilema: "⚖️",
+        pyrrhic: "⚔️",
+        ironic: "🔄",
+        open: "❓",
+        plateau: "📊"
+      };
+      const endingType = c.ending_type || "open";
+      const endingName = c.ending_name || endingType.charAt(0).toUpperCase() + endingType.slice(1);
+      const endingIcon = endingEmoji[endingType] || "❓";
+      
       return `
       <article class="idea idea-check${isPicked ? " idea-picked" : ""}"${isPicked ? ' style="outline:2px solid var(--accent);outline-offset:2px"' : ""}>
         <div class="tags" style="margin-bottom:0.4rem">
           ${isPicked ? '<span class="tag" style="background:var(--accent);color:#fff">Video principal</span>' : ""}
           <span class="tag" style="background:var(--accent-light);font-weight:600">${emoji} ${esc(vehicleName)}</span>
+          <span class="tag" style="background:var(--warning-light);font-weight:600">${endingIcon} ${esc(endingName)}</span>
           <span class="tag">${esc(c.story_category || "—")}</span>
           <span class="tag">score ${esc(c.overall_score ?? "—")}</span>
-          <span class="tag">${esc(c.ending_direction || "")}</span>
           <span class="tag">${coh.pass ? "coherent" : "review coherence"}</span>
         </div>
         <h3>${esc(c.title || "Untitled")}</h3>

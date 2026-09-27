@@ -833,6 +833,13 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         )
     mode = vehicle_mode(project)
     facts = locked_story_facts(arch, mode=mode)
+    
+    # Determinar ending_type si no está especificado
+    ending_type = project.get("ending_type") or arch.get("ending_type") or "open"
+    if ending_type not in ("victory", "exit", "loss", "dilema", "pyrrhic", "ironic", "open", "plateau"):
+        ending_type = "open"
+    facts["ending_type"] = ending_type
+    
     # If beats empty but synopsis exists, seed pad material from synopsis sentences.
     if not (facts.get("beats") or []) and str(arch.get("synopsis") or "").strip():
         syn = str(arch.get("synopsis") or "")
@@ -862,6 +869,16 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             # Use new storytelling engine master prompt
             locked_facts_json = json.dumps(slim, ensure_ascii=False, indent=2)
             master_prompt = get_check_master_prompt(locked_facts_json, vehicle_mode=mode)
+            
+            # Agregar prompt específico de ending si no es "open"
+            ending_type = facts.get("ending_type", "open")
+            if ending_type != "open":
+                try:
+                    from src.documentary.formats.check_als.ending_types import get_ending_prompt
+                    ending_prompt = get_ending_prompt(ending_type, facts)
+                    master_prompt = master_prompt + "\n\n" + ending_prompt
+                except ImportError:
+                    pass
             
             script = _chat_text(
                 client, model, 

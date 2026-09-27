@@ -268,37 +268,28 @@ Sigues pensando dos veces antes de pagar una cena."
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 BEAT 10: FINAL (11:00-12:00 / 200-300 palabras)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EMOCIÓN: 6/10
-PROPÓSITO: Cierre en escena + callback al opening
+PROPÓSITO: Cierre específico según ending_type
 
-ESTRUCTURA MANDATORIA:
-1. Tu edad final ("Tienes [EDAD] años.")
-2. Contraste temporal ("Hace [X] años estabas...")
-3. Situación actual concreta (estadio vacío, oficina de noche, etc.)
-4. OFERTA (email, llamada, oferta de adquisición)
-5. "Bloqueas el teléfono."
-6. "Mañana lo lees."
+⚠️ IMPORTANTE: Check tiene 8 TIPOS DE FINALES diferentes:
 
-SIN:
+1. 🏆 VICTORY - Victoria total (logro máximo alcanzado)
+2. 💰 EXIT - Venta exitosa (firmaste, vendiste, sales por última vez)
+3. 💔 LOSS - Pérdida/colapso (perdiste, cerró, quedó poco)
+4. ⚖️ DILEMA - Decisión imposible (dos caminos, decidís [deadline])
+5. ⚔️ PYRRHIC - Victoria pírrica (ganaste pero el costo fue brutal)
+6. 🔄 IRONIC - Final irónico (conseguiste lo que querías pero no como pensabas)
+7. ❓ OPEN - Final abierto clásico (oferta → bloqueas → mañana lo lees)
+8. 📊 PLATEAU - Meseta/nuevo normal (ni peak ni colapso, esto es)
+
+CADA TIPO TIENE SU PROPIA ESTRUCTURA Y EMOCIÓN.
+
+EL SISTEMA TE DIRÁ QUÉ TIPO USAR. NO uses siempre "open".
+
+SIN (en todos):
 - Moraleja
 - Lección
 - "Aprendiste que..."
 - CTA
-
-Ejemplo:
-"Tienes 27 años.
-
-El estadio está vacío después del partido. El personal ya se fue.
-
-En la pantalla de tu teléfono aparece un correo. Oferta de adquisición.
-
-Hace cinco años estabas sentado en una oficina compartiendo departamento con dos roommates.
-
-Ahora alguien quiere comprarte el equipo.
-
-Bloqueas el teléfono.
-
-Mañana lo lees."
 """
 
 # ============================================================================

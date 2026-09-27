@@ -129,7 +129,8 @@ def empty_concept_package() -> dict[str, Any]:
         "end_state": "",
         "core_transformation": "",
         "story_category": "",
-        "ending_direction": "victory",
+        "ending_direction": "victory",  # Deprecated: usar ending_type
+        "ending_type": "open",  # Nuevo: victory, exit, loss, dilema, pyrrhic, ironic, open, plateau
         "story_engine": empty_story_engine(),
         "central_story_question": "",
         "open_loops": [],
@@ -554,10 +555,12 @@ def _merge_story_into_package(raw: dict[str, Any], story: dict[str, Any]) -> dic
     spine = normalize_story_spine(story.get("story_spine") or pkg.get("story_spine") or "")
     pkg["id"] = story.get("id") or pkg.get("id")
     
-    # Preservar vehicle_type del seed original
+    # Preservar vehicle_type y ending_type del seed original
     seed = story.get("seed") if isinstance(story.get("seed"), dict) else {}
     if seed.get("vehicle_type") and not pkg.get("vehicle_type"):
         pkg["vehicle_type"] = seed["vehicle_type"]
+    if seed.get("ending_type") and not pkg.get("ending_type"):
+        pkg["ending_type"] = seed["ending_type"]
     
     pkg["story_core"] = core
     pkg["story_spine"] = spine
@@ -600,6 +603,20 @@ def _llm_story_from_seed(client: Any, model: str, seed: dict[str, Any], stats: d
     except ImportError:
         pass
     
+    # Obtener información del ending para contexto
+    ending_type = seed.get("ending_type", "open")
+    ending_context = ""
+    try:
+        from src.documentary.formats.check_als.ending_types import ENDING_TYPES
+        if ending_type in ENDING_TYPES:
+            e_info = ENDING_TYPES[ending_type]
+            ending_context = (
+                f"ENDING TYPE: {e_info['name']} - {e_info['emotion']}. "
+                f"La historia debe construir hacia este tipo de final."
+            )
+    except ImportError:
+        pass
+    
     parsed = _chat_json(
         client,
         model,
@@ -609,15 +626,17 @@ def _llm_story_from_seed(client: Any, model: str, seed: dict[str, Any], stats: d
             "story_shape": seed.get("story_shape"),
             "vehicle_type": vehicle_type,
             "vehicle_context": vehicle_context,
+            "ending_type": ending_type,
+            "ending_context": ending_context,
             "negative_structure": (
                 "PROHIBIDO el arco taller_renovado: mejor atención → clientes → sucursales → "
                 "competidor barato → mantienes calidad / te vuelves referente."
             ),
             "instruction": (
-                f"Escribe story_core + story_spine para ESTA seed de tipo {vehicle_type}. "
-                f"Honra su story_shape. {vehicle_context} "
+                f"Escribe story_core + story_spine para ESTA seed de tipo {vehicle_type} con final tipo {ending_type}. "
+                f"Honra su story_shape. {vehicle_context} {ending_context} "
                 "Conflicto orgánico (no pegable en otras 20 ideas). Oportunidad concreta. "
-                "Si hay producto, que se pueda explicar qué hace. Ending = estado o evento. "
+                "Si hay producto, que se pueda explicar qué hace. Ending = estado o evento coherente con ending_type. "
                 "Incluye un giro inesperado plausible. No copies el negocio del ejemplo de calidad."
             ),
         },
@@ -625,7 +644,7 @@ def _llm_story_from_seed(client: Any, model: str, seed: dict[str, Any], stats: d
         stats=stats,
     )
     
-    # Preservar vehicle_type en el resultado
+    # Preservar vehicle_type y ending_type en el resultado
     result = parsed if isinstance(parsed, dict) else {}
     if isinstance(parsed.get("story_core"), dict):
         result = parsed
@@ -633,6 +652,7 @@ def _llm_story_from_seed(client: Any, model: str, seed: dict[str, Any], stats: d
         result = parsed["package"]
     
     result["vehicle_type"] = vehicle_type
+    result["ending_type"] = ending_type
     return result
 
 
@@ -782,6 +802,25 @@ def normalize_concept_package(raw: dict[str, Any]) -> dict[str, Any]:
             out["vehicle_name"] = vehicle_type.replace("_", " ").title()
     except ImportError:
         out["vehicle_name"] = vehicle_type.replace("_", " ").title()
+    
+    # Preservar ending_type del seed
+    ending_type = str(raw.get("ending_type") or "open").strip()
+    if ending_type not in ("victory", "exit", "loss", "dilema", "pyrrhic", "ironic", "open", "plateau"):
+        ending_type = "open"
+    out["ending_type"] = ending_type
+    
+    # Agregar nombre descriptivo del ending
+    ending_names = {
+        "victory": "Victoria Total",
+        "exit": "Exit/Venta",
+        "loss": "Pérdida",
+        "dilema": "Dilema",
+        "pyrrhic": "Victoria Pírrica",
+        "ironic": "Final Irónico",
+        "open": "Final Abierto",
+        "plateau": "Meseta",
+    }
+    out["ending_name"] = ending_names.get(ending_type, ending_type.title())
     
     out["premise"] = str(raw.get("premise") or raw.get("story") or "").strip()
     out["one_line_fantasy"] = str(raw.get("one_line_fantasy") or raw.get("fantasy") or "").strip()
@@ -933,6 +972,8 @@ def package_to_project_fields(package: dict[str, Any]) -> dict[str, Any]:
         "idea": idea_legacy,
         "content_format": "check_als",
         "concept": pkg,
+        "ending_type": pkg.get("ending_type", "open"),  # Preservar ending_type
+        "vehicle_type": pkg.get("vehicle_type", "business"),  # Preservar vehicle_type
         "language": CONTENT_LANGUAGE,
         "target_duration_min": [12, 18],
         "target_words": 1800,
@@ -1029,17 +1070,26 @@ def _llm_raw_seeds_once(
     random.shuffle(vehicle_pool)
     required_vehicles = vehicle_pool[:count]
     
+    # Seleccionar endings diversos para este batch
+    ending_types_available = ["victory", "exit", "loss", "dilema", "pyrrhic", "ironic", "open", "plateau"]
+    ending_pool = ending_types_available * ((count // len(ending_types_available)) + 1)
+    random.shuffle(ending_pool)
+    required_endings = ending_pool[:count]
+    
     system = SEED_SYSTEM + (
         f' JSON: {{"seeds":[{{"id":"slug","mechanism_type":"...","fantasy_type":"...",'
         f'"story_shape":"...","vehicle_type":"sports_team|musician|chef|filmmaker|creator|...",'
+        f'"ending_type":"victory|exit|loss|dilema|pyrrhic|ironic|open|plateau",'
         f'"industry":"...","scale_hint":"national|international|empire|major_exit",'
         f'"concrete_hook":"una frase vivida EN ESPAÑOL","suggested_category":"..."}}]}} '
         f"Produce EXACTLY {int(count)} seeds (no fewer). concrete_hook MUST be Spanish. "
         f"CADA seed usa un story_shape DISTINTO tomado de required_story_shapes. "
         f"CADA seed usa un vehicle_type DISTINTO de: {', '.join(required_vehicles[:count])}. "
+        f"CADA seed usa un ending_type DISTINTO de: {', '.join(required_endings[:count])}. "
         f"Máximo {int(shape_cap)} seeds con la misma story_shape. "
         f"Diversidad MÁXIMA de vehicle_type: cada seed debe ser un tipo de fantasía diferente "
         f"(músico, chef, atleta, creador, negocio, etc.). "
+        f"Diversidad MÁXIMA de ending_type: victoria, exit, pérdida, dilema, victoria pírrica, ironía, final abierto, meseta. "
         f"Diversidad orgánica de mechanism_type y fantasy_type. "
         f"Prefer scale_hint national+. Prohibido community-savior y el arco precio-vs-calidad genérico."
     )
@@ -1060,6 +1110,18 @@ def _llm_raw_seeds_once(
             "business": "Fundador de Empresa"
         }
     
+    # Descripciones de endings
+    ending_descriptions = {
+        "victory": "🏆 Victoria total - logro máximo alcanzado",
+        "exit": "💰 Venta exitosa - firmás, vendés, exit",
+        "loss": "💔 Pérdida/colapso - perdiste, cerró, quedó poco",
+        "dilema": "⚖️ Dilema moral - dos opciones, decisión imposible",
+        "pyrrhic": "⚔️ Victoria pírrica - ganaste pero a un costo brutal",
+        "ironic": "🔄 Final irónico - conseguiste pero no como pensabas",
+        "open": "❓ Final abierto - oferta pendiente, decidís mañana",
+        "plateau": "📊 Meseta - ni peak ni colapso, nuevo normal",
+    }
+    
     user = {
         "channel": (profile.get("channel") or {}).get("name"),
         "categories": cats,
@@ -1070,6 +1132,9 @@ def _llm_raw_seeds_once(
         "required_vehicles": required_vehicles,
         "available_vehicles": vehicle_descriptions,
         "vehicle_diversity_rule": "CADA seed debe ser un vehicle_type DIFERENTE para máxima variedad",
+        "required_endings": required_endings,
+        "available_endings": ending_descriptions,
+        "ending_diversity_rule": "CADA seed debe tener un ending_type DIFERENTE: victoria, exit, pérdida, dilema, etc.",
         "avoid": profile.get("avoid"),
         "prior": _prior_block(prior),
         "avoid_titles": avoid_titles or [],
