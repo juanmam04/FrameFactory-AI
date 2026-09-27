@@ -529,7 +529,24 @@ PROGRESIÓN:
 """
 
 def get_check_master_prompt(locked_facts: str, vehicle_mode: str = "sports_team") -> str:
-    """Generate master prompt for Check ALS scripts."""
+    """Generate master prompt for Check ALS scripts - ahora con soporte universal."""
+    
+    # Intentar usar el sistema universal si está disponible
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import (
+            UNIVERSAL_VEHICLES, 
+            get_universal_vehicle_prompt
+        )
+        
+        # Si el vehículo está en el catálogo universal y NO es sports/business tradicional
+        if vehicle_mode in UNIVERSAL_VEHICLES and vehicle_mode not in ("sports_team", "business"):
+            # Usar prompt universal personalizado
+            universal_prompt = get_universal_vehicle_prompt(vehicle_mode, locked_facts)
+            return universal_prompt
+    except ImportError:
+        pass
+    
+    # Fallback: sistema tradicional sports/business
     vehicle_instructions = VEHICLE_SPORTS if vehicle_mode == "sports_team" else VEHICLE_BUSINESS
     
     return MASTER_PROMPT_CHECK.format(

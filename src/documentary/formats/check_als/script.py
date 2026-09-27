@@ -149,7 +149,7 @@ Cada ~30–45 segundos (≈75–110 palabras) un cambio. Tú/te. Nunca vos. Mín
 
 
 def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> dict[str, Any]:
-    """Compact source of truth for the script model. Never invent outside this."""
+    """Compact source of truth for the script model. Never invent outside this. Adaptado para vehículos universales."""
     bp = arch.get("blueprint") if isinstance(arch.get("blueprint"), dict) else {}
     iw = arch.get("initial_world") if isinstance(arch.get("initial_world"), dict) else {}
     fw = arch.get("final_world") if isinstance(arch.get("final_world"), dict) else {}
@@ -187,25 +187,40 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
             }
         )
 
-    if mode == "business":
+    # Detectar si es vehículo personalizado (no sports/business tradicional)
+    is_custom_vehicle = mode not in ("sports_team", "business")
+    
+    # Intentar obtener info del vehículo personalizado
+    vehicle_name_display = "tu empresa"
+    vehicle_context = "negocio"
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        if is_custom_vehicle and mode in UNIVERSAL_VEHICLES:
+            v_info = UNIVERSAL_VEHICLES[mode]
+            vehicle_name_display = v_info["vehicle"]
+            vehicle_context = v_info["name"]
+    except ImportError:
+        pass
+
+    if mode == "business" or is_custom_vehicle:
         default_own, default_inv, default_seller = 60, 40, 0
         default_debt, default_your_cash, default_inv_cash, default_price = 0, 8000, 40000, 0
         must = [
-            "cold open: edad / trabajo / casa / cash / oportunidad de negocio",
+            "cold open: edad / trabajo / casa / cash / oportunidad",
             f"payoff lanzamiento temprano: tu cash + inversores → ownership {acq.get('your_ownership') or default_own}%",
-            "primer cliente / primera tracción real",
-            "crisis o setback (caja, dilución, burnout)",
+            "primer logro / primera tracción real",
+            "crisis o setback",
             "renuncia o mudanza si existen en el state",
-            "escala concreta sin inventar deporte",
-            "IMPACTO DE CIMA: ≥3 beats sensoriales de éxito ganado (oficina/casa/status/viajes/gente que te busca) antes del final",
+            "progresión concreta por años",
+            "IMPACTO DE CIMA: ≥3 beats sensoriales de éxito ganado (oficina/casa/status/viajes/gente que te busca/reconocimiento) antes del final",
             "final: oferta/tracción/decisión abierta — sin moraleja",
         ]
         ending = (
             "Estás solo un momento. En el teléfono alguien quiere comprarte o asociarse. "
             "Bloqueas. Mañana lo lees."
         )
-        job_end = "dueño de tu empresa"
-        name = fiction.get("team_name") or team1.get("name") or vehicle.get("name") or "tu empresa"
+        job_end = f"profesional de {vehicle_name_display}" if is_custom_vehicle else "dueño de tu empresa"
+        name = fiction.get("team_name") or team1.get("name") or vehicle.get("name") or vehicle_name_display
         league = fiction.get("league_name") or ""
     else:
         default_own, default_inv, default_seller = 51, 39, 10
@@ -580,11 +595,27 @@ def validate_check_script(
         hard.append("falta el 51%")
 
     champs = int(facts.get("championships") or 0)
-    if mode == "sports_team" and champs == 0:
+    is_sports = mode == "sports_team"
+    is_custom = mode not in ("sports_team", "business")
+    
+    if is_sports and champs == 0:
         if re.search(r"\b(ganaste|ganaron|son|eres)\s+(el\s+)?campeon", low) or re.search(r"\bel anillo\b", low):
             hard.append("contradice championships=0 (no inventar campeonato)")
+    
+    # Solo advertir de spill deportivo si NO es sports y NO es un vehículo que podría usar deportes
     if mode == "business" and re.search(r"\b(playoff|campeonato|estadio|basquet|básquet|anillo)\b", low):
         warn.append("posible spill deportivo en guion business")
+    elif is_custom:
+        # Para vehículos custom, validar solo que no mezclen contextos sin sentido
+        # (por ejemplo, músico hablando de playoffs de básquet)
+        try:
+            from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+            v_info = UNIVERSAL_VEHICLES.get(mode, {})
+            if v_info and "sports" not in v_info.get("vehicle", "").lower():
+                if re.search(r"\b(playoff|campeonato|estadio deportivo|basquet|básquet)\b", low):
+                    warn.append(f"posible mezcla de contextos: {mode} con elementos deportivos")
+        except ImportError:
+            pass
 
     end_nw = (facts.get("life_end") or {}).get("net_worth")
     try:

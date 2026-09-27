@@ -1,44 +1,57 @@
-"""Vehicle mode: sports team vs general business (content, startup, etc.)."""
+"""Vehicle mode: detección automática de cualquier tipo de fantasía."""
 from __future__ import annotations
 
 from typing import Any
 
-SPORTS_CATEGORIES = frozenset({"sports_business", "sports", "basketball", "acquisition"})
-SPORTS_HINTS = (
-    "equipo de básquet",
-    "equipo de basket",
-    "franquicia deportiva",
-    "liga de básquet",
-    "comprar un equipo",
-    "dueño del equipo",
-    "estadio",
-    "playoff",
-)
+# Import universal vehicle system
+try:
+    from src.documentary.formats.check_als.universal_vehicles import detect_vehicle_type
+except ImportError:
+    # Fallback durante transición
+    def detect_vehicle_type(premise: str, topic: str = "", category: str = "") -> str:
+        text = f"{premise} {topic} {category}".lower()
+        if any(h in text for h in ("equipo", "estadio", "playoff", "liga deportiva")):
+            return "sports_team"
+        return "business"
 
 
 def vehicle_mode(project: dict[str, Any]) -> str:
-    """Return sports_team or business based on concept — NOT always basketball."""
+    """
+    Detecta el tipo de vehículo aspiracional basado en el contenido.
+    Retorna el tipo específico (sports_team, musician, chef, etc.) o 'business' como default.
+    """
     concept = project.get("concept") if isinstance(project.get("concept"), dict) else {}
     idea = project.get("idea") if isinstance(project.get("idea"), dict) else {}
-    cat = str(concept.get("story_category") or idea.get("content_pillar") or "").strip().lower()
-    blob = " ".join(
-        str(x or "")
-        for x in (
-            concept.get("premise"),
-            concept.get("one_line_fantasy"),
-            concept.get("title"),
-            project.get("topic"),
-            project.get("title"),
-        )
-    ).lower()
-    if cat in SPORTS_CATEGORIES:
-        return "sports_team"
-    if any(h in blob for h in SPORTS_HINTS):
-        return "sports_team"
-    return "business"
+    
+    # Reunir todo el texto relevante
+    category = str(concept.get("story_category") or idea.get("content_pillar") or "").strip()
+    premise = str(concept.get("premise") or concept.get("one_line_fantasy") or "").strip()
+    topic = str(project.get("topic") or project.get("title") or concept.get("title") or "").strip()
+    
+    # Usar el detector universal
+    return detect_vehicle_type(premise, topic, category)
 
 
 def default_open_loops(mode: str) -> list[dict[str, Any]]:
+    """Genera open loops dinámicos basados en el tipo de vehículo."""
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        
+        vehicle_info = UNIVERSAL_VEHICLES.get(mode)
+        if vehicle_info:
+            # Loops personalizados según el vehículo
+            vehicle_name = vehicle_info["vehicle"]
+            return [
+                {"id": "start", "question": f"¿realmente podrás {vehicle_info['acquisition']}?", "opened_at": "start", "status": "open", "important": True},
+                {"id": "survive", "question": "¿sobrevivirás el primer año?", "opened_at": "start", "status": "open", "important": True},
+                {"id": "compete", "question": "¿podrás competir contra los grandes?", "opened_at": "start", "status": "open", "important": True},
+                {"id": "success", "question": "¿llegará el reconocimiento real?", "opened_at": "start", "status": "open", "important": True},
+                {"id": "how_far", "question": "¿qué tan lejos puede llegar esto?", "opened_at": "start", "status": "open", "important": False, "intentional_unresolved": True},
+            ]
+    except ImportError:
+        pass
+    
+    # Fallback a sports/business tradicional
     if mode == "sports_team":
         return [
             {"id": "buy", "question": "¿realmente podrás comprarlo?", "opened_at": "start", "status": "open", "important": True},
@@ -57,6 +70,27 @@ def default_open_loops(mode: str) -> list[dict[str, Any]]:
 
 
 def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
+    """Genera specs de fases dinámicas basadas en el vehículo."""
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        
+        vehicle_info = UNIVERSAL_VEHICLES.get(mode)
+        if vehicle_info and mode not in ("sports_team", "business"):
+            # Vehículo personalizado - estructura genérica adaptable
+            vehicle_name = vehicle_info["vehicle"]
+            acquisition = vehicle_info["acquisition"]
+            progression = vehicle_info["progression"]
+            
+            return [
+                ("p1", f"Tramo 1 AGE 22-23: vida ordinaria → oportunidad → {acquisition}. 14-16 beats. Primeros pasos, realidad golpea."),
+                ("p2", f"Tramo 2 AGE 23-24: primeros logros reales, setbacks, la vida empieza a cambiar. Progresión por {progression}. 14-16 beats."),
+                ("p3", f"Tramo 3 AGE 24-26: apuesta grande, crisis, decisión crítica. Gran salto de progreso. Primer gran payoff de vida. 14-18 beats."),
+                ("p4", f"Tramo 4 AGE 26-28: estabilidad, reconocimiento, cambios de vida peak. ending_type={ending_type}. 14-18 beats."),
+            ]
+    except ImportError:
+        pass
+    
+    # Fallback tradicional
     if mode == "sports_team":
         return [
             ("p1", "Tramo 1 AGE 22: vida ordinaria → oportunidad → CÓMO se compra (ops: acquire_team) → sos dueño. 14-16 beats. Temporada 1 puede arrancar mal. NO campeonato."),
@@ -73,15 +107,108 @@ def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
 
 
 def blueprint_system(mode: str) -> str:
+    """Retorna el system prompt de blueprint adaptado al vehículo."""
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES, get_universal_vehicle_prompt
+        
+        vehicle_info = UNIVERSAL_VEHICLES.get(mode)
+        if vehicle_info and mode not in ("sports_team", "business"):
+            # Vehículo personalizado - genera prompt universal
+            return _generate_universal_blueprint(mode, vehicle_info)
+    except ImportError:
+        pass
+    
+    # Fallback tradicional
     if mode == "sports_team":
         return _BLUEPRINT_SPORTS
     return _BLUEPRINT_BUSINESS
 
 
 def beats_system(mode: str) -> str:
+    """Retorna el system prompt de beats adaptado al vehículo."""
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        
+        vehicle_info = UNIVERSAL_VEHICLES.get(mode)
+        if vehicle_info and mode not in ("sports_team", "business"):
+            # Vehículo personalizado - genera beats universal
+            return _generate_universal_beats(mode, vehicle_info)
+    except ImportError:
+        pass
+    
+    # Fallback tradicional
     if mode == "sports_team":
         return _BEATS_SPORTS
     return _BEATS_BUSINESS
+
+
+def _generate_universal_blueprint(mode: str, vehicle_info: dict) -> str:
+    """Genera blueprint system para vehículo personalizado."""
+    vehicle_name = vehicle_info["vehicle"]
+    acquisition = vehicle_info["acquisition"]
+    metrics = ", ".join(vehicle_info["metrics"])
+    
+    return f"""
+Eres Story Architect de Check: ficción aspiracional en ESPAÑOL. El espectador ES el protagonista (tú/te).
+
+Esta fantasía es {vehicle_name.upper()} — construcción de {vehicle_name}.
+PROHIBIDO: equipos de básquet, playoffs, campeonatos (a menos que sea el vehículo específico).
+
+REGLAS:
+- Empieza ANTES de {acquisition}. ownership/control inicial = 0.
+- El vehículo es {vehicle_name} con métricas claras: {metrics}.
+- Adquisición o lanzamiento con cifras: cash tuyo, inversores, deuda (si aplica), % equity/control.
+- Varios años (4-6). La vida personal CAMBIA: trabajo → carrera propia, departamento → upgrade.
+- Setbacks variados (financiero, profesional, personal). NO forzar deporte si no aplica.
+- Final = escena/estado concreto, nunca moraleja.
+
+Return ONLY JSON:
+{{
+  "blueprint": {{
+    protagonist, fantasy, business_or_vehicle{{what_is_being_built_or_owned, core_mechanism, economic_engine,
+      acquisition_structure, acquisition{{...}}}},
+    fiction_world{{company_name/stage_name/vehicle_name, industry/field, city, disclaimer}},
+    ending_type, opening, inciting_incident, first_commitment, escalation, midpoint,
+    major_success, major_reversal, crisis, decision, climax, ending, final_state,
+    intentional_unresolved_loops[], causal_chain[10-16]
+  }},
+  "initial_world": {{
+    life.job empleado/freelancer, life.home departamento/habitación, life.personal_cash 8000-25000,
+    ownership_ledger {{protagonist:0, investors:0, seller:100}}, acquisition.closed=false,
+    team.name = {vehicle_name}, team.league = industry/field, sports vacío si no aplica,
+    finance.team_debt bajo o 0 (startup), time.protagonist_age 22-26
+  }}
+}}
+NO escribas synopsis. Adaptá métricas al vehículo específico.
+""".strip()
+
+
+def _generate_universal_beats(mode: str, vehicle_info: dict) -> str:
+    """Genera beats system para vehículo personalizado."""
+    vehicle_name = vehicle_info["vehicle"]
+    progression = vehicle_info["progression"]
+    
+    return f"""
+Eres Beat Planner de Check — MODO {vehicle_name.upper()}.
+
+Ops permitidas (adaptadas al vehículo):
+launch_company, acquire_team (compra de {vehicle_name}),
+equity_sale, buyback, sponsor_deal, sponsor_cut, first_client/fan/audience,
+viral_hit, hire_employee, sign_contract, product_launch/album_launch/show_launch,
+owner_crisis, owner_injection, investor_injection, credit_line, bridge_loan, pay_debt,
+quit_job, move_home, help_family, advance_time, facility_upgrade, media_deal,
+media_crisis, regulatory_fine, personal_crisis
+
+PROHIBIDO ops deportivas si no aplica: game_played, championship, playoffs, injury, coach, season_stretch.
+
+Cada transacción de plata DEBE tener ops con montos.
+equity_sale SIEMPRE incluye pct y cash.
+
+Métricas vía team.valuation, team.attendance (clientes/fans/audiencia), finance.team_cash.
+Progresión por {progression}. 3-4 años. Payoffs de vida: renuncia, mudanza, upgrade, reconocimiento.
+
+Return ONLY JSON: {{"beats":[...]}} — 14-18 beats por tramo.
+""".strip()
 
 
 _BLUEPRINT_SPORTS = """
