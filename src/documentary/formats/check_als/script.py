@@ -9,6 +9,7 @@ from typing import Any
 from src.documentary.formats.check_als.story_arch import load_architecture
 from src.documentary.formats.check_als.story_architect import is_check_project
 from src.documentary.formats.check_als.story_vehicle import vehicle_mode
+from src.documentary.formats.check_als.storytelling_check import get_check_master_prompt
 from src.documentary.openai_key import openai_api_key
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 from src.script_generator import count_words
@@ -826,23 +827,16 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             client = OpenAI(api_key=key)
             model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
             slim = facts_for_llm(facts)
-            user = json.dumps(
-                {
-                    "instruction": (
-                        f"Escribí SOLO el VO hablado (mínimo {MIN_WORDS} palabras, target {target}). "
-                        f"vehicle_mode={mode}. Segunda persona tú/te. "
-                        "PROHIBIDO: INT/EXT, NARRADOR, diálogos con nombres, ops (launch_company), meta. "
-                        "Solo el texto que lee la IA en voz alta. "
-                        "IMPACTO: cuando llegás a millonario / sold-out / major_success, "
-                        "mostrá ≥3 beats sensoriales de lujo/status GANADO (contraste con el día 1). "
-                        "No digas solo el número de millones — el viewer tiene que ENVIDIAR la vida."
-                    ),
-                    "locked_facts": slim,
-                },
-                ensure_ascii=False,
-            )
+            
+            # Use new storytelling engine master prompt
+            locked_facts_json = json.dumps(slim, ensure_ascii=False, indent=2)
+            master_prompt = get_check_master_prompt(locked_facts_json, vehicle_mode=mode)
+            
             script = _chat_text(
-                client, model, script_system(mode), user, temperature=0.7, max_tokens=7000, timeout=90.0
+                client, model, 
+                "Eres un guionista experto en narrativa viral para YouTube.", 
+                master_prompt, 
+                temperature=0.7, max_tokens=7000, timeout=90.0
             )
             script = apply_tuteo_fixes(script)
             wc = count_words(script)
