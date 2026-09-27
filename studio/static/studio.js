@@ -1347,10 +1347,34 @@ function paintCheckConcepts(host) {
       const coh = c.coherence || {};
       const cid = String(c.id || "");
       const isPicked = state.pickedConceptId && cid && state.pickedConceptId === cid;
+      const vehicleEmoji = {
+        sports_team: "🏀",
+        business: "💼",
+        musician: "🎵",
+        filmmaker: "🎬",
+        chef: "👨‍🍳",
+        creator: "📱",
+        fashion_designer: "👗",
+        athlete: "🏃",
+        author: "📚",
+        game_dev: "🎮",
+        real_estate: "🏠",
+        artist: "🎨",
+        photographer: "📸",
+        podcaster: "🎙️",
+        fighter: "🥊",
+        dj_producer: "🎧",
+        esports_player: "🎯",
+        architect: "🏗️"
+      };
+      const vehicleType = c.vehicle_type || "business";
+      const vehicleName = c.vehicle_name || vehicleType.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+      const emoji = vehicleEmoji[vehicleType] || "💼";
       return `
       <article class="idea idea-check${isPicked ? " idea-picked" : ""}"${isPicked ? ' style="outline:2px solid var(--accent);outline-offset:2px"' : ""}>
         <div class="tags" style="margin-bottom:0.4rem">
           ${isPicked ? '<span class="tag" style="background:var(--accent);color:#fff">Video principal</span>' : ""}
+          <span class="tag" style="background:var(--accent-light);font-weight:600">${emoji} ${esc(vehicleName)}</span>
           <span class="tag">${esc(c.story_category || "—")}</span>
           <span class="tag">score ${esc(c.overall_score ?? "—")}</span>
           <span class="tag">${esc(c.ending_direction || "")}</span>

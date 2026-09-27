@@ -119,6 +119,8 @@ def empty_concept_package() -> dict[str, Any]:
         "language": CONTENT_LANGUAGE,
         "content_language": CONTENT_LANGUAGE,
         "image_prompt_language": IMAGE_PROMPT_LANGUAGE,
+        "vehicle_type": "business",  # Nuevo: tipo de vehículo (business, musician, chef, etc.)
+        "vehicle_name": "",  # Nuevo: nombre descriptivo del vehículo
         "premise": "",
         "title": "",
         "title_options": [],
@@ -551,6 +553,12 @@ def _merge_story_into_package(raw: dict[str, Any], story: dict[str, Any]) -> dic
     core = normalize_story_core(story.get("story_core") or pkg.get("story_core") or {})
     spine = normalize_story_spine(story.get("story_spine") or pkg.get("story_spine") or "")
     pkg["id"] = story.get("id") or pkg.get("id")
+    
+    # Preservar vehicle_type del seed original
+    seed = story.get("seed") if isinstance(story.get("seed"), dict) else {}
+    if seed.get("vehicle_type") and not pkg.get("vehicle_type"):
+        pkg["vehicle_type"] = seed["vehicle_type"]
+    
     pkg["story_core"] = core
     pkg["story_spine"] = spine
     pkg["story_score"] = story.get("story_score") or pkg.get("story_score") or 0
@@ -577,6 +585,21 @@ def _merge_story_into_package(raw: dict[str, Any], story: dict[str, Any]) -> dic
 
 
 def _llm_story_from_seed(client: Any, model: str, seed: dict[str, Any], stats: dict[str, Any] | None = None) -> dict[str, Any]:
+    # Obtener información del vehículo para contexto
+    vehicle_type = seed.get("vehicle_type", "business")
+    vehicle_context = ""
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        if vehicle_type in UNIVERSAL_VEHICLES:
+            v_info = UNIVERSAL_VEHICLES[vehicle_type]
+            vehicle_context = (
+                f"VEHICLE TYPE: {v_info['name']} - {v_info['vehicle']}. "
+                f"Progresión típica: {v_info['progression']}. "
+                f"Métricas relevantes: {', '.join(v_info['metrics'][:3])}."
+            )
+    except ImportError:
+        pass
+    
     parsed = _chat_json(
         client,
         model,
@@ -584,12 +607,15 @@ def _llm_story_from_seed(client: Any, model: str, seed: dict[str, Any], stats: d
         {
             "seed": seed,
             "story_shape": seed.get("story_shape"),
+            "vehicle_type": vehicle_type,
+            "vehicle_context": vehicle_context,
             "negative_structure": (
                 "PROHIBIDO el arco taller_renovado: mejor atención → clientes → sucursales → "
                 "competidor barato → mantienes calidad / te vuelves referente."
             ),
             "instruction": (
-                "Escribe story_core + story_spine para ESTA seed. Honra su story_shape. "
+                f"Escribe story_core + story_spine para ESTA seed de tipo {vehicle_type}. "
+                f"Honra su story_shape. {vehicle_context} "
                 "Conflicto orgánico (no pegable en otras 20 ideas). Oportunidad concreta. "
                 "Si hay producto, que se pueda explicar qué hace. Ending = estado o evento. "
                 "Incluye un giro inesperado plausible. No copies el negocio del ejemplo de calidad."
@@ -598,11 +624,16 @@ def _llm_story_from_seed(client: Any, model: str, seed: dict[str, Any], stats: d
         temperature=0.75,
         stats=stats,
     )
+    
+    # Preservar vehicle_type en el resultado
+    result = parsed if isinstance(parsed, dict) else {}
     if isinstance(parsed.get("story_core"), dict):
-        return parsed
-    if isinstance(parsed.get("package"), dict):
-        return parsed["package"]
-    return parsed
+        result = parsed
+    elif isinstance(parsed.get("package"), dict):
+        result = parsed["package"]
+    
+    result["vehicle_type"] = vehicle_type
+    return result
 
 
 def _llm_package_from_story(
@@ -737,6 +768,21 @@ def normalize_concept_package(raw: dict[str, Any]) -> dict[str, Any]:
     out["language"] = str(raw.get("language") or raw.get("content_language") or CONTENT_LANGUAGE).strip() or CONTENT_LANGUAGE
     out["content_language"] = out["language"]
     out["image_prompt_language"] = str(raw.get("image_prompt_language") or IMAGE_PROMPT_LANGUAGE).strip() or IMAGE_PROMPT_LANGUAGE
+    
+    # Preservar vehicle_type del seed o detectarlo
+    vehicle_type = str(raw.get("vehicle_type") or "business").strip()
+    out["vehicle_type"] = vehicle_type
+    
+    # Agregar nombre descriptivo del vehículo
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        if vehicle_type in UNIVERSAL_VEHICLES:
+            out["vehicle_name"] = UNIVERSAL_VEHICLES[vehicle_type]["name"]
+        else:
+            out["vehicle_name"] = vehicle_type.replace("_", " ").title()
+    except ImportError:
+        out["vehicle_name"] = vehicle_type.replace("_", " ").title()
+    
     out["premise"] = str(raw.get("premise") or raw.get("story") or "").strip()
     out["one_line_fantasy"] = str(raw.get("one_line_fantasy") or raw.get("fantasy") or "").strip()
     out["starting_state"] = _stringify_state(raw.get("starting_state"))
@@ -970,16 +1016,50 @@ def _llm_raw_seeds_once(
     required_story_shapes: list[str] | None = None,
     shape_cap: int = 2,
 ) -> list[dict[str, Any]]:
+    # Obtener vehículos disponibles del sistema universal
+    available_vehicles = []
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        available_vehicles = list(UNIVERSAL_VEHICLES.keys())
+    except ImportError:
+        available_vehicles = ["sports_team", "business"]
+    
+    # Seleccionar vehículos diversos para este batch
+    vehicle_pool = available_vehicles * ((count // len(available_vehicles)) + 1)
+    random.shuffle(vehicle_pool)
+    required_vehicles = vehicle_pool[:count]
+    
     system = SEED_SYSTEM + (
         f' JSON: {{"seeds":[{{"id":"slug","mechanism_type":"...","fantasy_type":"...",'
-        f'"story_shape":"...","industry":"...","scale_hint":"national|international|empire|major_exit",'
+        f'"story_shape":"...","vehicle_type":"sports_team|musician|chef|filmmaker|creator|...",'
+        f'"industry":"...","scale_hint":"national|international|empire|major_exit",'
         f'"concrete_hook":"una frase vivida EN ESPAÑOL","suggested_category":"..."}}]}} '
         f"Produce EXACTLY {int(count)} seeds (no fewer). concrete_hook MUST be Spanish. "
         f"CADA seed usa un story_shape DISTINTO tomado de required_story_shapes. "
+        f"CADA seed usa un vehicle_type DISTINTO de: {', '.join(required_vehicles[:count])}. "
         f"Máximo {int(shape_cap)} seeds con la misma story_shape. "
+        f"Diversidad MÁXIMA de vehicle_type: cada seed debe ser un tipo de fantasía diferente "
+        f"(músico, chef, atleta, creador, negocio, etc.). "
         f"Diversidad orgánica de mechanism_type y fantasy_type. "
         f"Prefer scale_hint national+. Prohibido community-savior y el arco precio-vs-calidad genérico."
     )
+    # Obtener vehículos disponibles
+    available_vehicles = []
+    vehicle_descriptions = {}
+    try:
+        from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
+        available_vehicles = list(UNIVERSAL_VEHICLES.keys())
+        vehicle_descriptions = {
+            k: f"{v['name']} - {v['vehicle']}" 
+            for k, v in UNIVERSAL_VEHICLES.items()
+        }
+    except ImportError:
+        available_vehicles = ["sports_team", "business"]
+        vehicle_descriptions = {
+            "sports_team": "Dueño de Equipo Deportivo",
+            "business": "Fundador de Empresa"
+        }
+    
     user = {
         "channel": (profile.get("channel") or {}).get("name"),
         "categories": cats,
@@ -987,6 +1067,9 @@ def _llm_raw_seeds_once(
         "fantasy_diversity": list(FANTASY_DIVERSITY),
         "story_shapes": list(STORY_SHAPES),
         "required_story_shapes": list(required_story_shapes or STORY_SHAPES[: max(1, int(count))]),
+        "required_vehicles": required_vehicles,
+        "available_vehicles": vehicle_descriptions,
+        "vehicle_diversity_rule": "CADA seed debe ser un vehicle_type DIFERENTE para máxima variedad",
         "avoid": profile.get("avoid"),
         "prior": _prior_block(prior),
         "avoid_titles": avoid_titles or [],
