@@ -52,8 +52,74 @@ function loadIdeasCache() {
   }
 }
 
+const LIBRARY_KEY = "ff_library_v1";
+
+function loadLibraryCache() {
+  try {
+    const raw = localStorage.getItem(LIBRARY_KEY);
+    const data = raw ? JSON.parse(raw) : null;
+    if (data && data.projects && typeof data.projects === "object") return data;
+  } catch {
+    /* ignore */
+  }
+  return { projects: {} };
+}
+
+function saveLibraryCache(cache) {
+  try {
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(cache));
+  } catch {
+    const slim = { projects: {} };
+    for (const [id, row] of Object.entries(cache.projects || {})) {
+      slim.projects[id] = { card: row.card, savedAt: row.savedAt };
+    }
+    try {
+      localStorage.setItem(LIBRARY_KEY, JSON.stringify(slim));
+    } catch {
+      /* storage full */
+    }
+  }
+}
+
+function cardFromProject(p) {
+  const cps = p.checkpoints || {};
+  return {
+    id: p.id,
+    title: p.title || p.topic || "Sin título",
+    episode_number: Number(p.episode_number || 0),
+    status: p.status || (cps.render_ready ? "complete" : "in_progress"),
+    ui_step: p.ui_step || "story",
+    content_format: p.content_format || p.mode || "check_als",
+  };
+}
+
+function rememberProject(p) {
+  if (!p || !p.id) return;
+  const cache = loadLibraryCache();
+  const prev = cache.projects[p.id] || {};
+  const full = p.script !== undefined || p.concept || p.check_story ? p : prev.project;
+  cache.projects[p.id] = {
+    card: { ...(prev.card || {}), ...cardFromProject(p) },
+    project: full || prev.project || null,
+    savedAt: Date.now(),
+  };
+  saveLibraryCache(cache);
+}
+
+function libraryProjects() {
+  const cache = loadLibraryCache();
+  const byId = {};
+  for (const row of Object.values(cache.projects || {})) {
+    if (row?.card?.id) byId[row.card.id] = { ...row.card };
+  }
+  for (const p of state.bootstrap?.projects || []) {
+    if (p?.id) byId[p.id] = { ...byId[p.id], ...p };
+  }
+  return Object.values(byId).sort((a, b) => Number(b.episode_number || 0) - Number(a.episode_number || 0));
+}
+
 function activeInProgressProject() {
-  const projects = state.bootstrap?.projects || [];
+  const projects = libraryProjects();
   if (state.activeProjectId) {
     const hit = projects.find((p) => p.id === state.activeProjectId);
     if (hit && hit.status !== "complete") return hit;
@@ -178,6 +244,12 @@ async function api(path, opts = {}) {
   }
   if (data && data.boot_error) {
     console.error(data.boot_error);
+  }
+  if (data?.project?.id) rememberProject(data.project);
+  if (Array.isArray(data?.projects)) {
+    for (const card of data.projects) {
+      if (card?.id) rememberProject(card);
+    }
   }
   return data;
 }
@@ -956,8 +1028,21 @@ async function boot() {
 }
 
 async function openProject(id) {
-  const data = await withBusy("Opening episode…", () => api(`/api/projects/${encodeURIComponent(id)}`));
+  let data;
+  try {
+    data = await withBusy("Opening episode…", () => api(`/api/projects/${encodeURIComponent(id)}`));
+  } catch (e) {
+    const cached = loadLibraryCache().projects?.[id];
+    if (!cached?.project) throw e;
+    data = await withBusy("Recuperando episodio en este dispositivo…", () =>
+      api("/api/projects/restore", {
+        method: "POST",
+        body: JSON.stringify({ project: cached.project }),
+      })
+    );
+  }
   state.project = data.project;
+  state.activeProjectId = data.project?.id || id;
   state.shots = null;
   location.hash = `project/${id}`;
   go("project");
@@ -977,6 +1062,7 @@ function renderHome() {
   const s = b.stats;
   const fmt = b.formats?.active || b.channel?.content_format || "check_als";
   const isCheck = fmt === "check_als";
+  const projects = libraryProjects();
   const active = activeInProgressProject();
   const goal = Math.max(1, s.goal || 100);
   const pct = Math.min(100, Math.round((s.day / goal) * 100));
@@ -1114,11 +1200,11 @@ function renderHome() {
   bindSync("#cta-push", "/api/sync/push", "Subiendo a Supabase");
   bindSync("#cta-pull", "/api/sync/pull", "Bajando de Supabase");
   const host = $("#recent");
-  if (!b.projects.length) {
+  if (!projects.length) {
     host.innerHTML = `<div class="panel"><p class="lead">No episodes yet. Start today's video.</p></div>`;
     return;
   }
-  const firstOpen = b.projects.find((p) => p.status !== "complete") || b.projects[0];
+  const firstOpen = projects.find((p) => p.status !== "complete") || projects[0];
   host.innerHTML =
     (firstOpen
       ? `<div class="panel" style="margin-bottom:1rem">
@@ -1128,7 +1214,7 @@ function renderHome() {
           <button class="btn btn-primary" data-open="${esc(firstOpen.id)}">Abrir este episodio</button>
         </div>`
       : "") +
-    b.projects
+    projects
       .slice(0, 8)
       .map(
         (p) => `
@@ -1474,7 +1560,7 @@ function paintCheckConcepts(host) {
 
 function renderLibrary() {
   setStageMode("home");
-  const projects = state.bootstrap?.projects || [];
+  const projects = libraryProjects();
   stage().innerHTML = `
     <p class="kicker">Library</p>
     <h1 class="h1">All episodes</h1>
@@ -1506,7 +1592,7 @@ function renderLibrary() {
         </article>`
         )
         .join("")
-    : `<div class="panel"><p class="lead">Empty library.</p></div>`;
+    : `<div class="panel"><p class="lead">Todavía no hay episodios en este celular. Cuando crees uno, queda guardado acá.</p></div>`;
   document.querySelectorAll("[data-open]").forEach((btn) => {
     btn.onclick = () => openProject(btn.dataset.open);
   });

@@ -74,6 +74,7 @@ from src.documentary.project import (
     derive_progress,
     list_projects,
     list_projects_for_session,
+    ensure_layout,
     load_project,
     project_dir,
     save_project,
@@ -548,6 +549,65 @@ def create_app() -> FastAPI:
                     _sync_safe(lambda: cloud_sync.push_project(str(data.get("id") or "")))
                     _sync_safe(cloud_sync.push_sessions)
             return {"project": _project_full(data)}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.post("/api/projects/restore")
+    def restore_project(body: dict):
+        """Rewrite an episode lost from the ephemeral server disk (same device cache)."""
+        payload = body.get("project") if isinstance(body, dict) else None
+        if not isinstance(payload, dict):
+            raise HTTPException(400, "Falta el episodio para restaurar")
+        pid = str(payload.get("id") or "").strip()
+        if not pid or "/" in pid or ".." in pid:
+            raise HTTPException(400, "id inválido")
+        try:
+            cs = payload.get("check_story") if isinstance(payload.get("check_story"), dict) else {}
+            data = dict(payload)
+            data["id"] = pid
+            data.pop("progress", None)
+            data.pop("story_plan_markdown", None)
+            data.pop("flow_pack_path", None)
+            data.pop("check_story", None)
+            if cs:
+                data["check_story_approved"] = bool(payload.get("check_story_approved") or cs.get("approved"))
+            root = project_dir(pid)
+            ensure_layout(root)
+            if cs.get("synopsis") or cs.get("beats") or (isinstance(cs.get("blueprint"), dict) and cs.get("blueprint")):
+                meta = root / "metadata"
+                meta.mkdir(parents=True, exist_ok=True)
+                if isinstance(cs.get("blueprint"), dict):
+                    (meta / "story_blueprint.json").write_text(
+                        json.dumps(cs["blueprint"], ensure_ascii=False, indent=2), encoding="utf-8"
+                    )
+                beats = cs.get("beats") if isinstance(cs.get("beats"), list) else []
+                (meta / "beats.json").write_text(
+                    json.dumps({"beats": beats}, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+                if cs.get("synopsis"):
+                    (meta / "story_synopsis.md").write_text(str(cs["synopsis"]).strip() + "\n", encoding="utf-8")
+                if isinstance(cs.get("quality"), dict):
+                    (meta / "story_quality.json").write_text(
+                        json.dumps(cs["quality"], ensure_ascii=False, indent=2), encoding="utf-8"
+                    )
+                if isinstance(cs.get("review"), dict):
+                    (meta / "story_review.json").write_text(
+                        json.dumps(cs["review"], ensure_ascii=False, indent=2), encoding="utf-8"
+                    )
+            if not isinstance(data.get("checkpoints"), dict):
+                data["checkpoints"] = {}
+            save_project(data)
+            if (root / "script").is_dir() and isinstance(data.get("script"), str) and data["script"].strip():
+                (root / "script" / "script.txt").write_text(data["script"], encoding="utf-8")
+            saved = load_project(pid)
+            if on_vercel():
+                from src.documentary import cloud_sync
+
+                if cloud_sync.configured():
+                    _sync_safe(lambda: cloud_sync.push_project(pid))
+            return {"project": _project_full(saved)}
         except HTTPException:
             raise
         except Exception as e:
