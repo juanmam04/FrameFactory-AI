@@ -487,6 +487,11 @@ def create_app() -> FastAPI:
     @app.post("/api/projects")
     def new_project(body: NewProjectBody):
         concept = body.concept if isinstance(body.concept, dict) else None
+        user_prompt = (body.user_prompt or "").strip()
+        if user_prompt and not concept:
+            from src.documentary.formats.check_als.user_idea import adapt_user_idea
+
+            concept = adapt_user_idea(user_prompt)
         fmt_hint = normalize_content_format(body.content_format) if body.content_format else None
         if concept:
             fmt_hint = FORMAT_CHECK_ALS
@@ -512,6 +517,9 @@ def create_app() -> FastAPI:
                 )
                 data["vehicle_type"] = str(fields.get("vehicle_type") or (fields.get("concept") or {}).get("vehicle_type") or "business")
                 data["check_ending_type"] = str(fields.get("ending_type") or (fields.get("concept") or {}).get("ending_type") or "open")
+                if (fields.get("concept") or {}).get("user_proposed") or data["vehicle_type"] == "freeform":
+                    data["user_proposed"] = True
+                    data["vehicle_type"] = "freeform"
                 if isinstance(data.get("concept"), dict):
                     data["concept"]["vehicle_type"] = data["vehicle_type"]
                     data["concept"]["ending_type"] = data["check_ending_type"]
@@ -1804,6 +1812,7 @@ class NewProjectBody(BaseModel):
     idea: dict[str, Any] | None = None
     concept: dict[str, Any] | None = None
     content_format: str = ""
+    user_prompt: str = ""
 
 
 class StepBody(BaseModel):

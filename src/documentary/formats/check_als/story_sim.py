@@ -609,7 +609,7 @@ def force_pre_acquisition(world: dict[str, Any], *, mode: str = "sports_team") -
     w["finance"]["financing_open"] = False
     if _num(w["life"].get("personal_cash")) <= 0:
         w["life"]["personal_cash"] = 18400 if mode == "sports_team" else 12000
-    if mode == "business":
+    if mode in ("business", "freeform"):
         # Never inherit basketball pilot debt / arena defaults.
         w["finance"]["team_debt"] = 0
         w["finance"]["debt_service"] = 0

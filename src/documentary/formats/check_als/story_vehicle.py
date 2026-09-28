@@ -22,7 +22,11 @@ def vehicle_mode(project: dict[str, Any]) -> str:
     """
     concept = project.get("concept") if isinstance(project.get("concept"), dict) else {}
     idea = project.get("idea") if isinstance(project.get("idea"), dict) else {}
+    if concept.get("user_proposed") or project.get("user_proposed"):
+        return "freeform"
     stored = str(project.get("vehicle_type") or concept.get("vehicle_type") or "").strip()
+    if stored == "freeform":
+        return "freeform"
     if stored:
         try:
             from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
@@ -41,6 +45,12 @@ def vehicle_mode(project: dict[str, Any]) -> str:
 
 def default_open_loops(mode: str) -> list[dict[str, Any]]:
     """Genera open loops dinámicos basados en el tipo de vehículo."""
+    if mode == "freeform":
+        return [
+            {"id": "start", "question": "¿empiezas el reto?", "opened_at": "start", "status": "open", "important": True},
+            {"id": "clock", "question": "¿llegas al final del plazo?", "opened_at": "start", "status": "open", "important": True},
+            {"id": "how_far", "question": "¿cómo termina?", "opened_at": "start", "status": "open", "important": False, "intentional_unresolved": True},
+        ]
     try:
         from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
         
@@ -76,6 +86,11 @@ def default_open_loops(mode: str) -> list[dict[str, Any]]:
 
 def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
     """Genera specs de fases dinámicas basadas en el vehículo."""
+    if mode == "freeform":
+        return [
+            ("p1", "Parte 1, 6 a 8 escenas: empieza EXACTAMENTE la idea del usuario. No la cambies de tema, de plazo ni de reto. Nada de equipo, empresa u oficio si la idea no lo es."),
+            ("p2", f"Parte 2, 6 a 8 escenas: la misma idea se complica y cierra ({ending_type}). Sigue siendo esa fantasía, contada en escenas que se filman."),
+        ]
     try:
         from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
         
@@ -105,8 +120,30 @@ def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
     ]
 
 
+_FREEFORM_BLUEPRINT = """
+La premisa del usuario ES la película. Adáptate a ella.
+Si pide 7 días para gastar una fortuna, la historia son esos días y ese gasto, no una empresa.
+Si pide otra fantasía rara, síguela. No la traduzcas a básquet, startup, restaurante ni oficio.
+Español de tú. Escenas concretas. Final en una escena.
+Return ONLY JSON: blueprint + initial_world. En blueprint guarda user_premise con la idea original.
+NO escribas synopsis.
+""".strip()
+
+_FREEFORM_BEATS = """
+Beat planner. Cada escena obedece la idea del usuario.
+6 a 8 escenas. Ops invisibles y pocas: advance_time (días o meses, según el plazo de la idea).
+No uses acquire_team ni launch_company si la idea no es comprar o fundar algo.
+El texto de event es vida, en tú, sin porcentajes.
+Return ONLY JSON: {"beats":[...]}
+""".strip()
+
+
 def blueprint_system(mode: str) -> str:
     """Retorna el system prompt de blueprint adaptado al vehículo."""
+    if mode == "freeform":
+        from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, SIMPLE_STORY_BRIEF
+
+        return SIMPLE_STORY_BRIEF + "\n" + _FREEFORM_BLUEPRINT + "\n" + PUBLIC_EVENT_RULES
     try:
         from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES, get_universal_vehicle_prompt
         
@@ -128,6 +165,10 @@ def blueprint_system(mode: str) -> str:
 
 def beats_system(mode: str) -> str:
     """Retorna el system prompt de beats adaptado al vehículo."""
+    if mode == "freeform":
+        from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, SIMPLE_STORY_BRIEF
+
+        return SIMPLE_STORY_BRIEF + "\n" + _FREEFORM_BEATS + "\n" + PUBLIC_EVENT_RULES
     try:
         from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
         

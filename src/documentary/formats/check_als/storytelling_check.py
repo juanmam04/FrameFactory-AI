@@ -538,7 +538,14 @@ def get_check_master_prompt(locked_facts: str, vehicle_mode: str = "sports_team"
         pass
     
     # Fallback: sistema tradicional sports/business
-    vehicle_instructions = VEHICLE_SPORTS if vehicle_mode == "sports_team" else VEHICLE_BUSINESS
+    if vehicle_mode == "freeform":
+        vehicle_instructions = (
+            "vehicle_mode=freeform\n"
+            "La premisa del usuario es la película. No la conviertas en empresa, equipo ni otro oficio.\n"
+            "Cuéntala en tú, en escenas, sin porcentajes ni deuda."
+        )
+    else:
+        vehicle_instructions = VEHICLE_SPORTS if vehicle_mode == "sports_team" else VEHICLE_BUSINESS
     
     return MASTER_PROMPT_CHECK.format(
         beat_sheet=BEAT_SHEET_CHECK,

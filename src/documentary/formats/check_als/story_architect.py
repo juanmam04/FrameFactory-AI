@@ -189,7 +189,13 @@ def generate_check_story(
         narrative_ending = "open"
     user_ctx["vehicle_mode"] = vmode
     user_ctx["narrative_ending"] = narrative_ending
-    if vmode == "sports_team":
+    if vmode == "freeform":
+        mode_line = (
+            " MODO IDEA DEL USUARIO: la premisa es intocable. "
+            "No la conviertas en equipo, empresa, restaurante ni otro oficio. "
+            "Adapta las escenas, el plazo y el cierre a ESA fantasía."
+        )
+    elif vmode == "sports_team":
         mode_line = " MODO DEPORTE: equipo de básquet ficticio."
     elif vmode == "business":
         mode_line = " MODO NEGOCIO: empresa/creator — cero básquet/playoffs/campeonato."
@@ -208,6 +214,9 @@ def generate_check_story(
 
     raw_bp = _chat_json(client, model, blueprint_system(vmode), user_ctx, temperature=0.8, timeout=180.0, max_tokens=7000)
     blueprint, _syn_unused, initial_world, initial_story, initial_prog = _extract_blueprint_bundle(raw_bp)
+    if vmode == "freeform":
+        blueprint["user_premise"] = str(user_ctx.get("premise") or "")
+        blueprint["freeform"] = True
     initial_world = force_pre_acquisition(initial_world, mode=vmode)
     if not (initial_story.get("open_loops") or []):
         initial_story["open_loops"] = default_open_loops(vmode)
@@ -381,9 +390,9 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             raw_beats = strip_sports_narrative(raw_beats)
         raw_beats = inject_life_payoffs(raw_beats, final_world)
         extra_ops = []
-        if any(f.get("code") == "time_too_short" for f in hard):
+        if vmode != "freeform" and any(f.get("code") == "time_too_short" for f in hard):
             extra_ops.append({"op": "advance_time", "months": 36})
-        if any(f.get("code") == "acquisition_missing" for f in hard) and raw_beats:
+        if vmode != "freeform" and any(f.get("code") == "acquisition_missing" for f in hard) and raw_beats:
             # Nuclear inject on beat 4 (or last) if still missing after repair_architecture.
             idx = min(3, len(raw_beats) - 1)
             ops = list(raw_beats[idx].get("ops") or [])
@@ -509,7 +518,13 @@ def _project_context(project: dict[str, Any]) -> dict[str, Any]:
         "story_core_id": concept.get("story_core_id") or engine.get("story_core_id") or "",
         "instruction": (
             "Usa la premisa/fantasía. NO conserves un spine previo. "
-            "Construye una película mejor. Ficción. Adquisición plausible. 12-18 minutos."
+            "Construye una película mejor. Ficción. "
+            + (
+                "Si la idea no es comprar ni fundar algo, no inventes una adquisición. "
+                if concept.get("user_proposed")
+                else "Adquisición plausible. "
+            )
+            + "12-18 minutos."
         ),
         "duration_min": project.get("target_duration_min") or [12, 18],
         "language": "es",

@@ -15,6 +15,44 @@ SHOT = (
 )
 
 
+def test_user_idea_stays_the_users_challenge():
+    from src.documentary.formats.check_als.concepts import package_to_project_fields
+    from src.documentary.formats.check_als.plain_language import public_life_synopsis
+    from src.documentary.formats.check_als.story_vehicle import phase_specs, vehicle_mode
+    from src.documentary.formats.check_als.user_idea import adapt_user_idea, user_pov_title
+
+    raw = "POV: Tenes 7 dias para gastar 1.000.000.000.000 de dolares"
+    title = user_pov_title(raw)
+    assert title.lower().startswith("pov:")
+    assert "tienes" in title.lower()
+    assert "1.000.000.000.000" in title
+    assert "equipo" not in title.lower()
+
+    pkg = adapt_user_idea(raw, use_llm=False)
+    fields = package_to_project_fields(pkg)
+    project = {
+        "title": fields["title"],
+        "topic": fields["topic"],
+        "vehicle_type": fields["vehicle_type"],
+        "user_proposed": True,
+        "concept": fields["concept"],
+    }
+    assert vehicle_mode(project) == "freeform"
+    assert len(phase_specs("freeform", "open")) == 2
+    synopsis = public_life_synopsis(
+        {"user_premise": fields["concept"]["premise"], "freeform": True},
+        [{"event": "El segundo día compras una isla y la dejas vacía."}],
+        {},
+        {},
+        vehicle_mode="freeform",
+    )
+    low = synopsis.lower()
+    assert "tienes" in low or "gast" in low
+    assert "básquet" not in low
+    assert "equity" not in low
+    assert "51" not in low
+
+
 def test_generator_plans_a_short_life():
     from src.documentary.formats.check_als.plain_language import SIMPLE_STORY_BRIEF
     from src.documentary.formats.check_als.story_vehicle import phase_specs

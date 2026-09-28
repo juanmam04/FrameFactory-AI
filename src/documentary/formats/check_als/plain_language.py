@@ -7,6 +7,8 @@ from typing import Any
 _VOSEO = (
     (r"\bTenés\b", "Tienes"),
     (r"\btenés\b", "tienes"),
+    (r"\bTenes\b", "Tienes"),
+    (r"\btenes\b", "tienes"),
     (r"\bTrabajás\b", "Trabajas"),
     (r"\btrabajás\b", "trabajas"),
     (r"\bVivís\b", "Vives"),
@@ -258,6 +260,42 @@ def _life_bits(initial: dict[str, Any], final: dict[str, Any]) -> tuple[str, str
     return str(age0), str(age1), str(job0), str(home0), str(job1), str(home1)
 
 
+def _freeform_synopsis(
+    blueprint: dict[str, Any],
+    beats: list[dict[str, Any]],
+) -> str:
+    seed = str(
+        blueprint.get("user_premise")
+        or (blueprint.get("opening") or {}).get("situation")
+        or (blueprint.get("fantasy") or {}).get("surface_desire")
+        or ""
+    ).strip()
+    paras = []
+    if seed:
+        paras.append(to_tu(seed if seed.endswith(".") else seed + "."))
+    else:
+        paras.append("Empieza el reto tal como lo pensaste.")
+    picked = 0
+    for beat in beats or []:
+        if picked >= 4:
+            break
+        line = plain_event(str(beat.get("event") or ""), sports=False)
+        if not line or has_jargon(line) or line in " ".join(paras):
+            continue
+        paras.append(line if line.endswith(".") else line + ".")
+        picked += 1
+    ending = str(blueprint.get("ending") or "").strip()
+    if ending and not has_jargon(ending):
+        paras.append(to_tu(ending if ending.endswith(".") else ending + "."))
+    else:
+        paras.append("El plazo se acaba. Queda una última escena, y ahí se cierra.")
+    body = re.sub(r"\s+", " ", " ".join(paras)).strip()
+    words = _words(body)
+    if len(words) > 520:
+        body = " ".join(words[:500]).rstrip(" ,;:") + "."
+    return to_tu(body)
+
+
 def public_life_synopsis(
     blueprint: dict[str, Any],
     beats: list[dict[str, Any]],
@@ -266,6 +304,8 @@ def public_life_synopsis(
     *,
     vehicle_mode: str = "sports_team",
 ) -> str:
+    if vehicle_mode == "freeform" or blueprint.get("freeform"):
+        return _freeform_synopsis(blueprint, beats)
     sports_state = (final or {}).get("sports") or {}
     sports = vehicle_mode == "sports_team" or (
         vehicle_mode != "business" and bool(sports_state.get("season_history") or sports_state.get("games_played"))

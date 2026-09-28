@@ -1266,18 +1266,23 @@ async function renderIdeas() {
         </select>
       </label>
       <button class="btn btn-accent" id="gen-ideas">${isCheck ? "Generar 5 ideas" : "Generate ideas"}</button>
-      <button class="btn btn-ghost" id="manual">I have a topic</button>
+      ${isCheck ? "" : `<button class="btn btn-ghost" id="manual">I have a topic</button>`}
       <button class="btn btn-ghost" id="back-home">Back</button>
     </div>
-    <div id="manual-box" class="panel hidden field" style="margin-bottom:1rem">
-      <label>Topic / working title</label>
-      <input id="manual-topic" placeholder="${
+    <div id="manual-box" class="panel field" style="margin-bottom:1rem${isCheck ? "" : ""}">
+      <p class="kicker">${isCheck ? "Tu idea" : "Topic"}</p>
+      <label>${
         isCheck
-          ? "e.g. POV: You Build a Hotel Empire From One Motel"
-          : "e.g. The SoftBank bet that almost buried WeWork"
-      }"/>
+          ? "Si se te ocurre un video, escríbelo. No tiene que ser el formato de siempre: la historia se adapta a eso."
+          : "Topic / working title"
+      }</label>
+      ${
+        isCheck
+          ? `<textarea id="manual-topic" rows="3" placeholder="POV: Tienes 7 días para gastar 1.000.000.000.000 de dólares"></textarea>`
+          : `<input id="manual-topic" placeholder="e.g. The SoftBank bet that almost buried WeWork"/>`
+      }
       <div class="actions">
-        <button class="btn btn-primary" id="manual-go">Continue</button>
+        <button class="btn btn-primary" id="manual-go">${isCheck ? "Armar esta idea" : "Continue"}</button>
       </div>
     </div>
     <div class="idea-grid" id="ideas"></div>
@@ -1309,19 +1314,23 @@ async function renderIdeas() {
       toast(e.message);
     }
   };
-  $("#manual").onclick = () => $("#manual-box").classList.toggle("hidden");
+  const manualBtn = $("#manual");
+  if (manualBtn) manualBtn.onclick = () => $("#manual-box").classList.toggle("hidden");
+  if (!isCheck) $("#manual-box").classList.add("hidden");
   $("#manual-go").onclick = async () => {
     const topic = $("#manual-topic").value.trim();
-    if (!topic) return toast("Write a topic first");
+    if (!topic) return toast(isCheck ? "Escribe la idea primero" : "Write a topic first");
+    const checkIdea = (state.contentFormat || fmt) === "check_als";
     try {
-      const data = await withBusy("Creating episode…", () =>
+      const data = await withBusy(checkIdea ? "Adaptando tu idea…" : "Creating episode…", () =>
         api("/api/projects", {
           method: "POST",
-          body: JSON.stringify({
-            topic,
-            title: topic,
-            content_format: state.contentFormat || fmt,
-          }),
+          body: JSON.stringify(
+            checkIdea
+              ? { user_prompt: topic, content_format: "check_als" }
+              : { topic, title: topic, content_format: state.contentFormat || fmt }
+          ),
+          timeoutMs: checkIdea ? 120000 : undefined,
         })
       );
       state.project = data.project;

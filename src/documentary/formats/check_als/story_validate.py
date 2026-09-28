@@ -105,7 +105,12 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
     text = synopsis or ""
     words = len(re.findall(r"\S+", text))
     low = text.lower()
-    if vehicle_mode == "business":
+    if vehicle_mode == "freeform":
+        needed = {
+            "voice": ("tienes", "te ", "tu ", "tú"),
+            "idea": ("día", "dias", "reto", "fantas", "gast", "vives", "empiez", "hora", "noche"),
+        }
+    elif vehicle_mode == "business":
         needed = {
             "launch": ("lanz", "fund", "empresa", "startup", "negocio", "creador", "firma", "compr", "empiez", "firmas", "ahorr"),
             "personal": ("renunci", "departamento", "oficina", "mud", "casa", "habitación", "habitacion", "padres"),
@@ -280,7 +285,7 @@ def validate_hard_gates(
     end_ms = end.get("milestones") or []
     if "owns_team" in end_ms or "company_launched" in end_ms:
         acquired = True
-    if not acquired:
+    if not acquired and vehicle_mode != "freeform":
         detail = (
             "nunca pasa ownership 0→control (falta launch_company / acquire_team)"
             if vehicle_mode == "business"
@@ -303,7 +308,7 @@ def validate_hard_gates(
         fails.append({"code": "frozen_debt", "detail": "hubo pago de deuda y debt no se movió", "hard": True})
     age0 = _num(((start.get("time") or {}).get("protagonist_age")) or 22)
     age1 = _num(((end.get("time") or {}).get("protagonist_age")) or age0)
-    if age1 < age0 + 2:
+    if vehicle_mode != "freeform" and age1 < age0 + 2:
         fails.append({"code": "time_too_short", "detail": f"edad {age0}→{age1} (hace falta una vida de varios años)", "hard": True})
     if vehicle_mode == "sports_team" and champ_text:
         rec = (end.get("sports") or {})

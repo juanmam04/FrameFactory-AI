@@ -962,10 +962,18 @@ def normalize_concept_package(raw: dict[str, Any]) -> dict[str, Any]:
 def package_to_project_fields(package: dict[str, Any]) -> dict[str, Any]:
     from src.documentary.formats.check_als.editorial import CONTENT_LANGUAGE
 
+    user_proposed = bool(package.get("user_proposed") or package.get("vehicle_type") == "freeform")
     pkg = normalize_concept_package(package)
-    from src.documentary.formats.check_als.fast_concepts import ensure_pov_title
+    if user_proposed:
+        from src.documentary.formats.check_als.user_idea import user_pov_title
 
-    title = ensure_pov_title(str(pkg.get("title") or ""), str(pkg.get("vehicle_type") or ""))
+        pkg["user_proposed"] = True
+        pkg["vehicle_type"] = "freeform"
+        title = user_pov_title(str(package.get("title") or pkg.get("title") or pkg.get("premise") or ""))
+    else:
+        from src.documentary.formats.check_als.fast_concepts import ensure_pov_title
+
+        title = ensure_pov_title(str(pkg.get("title") or ""), str(pkg.get("vehicle_type") or ""))
     pkg["title"] = title
     pkg["title_options"] = [{"text": title}]
     topic = pkg["one_line_fantasy"] or pkg["premise"] or title
