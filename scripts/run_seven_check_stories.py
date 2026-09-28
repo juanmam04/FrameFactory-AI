@@ -11,7 +11,7 @@ if str(ROOT) not in sys.path:
 
 from src.documentary.formats.check_als.offline_movie import MOVIES, architecture_for
 from src.documentary.formats.check_als.plain_language import sports_bleed
-from src.documentary.formats.check_als.script import generate_check_script
+from src.documentary.formats.check_als.script import MIN_WORDS, generate_check_script
 from src.documentary.formats.check_als.story_architect import approve_check_story, generate_check_story, public_architecture
 from src.documentary.project import PROJECTS_ROOT, create_project
 from src.script_generator import count_words
@@ -129,8 +129,8 @@ def _spectator(case: dict, synopsis: str, script: str, times: list[str]) -> list
         fails.append("la línea de tiempo quedó corta")
     if times and len(set(times)) < 3:
         fails.append("el tiempo no avanza")
-    if count_words(script) < 250:
-        fails.append("el guion es demasiado corto para quedarse")
+    if count_words(script) < MIN_WORDS:
+        fails.append(f"el guion es corto para un video largo ({count_words(script)} palabras)")
     # La sinopsis tiene que hablar de lo mismo que el guion.
     if case["need"][0] not in synopsis.lower() and case["mode"] != "business":
         fails.append("la sinopsis no cuenta la misma película")
@@ -210,7 +210,7 @@ def main() -> int:
             if val in ("flag", "fail"):
                 fails.append(f"marca {key}={val}")
         for w in script_warn:
-            if "LLM fallback" in str(w) or "draft corto" in str(w):
+            if "LLM fallback" in str(w):
                 continue
             fails.append(f"guion {w}")
         # Que no sea la misma película que otra.

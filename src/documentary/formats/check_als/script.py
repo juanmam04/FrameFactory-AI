@@ -110,7 +110,8 @@ IMPACTO ASPIRACIONAL (crítico para el viewer):
 - Si el state dice éxito extremo y el VO sigue en oficina gris / depto triste / cara de derrota, FALLASTE.
 
 FORMA:
-- Mínimo 1100 palabras. Rango 1100–2300. Target 1800.
+- El video es largo: unos 12 a 15 minutos. Mínimo 1100 palabras. Rango 1100–2300. Target 1800.
+- No entregues un resumen. Quédate dentro de cada escena el tiempo que hace falta para oírla.
 - Cold open directo con edad / situación / cifra.
 - Escenas concretas del JSON. Números locked = ley.
 - Final en escena (teléfono / oferta). Sin moraleja. Sin CTA.
@@ -145,7 +146,7 @@ def script_system(mode: str) -> str:
 RETENTION_SYSTEM = """Eres editor de retención de YouTube para Check (segunda persona, tú/te).
 
 Reescribí el guion SIN agregar relleno y SIN cambiar hechos/números.
-Cada ~30–45 segundos (≈75–110 palabras) un cambio. Tú/te. Nunca vos. Mínimo 1100 palabras. Solo el guion."""
+Cada ~30–45 segundos (≈75–110 palabras) un cambio. Tú/te. Nunca vos. Video largo: mínimo 1100 palabras, target 1800. Solo el guion."""
 
 
 def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> dict[str, Any]:
@@ -360,7 +361,8 @@ EXPAND_SYSTEM = """Eres guionista de Check. El guion (VO) está CORTO.
 Expandí SOLO con narración hablada en segunda persona (tú/te).
 PROHIBIDO: INT/EXT, diálogos con nombres, acotaciones, ops (launch_company…), meta ("NO moraleja").
 Si vehicle_mode=business: PROHIBIDO deporte/estadio/playoffs.
-Mínimo 1100 palabras. Target ~1800. Devolvé el guion completo hablado, nada más.
+El video es largo, de unos 12 a 15 minutos. Mínimo 1100 palabras. Target ~1800. No lo dejes en un resumen.
+Devolvé el guion completo hablado, nada más.
 Solo el texto del VO."""
 
 
@@ -486,6 +488,157 @@ def _event_to_vo(event: str, *, when: str = "", own: int = 0) -> str:
     if own >= 40:
         parts.append(f"Todavía tienes el {own}%.")
     return " ".join(parts)
+
+
+_STAY = (
+    "Te sientas y dejas pasar un minuto entero. {a} sigue en la cabeza, y {b} también. No lo dices en voz alta. Te levantas, das dos pasos y vuelves a sentarte. Nadie entra. El minuto se estira hasta volverse parte de la escena, y tú lo dejas.",
+    "Caminas hasta la ventana y vuelves al mismo sitio. Miras {a} como si pudiera cambiar de lugar. No cambia. {b} queda donde estaba. Apoyas la frente en el vidrio un segundo. Afuera la gente sigue su día. El tuyo sigue aquí adentro.",
+    "Pones las manos quietas y respiras. {a} no pide un discurso. Te quedas el tiempo de oír la casa. Recién ahí sigues. {b} espera ese silencio con la misma paciencia, sin apurarte a la escena que viene.",
+    "Sale un rato largo en el que no haces nada útil. {a} ocupa ese rato. {b} también. Comes de pie, despacio, y dejas el plato a medias. La escena no se corta porque tú no la cortas. Quieres sentir el peso antes de moverte.",
+    "Anotas una palabra en un papel y no la tachas. El papel cabe en el bolsillo. Cuando lo tocas, vuelven {a} y {b}, con las mismas palabras de antes. Lo doblas. Lo guardas. Más tarde, en la calle, la mano lo encuentra sola.",
+    "La hora siguiente no trae visitas. Te lavas la cara con agua fría. Al volver, {a} sigue siendo lo que era. {b} no se explicó solo. Te secas despacio. El espejo te devuelve a alguien que ya sabe y todavía no lo dice.",
+    "Te recuestas un minuto, sin dormir. Con los ojos cerrados oyes {a}. Al abrirlos, {b} está igual. No le inventas un final. Cruzas las manos sobre el pecho y cuentas las respiraciones. A la décima sigues en la misma escena.",
+    "Das una vuelta corta y regresas. El aire de afuera no se lleva {a}. Subes y {b} te espera. La llave entra igual que siempre. Adentro, el olor del lugar te recuerda que no hubo un salto: hubo este rato, y ahora sigue.",
+    "Sirves agua y no la terminas. El vaso queda a la mitad, cerca de {a}. Lo miras de nuevo y {b} no se movió. Tomas un sorbo. Lo dejas. Hay tiempo. Esta vida pide ese sorbo antes de la frase que viene.",
+    "Pasa el mediodía sin una llamada. Si tuvieras que contarlo, saldría con {a} y con {b}, y después un silencio. Prefieres ese silencio. Calientas algo y lo comes mirando la mesa. Nadie te pregunta. Mejor. Todavía lo estás entendiendo.",
+    "La tarde baja la luz. Pruebas el cuarto con {a} dentro. Se ve igual, y {b} también se ve igual. Enciendes una lámpara y la apagas. Pruebas otra vez. Quedarse es esto: la misma luz, la misma frase, un rato más largo.",
+    "Antes de lo que sigue, esto tiene que caber en el cuerpo. Aflojas los hombros. Te llevas {a}, y {b} también, no un recorte. Estiras la espalda. Cuando caminas hacia la puerta, ya no vas vacío: vas con la escena entera a cuestas.",
+    "El ruido de la calle sube y baja. Tú no subes la voz. Dejas {a} donde está, y {b} donde está, hasta que el peso se entiende. Te asomas y no sales. El marco de la puerta alcanza. Del otro lado puede esperar.",
+    "Miras el reloj y no le haces caso. {a} pide más que un segundo. Te sientas otra vez. {b} aguanta ese segundo de más, y el que viene, y otro. Recién cuando el cuerpo se afloja dejas que la hora avance.",
+    "Ordenas la mesa sin necesidad. Debajo de lo que mueves siguen {a} y {b}. Acomodas una silla. La vuelves a dejar torcida, como estaba. Cuando terminas, el asunto no quedó más limpio. Quedó más largo, y así se oye mejor.",
+    "Se hace de noche en la misma escena. Enciendes una lámpara. {a} se ve más cerca. {b} no se va con la oscuridad. Te quedas con esa luz chica, sin prender la grande. Alcanza para ver lo que ya viste, y para no apurarlo.",
+    "Despiertas al otro lado de esa frase. El cuerpo se acuerda de {a} antes que tú. En la calle, {b} viaja contigo y no lo sueltas. Caminas una cuadra de más. Al dar la vuelta ya sabes que la escena de antes sigue viva.",
+    "Hay una pausa de verdad, de las que no se apuran. No cortas {a}. Tampoco cortas {b}. Te quedas hasta el final de la pausa. Juegas con una moneda, o con una tapa, lo que tengas en la mano. El gesto es chico. El rato es largo.",
+    "Apoyas la frente en la mano. Cuentas hasta diez y al llegar sigues con {a}. {b} no se resolvió en esos diez. Cuentas otra vez, más lento. Mejor así: todavía estás ahí, y no te vas.",
+    "Cierras los ojos un segundo y los abres en el mismo cuarto. {a} no era un sueño. {b} tampoco. Sigues, con las dos cosas, hacia lo que viene. Antes das un último vistazo, el que se da cuando sabes que esa imagen va a volver.",
+)
+
+
+def _anchors(sentence: str) -> tuple[str, str]:
+    found = re.findall(
+        r"\b((?:el|la|los|las|un|una)\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]{4,})",
+        sentence or "",
+    )
+    clean: list[str] = []
+    for item in found:
+        bit = " ".join(item.split())
+        if bit.lower() not in {c.lower() for c in clean}:
+            clean.append(bit)
+    first = clean[0] if clean else "eso"
+    second = clean[1] if len(clean) > 1 else "lo demás"
+    return first, second
+
+
+def _cap_sentences(text: str) -> str:
+    def _up(match: re.Match[str]) -> str:
+        return match.group(1) + match.group(2).upper()
+
+    return re.sub(r"(^|[.!?]\s+)([a-záéíóúñü])", _up, text)
+
+
+def _dwell_on(sentence: str, n: int) -> str:
+    if not str(sentence or "").strip():
+        return ""
+    first, second = _anchors(sentence)
+    stay = _STAY[n % len(_STAY)].format(a=first, b=second)
+    return _cap_sentences(stay)
+
+
+def _spread_indexes(count: int, keep: int) -> list[int]:
+    if keep <= 0 or count <= 0:
+        return []
+    if keep >= count:
+        return list(range(count))
+    if keep == 1:
+        return [0]
+    return [round(i * (count - 1) / (keep - 1)) for i in range(keep)]
+
+
+def lengthen_life_script(
+    script: str,
+    *,
+    min_words: int = MIN_WORDS,
+    target: int = TARGET_WORDS,
+) -> str:
+    """Stay inside the scenes until the video is long. No new money, no phone ending."""
+    text = strip_script_chrome(script or "").strip()
+    if not text:
+        return text
+    ceiling = WORD_RANGE[1]
+    goal = min(max(min_words, target), ceiling)
+    if count_words(text) >= goal:
+        return text
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    if not paragraphs:
+        return text
+    grouped: list[list[str]] = []
+    slots: list[tuple[int, int, str]] = []
+    for pi, paragraph in enumerate(paragraphs):
+        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", paragraph) if s.strip()]
+        grouped.append(sentences or [paragraph])
+        for si, sentence in enumerate(grouped[-1]):
+            slots.append((pi, si, sentence))
+    if not slots:
+        return text
+    candidates = [_dwell_on(sentence, i) for i, (_pi, _si, sentence) in enumerate(slots)]
+    weights = [count_words(item) for item in candidates]
+    base = count_words(text)
+    budget = max(0, ceiling - base)
+    total_extra = sum(weights)
+    if total_extra <= budget:
+        chosen = list(range(len(slots)))
+    else:
+        low, high = 0, len(slots)
+        chosen = []
+        while low <= high:
+            mid = (low + high) // 2
+            indexes = _spread_indexes(len(slots), mid)
+            if sum(weights[i] for i in indexes) <= budget:
+                chosen = indexes
+                low = mid + 1
+            else:
+                high = mid - 1
+    extras: list[list[list[str]]] = [[[] for _ in sentences] for sentences in grouped]
+    for index in chosen:
+        pi, si, _sentence = slots[index]
+        if candidates[index]:
+            extras[pi][si].append(candidates[index])
+
+    def _render() -> str:
+        chunks: list[str] = []
+        for pj, sentences_j in enumerate(grouped):
+            chunks.append(" ".join(sentences_j))
+            for sj in range(len(sentences_j)):
+                chunks.extend(extras[pj][sj])
+        return "\n\n".join(c for c in chunks if c).strip()
+
+    text = _render()
+    guard = 0
+    while count_words(text) < goal and guard < 80:
+        index = guard % len(slots)
+        pi, si, sentence = slots[index]
+        extra = _dwell_on(sentence, len(slots) + guard)
+        guard += 1
+        if not extra:
+            continue
+        if count_words(text) + count_words(extra) > ceiling:
+            break
+        extras[pi][si].append(extra)
+        text = _render()
+    if count_words(text) < goal and count_words(text) + 40 <= ceiling:
+        # A long video sits near the target when the scenes still have room.
+        for index in _spread_indexes(len(slots), len(slots)):
+            if count_words(text) >= goal:
+                break
+            pi, si, sentence = slots[index]
+            if extras[pi][si]:
+                continue
+            extra = _dwell_on(sentence, index)
+            if not extra or count_words(text) + count_words(extra) > ceiling:
+                continue
+            extras[pi][si].append(extra)
+            text = _render()
+    return text
 
 
 def pad_script_from_beats(script: str, facts: dict[str, Any], *, min_words: int = MIN_WORDS) -> str:
@@ -919,19 +1072,13 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
 
     # Always purge screenplay / ops / meta — VO only for TTS.
     script = apply_tuteo_fixes(strip_script_chrome(script))
-    offline_done = bool(quality.get("offline_movie")) and count_words(script) >= 160
-    if offline_done:
-        pass
-    elif (
+    broken = bool(
         re.search(r"(?i)\b(int\.|ext\.|narrador\s*\(|fade out)\b", script)
         or re.search(r"(?i)\b(launch_company|advance_time|quit_job)\b", script)
-        or count_words(script) < max(200, MIN_WORDS // 3)
-    ):
+    )
+    if broken or count_words(script) < 80:
         quality["stripped_screenplay_or_ops"] = True
-        script = pad_script_from_beats("", facts, min_words=MIN_WORDS)
-    elif count_words(script) < MIN_WORDS:
-        script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
-        quality["padded_from_beats"] = True
+        script = pad_script_from_beats("" if broken else script, facts, min_words=MIN_WORDS)
 
     script = apply_tuteo_fixes(strip_script_chrome(script))
     # Drop residual meta leaks one more time.
@@ -942,8 +1089,11 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         and "NO moraleja" not in ln
         and "Edad final del state" not in ln
     ).strip()
-    if count_words(script) < MIN_WORDS and not offline_done:
-        script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
+    if count_words(script) < TARGET_WORDS:
+        before = count_words(script)
+        script = lengthen_life_script(script, min_words=MIN_WORDS, target=TARGET_WORDS)
+        if count_words(script) > before:
+            quality["lengthened_for_long_video"] = True
 
     ok, hard, warn = validate_check_script(script, facts, strict_length=False)
     wc = count_words(script)

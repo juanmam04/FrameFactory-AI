@@ -242,3 +242,25 @@ def test_apply_check_visual_layer_schema(tmp_path, monkeypatch):
             assert key in s
         assert "stickman" in s["image_prompt"].lower()
         assert "Location lock:" in s["continuity_notes"]
+
+
+def test_short_life_becomes_a_long_video():
+    from src.documentary.formats.check_als.script import MIN_WORDS, WORD_RANGE, lengthen_life_script
+    from src.script_generator import count_words
+
+    short = (
+        "Tienes 24 años y el canal se llama TechVibe. Anoche el video lo vieron 11 personas.\n\n"
+        "El patrocinio son 8.000 dólares por dos videos. No renuncias.\n\n"
+        "Al final lo logras. TechVibe es tuyo."
+    )
+    out = lengthen_life_script(short, min_words=MIN_WORDS, target=1800)
+    wc = count_words(out)
+    assert wc >= MIN_WORDS
+    assert wc <= WORD_RANGE[1]
+    assert out.lower().startswith("tienes 24")
+    assert "lo logras" in out.lower()
+    assert "8.000" in out
+    low = out.lower()
+    assert "51%" not in out
+    assert "bloqueas" not in low
+    assert "equity" not in low
