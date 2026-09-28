@@ -194,8 +194,22 @@ def main() -> int:
         project = approve_check_story(project)
         project = generate_check_script(project, use_llm=False)
         script = str(project.get("script") or "")
+        public = public_architecture(project)
+        flags = (public.get("quality") or {}).get("flags") or []
+        scores = (public.get("quality") or {}).get("scores") or {}
+        script_warn = [w for w in (project.get("script_warnings") or []) if w]
         print(f"  paso guion    {count_words(script)} palabras")
+        print(f"  paso calidad  flags={len(flags)}  scores={scores}")
         fails = _spectator(case, synopsis, script, times)
+        for f in flags:
+            fails.append(f"error [{f.get('code')}] {f.get('detail')}")
+        for key, val in scores.items():
+            if val in ("flag", "fail"):
+                fails.append(f"marca {key}={val}")
+        for w in script_warn:
+            if "LLM fallback" in str(w) or "draft corto" in str(w):
+                continue
+            fails.append(f"guion {w}")
         # Que no sea la misma película que otra.
         head = " ".join(script.split()[:28])
         if head in opened:

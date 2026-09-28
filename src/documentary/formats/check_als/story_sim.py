@@ -1294,7 +1294,9 @@ def infer_ops_from_beat(beat: dict[str, Any], world: dict[str, Any]) -> list[dic
     if "padres" in blob and ("palco" in blob or "ayud" in blob or "casa" in blob):
         add("help_family")
     if "deuda" in blob and any(w in blob for w in ("pag", "cuota", "venc")):
-        add("pay_debt", amount=45000)
+        debt_now = _i((world.get("finance") or {}).get("team_debt") or (world.get("team") or {}).get("debt"))
+        if debt_now > 0:
+            add("pay_debt", amount=min(45000, debt_now))
     if "viaj" in blob:
         add("travel")
     if re.search(r"\b(gan[aá]s|victoria|ganan)\b", blob) and "campeonat" not in blob:

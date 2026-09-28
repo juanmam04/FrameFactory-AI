@@ -49,10 +49,10 @@ MOVIES: dict[tuple[str, str], list[str]] = {
         "El primer día no puedes decidir ni el desayuno. Pagas la cuenta de todo el bar y la gente se ríe porque cree que es un chiste. Tú miras el comprobante y el número no cabe en la pantalla.",
         "El segundo día compras silencio: una casa vacía al lado del mar, sin muebles. Te sientas en el suelo y escuchas el agua. El dinero no hace ruido. Eso te asusta más que la cifra.",
         "A mitad de semana el gasto se vuelve absurdo y después se vuelve concreto. Pagas deudas de gente que no te pidió nada, un hospital, el alquiler de tu edificio, el taller de la esquina que iba a cerrar el viernes.",
-        "Hay una noche, la quinta, en la que te detienes. Son las tres de la mañana y no has dormido. El reloj sigue. Entiendes que gastar también es elegir qué no se compra: no compras una vida distinta para escapar de la tuya.",
-        "El sexto día vuelves a tu calle. Dejas el café de siempre pagado por un año y no se lo dices a nadie. El dueño te mira raro cuando dejas el sobre y te vas antes de que pregunte.",
-        "También compras algo ridículo: un piano que no sabes tocar, que cabe apenas en el pasillo. A las dos horas lo entiendes y lo dejas en una escuela, de noche, con una nota sin firma. El gasto que te gusta es el que no te queda a ti.",
         "El cuarto día te sientas en un banco y miras pasar gente que no sabe nada. El reloj sigue. Tienes más de lo que se puede gastar con las manos, y al mismo tiempo solo tienes esas horas. Caminas hasta que te duelen los pies, como cualquier tarde.",
+        "Hay una noche, la quinta, en la que te detienes. Son las tres de la mañana y no has dormido. El reloj sigue. Entiendes que gastar también es elegir qué no se compra: no compras una vida distinta para escapar de la tuya.",
+        "También compras algo ridículo: un piano que no sabes tocar, que cabe apenas en el pasillo. A las dos horas lo entiendes y lo dejas en una escuela, de noche, con una nota sin firma. El gasto que te gusta es el que no te queda a ti.",
+        "El sexto día vuelves a tu calle. Dejas el café de siempre pagado por un año y no se lo dices a nadie. El dueño te mira raro cuando dejas el sobre y te vas antes de que pregunte.",
         "El séptimo día el plazo se acaba a las 9:14. Queda un resto que ya no puedes tocar. Te sientas en tu cama de siempre. Al final lo logras: gastaste, volviste, y esa vida te queda.",
     ],
     ("chef", "pyrrhic"): [

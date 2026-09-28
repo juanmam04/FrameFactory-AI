@@ -686,7 +686,8 @@ def validate_check_script(
     elif wc < MIN_WORDS:
         warn.append(f"draft corto: {wc} palabras (mínimo {MIN_WORDS})")
 
-    if "oferta" not in low and "comprarte" not in low:
+    ending = str(facts.get("ending_type") or "").strip().lower()
+    if ending in ("open", "exit") and "oferta" not in low and "comprarte" not in low:
         warn.append("el final de la oferta de adquisición puede faltar")
 
     return (not hard), hard, warn

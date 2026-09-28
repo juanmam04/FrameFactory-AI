@@ -738,6 +738,18 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
             arch.get("final_world") or {},
                 vehicle_mode=mode,
         )
+    quality = arch.get("quality") or {}
+    if arch.get("generated") and (arch.get("beats") or []):
+        quality = validate_story_quality(
+            blueprint=arch.get("blueprint") or {},
+            beats=arch.get("beats") or [],
+            synopsis=synopsis,
+            initial_world=arch.get("initial_world") or {},
+            final_world=arch.get("final_world") or {},
+            initial_prog=arch.get("initial_progression") or {},
+            final_prog=arch.get("final_progression") or {},
+            vehicle_mode=mode,
+        )
     compact_beats = []
     for b in arch.get("beats") or []:
         compact_beats.append(
@@ -765,7 +777,7 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
         "synopsis": synopsis,
         "beats": compact_beats,
         "beat_count": len(compact_beats),
-        "quality": arch.get("quality") or {},
+        "quality": quality,
         "review": review,
         "final_world": arch.get("final_world") or {},
         "final_progression": arch.get("final_progression") or {},
