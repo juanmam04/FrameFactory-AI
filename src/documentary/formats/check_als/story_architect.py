@@ -204,13 +204,15 @@ def generate_check_story(
         mode_line = (
             " MODO CANAL: la película es ese canal de YouTube. "
             "Prohibido equipo, club, gimnasio, playoffs, estadio, básquet y dueño del equipo. "
-            "Las escenas dicen qué videos subes, el título del que se vuelve viral, visitas, suscriptores, "
-            "cuánto paga el patrocinio, y la vida: el apartamento, los muebles que querías, el setup, la foto."
+            "Hay visitas, suscriptores y plata de verdad, y además la vida alrededor: "
+            "horas, nombres, audios, el camino, el cuerpo, lo que se gasta, lo que alguien dice mal. "
+            "Inventas esos detalles. No repitas el mismo menú de muebles y fotos."
         )
     elif vmode == "sports_team":
         mode_line = (
-            " MODO DEPORTE: equipo de básquet ficticio, con nombre de equipo, nombre de jugador, "
-            "cifra de contrato, valor de mercado y gente en la grada. La casa también cambia."
+            " MODO DEPORTE: equipo de básquet ficticio. Hay nombres, contrato, valor de mercado y grada, "
+            "y también el micro, el vendaje, la madre en una fila, la bombilla rota, el diario con una falta de ortografía. "
+            "Inventas la vida del club. No la reduzcas a una cifra."
         )
     elif vmode == "business":
         mode_line = " MODO NEGOCIO: empresa/creator — cero básquet/playoffs/campeonato."

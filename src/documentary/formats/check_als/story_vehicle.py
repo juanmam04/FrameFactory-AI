@@ -222,7 +222,7 @@ Beat planner. La película sigue siendo {vehicle_name}. Progresión: {progressio
 Ops: launch_company con debt_assumed 0, advance_time, quit_job, move_home, sponsor_deal. Nada más.
 Prohibido acquire_team, game_played, season_stretch, playoffs, championship, injury, coach.
 Prohibido texto de equipo, club, gimnasio, estadio, jugadores, playoffs o dueño del equipo.
-Si es un canal: el título de los videos, uno viral con visitas y suscriptores, un patrocinio con la cifra, el apartamento, los muebles que querías y el setup en una foto.
+Si es un canal: títulos, visitas, suscriptores y una cifra, y además horas, nombres, audios, el camino y lo gastado. Inventa detalles distintos en cada escena.
 Return ONLY JSON: {{"beats":[...]}}
 """.strip()
 
