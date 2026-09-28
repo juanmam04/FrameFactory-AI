@@ -110,12 +110,18 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
     if vehicle_mode == "freeform":
         needed = {
             "voice": ("tienes", "te ", "tu ", "tú"),
-            "idea": ("día", "dias", "reto", "fantas", "gast", "vives", "empiez", "hora", "noche"),
+            "idea": (
+                "día", "dias", "reto", "fantas", "gast", "vives", "empiez", "hora", "noche",
+                "club", "cancha", "fútbol", "futbol", "novela", "libro", "vuelo", "examen",
+            ),
         }
     elif vehicle_mode != "sports_team":
         needed = {
             "voice": ("tienes", "te ", "tu ", "tú"),
-            "personal": ("renunci", "padres", "casa", "cuarto", "oficina", "departamento", "grab"),
+            "personal": (
+                "renunci", "padres", "madre", "padre", "hermano", "hermana", "casa", "cuarto",
+                "oficina", "departamento", "apartamento", "cocina", "grab",
+            ),
             "thread": (
                 "canal", "video", "marca", "grab", "suscript", "patrocin", "contenido",
                 "noche", "sigues", "gente", "lugar", "cocina", "restaur", "canción",
@@ -146,16 +152,16 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
         flags.append({"code": "sports_in_business_story", "detail": "synopsis de negocio menciona deporte", "hard": True})
     hist = sports.get("season_history") or []
     # Una historia corta. Larga de más es el problema: se vuelve una planilla de escenas.
-    if 180 <= words <= 650 and not any(f.get("code") == "synopsis_missing" for f in flags):
+    if 180 <= words <= 1400 and not any(f.get("code") == "synopsis_missing" for f in flags):
         ok = True
     else:
         ok = False
-        if words < 180 or words > 650:
+        if words < 180 or words > 1400:
             flags.append(
                 {
                     "code": "synopsis_length",
-                    "detail": f"{words} palabras (objetivo 180–650, una película corta)",
-                    "hard": words < 120 or words > 900,
+                    "detail": f"{words} palabras (objetivo 180–1400, una película con detalles)",
+                    "hard": words < 120 or words > 1800,
                 }
             )
     return {"ok": ok, "flags": flags, "words": words, "season_history": hist}

@@ -1,6 +1,7 @@
 """Siete historias distintas, de la idea al guion, leídas como espectador."""
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -118,7 +119,9 @@ def _spectator(case: dict, synopsis: str, script: str, times: list[str]) -> list
         fails.append(f"el cierre no se siente como «{case['close']}»")
     if case["mode"] != "sports_team" and sports_bleed(script):
         fails.append("el guion se va al básquet")
-    if any(v in script_l for v in ("tenés", "tenes ", "sos ", " vos", "equity", "51%", "servicio de la deuda")):
+    if re.search(r"\b(tenés|tenes|sos|vos)\b", script_l) or any(
+        v in script_l for v in ("equity", "51%", "servicio de la deuda")
+    ):
         fails.append("voseo o planilla")
     if "bloqueas" in script_l and case["ending"] != "open":
         fails.append("el final se volvió el teléfono de mañana")

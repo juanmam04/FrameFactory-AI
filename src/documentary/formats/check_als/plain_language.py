@@ -85,7 +85,8 @@ Cada escena sale de la anterior. Puede torcerse. No repitas el mismo molde (ofic
 Unas 8 a 14 escenas en total, las que la historia necesite. Cada una se puede filmar.
 El tiempo pasa dentro de la escena ("a la semana", "dos años después", "esa misma noche"), no como un informe.
 Un tropiezo que se siente, no cinco crisis de manual.
-El dinero, si entra, entra en palabras de todos los días y no manda la trama.
+La gente se queda porque se imagina que esa vida es la suya. Nombra lo concreto: qué video subes y cómo se llama, cuántas visitas y suscriptores, cuánto paga el patrocinio, el sueldo, el alquiler. En deporte: el nombre del equipo, el nombre del jugador, la cifra del contrato, el valor de mercado, cuánta gente hay en la grada. En la casa: el apartamento, los muebles que querías y no los más baratos, el setup, y que eso sale en una foto.
+El dinero de esa vida se dice con cifras de todos los días. No manda la trama: la trama es la vida.
 Prohibido como trama: porcentajes, equity, equity_sale, seller financing, servicio de deuda, facturación, valuación, caja, patrimonio, rondas, "millonario en papel". Nada de planilla.
 Ops invisibles y pocas. El texto es vida, en tú. Prohibido el voseo.
 """.strip()
@@ -94,7 +95,8 @@ PUBLIC_EVENT_RULES = """
 IDIOMA DE CADA ESCENA (event, cause, consequence, visual_opportunity):
 Una frase de vida, en tú. La entiende un chico que sueña y un adulto que quiere pasar un rato ahí.
 Prohibido: equity, porcentaje, %, valuación, facturación, caja, ingresos, servicio de la deuda, seller financing, patrimonio, "51%", "millonario", voseo.
-El dinero, si sale, es: "pones tus ahorros" o "pagas la cena".
+El dinero de la vida sí se dice: "el patrocinio paga 60.000 dólares", "el video llega a 1.200.000 visitas", "el contrato de Mateo es de 48.000", "el sofá que querías, no el más barato".
+Cada escena trae un objeto que se puede filmar: el título del video, la cámara, el escritorio, el plato, la canción, la camiseta, el contrato.
 """.strip()
 
 
@@ -332,8 +334,8 @@ def _freeform_synopsis(
         paras.append("La historia encuentra su curva y se cierra en una escena, no en un resumen.")
     body = re.sub(r"\s+", " ", " ".join(paras)).strip()
     words = _words(body)
-    if len(words) > 520:
-        body = " ".join(words[:500]).rstrip(" ,;:") + "."
+    if len(words) > 1500:
+        body = " ".join(words[:1450]).rstrip(" ,;:") + "."
     return to_tu(body)
 
 
@@ -433,8 +435,8 @@ def public_life_synopsis(
             paras.append(close)
         body = re.sub(r"\s+", " ", " ".join(paras)).strip()
         words = _words(body)
-        if len(words) > 520:
-            body = " ".join(words[:500]).rstrip(" ,;:") + "."
+        if len(words) > 1500:
+            body = " ".join(words[:1450]).rstrip(" ,;:") + "."
         return to_tu(body)
     if sports:
         if ending_key == "loss":
@@ -461,6 +463,6 @@ def public_life_synopsis(
         paras.append(close)
     body = re.sub(r"\s+", " ", " ".join(paras)).strip()
     words = _words(body)
-    if len(words) > 520:
-        body = " ".join(words[:500]).rstrip(" ,;:") + "."
+    if len(words) > 1500:
+        body = " ".join(words[:1450]).rstrip(" ,;:") + "."
     return to_tu(body)

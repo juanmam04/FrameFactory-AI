@@ -1124,8 +1124,11 @@ def _apply_one_op(w: dict[str, Any], op: str, raw: dict[str, Any], beat_id: str)
     if op in ("move_home", "move"):
         cost = _i(raw.get("cost") or 4000)
         life["personal_cash"] = _i(life.get("personal_cash")) - min(cost, _i(life.get("personal_cash")))
-        life["home"] = str(raw.get("home") or "departamento propio cerca de la arena")
-        life["lifestyle"] = str(raw.get("lifestyle") or "más espacio, más silencio, más estadio")
+        mode = str(w.get("story_mode") or "")
+        default_home = "un departamento propio" if mode != "sports_team" else "departamento propio cerca de la arena"
+        default_life = "más espacio y más silencio" if mode != "sports_team" else "más espacio, más silencio, más estadio"
+        life["home"] = str(raw.get("home") or default_home)
+        life["lifestyle"] = str(raw.get("lifestyle") or default_life)
         life["freedom"] = min(10, _i(life.get("freedom")) + 1)
         _hit(w, "move_home")
         return w
