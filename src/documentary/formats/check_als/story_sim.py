@@ -1537,7 +1537,8 @@ def diversify_setbacks(beats: list[dict[str, Any]]) -> list[dict[str, Any]]:
             rows[idx]["ops"] = ops
             rows[idx]["reward_or_setback"] = "setback:ownership"
             rows[idx]["story_purpose"] = rows[idx].get("story_purpose") or "major_reversal"
-            if "dueño" not in str(rows[idx].get("event") or "").lower() and "apuestas" not in str(rows[idx].get("event") or "").lower():
+            existing = str(rows[idx].get("event") or "")
+            if len(existing) < 80 and "dueño" not in existing.lower() and "apuestas" not in existing.lower():
                 rows[idx]["event"] = (
                     "Apuestas por mejores jugadores y por arreglar el gimnasio. "
                     "El mes siguiente el equipo arranca flojo y cuesta dormir."

@@ -762,6 +762,11 @@ def _chat_text(
 
 
 def _mock_check_script(facts: dict[str, Any]) -> str:
+    from src.documentary.formats.check_als.offline_movie import script_from_facts
+
+    movie = script_from_facts(facts)
+    if movie:
+        return movie
     acq = facts.get("acquisition") or {}
     life0 = facts.get("life_start") or {}
     life1 = facts.get("life_end") or {}
@@ -905,13 +910,18 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             quality["llm_error"] = str(e)[:400]
             append_log(str(project.get("id") or ""), f"check_script LLM fallback: {e}")
             script = apply_tuteo_fixes(_mock_check_script(facts))
+            quality["offline_movie"] = True
 
     if not (script or "").strip():
         script = apply_tuteo_fixes(_mock_check_script(facts))
+        quality["offline_movie"] = True
 
     # Always purge screenplay / ops / meta — VO only for TTS.
     script = apply_tuteo_fixes(strip_script_chrome(script))
-    if (
+    offline_done = bool(quality.get("offline_movie")) and count_words(script) >= 160
+    if offline_done:
+        pass
+    elif (
         re.search(r"(?i)\b(int\.|ext\.|narrador\s*\(|fade out)\b", script)
         or re.search(r"(?i)\b(launch_company|advance_time|quit_job)\b", script)
         or count_words(script) < max(200, MIN_WORDS // 3)
@@ -931,7 +941,7 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         and "NO moraleja" not in ln
         and "Edad final del state" not in ln
     ).strip()
-    if count_words(script) < MIN_WORDS:
+    if count_words(script) < MIN_WORDS and not offline_done:
         script = pad_script_from_beats(script, facts, min_words=MIN_WORDS)
 
     ok, hard, warn = validate_check_script(script, facts, strict_length=False)

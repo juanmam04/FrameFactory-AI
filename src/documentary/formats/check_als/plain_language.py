@@ -98,7 +98,19 @@ El dinero, si sale, es: "pones tus ahorros" o "pagas la cena".
 """.strip()
 
 
-_KEEP_ACCENT = {"además", "atrás", "después", "francés", "inglés", "interés", "país", "maíz", "raíz"}
+_KEEP_ACCENT = {
+    "además",
+    "atrás",
+    "después",
+    "estás",
+    "francés",
+    "inglés",
+    "interés",
+    "más",
+    "país",
+    "maíz",
+    "raíz",
+}
 
 
 def to_tu(text: str) -> str:
@@ -414,6 +426,16 @@ def public_life_synopsis(
 
     ending_key = str(blueprint.get("narrative_ending") or "").strip().lower()
     close = PUBLIC_CLOSES.get(ending_key)
+    rich = picked >= 4
+    if rich:
+        paras = paras[2:] if len(paras) > 2 else paras
+        if close and close.lower() not in " ".join(paras).lower():
+            paras.append(close)
+        body = re.sub(r"\s+", " ", " ".join(paras)).strip()
+        words = _words(body)
+        if len(words) > 520:
+            body = " ".join(words[:500]).rstrip(" ,;:") + "."
+        return to_tu(body)
     if sports:
         if ending_key == "loss":
             paras.append(
