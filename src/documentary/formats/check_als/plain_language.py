@@ -85,9 +85,9 @@ Cada escena sale de la anterior. Puede torcerse. No repitas el mismo molde (ofic
 Unas 8 a 14 escenas en total, las que la historia necesite. Cada una se puede filmar.
 El tiempo pasa dentro de la escena ("a la semana", "dos años después", "esa misma noche"), no como un informe.
 Un tropiezo que se siente, no cinco crisis de manual.
-La gente se queda porque esa vida tiene peso de verdad. Un video con visitas, un contrato o un mueble son EJEMPLOS del tipo de detalle. No son una lista para repetir en todas las historias, y no alcanzan solos.
-Inventas los detalles que ESA vida tendría, muchos y distintos en cada escena. Mezcla, según el oficio: una hora exacta, alguien con nombre y un tic, una comida, un audio, un objeto gastado, el camino de esa mañana, el clima, el cuerpo (una mancha, una quemadura, el sueño), una mentira chica, quién te reconoce y quién no, la plata pequeña además de la cifra grande, lo que queda en la mesa al apagar, la ropa que se repite, el grupo del teléfono, un olor, una canción, un número de camiseta, cómo tu madre dice mal el nombre. Si una escena ya mostró la casa, la siguiente muestra otra cosa.
-El dinero de esa vida se dice con cifras de todos los días. No manda la trama: la trama es la vida.
+La gente se queda porque se imagina esa vida. En cada escena, uno o dos detalles concretos de ESA historia: qué haces, una cifra cuando algo cambia (visitas, un patrocinio, un contrato, el alquiler), y una persona con nombre solo si vuelve.
+Un intermedio. Alcanza para verlo. Una escena no es un inventario de horas, audios, manchas, mascotas y objetos gastados.
+El dinero de esa vida se dice cuando importa. No manda la trama: la trama es la vida.
 Prohibido como trama: porcentajes, equity, equity_sale, seller financing, servicio de deuda, facturación, valuación, caja, patrimonio, rondas, "millonario en papel". Nada de planilla.
 Ops invisibles y pocas. El texto es vida, en tú. Prohibido el voseo.
 """.strip()
@@ -96,8 +96,8 @@ PUBLIC_EVENT_RULES = """
 IDIOMA DE CADA ESCENA (event, cause, consequence, visual_opportunity):
 Una frase de vida, en tú. La entiende un chico que sueña y un adulto que quiere pasar un rato ahí.
 Prohibido: equity, porcentaje, %, valuación, facturación, caja, ingresos, servicio de la deuda, seller financing, patrimonio, "51%", "millonario", voseo.
-El dinero de la vida sí se dice, en la escala de esa historia: una cifra grande y también la chica (el café, el bus, el alquiler de esa semana).
-Cada escena suma un detalle filmable distinto del anterior. Inventalo para ESA vida: un nombre, una hora, un tic, un audio, una mancha, un olor, un camino, el clima, la ropa, lo que alguien dice mal. No copies de memoria el mismo sofá, el mismo setup y la misma foto.
+El dinero de la vida se dice cuando cambia algo: una cifra clara, en palabras de todos los días.
+Cada escena trae uno o dos detalles filmables. Con eso alcanza. Si ya nombraste la casa, la escena siguiente sigue la historia.
 """.strip()
 
 
