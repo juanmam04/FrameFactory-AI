@@ -1820,6 +1820,8 @@ def force_pay_important_loops(beats: list[dict[str, Any]]) -> list[dict[str, Any
 
 def scrub_sports_text(text: str) -> str:
     out = str(text or "")
+    # Un contrato o un club de fútbol usa "temporada" como plazo real. No lo conviertas en trimestre.
+    keep_season = bool(re.search(r"fútbol|futbol|contrato|dólares|dolares", out, re.I))
     replacements = (
         (r"(?i)\bcampeonato(s)?\b", "hito grande"),
         (r"(?i)\bcampeón(es)?\b", "líder"),
@@ -1836,6 +1838,8 @@ def scrub_sports_text(text: str) -> str:
         (r"(?i)\butilería en el estadio\b", "set de grabación"),
     )
     for pat, rep in replacements:
+        if keep_season and "temporada" in pat:
+            continue
         out = re.sub(pat, rep, out)
     return out
 

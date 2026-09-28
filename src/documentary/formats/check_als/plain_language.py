@@ -87,7 +87,10 @@ El tiempo pasa dentro de la escena ("a la semana", "dos años después", "esa mi
 Un tropiezo que se siente, no cinco crisis de manual.
 La gente se queda porque se imagina esa vida. En cada escena, uno o dos detalles concretos de ESA historia: qué haces, una cifra cuando algo cambia (visitas, un patrocinio, un contrato, el alquiler), y una persona con nombre solo si vuelve.
 Un intermedio. Alcanza para verlo. Una escena no es un inventario de horas, audios, manchas, mascotas y objetos gastados.
-El dinero de esa vida se dice cuando importa. No manda la trama: la trama es la vida.
+El dinero de esa vida se dice cuando importa, y tiene que cerrar con el mundo real de ese oficio.
+En fútbol el valor de mercado es el precio de pase, no el sueldo. Un jugador de 400.000 dólares cobra unos pocos miles al mes en un club chico: el sueldo de un año entra varias veces en ese valor.
+En YouTube el patrocinio sale de las visitas medias, unos 20 a 40 dólares cada 1.000 visitas en tecnología. Un canal que acaba de pasar de cientos a decenas de miles de suscriptores cobra unos miles por video, no una fortuna.
+No manda la trama: la trama es la vida.
 Prohibido como trama: porcentajes, equity, equity_sale, seller financing, servicio de deuda, facturación, valuación, caja, patrimonio, rondas, "millonario en papel". Nada de planilla.
 Ops invisibles y pocas. El texto es vida, en tú. Prohibido el voseo.
 """.strip()
