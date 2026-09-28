@@ -609,7 +609,13 @@ def force_pre_acquisition(world: dict[str, Any], *, mode: str = "sports_team") -
     w["finance"]["financing_open"] = False
     if _num(w["life"].get("personal_cash")) <= 0:
         w["life"]["personal_cash"] = 18400 if mode == "sports_team" else 12000
-    if mode in ("business", "freeform"):
+    w["story_mode"] = mode
+    if mode != "sports_team":
+        life = w.get("life") or {}
+        if re.search(r"b[aá]squet", str(life.get("lifestyle") or ""), re.I):
+            life["lifestyle"] = "vida normal"
+            w["life"] = life
+    if mode != "sports_team":
         # Never inherit basketball pilot debt / arena defaults.
         w["finance"]["team_debt"] = 0
         w["finance"]["debt_service"] = 0
@@ -705,7 +711,9 @@ def _apply_one_op(w: dict[str, Any], op: str, raw: dict[str, Any], beat_id: str)
         raw.setdefault("asking_price", 0)
         w = _apply_one_op(w, "acquire_team", raw, beat_id)
         loc = w.get("locations") or {}
-        loc["office"] = loc.get("office") or "tu habitación convertida en set de grabación"
+        office = str(loc.get("office") or "")
+        if not office or re.search(r"estadio|utiler[ií]a|gimnasio|arena", office, re.I):
+            loc["office"] = "tu habitación convertida en set de grabación"
         w["locations"] = loc
         _hit(w, "company_launched")
         return w
@@ -1096,7 +1104,11 @@ def _apply_one_op(w: dict[str, Any], op: str, raw: dict[str, Any], beat_id: str)
         _hit(w, "arena")
         return w
     if op in ("quit_job",):
-        life["job"] = str(raw.get("job") or "dueño del equipo")
+        mode = str(w.get("story_mode") or "")
+        fallback_job = "dueño del equipo" if mode == "sports_team" else "tu propio trabajo"
+        life["job"] = str(raw.get("job") or fallback_job)
+        if mode != "sports_team" and re.search(r"dueño del equipo|dueño del club", life["job"], re.I):
+            life["job"] = "tu propio trabajo"
         life["salary"] = _i(raw.get("salary") or max(24000, int(_num(fin.get("annual_revenue")) * 0.04)))
         life["weekly_work_hours"] = _i(raw.get("hours") or 65)
         life["freedom"] = min(10, _i(life.get("freedom")) + 3)
@@ -1371,7 +1383,7 @@ def repair_architecture(
     if not has_acq_op and len(rows) >= 3:
         target = rows[min(3, len(rows) - 1)]
         ops = list(target.get("ops") or [])
-        if mode == "business":
+        if mode != "sports_team":
             ops.insert(
                 0,
                 {
@@ -1384,7 +1396,10 @@ def repair_architecture(
                 },
             )
             if not str(target.get("event") or "").strip():
-                target["event"] = "Lanzas lo tuyo. Pones tus ahorros y unas personas cercanas ponen el resto."
+                if mode == "creator":
+                    target["event"] = "Subes el video desde tu cuarto. El canal sigue siendo chico, y lo sigues."
+                else:
+                    target["event"] = "Lanzas lo tuyo. Pones tus ahorros y unas personas cercanas ponen el resto."
         else:
             ops.insert(
                 0,
@@ -1552,7 +1567,8 @@ def inject_life_payoffs(beats: list[dict[str, Any]], final_world: dict[str, Any]
         idx = min(len(rows) - 3, max(10, (len(rows) * 2) // 3))
         ops = list(rows[idx].get("ops") or [])
         if not any(str((o or {}).get("op")) == "move_home" for o in ops if isinstance(o, dict)):
-            ops.append({"op": "move_home", "home": "departamento propio a cuatro cuadras de la arena", "cost": 4500})
+            home = "departamento propio a cuatro cuadras de la arena" if str((final_world or {}).get("story_mode") or "") == "sports_team" else "un departamento propio"
+            ops.append({"op": "move_home", "home": home, "cost": 4500})
             rows[idx]["ops"] = ops
             rows[idx]["reward_or_setback"] = rows[idx].get("reward_or_setback") or "reward:move_home"
     risk = str((fin.get("debt_risk_state") or compute_debt_risk(fin)))
@@ -1860,10 +1876,12 @@ def strip_sports_narrative(beats: list[dict[str, Any]]) -> list[dict[str, Any]]:
         row = dict(b)
         ops = [o for o in (row.get("ops") or []) if isinstance(o, dict) and str(o.get("op") or "") not in sports_ops]
         row["ops"] = ops
+        from src.documentary.formats.check_als.plain_language import clean_non_sports
+
         for key in ("event", "cause", "consequence", "visual_opportunity"):
             text = str(row.get(key) or "")
-            if any(w in text.lower() for w in SPORTS_WORDS):
-                row[key] = scrub_sports_text(text)
+            if text and (any(w in text.lower() for w in SPORTS_WORDS) or clean_non_sports(text) != text):
+                row[key] = clean_non_sports(scrub_sports_text(text))
         out.append(row)
     return out
 
@@ -1887,7 +1905,7 @@ def repair_beat_ops(beats: list[dict[str, Any]], *, mode: str = "sports_team") -
             if name in ("launch_company", "acquire_team"):
                 op.setdefault("your_cash", 8000 if mode == "business" else 15000)
                 op.setdefault("investor_cash", 40000 if mode == "business" else 85000)
-                if mode == "business":
+                if mode != "sports_team":
                     # Content/startup stories must not inherit basketball pilot debt.
                     op["debt_assumed"] = 0
                     op.setdefault("asking_price", 0)

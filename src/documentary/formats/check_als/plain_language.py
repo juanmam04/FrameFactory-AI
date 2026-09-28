@@ -124,6 +124,32 @@ def has_jargon(text: str) -> bool:
     return bool(_JARGON.search(str(text or "")))
 
 
+_SPORTS_BLEED = re.compile(
+    r"equipo pasa a ser|gimnasio|playoffs?|básquet|basquet|dueño del equipo|dueño del club|"
+    r"mejores jugadores|utilería|cuentas pesadas|el club llega|juegas al básquet|juegas al basquet|"
+    r"el equipo cierra|el equipo arranca|no hay playoffs|canasta|vestuario",
+    re.I,
+)
+
+
+def sports_bleed(text: str) -> bool:
+    return bool(_SPORTS_BLEED.search(str(text or "")))
+
+
+def drop_sports_bleed(text: str) -> str:
+    parts = re.split(r"(?<=[.!?])\s+", str(text or "").strip())
+    kept = [p.strip() for p in parts if p.strip() and not _SPORTS_BLEED.search(p)]
+    return " ".join(kept).strip()
+
+
+def clean_non_sports(text: str) -> str:
+    t = drop_sports_bleed(text)
+    t = re.sub(r"cuarto de utilería en el estadio", "cuarto de grabación", t, flags=re.I)
+    t = re.sub(r"dueño del equipo|dueño del club", "tu propio trabajo", t, flags=re.I)
+    t = re.sub(r"a cuatro cuadras de la arena", "propio", t, flags=re.I)
+    return re.sub(r"\s+", " ", t).strip()
+
+
 def plain_deal_sentence(*, sports: bool = True) -> str:
     if sports:
         return (
@@ -322,11 +348,7 @@ def public_life_synopsis(
     if vehicle_mode == "freeform" or blueprint.get("freeform"):
         return _freeform_synopsis(blueprint, beats)
     sports_state = (final or {}).get("sports") or {}
-    sports = vehicle_mode == "sports_team" or (
-        vehicle_mode != "business" and bool(sports_state.get("season_history") or sports_state.get("games_played"))
-    )
-    if vehicle_mode == "business":
-        sports = False
+    sports = vehicle_mode == "sports_team"
     fw = blueprint.get("fiction_world") or {}
     team = (final or {}).get("team") or {}
     name = (
@@ -356,7 +378,15 @@ def public_life_synopsis(
             f"Todavía no es una vida. Es una idea que te cabe en el teléfono y en la mesa de la cocina."
         )
 
-    paras = [open_para, plain_deal_sentence(sports=sports)]
+    if sports:
+        paras = [open_para, plain_deal_sentence(sports=True)]
+    elif vehicle_mode == "creator":
+        paras = [
+            open_para,
+            "Grabas en tu cuarto. El canal es chico y casi nadie comenta. Sigues subiendo igual.",
+        ]
+    else:
+        paras = [open_para, plain_deal_sentence(sports=False)]
     used: set[str] = set()
     picked = 0
     for beat in beats or []:
@@ -366,6 +396,8 @@ def public_life_synopsis(
         if not raw or raw in used:
             continue
         line = plain_event(raw, sports=sports)
+        if not sports:
+            line = clean_non_sports(line)
         if not line or has_jargon(line) or line in " ".join(paras):
             continue
         if line == plain_deal_sentence(sports=sports):

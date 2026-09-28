@@ -27,6 +27,13 @@ def vehicle_mode(project: dict[str, Any]) -> str:
     stored = str(project.get("vehicle_type") or concept.get("vehicle_type") or "").strip()
     if stored == "freeform":
         return "freeform"
+    topic = str(project.get("topic") or project.get("title") or concept.get("title") or "").strip()
+    premise = str(concept.get("premise") or concept.get("one_line_fantasy") or "").strip()
+    blob = f"{premise} {topic}".lower()
+    channel = any(k in blob for k in ("canal", "youtube", "youtuber", "suscriptor"))
+    sports_title = any(k in blob for k in ("equipo de básquet", "equipo deportivo", "playoff", "estadio"))
+    if channel and not sports_title:
+        return "creator"
     if stored:
         try:
             from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
@@ -38,8 +45,6 @@ def vehicle_mode(project: dict[str, Any]) -> str:
                 return stored
 
     category = str(concept.get("story_category") or idea.get("content_pillar") or "").strip()
-    premise = str(concept.get("premise") or concept.get("one_line_fantasy") or "").strip()
-    topic = str(project.get("topic") or project.get("title") or concept.get("title") or "").strip()
     return detect_vehicle_type(premise, topic, category)
 
 
@@ -102,8 +107,8 @@ def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
             progression = vehicle_info["progression"]
             
             return [
-                ("p1", f"Parte 1: arranca en la vida de {vehicle_name} ({acquisition}) y fluye. No hace falta el mismo orden de siempre. Unas escenas, con ritmo."),
-                ("p2", f"Parte 2: la vida sigue y se tuerce. Resume {progression} cuando haga falta, dentro de una escena. Cierre {ending_type}. Que se sienta una película, no una lista."),
+                ("p1", f"Parte 1: la película es {vehicle_name} ({acquisition}). Tú, en esa vida. Prohibido equipo de básquet, gimnasio, playoffs, estadio y dueño del equipo. El tiempo avanza (meses y años), nunca todo el día 1."),
+                ("p2", f"Parte 2: sigue siendo {vehicle_name}. Una curva y este cierre: {ending_type}. El tiempo sigue avanzando. Cero deporte de equipo."),
             ]
     except ImportError:
         pass
@@ -193,40 +198,16 @@ def _generate_universal_blueprint(mode: str, vehicle_info: dict) -> str:
     """Genera blueprint system para vehículo personalizado."""
     vehicle_name = vehicle_info["vehicle"]
     acquisition = vehicle_info["acquisition"]
-    metrics = ", ".join(vehicle_info["metrics"])
-    
+
     return f"""
-Eres Story Architect de Check: ficción aspiracional en ESPAÑOL. El espectador ES el protagonista (tú/te).
-
-Esta fantasía es {vehicle_name.upper()} — construcción de {vehicle_name}.
-PROHIBIDO: equipos de básquet, playoffs, campeonatos (a menos que sea el vehículo específico).
-
-REGLAS:
-- Empieza ANTES de {acquisition}. ownership/control inicial = 0.
-- El vehículo es {vehicle_name} con métricas claras: {metrics}.
-- Adquisición o lanzamiento con cifras: cash tuyo, inversores, deuda (si aplica), % equity/control.
-- Varios años (4-6). La vida personal CAMBIA: trabajo → carrera propia, departamento → upgrade.
-- Setbacks variados (financiero, profesional, personal). NO forzar deporte si no aplica.
-- Final = escena/estado concreto, nunca moraleja.
-
-Return ONLY JSON:
-{{
-  "blueprint": {{
-    protagonist, fantasy, business_or_vehicle{{what_is_being_built_or_owned, core_mechanism, economic_engine,
-      acquisition_structure, acquisition{{...}}}},
-    fiction_world{{company_name/stage_name/vehicle_name, industry/field, city, disclaimer}},
-    ending_type, opening, inciting_incident, first_commitment, escalation, midpoint,
-    major_success, major_reversal, crisis, decision, climax, ending, final_state,
-    intentional_unresolved_loops[], causal_chain[10-16]
-  }},
-  "initial_world": {{
-    life.job empleado/freelancer, life.home departamento/habitación, life.personal_cash 8000-25000,
-    ownership_ledger {{protagonist:0, investors:0, seller:100}}, acquisition.closed=false,
-    team.name = {vehicle_name}, team.league = industry/field, sports vacío si no aplica,
-    finance.team_debt bajo o 0 (startup), time.protagonist_age 22-26
-  }}
-}}
-NO escribas synopsis. Adaptá métricas al vehículo específico.
+Eres Story Architect de Check. El espectador ES el protagonista (tú).
+La película es SOLO esto: {vehicle_name}. El arranque es {acquisition}.
+Prohibido convertirla en equipo, club, gimnasio, estadio, playoffs, básquet o dueño de un equipo.
+Si es un canal, se graba, se sube, llegan comentarios, un video crece, aparece un patrocinio. Nada de cancha.
+Español de tú. Unos años, con el tiempo adentro de las escenas. Sin planilla ni porcentajes.
+Return ONLY JSON con blueprint (fiction_world.vehicle_name, city, opening, ending) e initial_world
+(life.job, life.home, age). sports vacío. finance.team_debt = 0. team.attendance = 0.
+NO escribas synopsis.
 """.strip()
 
 
@@ -234,27 +215,15 @@ def _generate_universal_beats(mode: str, vehicle_info: dict) -> str:
     """Genera beats system para vehículo personalizado."""
     vehicle_name = vehicle_info["vehicle"]
     progression = vehicle_info["progression"]
-    
+
     return f"""
-Eres Beat Planner de Check — MODO {vehicle_name.upper()}.
-
-Ops permitidas (adaptadas al vehículo):
-launch_company, acquire_team (compra de {vehicle_name}),
-equity_sale, buyback, sponsor_deal, sponsor_cut, first_client/fan/audience,
-viral_hit, hire_employee, sign_contract, product_launch/album_launch/show_launch,
-owner_crisis, owner_injection, investor_injection, credit_line, bridge_loan, pay_debt,
-quit_job, move_home, help_family, advance_time, facility_upgrade, media_deal,
-media_crisis, regulatory_fine, personal_crisis
-
-PROHIBIDO ops deportivas si no aplica: game_played, championship, playoffs, injury, coach, season_stretch.
-
-Cada transacción de plata DEBE tener ops con montos.
-equity_sale SIEMPRE incluye pct y cash.
-
-Métricas vía team.valuation, team.attendance (clientes/fans/audiencia), finance.team_cash.
-Progresión por {progression}. 3-4 años. Payoffs de vida: renuncia, mudanza, upgrade, reconocimiento.
-
-Return ONLY JSON: {{"beats":[...]}} — 14-18 beats por tramo.
+Beat planner. La película sigue siendo {vehicle_name}. Progresión: {progression}.
+6 a 8 escenas en tú. Cada una nace de la anterior. El tiempo salta meses o años (advance_time). El campo time NO puede ser "DAY 1" en todas.
+Ops: launch_company con debt_assumed 0, advance_time, quit_job, move_home, sponsor_deal. Nada más.
+Prohibido acquire_team, game_played, season_stretch, playoffs, championship, injury, coach.
+Prohibido texto de equipo, club, gimnasio, estadio, jugadores, playoffs o dueño del equipo.
+Si es un canal: grabar, subir, comentarios, un video que crece, un patrocinio, el cuarto.
+Return ONLY JSON: {{"beats":[...]}}
 """.strip()
 
 

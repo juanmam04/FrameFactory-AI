@@ -129,3 +129,42 @@ def test_chosen_ending_rewrites_the_close():
     lost = public_life_synopsis(lost_bp, [], initial, final, vehicle_mode="sports_team").lower()
     assert "se cae" in lost
     assert "lo logras" not in lost
+
+
+def test_channel_story_is_not_a_basketball_team():
+    from src.documentary.formats.check_als.story_sim import force_pre_acquisition, repair_architecture
+    from src.documentary.formats.check_als.story_vehicle import vehicle_mode
+
+    world = force_pre_acquisition({}, mode="creator")
+    assert world["team"]["attendance"] == 0
+    assert world["finance"]["team_debt"] == 0
+    assert "básquet" not in str(world["life"].get("lifestyle") or "").lower()
+    beats = repair_architecture(
+        blueprint={},
+        beats=[{"event": "Subes un video.", "ops": []} for _ in range(4)],
+        mode="creator",
+    )
+    assert beats[3]["ops"][0]["op"] == "launch_company"
+    assert beats[3]["ops"][0]["debt_assumed"] == 0
+    project = {
+        "title": "POV: Conviertes un canal chico en una marca",
+        "vehicle_type": "sports_team",
+        "concept": {"premise": "El canal crece en Madrid."},
+    }
+    assert vehicle_mode(project) == "creator"
+    bp = {"fiction_world": {"vehicle_name": "TechVibe", "city": "Madrid"}, "narrative_ending": "victory"}
+    initial = {"time": {"protagonist_age": 24}, "life": {"job": "empleado en una oficina", "home": "departamento pequeño"}}
+    final = {"time": {"protagonist_age": 28}, "life": {"job": "el canal", "home": "departamento pequeño"}, "team": {"name": "TechVibe"}}
+    beats_story = [
+        {"event": "Carlos graba su primer video en su pequeño departamento."},
+        {"event": "Apuestas por mejores jugadores y por arreglar el gimnasio."},
+        {"event": "El canal empieza a crecer y recibe una oferta de patrocinio."},
+    ]
+    text = public_life_synopsis(bp, beats_story, initial, final, vehicle_mode="creator").lower()
+    assert "canal" in text
+    assert "patrocinio" in text
+    assert "gimnasio" not in text
+    assert "playoff" not in text
+    assert "equipo pasa" not in text
+    assert "básquet" not in text
+    assert "jugadores" not in text

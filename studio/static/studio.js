@@ -1934,9 +1934,11 @@ function plainPublicCopy(raw) {
     [/\bmudás\b/g, "mudas"],
   ];
   for (const [pat, rep] of swaps) t = t.replace(pat, rep);
+  const aboutChannel = /canal|youtube|video|patrocin|suscript/i.test(t);
   t = t
     .split(/(?<=\.)\s+/)
     .filter((s) => !/equity|factur|servicio de la deuda|patrimonio|inversores|valuaci|%\s|%\./i.test(s))
+    .filter((s) => !aboutChannel || !/gimnasio|playoffs?|b[aá]squet|equipo pasa a ser|dueño del equipo|mejores jugadores|juegas al b|el club llega|utiler[ií]a|el equipo cierra|el equipo arranca/i.test(s))
     .join(" ");
   t = t.replace(/\s+/g, " ").trim();
   return t;
@@ -1993,12 +1995,22 @@ function paintCheckStory(ws, p) {
         .join("")
     : "<li>Todavía no hay loops.</li>";
   const lifeLine = (row) => {
+    const blob = `${row.event || ""} ${row.job || ""} ${row.life_change || ""}`;
+    const channel = /canal|youtube|video|patrocin|suscript/i.test(blob);
     const bits = [];
-    if (row.record && row.record !== "—" && row.record !== "0-0") bits.push(`Marcador ${row.record}`);
-    if (row.attendance) bits.push(`Gente ${row.attendance}`);
-    if (row.job) bits.push(row.job);
+    if (!channel && row.record && row.record !== "—" && row.record !== "0-0") bits.push(`Marcador ${row.record}`);
+    if (!channel && row.attendance) bits.push(`Gente ${row.attendance}`);
+    let job = row.job || "";
+    if (channel && /dueño del equipo|dueño del club/i.test(job)) job = "el canal";
+    if (job) bits.push(job);
     if (row.home) bits.push(row.home);
-    if (row.life_change) bits.push(row.life_change);
+    let extra = row.life_change || "";
+    if (channel) {
+      extra = extra
+        .replace(/cuarto de utiler[ií]a en el estadio/gi, "cuarto de grabación")
+        .replace(/estadio/gi, "cuarto");
+    }
+    if (extra) bits.push(extra);
     return bits.join(" · ");
   };
   const timeBits = timeline

@@ -13,12 +13,15 @@ from src.documentary.formats.check_als.story_arch import (
     metric_value,
     world_snapshot,
 )
-from src.documentary.formats.check_als.plain_language import plain_deal_sentence, plain_event
+from src.documentary.formats.check_als.plain_language import clean_non_sports, plain_deal_sentence, plain_event
 from src.documentary.formats.check_als.story_sim import PURPLE_PROSE, championship_allowed, ledger_total
 
 
-def _public_event(event: Any) -> str:
-    return plain_event(str(event or ""))
+def _public_event(event: Any, *, sports: bool = True) -> str:
+    from src.documentary.formats.check_als.plain_language import clean_non_sports
+
+    line = plain_event(str(event or ""), sports=sports)
+    return line if sports else clean_non_sports(line)
 
 MORAL_PATTERNS = (
     r"aprendiste que",
@@ -110,13 +113,12 @@ def validate_synopsis(synopsis: str, blueprint: dict[str, Any], initial: dict[st
             "voice": ("tienes", "te ", "tu ", "tú"),
             "idea": ("día", "dias", "reto", "fantas", "gast", "vives", "empiez", "hora", "noche"),
         }
-    elif vehicle_mode == "business":
+    elif vehicle_mode != "sports_team":
         needed = {
-            "launch": ("lanz", "fund", "empresa", "startup", "negocio", "creador", "firma", "compr", "empiez", "firmas", "ahorr"),
-            "personal": ("renunci", "departamento", "oficina", "mud", "casa", "habitación", "habitacion", "padres"),
-            "setback": ("crisis", "malo", "traba", "cae", "cuesta", "flojo", "perd"),
-            "payoff": ("contrato", "llena", "gente", "cena", "oficina", "tuyo", "mensaje"),
-            "final_life": ("años", "ahora", "hoy", "vives", "lugar"),
+            "voice": ("tienes", "te ", "tu ", "tú"),
+            "personal": ("renunci", "padres", "casa", "cuarto", "oficina", "departamento", "grab"),
+            "thread": ("canal", "video", "marca", "grab", "suscript", "patrocin", "contenido", "noche", "sigues", "gente", "lugar"),
+            "final_life": ("años", "hoy", "vives", "lugar", "final"),
         }
     else:
         needed = {
@@ -713,7 +715,7 @@ def _meaningful_delta(delta: dict[str, Any], trivial: set[str]) -> bool:
     return False
 
 
-def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
+def assemble_review(payload: dict[str, Any], *, vehicle_mode: str = "") -> dict[str, Any]:
     blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
     beats = payload.get("beats") if isinstance(payload.get("beats"), list) else []
     initial_world = payload.get("initial_world") or {}
@@ -721,45 +723,60 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
     quality = payload.get("quality") if isinstance(payload.get("quality"), dict) else {}
     synopsis = str(payload.get("synopsis") or "")
 
+    fw_sports = (final_world or {}).get("sports") if isinstance(final_world, dict) else {}
+    sports_mode = vehicle_mode == "sports_team"
+    if not vehicle_mode:
+        sports_mode = bool((fw_sports or {}).get("season_history") or (fw_sports or {}).get("games_played"))
     timeline = []
     rewards = []
     setbacks = []
     major = []
     for beat in beats:
         snap = beat.get("world_snapshot") or world_snapshot(beat.get("world_state_after") or {})
+        raw_time = str(beat.get("time") or "").strip()
+        if re.match(r"(?i)^(day|d[ií]a)\s*\d+$", raw_time):
+            shown_time = str(snap.get("time") or raw_time)
+        else:
+            shown_time = raw_time or str(snap.get("time") or "")
+        event = _public_event(beat.get("event"), sports=sports_mode)
+        if not sports_mode and not event:
+            continue
+        job = str(snap.get("job") or "")
+        if not sports_mode and re.search(r"dueño del equipo|dueño del club", job, re.I):
+            job = "tu propio trabajo" if vehicle_mode != "creator" else "el canal"
         row = {
             "beat_id": beat.get("beat_id"),
             "age": snap.get("age"),
-            "time": beat.get("time") or snap.get("time"),
-            "event": _public_event(beat.get("event")),
+            "time": shown_time,
+            "event": event,
             "cash": snap.get("cash"),
             "net_worth": snap.get("net_worth"),
-            "job": snap.get("job"),
+            "job": job,
             "home": snap.get("home"),
             "ownership": snap.get("ownership"),
             "team_value": snap.get("team_value"),
             "team_debt": snap.get("team_debt"),
             "team_cash": snap.get("team_cash"),
             "revenue": snap.get("revenue"),
-            "attendance": snap.get("attendance"),
-            "record": snap.get("record"),
-            "sporting_status": snap.get("sporting_status") or snap.get("sports_status"),
+            "attendance": snap.get("attendance") if sports_mode else 0,
+            "record": snap.get("record") if sports_mode else "",
+            "sporting_status": (snap.get("sporting_status") or snap.get("sports_status")) if sports_mode else "",
             "debt_risk_state": snap.get("debt_risk_state"),
-            "life_change": _life_change(beat),
+            "life_change": _life_change(beat) if sports_mode else clean_non_sports(_life_change(beat)),
             "metric_reveal": beat.get("metric_reveal") or [],
         }
         if row["metric_reveal"] or row["life_change"] or str(beat.get("reward_or_setback") or "").strip():
             timeline.append(row)
         kind = str(beat.get("reward_or_setback") or "").lower()
         if "reward" in kind or "recompensa" in kind:
-            rewards.append({"beat_id": beat.get("beat_id"), "time": beat.get("time"), "event": _public_event(beat.get("event")), "kind": kind})
+            rewards.append({"beat_id": beat.get("beat_id"), "time": shown_time, "event": event, "kind": kind})
         if any(x in kind for x in ("setback", "revés", "reves", "crisis", "mistake")):
             cat = kind.split(":", 1)[-1] if ":" in kind else "unspecified"
             setbacks.append(
                 {
                     "beat_id": beat.get("beat_id"),
-                    "time": beat.get("time"),
-                    "event": _public_event(beat.get("event")),
+                    "time": shown_time,
+                    "event": event,
                     "kind": kind,
                     "category": cat,
                 }
@@ -781,8 +798,8 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
                 {
                     "beat_id": beat.get("beat_id"),
                     "purpose": beat.get("story_purpose"),
-                    "event": _public_event(beat.get("event")),
-                    "time": beat.get("time"),
+                    "event": event,
+                    "time": shown_time,
                 }
             )
 
@@ -834,8 +851,12 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
                 }
             )
     acq = dict(fw.get("acquisition") or (blueprint.get("business_or_vehicle") or {}).get("acquisition") or {})
-    sports_life = bool(sports.get("season_history") or sports.get("games_played") or sports.get("wins") or sports.get("losses"))
-    acq["public_summary"] = plain_deal_sentence(sports=sports_life)
+    if sports_mode:
+        acq["public_summary"] = plain_deal_sentence(sports=True)
+    elif vehicle_mode == "creator":
+        acq["public_summary"] = "Grabas en tu cuarto. El canal es chico y sigues subiendo."
+    else:
+        acq["public_summary"] = plain_deal_sentence(sports=False)
     return {
         "overview": {
             "protagonist": (blueprint.get("protagonist") or {}),
@@ -857,7 +878,7 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
         "ownership_ledger": fw.get("ownership_ledger") or {},
         "equity_events": fw.get("equity_events") or [],
         "financial_events": fw.get("financial_events") or [],
-        "season_history": sports.get("season_history") or [],
+        "season_history": (sports.get("season_history") or []) if sports_mode else [],
         "debt_risk_history": fw.get("debt_risk_history") or [],
         "debt_risk_state": fin.get("debt_risk_state"),
         "sports_progression": sports_prog,
@@ -887,7 +908,7 @@ def assemble_review(payload: dict[str, Any]) -> dict[str, Any]:
             "team_name": team.get("name"),
             "debt_risk_state": fin.get("debt_risk_state"),
             "championships": sports.get("championships"),
-            "season_history": sports.get("season_history") or [],
+            "season_history": (sports.get("season_history") or []) if sports_mode else [],
         },
         "world_progression": [
             {"beat_id": b.get("beat_id"), "time": b.get("time"), **(b.get("world_snapshot") or {})}

@@ -200,6 +200,12 @@ def generate_check_story(
             "No la conviertas en equipo, empresa, restaurante ni otro oficio. "
             "Adapta las escenas, el plazo y el cierre a ESA fantasía."
         )
+    elif vmode == "creator":
+        mode_line = (
+            " MODO CANAL: la película es ese canal de YouTube. "
+            "Prohibido equipo, club, gimnasio, playoffs, estadio, básquet y dueño del equipo. "
+            "Las escenas son grabar, subir, comentarios, un video que crece, un patrocinio y la vida en el cuarto."
+        )
     elif vmode == "sports_team":
         mode_line = " MODO DEPORTE: equipo de básquet ficticio."
     elif vmode == "business":
@@ -248,7 +254,6 @@ def generate_check_story(
             "start_beat_number": start_id,
             "ending_type": ending_type,
             "narrative_ending": narrative_ending,
-            "closing_sentence": close_line,
             "blueprint": {
                 "fiction_world": blueprint.get("fiction_world"),
                 "acquisition": (blueprint.get("business_or_vehicle") or {}).get("acquisition"),
@@ -261,8 +266,10 @@ def generate_check_story(
             "beats_so_far": _beats_summary(beats),
             "milestones_hit": (world.get("milestones") or []),
         }
+        if phase_id == "p2":
+            payload["closing_sentence"] = close_line
         raw = _chat_json(client, model, beats_sys, payload, temperature=0.7, timeout=180.0, max_tokens=12000)
-        act_beats = _extract_beats(raw, start_id)
+        act_beats = _extract_beats(raw, start_id, sports=vmode == "sports_team")
         if len(act_beats) < 5:
             raw = _chat_json(
                 client,
@@ -273,14 +280,16 @@ def generate_check_story(
                 timeout=180.0,
                 max_tokens=6000,
             )
-            act_beats = _extract_beats(raw, start_id)
+            act_beats = _extract_beats(raw, start_id, sports=vmode == "sports_team")
+        if vmode != "sports_team":
+            act_beats = strip_sports_narrative(act_beats)
         rebuilt = reconstruct_beats(world, story, prog, act_beats)
         beats.extend(act_beats)
         if rebuilt:
             world = deepcopy(rebuilt[-1]["world_state_after"])
             story = deepcopy(rebuilt[-1]["story_state_after"])
             prog = deepcopy(rebuilt[-1]["progression_after"])
-        if phase_id == "p1":
+        if phase_id == "p1" and vmode == "sports_team":
             gp = int((world.get("sports") or {}).get("games_played") or 0)
             if gp >= 16:
                 close = {
@@ -327,7 +336,7 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
     vmode = vehicle_mode(project)
     blueprint = architecture.get("blueprint") if isinstance(architecture.get("blueprint"), dict) else empty_blueprint()
     # Business blueprints must not carry basketball acquisition debt.
-    if vmode == "business":
+    if vmode != "sports_team":
         bv = dict(blueprint.get("business_or_vehicle") or {})
         acq = dict(bv.get("acquisition") or {})
         if _num(acq.get("debt_assumed")) >= 100000:
@@ -342,18 +351,18 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
     raw_beats = architecture.get("beats") if isinstance(architecture.get("beats"), list) else []
     raw_beats = repair_beat_ops(raw_beats, mode=vmode)
     raw_beats = repair_architecture(blueprint=blueprint, beats=raw_beats, mode=vmode)
-    if vmode == "business":
+    if vmode != "sports_team":
         raw_beats = strip_sports_narrative(raw_beats)
     beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
     final_world = beats[-1]["world_state_after"] if beats else initial_world
     patched = inject_life_payoffs(raw_beats, final_world)
     if patched != raw_beats:
         raw_beats = patched
-        if vmode == "business":
+        if vmode != "sports_team":
             raw_beats = strip_sports_narrative(raw_beats)
         beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
         final_world = beats[-1]["world_state_after"] if beats else initial_world
-    if vmode == "business":
+    if vmode != "sports_team":
         beats = strip_sports_narrative(beats)
     beats = rewrite_downgraded_championship(beats)
     beats = sync_loop_payoffs(beats, mode=vmode)
@@ -397,7 +406,7 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
         # Deterministic repair pass — never hand the UI a broken "final" story.
         raw_beats = repair_beat_ops(raw_beats, mode=vmode)
         raw_beats = repair_architecture(blueprint=blueprint, beats=raw_beats, mode=vmode)
-        if vmode == "business":
+        if vmode != "sports_team":
             raw_beats = strip_sports_narrative(raw_beats)
         raw_beats = inject_life_payoffs(raw_beats, final_world)
         extra_ops = []
@@ -409,7 +418,7 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             ops = list(raw_beats[idx].get("ops") or [])
             names = {str((o or {}).get("op") or (o or {}).get("type") or "") for o in ops if isinstance(o, dict)}
             if "launch_company" not in names and "acquire_team" not in names:
-                if vmode == "business":
+                if vmode != "sports_team":
                     ops.insert(0, {"op": "launch_company", "your_cash": 8000, "investor_cash": 40000, "your_pct": 60, "investor_pct": 40, "debt_assumed": 0})
                 else:
                     ops.insert(0, {"op": "acquire_team", "your_cash": 15000, "investor_cash": 85000, "your_pct": 51, "investor_pct": 39, "seller_pct": 10, "debt_assumed": 650000, "asking_price": 1})
@@ -419,7 +428,7 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
             ops.extend(extra_ops)
             raw_beats[-1]["ops"] = ops
         beats = reconstruct_beats(initial_world, initial_story, initial_prog, raw_beats)
-        if vmode == "business":
+        if vmode != "sports_team":
             beats = strip_sports_narrative(beats)
         beats = rewrite_downgraded_championship(beats)
         beats = sync_loop_payoffs(beats, mode=vmode)
@@ -472,7 +481,7 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
         "quality": quality,
         "approved": False,
     }
-    payload["review"] = assemble_review(payload)
+    payload["review"] = assemble_review(payload, vehicle_mode=vmode)
     persist_architecture(project, payload)
     return project
 
@@ -569,7 +578,7 @@ def _extract_blueprint_bundle(raw: dict[str, Any]) -> tuple[dict, str, dict, dic
     return blueprint, synopsis, initial_world, initial_story, initial_prog
 
 
-def _extract_beats(raw: dict[str, Any], start_id: int) -> list[dict[str, Any]]:
+def _extract_beats(raw: dict[str, Any], start_id: int, *, sports: bool = True) -> list[dict[str, Any]]:
     rows = raw.get("beats")
     if not isinstance(rows, list):
         rows = raw.get("beat_plan") if isinstance(raw.get("beat_plan"), list) else []
@@ -596,7 +605,7 @@ def _extract_beats(raw: dict[str, Any], start_id: int) -> list[dict[str, Any]]:
             beat["metric_reveal"] = [mr] if mr else []
         for key in ("event", "cause", "consequence", "visual_opportunity"):
             if beat.get(key):
-                beat[key] = plain_event(str(beat.get(key) or ""))
+                beat[key] = plain_event(str(beat.get(key) or ""), sports=sports)
         out.append(beat)
     return out
 
@@ -708,14 +717,15 @@ def _chat_json(
 
 
 def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
-    from src.documentary.formats.check_als.plain_language import has_jargon, plain_event, public_life_synopsis
+    from src.documentary.formats.check_als.plain_language import has_jargon, plain_event, public_life_synopsis, sports_bleed
     from src.documentary.formats.check_als.story_arch import load_architecture
     from src.documentary.formats.check_als.story_vehicle import vehicle_mode as _vehicle_mode
 
     arch = load_architecture(project)
-    review = assemble_review(arch) if arch.get("generated") else {}
+    mode = _vehicle_mode(project)
+    review = assemble_review(arch, vehicle_mode=mode) if arch.get("generated") else {}
     synopsis = str(arch.get("synopsis") or "")
-    if has_jargon(synopsis):
+    if has_jargon(synopsis) or (mode != "sports_team" and sports_bleed(synopsis)):
         shown = dict(arch.get("blueprint") or {})
         concept = project.get("concept") if isinstance(project.get("concept"), dict) else {}
         shown["narrative_ending"] = str(
@@ -726,7 +736,7 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
             arch.get("beats") or [],
             arch.get("initial_world") or {},
             arch.get("final_world") or {},
-            vehicle_mode=_vehicle_mode(project),
+                vehicle_mode=mode,
         )
     compact_beats = []
     for b in arch.get("beats") or []:
@@ -735,9 +745,9 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
                 "beat_id": b.get("beat_id"),
                 "time": b.get("time"),
                 "duration_target_s": b.get("duration_target_s"),
-                "cause": plain_event(str(b.get("cause") or "")),
-                "event": plain_event(str(b.get("event") or "")),
-                "consequence": plain_event(str(b.get("consequence") or "")),
+                "cause": plain_event(str(b.get("cause") or ""), sports=mode == "sports_team"),
+                "event": plain_event(str(b.get("event") or ""), sports=mode == "sports_team"),
+                "consequence": plain_event(str(b.get("consequence") or ""), sports=mode == "sports_team"),
                 "story_purpose": b.get("story_purpose"),
                 "emotional_goal": b.get("emotional_goal"),
                 "viewer_question": b.get("viewer_question"),

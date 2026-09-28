@@ -186,6 +186,16 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
                 "reward_or_setback": b.get("reward_or_setback"),
             }
         )
+    if mode != "sports_team":
+        from src.documentary.formats.check_als.plain_language import clean_non_sports
+
+        cleaned = []
+        for row in beats:
+            for key in ("event", "consequence", "visual_opportunity"):
+                row[key] = clean_non_sports(str(row.get(key) or ""))
+            if row.get("event"):
+                cleaned.append(row)
+        beats = cleaned
 
     # Detectar si es vehículo personalizado (no sports/business tradicional)
     is_custom_vehicle = mode not in ("sports_team", "business")
@@ -205,16 +215,23 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
     if mode == "business" or is_custom_vehicle:
         default_own, default_inv, default_seller = 60, 40, 0
         default_debt, default_your_cash, default_inv_cash, default_price = 0, 8000, 40000, 0
-        must = [
-            "cold open: edad / trabajo / casa / cash / oportunidad",
-            f"payoff lanzamiento temprano: tu cash + inversores → ownership {acq.get('your_ownership') or default_own}%",
-            "primer logro / primera tracción real",
-            "crisis o setback",
-            "renuncia o mudanza si existen en el state",
-            "progresión concreta por años",
-            "IMPACTO DE CIMA: ≥3 beats sensoriales de éxito ganado (oficina/casa/status/viajes/gente que te busca/reconocimiento) antes del final",
-            "final: oferta/tracción/decisión abierta — sin moraleja",
-        ]
+        if mode == "creator":
+            must = [
+                "la película es el canal: grabar en el cuarto, subir, comentarios, un video que crece, un patrocinio",
+                "prohibido equipo, club, gimnasio, playoffs, estadio, básquet y dueño del equipo",
+                "tú, el tiempo avanza por años, un tropiezo, y el cierre pedido",
+            ]
+        else:
+            must = [
+                "cold open: edad / trabajo / casa / cash / oportunidad",
+                f"payoff lanzamiento temprano: tu cash + inversores → ownership {acq.get('your_ownership') or default_own}%",
+                "primer logro / primera tracción real",
+                "crisis o setback",
+                "renuncia o mudanza si existen en el state",
+                "progresión concreta por años",
+                "IMPACTO DE CIMA: ≥3 beats sensoriales de éxito ganado (oficina/casa/status/viajes/gente que te busca/reconocimiento) antes del final",
+                "final: oferta/tracción/decisión abierta — sin moraleja",
+            ]
         ending = (
             "Estás solo un momento. En el teléfono alguien quiere comprarte o asociarse. "
             "Bloqueas. Mañana lo lees."
@@ -273,7 +290,7 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
             else default_inv_cash,
             "seller_financing": acq.get("seller_financing")
             if acq.get("seller_financing") is not None
-            else (0 if mode == "business" else 200000),
+            else (0 if mode != "sports_team" else 200000),
             "your_ownership": own if own is not None else default_own,
             "investor_ownership": inv if inv is not None else default_inv,
             "seller_retained": seller if seller is not None else default_seller,
