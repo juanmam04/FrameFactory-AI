@@ -90,6 +90,7 @@ Un intermedio. Alcanza para verlo. Una escena no es un inventario de horas, audi
 El dinero de esa vida se dice cuando importa, y tiene que cerrar con el mundo real de ese oficio.
 En fútbol el valor de mercado es el precio de pase, no el sueldo. Un jugador de 400.000 dólares cobra unos pocos miles al mes en un club chico: el sueldo de un año entra varias veces en ese valor.
 En YouTube el patrocinio sale de las visitas medias, unos 20 a 40 dólares cada 1.000 visitas en tecnología. Un canal que acaba de pasar de cientos a decenas de miles de suscriptores cobra unos miles por video, no una fortuna.
+La consecuencia sale de esa cifra. No dejas el trabajo si el pago no cubre el alquiler de varios meses. No entran más personas de las que caben en ese lugar. Las horas, las entradas y las prendas se multiplican: 200 cosas a 40 dólares son 8.000, no 80.000. Si el número no alcanza para la decisión, la decisión no ocurre.
 No manda la trama: la trama es la vida.
 Prohibido como trama: porcentajes, equity, equity_sale, seller financing, servicio de deuda, facturación, valuación, caja, patrimonio, rondas, "millonario en papel". Nada de planilla.
 Ops invisibles y pocas. El texto es vida, en tú. Prohibido el voseo.
