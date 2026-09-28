@@ -244,6 +244,22 @@ def test_apply_check_visual_layer_schema(tmp_path, monkeypatch):
         assert "Location lock:" in s["continuity_notes"]
 
 
+def test_saving_a_script_does_not_block_the_next_step(tmp_path, monkeypatch):
+    root = tmp_path / "projects"
+    root.mkdir()
+    monkeypatch.setenv("FRAMEFACTORY_PROJECTS_DIR", str(root))
+    monkeypatch.setattr("src.documentary.project.PROJECTS_ROOT", root)
+    p = create_project("canal", title="canal", content_format="check_als", language="es", project_id="save-go")
+    from src.documentary.formats.check_als.script import save_check_script
+
+    saved = save_check_script(
+        p,
+        "En este video tienes 22 años. Firmas y te quedas. El canal es tuyo.",
+    )
+    assert "tienes 22" in saved["script"].lower()
+    assert saved["script_warnings"]
+
+
 def test_short_life_becomes_a_long_video():
     from src.documentary.formats.check_als.script import MIN_WORDS, WORD_RANGE, lengthen_life_script
     from src.script_generator import count_words

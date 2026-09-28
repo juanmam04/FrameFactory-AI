@@ -79,6 +79,7 @@ from src.documentary.project import (
     project_dir,
     save_project,
     session_stats,
+    set_checkpoint,
 )
 from src.documentary.research_service import generate_research_brief
 from src.documentary.script_service import approve_script, generate_documentary_script, save_edited_script
@@ -657,6 +658,11 @@ def create_app() -> FastAPI:
         story_ok = bool(p.get("story_plan_approved") or (p.get("story_plan") or {}).get("approved") or check_ok)
         if step == "script" and not story_ok:
             step = "story"
+        past_script = step in {"flow", "voice", "music", "preview", "render", "publish", "subs", "images"}
+        if past_script and str(p.get("script") or "").strip() and not p.get("script_approved"):
+            p["script_approved"] = True
+            p["fact_check_status"] = "approved"
+            set_checkpoint(p, "script_ready", True)
         p["ui_step"] = step
         save_project(p)
         return {"project": _project_full(p)}
@@ -1765,7 +1771,10 @@ def _flow_payload(project_id: str, p: dict[str, Any]) -> dict[str, Any]:
             cloud_sync.pull_one(project_id, "flow-pack/visual-plan.json", force=False)
     except Exception:
         pass
-    shots = load_shot_list(project_id)
+    try:
+        shots = load_shot_list(project_id)
+    except FileNotFoundError:
+        shots = None
     plan = None
     md = ""
     try:

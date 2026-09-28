@@ -1120,7 +1120,8 @@ def save_check_script(project: dict[str, Any], script: str) -> dict[str, Any]:
         raise ValueError("Script is empty.")
     ok, hard, warn = validate_check_script(script, facts, strict_length=False)
     if not ok:
-        raise ValueError("Edited Check script failed:\n- " + "\n- ".join(hard))
+        warn = list(warn) + [f"(revisar) {h}" for h in hard]
+        hard = []
     wc = count_words(script)
     _persist_script(project, script, facts, wc, {}, hard, warn, approved=False)
     append_log(str(project["id"]), f"check_script edited words={wc}")

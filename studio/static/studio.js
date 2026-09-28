@@ -1729,19 +1729,14 @@ function renderProject() {
     .forEach((btn) => {
       btn.onclick = async () => {
         const next = btn.dataset.step;
-        state.project.ui_step = next;
-        renderProject();
         try {
           const data = await api(`/api/projects/${encodeURIComponent(p.id)}/step`, {
             method: "PATCH",
             body: JSON.stringify({ step: next }),
           });
-          if (data?.project) {
-            state.project = data.project;
-            if (String(data.project.ui_step || "") !== next) {
-              renderProject();
-            }
-          }
+          if (data?.project) state.project = data.project;
+          else state.project.ui_step = next;
+          renderProject();
         } catch (e) {
           toast(e.message);
         }
@@ -2296,10 +2291,9 @@ function paintScript(ws, p) {
       <div class="actions">
         <button class="btn btn-accent" id="gen-script">Generate script</button>
         <button class="btn btn-ghost" id="save-script">Save edits</button>
-        <button class="btn btn-primary" id="approve">Aprobar guion</button>
-        <button class="btn btn-accent" id="gen-flow" ${p.script_approved ? "" : "disabled"} title="${p.script_approved ? "" : "Primero aprobá el guion"}">Generar Flow</button>
+        <button class="btn btn-primary" id="approve">Seguir a imágenes</button>
       </div>
-      <p class="lead" style="margin-top:0.5rem">Aprobar y Generar Flow son pasos separados. Aprobá cuando el texto esté bien; generá el plan de imágenes cuando quieras.</p>
+      <p class="lead" style="margin-top:0.5rem">Cuando el guion te cierre, seguís a las imágenes. Ahí se arma el plan.</p>
       <div class="field">
         <label>Narration (~${tw} words · flexible 1800–2200)</label>
         <textarea id="script" class="script-box">${esc(p.script)}</textarea>
@@ -2356,25 +2350,8 @@ function paintScript(ws, p) {
         api(`/api/projects/${encodeURIComponent(p.id)}/script/approve`, { method: "POST" })
       );
       state.project = data.project;
-      toast("Guion aprobado — ahora podés Generar Flow");
+      toast("Guion listo. Seguís con las imágenes.");
       renderProject();
-    } catch (e) {
-      toast(e.message);
-    }
-  };
-  $("#gen-flow").onclick = async () => {
-    try {
-      if ($("#script")?.value != null) {
-        await api(`/api/projects/${encodeURIComponent(p.id)}/script`, {
-          method: "PUT",
-          body: JSON.stringify({ script: $("#script").value }),
-        });
-      }
-      if (!state.project?.script_approved && !p.script_approved) {
-        toast("Primero aprobá el guion");
-        return;
-      }
-      await rebuildFlow();
     } catch (e) {
       toast(e.message);
     }
@@ -2394,15 +2371,20 @@ async function paintFlow(ws, p) {
     plan = data.visual_plan;
     shots = data.shots;
     coverage = data.asset_coverage || {};
+    const hasPlan = plan && ((plan.visuals || []).length || (plan.flow_batches || []).length);
+    const hasShots = shots && ((shots.shots || []).length || (shots.visuals || []).length);
+    if (!hasPlan && !hasShots) {
+      throw new Error("");
+    }
   } catch (e) {
     ws.innerHTML = `
       <div class="panel workspace">
-        <h2>Todavía no hay plan de imágenes</h2>
-        <p class="lead">El guion ya puede estar aprobado. Acá solo generás el Flow (prompts + slots).</p>
+        <h2>Imágenes</h2>
+        <p class="lead">El guion ya quedó atrás. Acá generás el plan de imágenes.</p>
         <div class="actions">
           <button class="btn btn-accent" id="rebuild">Generar Flow</button>
         </div>
-        <div class="notice">${esc(e.message || "")}</div>
+        ${e.message ? `<div class="notice">${esc(e.message)}</div>` : ""}
       </div>`;
     $("#rebuild").onclick = () => rebuildFlow();
     return;
