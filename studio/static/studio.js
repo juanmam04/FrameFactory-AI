@@ -1427,6 +1427,40 @@ function paintIdeas() {
   });
 }
 
+const ENDING_OPTIONS = [
+  { id: "victory", name: "Éxito", emoji: "🏆", end: "Al final lo logras. El lugar se llena y esto sigue siendo tuyo.", close: "Al final lo logras. Esa vida te queda." },
+  { id: "exit", name: "Lo vendes bien", emoji: "💰", end: "Al final lo vendes en tus términos y te vas.", close: "Al final firmas la venta y sales por última vez." },
+  { id: "loss", name: "Pérdida", emoji: "💔", end: "Al final se cae y esa etapa se cierra.", close: "Al final se cae. Se cierra esa etapa." },
+  { id: "dilema", name: "Dilema", emoji: "⚖️", end: "Al final hay dos caminos y todavía no elegiste.", close: "Al final hay dos caminos. Decides mañana." },
+  { id: "pyrrhic", name: "Éxito caro", emoji: "⚔️", end: "Llegas, pero algo de tu vida no vuelve.", close: "Llegas arriba, y algo de lo que dejas atrás no vuelve." },
+  { id: "ironic", name: "Irónico", emoji: "🔄", end: "Consigues lo que querías, pero no como lo imaginabas.", close: "Consigues lo que querías, y no es como lo imaginabas." },
+  { id: "open", name: "Abierto", emoji: "❓", end: "Queda una oferta en el teléfono. La lees mañana.", close: "Queda algo abierto. Mañana lo miras." },
+  { id: "plateau", name: "Se queda", emoji: "📊", end: "No es el imperio ni el fracaso. Es tu día a día.", close: "No explota ni se cae. Se queda, y es tuyo." },
+];
+
+function premiseWithoutClose(text) {
+  const parts = String(text || "")
+    .split(/(?<=\.)\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const drop = /al final|a pesar de|solo quedan|sólo quedan|se vende|lecciones|subasta|deuda acumulada|memorias/i;
+  while (parts.length > 1 && drop.test(parts[parts.length - 1])) parts.pop();
+  return parts.join(" ").trim();
+}
+
+function applyConceptEnding(concept, endingType) {
+  const opt = ENDING_OPTIONS.find((e) => e.id === endingType) || ENDING_OPTIONS[0];
+  const base = concept.premise_base || premiseWithoutClose(concept.premise || "");
+  return {
+    ...concept,
+    premise_base: base,
+    ending_type: opt.id,
+    ending_name: opt.name,
+    end_state: opt.end,
+    premise: base ? `${base.replace(/[.\s]+$/, "")}. ${opt.close}` : opt.close,
+  };
+}
+
 function paintCheckConcepts(host) {
   const sorted = [...state.ideas].sort((a, b) => (b.overall_score || 0) - (a.overall_score || 0));
   state.ideas = sorted;
@@ -1505,7 +1539,13 @@ function paintCheckConcepts(host) {
           <pre class="hook-block">${esc(thumb.thumbnail_prompt || "")}</pre>
         </details>
         <div class="tags">${scoreBits}</div>
-        <div class="actions">
+        <div class="actions" style="flex-wrap:wrap;align-items:center">
+          <label class="tag" style="display:inline-flex;gap:0.35rem;align-items:center">
+            Final
+            <select data-ending="${i}" style="font:inherit;max-width:11rem">
+              ${ENDING_OPTIONS.map((o) => `<option value="${o.id}"${o.id === endingType ? " selected" : ""}>${o.emoji} ${esc(o.name)}</option>`).join("")}
+            </select>
+          </label>
           <button class="btn btn-primary" data-pick="${i}">${isPicked ? "Abrir episodio" : "Elegir este concepto"}</button>
           <button class="btn btn-ghost" data-regen="title" data-i="${i}">Regen title</button>
           <button class="btn btn-ghost" data-regen="thumbnail" data-i="${i}">Regen thumb</button>
@@ -1515,6 +1555,15 @@ function paintCheckConcepts(host) {
       </article>`;
     })
     .join("");
+
+  host.querySelectorAll("[data-ending]").forEach((sel) => {
+    sel.onchange = () => {
+      const i = Number(sel.dataset.ending);
+      state.ideas[i] = applyConceptEnding(state.ideas[i], sel.value);
+      saveIdeasCache();
+      paintIdeas();
+    };
+  });
 
   host.querySelectorAll("[data-pick]").forEach((btn) => {
     btn.onclick = async () => {

@@ -283,8 +283,12 @@ def _freeform_synopsis(
             continue
         paras.append(line if line.endswith(".") else line + ".")
         picked += 1
+    ending_key = str(blueprint.get("narrative_ending") or "").strip().lower()
+    close = PUBLIC_CLOSES.get(ending_key)
     ending = str(blueprint.get("ending") or "").strip()
-    if ending and not has_jargon(ending):
+    if close:
+        paras.append(close)
+    elif ending and not has_jargon(ending):
         paras.append(to_tu(ending if ending.endswith(".") else ending + "."))
     elif picked == 0:
         paras.append("La historia encuentra su curva y se cierra en una escena, no en un resumen.")
@@ -293,6 +297,18 @@ def _freeform_synopsis(
     if len(words) > 520:
         body = " ".join(words[:500]).rstrip(" ,;:") + "."
     return to_tu(body)
+
+
+PUBLIC_CLOSES = {
+    "victory": "Al final lo logras. El lugar se llena y esa vida sigue siendo tuya.",
+    "exit": "Al final lo vendes en tus términos y te vas.",
+    "loss": "Al final se cae. Se cierra esa etapa.",
+    "dilema": "Al final hay dos caminos. Decides mañana.",
+    "pyrrhic": "Llegas arriba, y algo de lo que dejas atrás no vuelve.",
+    "ironic": "Consigues lo que querías, y no es como lo imaginabas.",
+    "open": "Queda algo abierto. Mañana lo miras.",
+    "plateau": "No explota ni se cae. Se queda, y es tuyo.",
+}
 
 
 def public_life_synopsis(
@@ -364,11 +380,19 @@ def public_life_synopsis(
         seasons = [seasons[0], seasons[-1]]
     paras.extend(seasons)
 
+    ending_key = str(blueprint.get("narrative_ending") or "").strip().lower()
+    close = PUBLIC_CLOSES.get(ending_key)
     if sports:
-        paras.append(
-            "No todo llega en orden. Una tarde renuncias sin discurso, otra tus padres aparecen en la puerta, "
-            "hay una semana floja que cuesta, y de pronto el lugar se llena sin que lo hubieras anotado."
-        )
+        if ending_key == "loss":
+            paras.append(
+                "No todo llega en orden. Una tarde renuncias sin discurso, otra tus padres aparecen en la puerta, "
+                "hay una semana floja que cuesta, y el lugar se vacía."
+            )
+        else:
+            paras.append(
+                "No todo llega en orden. Una tarde renuncias sin discurso, otra tus padres aparecen en la puerta, "
+                "hay una semana floja que cuesta, y de pronto el lugar se llena sin que lo hubieras anotado."
+            )
     else:
         paras.append(
             "No todo llega en orden. Renuncias un martes cualquiera, tus padres aparecen cuando no los esperabas, "
@@ -379,6 +403,8 @@ def public_life_synopsis(
         f"{today}Tu día es {job1}. Vives en {home1}. "
         f"{'El estadio' if sports else 'El lugar'} ya no es el cuarto del primer mes."
     )
+    if close:
+        paras.append(close)
     body = re.sub(r"\s+", " ", " ".join(paras)).strip()
     words = _words(body)
     if len(words) > 520:

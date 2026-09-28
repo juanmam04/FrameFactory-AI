@@ -117,3 +117,15 @@ def test_life_synopsis_has_no_ledger():
     assert 180 <= words <= 650, words
     report = validate_synopsis(text, bp, initial, final, vehicle_mode="sports_team")
     assert report["ok"], report
+
+
+def test_chosen_ending_rewrites_the_close():
+    bp = {"fiction_world": {"team_name": "Halcones"}, "narrative_ending": "victory"}
+    initial = {"time": {"protagonist_age": 22}, "life": {"job": "oficina", "home": "un cuarto"}}
+    final = {"time": {"protagonist_age": 28}, "life": {"job": "el club", "home": "tu casa"}, "team": {"name": "Halcones"}}
+    won = public_life_synopsis(bp, [], initial, final, vehicle_mode="sports_team").lower()
+    assert "lo logras" in won
+    lost_bp = {**bp, "narrative_ending": "loss"}
+    lost = public_life_synopsis(lost_bp, [], initial, final, vehicle_mode="sports_team").lower()
+    assert "se cae" in lost
+    assert "lo logras" not in lost

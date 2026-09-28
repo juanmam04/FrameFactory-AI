@@ -31,7 +31,12 @@ from src.documentary.formats.check_als.story_sim import (
     strip_sports_narrative,
     sync_loop_payoffs,
 )
-from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, plain_event, public_life_synopsis
+from src.documentary.formats.check_als.plain_language import (
+    PUBLIC_CLOSES,
+    PUBLIC_EVENT_RULES,
+    plain_event,
+    public_life_synopsis,
+)
 from src.documentary.formats.check_als.story_vehicle import (
     beats_system,
     blueprint_system,
@@ -204,10 +209,12 @@ def generate_check_story(
             f" MODO {vmode}: la fantasía es ESE vehículo, no un equipo de básquet ni una startup genérica. "
             "Prohibido playoffs, estadio y campeonato salvo que el vehículo sea deporte."
         )
+    close_line = PUBLIC_CLOSES.get(narrative_ending) or PUBLIC_CLOSES["open"]
     ending_line = (
         f" FINAL NARRATIVO OBLIGATORIO: {narrative_ending}. "
-        "El climax y blueprint.ending tienen que ser ESE cierre "
-        "(victoria total, venta, pérdida, dilema, victoria pírrica, ironía, final abierto o meseta). "
+        f"La última escena y blueprint.ending tienen que decir, en la vida cotidiana: {close_line} "
+        "Si la premisa escrita termina de otra forma (subasta, pérdida, éxito, lecciones), "
+        "ignora ese cierre y usa este. "
         "No lo conviertas en 'bloqueas, mañana lo lees' si el tipo no es open."
     )
     user_ctx["instruction"] += mode_line + ending_line
@@ -217,6 +224,8 @@ def generate_check_story(
     if vmode == "freeform":
         blueprint["user_premise"] = str(user_ctx.get("premise") or "")
         blueprint["freeform"] = True
+    blueprint["narrative_ending"] = narrative_ending
+    blueprint["ending"] = close_line
     initial_world = force_pre_acquisition(initial_world, mode=vmode)
     if not (initial_story.get("open_loops") or []):
         initial_story["open_loops"] = default_open_loops(vmode)
@@ -225,7 +234,7 @@ def generate_check_story(
         blueprint["ending_type"] = "triumphant"
         ending_type = "triumphant"
 
-    phase_specs_list = phase_specs(vmode, ending_type)
+    phase_specs_list = phase_specs(vmode, close_line)
     beats: list[dict[str, Any]] = []
     world = deepcopy(initial_world)
     story = deepcopy(initial_story)
@@ -238,6 +247,8 @@ def generate_check_story(
             "brief": brief,
             "start_beat_number": start_id,
             "ending_type": ending_type,
+            "narrative_ending": narrative_ending,
+            "closing_sentence": close_line,
             "blueprint": {
                 "fiction_world": blueprint.get("fiction_world"),
                 "acquisition": (blueprint.get("business_or_vehicle") or {}).get("acquisition"),
@@ -705,8 +716,13 @@ def public_architecture(project: dict[str, Any]) -> dict[str, Any]:
     review = assemble_review(arch) if arch.get("generated") else {}
     synopsis = str(arch.get("synopsis") or "")
     if has_jargon(synopsis):
+        shown = dict(arch.get("blueprint") or {})
+        concept = project.get("concept") if isinstance(project.get("concept"), dict) else {}
+        shown["narrative_ending"] = str(
+            project.get("check_ending_type") or concept.get("ending_type") or shown.get("narrative_ending") or ""
+        ).strip().lower()
         synopsis = public_life_synopsis(
-            arch.get("blueprint") or {},
+            shown,
             arch.get("beats") or [],
             arch.get("initial_world") or {},
             arch.get("final_world") or {},
