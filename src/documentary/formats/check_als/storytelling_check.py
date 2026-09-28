@@ -357,6 +357,11 @@ ESTRUCTURA MANDATORIA (1800 PALABRAS / 12 MIN):
 REGLAS DE ESCRITURA:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+QUE FLUYA:
+- No enumeres día 1, día 2, día 3 ni una lista de logros.
+- Cambia el ritmo: una escena lenta, un salto, un detalle que no es el siguiente paso.
+- Cada momento sale del anterior. Se entiende igual.
+
 CLARIDAD:
 - Edad exacta: "tienes 22 años".
 - El resto son escenas de vida, no cifras.

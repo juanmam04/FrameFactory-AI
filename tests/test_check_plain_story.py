@@ -60,7 +60,7 @@ def test_generator_plans_a_short_life():
     phases = phase_specs("sports_team", "open")
     assert len(phases) == 2
     brief = " ".join(text for _, text in phases).lower()
-    assert "6 a 8" in brief
+    assert "ritmo" in brief or "fluya" in brief or "curva" in brief
     assert "planilla" in SIMPLE_STORY_BRIEF.lower()
     assert "equity_sale" in SIMPLE_STORY_BRIEF
 

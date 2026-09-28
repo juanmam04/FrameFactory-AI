@@ -88,8 +88,8 @@ def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
     """Genera specs de fases dinámicas basadas en el vehículo."""
     if mode == "freeform":
         return [
-            ("p1", "Parte 1, 6 a 8 escenas: empieza EXACTAMENTE la idea del usuario. No la cambies de tema, de plazo ni de reto. Nada de equipo, empresa u oficio si la idea no lo es."),
-            ("p2", f"Parte 2, 6 a 8 escenas: la misma idea se complica y cierra ({ending_type}). Sigue siendo esa fantasía, contada en escenas que se filman."),
+            ("p1", "Parte 1: entra en la idea del usuario y déjala correr. Respeta el tema, el plazo y el reto. El ritmo puede saltar, frenar o irse de lado. Nada de equipo, empresa u oficio si la idea no lo es."),
+            ("p2", f"Parte 2: la misma fantasía sigue, con una curva y un cierre {ending_type}. Que se sienta continua, no un formulario de pasos."),
         ]
     try:
         from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
@@ -102,8 +102,8 @@ def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
             progression = vehicle_info["progression"]
             
             return [
-                ("p1", f"Parte 1: vida de antes, aparece {vehicle_name}, dices que sí ({acquisition}). Primeros días duros y una prueba chica. 6 a 8 escenas, no más."),
-                ("p2", f"Parte 2: pasan los años en una frase. Dejas el trabajo, te mudas, viene tu gente. Un tropiezo simple. Una noche que se siente lograda. Cierre {ending_type}. 6 a 8 escenas. Resume {progression} en una escena, no en una lista."),
+                ("p1", f"Parte 1: arranca en la vida de {vehicle_name} ({acquisition}) y fluye. No hace falta el mismo orden de siempre. Unas escenas, con ritmo."),
+                ("p2", f"Parte 2: la vida sigue y se tuerce. Resume {progression} cuando haga falta, dentro de una escena. Cierre {ending_type}. Que se sienta una película, no una lista."),
             ]
     except ImportError:
         pass
@@ -111,27 +111,28 @@ def phase_specs(mode: str, ending_type: str) -> list[tuple[str, str]]:
     # Fallback tradicional
     if mode == "sports_team":
         return [
-            ("p1", "Parte 1, 6 a 8 escenas: vives normal, aparece el equipo, firmas (op oculta acquire_team, sin contar cifras), los primeros meses el gimnasio está vacío, una noche viene más gente. Nada de campeonato ni de planilla."),
-            ("p2", f"Parte 2, 6 a 8 escenas: pasan los años (advance_time). Dejas la oficina, te mudas, tus padres vienen. Un tropiezo que se entiende (el equipo arranca mal, o la gente silba). Una noche llena. Cierre {ending_type}. Un año entero cabe en season_stretch, no partido por partido."),
+            ("p1", "Parte 1: entras al equipo (op oculta acquire_team, sin cifras) y la historia fluye. Puede haber silencio, una noche rara, un salto. Nada de planilla ni de campeonato anunciado."),
+            ("p2", f"Parte 2: el tiempo corre con ritmo propio (advance_time, season_stretch si hace falta un año entero). La vida se mueve sin un checklist. Cierre {ending_type}."),
         ]
     return [
-        ("p1", "Parte 1, 6 a 8 escenas: vives normal, aparece la chance, empiezas (op oculta launch_company o acquire_team, sin cifras), los primeros días no viene nadie, llega la primera persona de verdad. Cero deporte."),
-        ("p2", f"Parte 2, 6 a 8 escenas: pasan los años. Dejas el trabajo, te mudas, tu gente lo ve. Un tropiezo simple (un mes flojo). Una noche con gente. Cierre {ending_type}. Prohibido básquet, playoffs y campeonato."),
+        ("p1", "Parte 1: empiezas (op oculta launch_company o acquire_team, sin cifras) y dejas que la historia encuentre su curva. Cero deporte."),
+        ("p2", f"Parte 2: sigue con ritmo, un tropiezo que nace de lo anterior, y cierra en {ending_type}. Prohibido básquet, playoffs y campeonato."),
     ]
 
 
 _FREEFORM_BLUEPRINT = """
-La premisa del usuario ES la película. Adáptate a ella.
-Si pide 7 días para gastar una fortuna, la historia son esos días y ese gasto, no una empresa.
-Si pide otra fantasía rara, síguela. No la traduzcas a básquet, startup, restaurante ni oficio.
-Español de tú. Escenas concretas. Final en una escena.
+La premisa del usuario ES la película. Adáptate y déjala fluir.
+Si pide 7 días para gastar una fortuna, pueden ser saltos, una pausa a las tres de la mañana, un gasto absurdo y un silencio. Sigue siendo ese gasto, no una empresa.
+Si pide otra fantasía, inventa la curva que esa fantasía pide. No la traduzcas a básquet, startup ni a una lista de pasos.
+Español de tú. Escenas concretas. El final llega como escena, no como resumen.
 Return ONLY JSON: blueprint + initial_world. En blueprint guarda user_premise con la idea original.
 NO escribas synopsis.
 """.strip()
 
 _FREEFORM_BEATS = """
-Beat planner. Cada escena obedece la idea del usuario.
-6 a 8 escenas. Ops invisibles y pocas: advance_time (días o meses, según el plazo de la idea).
+Beat planner. Obedeces la idea del usuario y le das ritmo.
+Unas 6 a 8 escenas que se causan entre sí. Puedes frenar, saltar o irte un momento de lado si vuelve al hilo.
+Ops invisibles y pocas: advance_time según el plazo real de la idea.
 No uses acquire_team ni launch_company si la idea no es comprar o fundar algo.
 El texto de event es vida, en tú, sin porcentajes.
 Return ONLY JSON: {"beats":[...]}

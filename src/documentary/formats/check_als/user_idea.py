@@ -89,6 +89,7 @@ def _llm_package(raw: str, title: str) -> dict[str, Any]:
         "Ejemplo: si dice que tiene 7 días para gastar una fortuna, la historia son esos 7 días gastando, "
         "no una startup ni un club. "
         "Español de tú (tienes, gastas, vives). Prohibido voseo y prohibido planilla (porcentajes, equity, deuda). "
+        "La premisa puede fluir: saltos, pausas, una curva. No la escribas como pasos 1, 2 y 3. "
         "Devuelve SOLO JSON con: title, premise (80-140 palabras, segunda persona, fiel a la idea), "
         "hook (3 líneas cortas separadas por \\n\\n), ending_type "
         "(victory|exit|loss|dilema|pyrrhic|ironic|open|plateau, el que mejor calce), "

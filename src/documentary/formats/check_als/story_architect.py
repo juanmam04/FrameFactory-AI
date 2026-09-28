@@ -256,7 +256,7 @@ def generate_check_story(
             raw = _chat_json(
                 client,
                 model,
-                beats_sys + "\nDevolvé 6 a 8 escenas de vida. Cada una se filma. No partas un año en trámites.",
+                beats_sys + "\nDevolvé unas 6 a 8 escenas que se causen y cambien de ritmo. No es una lista de pasos iguales.",
                 payload,
                 temperature=0.5,
                 timeout=180.0,

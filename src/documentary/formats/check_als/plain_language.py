@@ -79,16 +79,15 @@ _DEAL = re.compile(
 )
 
 SIMPLE_STORY_BRIEF = """
-ENFOQUE: una película corta de una vida, para cualquiera.
-Una sola línea, fácil de seguir: vives normal, aparece una chance, dices que sí, al principio cuesta, tu vida cambia en cosas que se ven, hay un tropiezo que se entiende sin saber de negocios, y cierra en una escena.
-TODA la historia son 8 a 14 escenas. Cada escena se puede filmar: una puerta, una fila, una renuncia, una cena, una noche llena, tus padres ahí.
-Los años pasan en una frase ("pasan dos años"). No armes una planilla de temporadas, socios, contratos ni crisis encadenadas.
-Un tropiezo, no cinco problemas de categorías distintas.
-El dinero entra una sola vez y en palabras de todos los días: pones lo que tienes ahorrado. El trato es simple.
-Prohibido como trama: porcentajes, equity, seller financing, servicio de deuda, facturación, valuación, caja, patrimonio, rondas, varios socios con cifras, "millonario en papel".
-Si el motor pide ops, son invisibles: una sola vez acquire_team o launch_company, advance_time para que pasen los años, y como mucho season_stretch o new_season para resumir un año en UNA escena. quit_job y move_home cuando la vida cambia.
-No uses equity_sale, bridge_loan, pay_debt ni credit_line como argumento. Si aparecen en ops, el texto de la escena sigue siendo vida.
-Español de tú (tienes, firmas, vives). Prohibido el voseo.
+ENFOQUE: una película corta que se entiende, y que fluye.
+Hay un hilo claro, pero no es una lista. El ritmo cambia: una escena lenta, un salto de tiempo, un detalle chico, una vuelta que no estaba anunciada.
+Cada escena sale de la anterior. Puede torcerse. No repitas el mismo molde (oficina, firmas, vacío, padres, noche llena) si la idea pide otra curva.
+Unas 8 a 14 escenas en total, las que la historia necesite. Cada una se puede filmar.
+El tiempo pasa dentro de la escena ("a la semana", "dos años después", "esa misma noche"), no como un informe.
+Un tropiezo que se siente, no cinco crisis de manual.
+El dinero, si entra, entra en palabras de todos los días y no manda la trama.
+Prohibido como trama: porcentajes, equity, equity_sale, seller financing, servicio de deuda, facturación, valuación, caja, patrimonio, rondas, "millonario en papel". Nada de planilla.
+Ops invisibles y pocas. El texto es vida, en tú. Prohibido el voseo.
 """.strip()
 
 PUBLIC_EVENT_RULES = """
@@ -277,7 +276,7 @@ def _freeform_synopsis(
         paras.append("Empieza el reto tal como lo pensaste.")
     picked = 0
     for beat in beats or []:
-        if picked >= 4:
+        if picked >= 8:
             break
         line = plain_event(str(beat.get("event") or ""), sports=False)
         if not line or has_jargon(line) or line in " ".join(paras):
@@ -287,8 +286,8 @@ def _freeform_synopsis(
     ending = str(blueprint.get("ending") or "").strip()
     if ending and not has_jargon(ending):
         paras.append(to_tu(ending if ending.endswith(".") else ending + "."))
-    else:
-        paras.append("El plazo se acaba. Queda una última escena, y ahí se cierra.")
+    elif picked == 0:
+        paras.append("La historia encuentra su curva y se cierra en una escena, no en un resumen.")
     body = re.sub(r"\s+", " ", " ".join(paras)).strip()
     words = _words(body)
     if len(words) > 520:
@@ -345,7 +344,7 @@ def public_life_synopsis(
     used: set[str] = set()
     picked = 0
     for beat in beats or []:
-        if picked >= 4:
+        if picked >= 8:
             break
         raw = str(beat.get("event") or "").strip()
         if not raw or raw in used:
@@ -367,15 +366,13 @@ def public_life_synopsis(
 
     if sports:
         paras.append(
-            "Pasan los años. Renuncias a la oficina, te mudas más cerca y tus padres vienen a verte. "
-            "Hay un tropiezo: el equipo arranca flojo y cuesta dormir. "
-            "Después llega una noche en la que el lugar se llena. Desde el túnel los ves arriba."
+            "No todo llega en orden. Una tarde renuncias sin discurso, otra tus padres aparecen en la puerta, "
+            "hay una semana floja que cuesta, y de pronto el lugar se llena sin que lo hubieras anotado."
         )
     else:
         paras.append(
-            "Pasan los años. Renuncias al trabajo de antes y te mudas a un cuarto que ya es tuyo. "
-            "Tus padres vienen, aunque no entiendan cada detalle. Hay un mes flojo. "
-            "Después llega una noche con gente de verdad."
+            "No todo llega en orden. Renuncias un martes cualquiera, tus padres aparecen cuando no los esperabas, "
+            "hay un mes flojo, y una noche entra gente de verdad."
         )
     today = f"Hoy tienes {age1} años. " if age1 else "Hoy "
     paras.append(
