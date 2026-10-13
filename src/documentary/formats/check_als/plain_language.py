@@ -323,7 +323,7 @@ def _freeform_synopsis(
     for beat in beats or []:
         if picked >= 8:
             break
-        line = plain_event(str(beat.get("event") or ""), sports=False)
+        line = plain_event(str(beat.get("event") or ""), sports=True)
         if not line or has_jargon(line) or line in " ".join(paras):
             continue
         paras.append(line if line.endswith(".") else line + ".")

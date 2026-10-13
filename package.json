@@ -2,8 +2,8 @@
   "name": "framefactory-ai",
   "private": true,
   "scripts": {
-    "dev": "./venv/bin/uvicorn studio.server:studio_app --reload --host 127.0.0.1 --port 8787",
-    "studio": "./venv/bin/uvicorn studio.server:studio_app --reload --host 127.0.0.1 --port 8787",
-    "start": "./venv/bin/uvicorn studio.server:studio_app --host 127.0.0.1 --port 8787"
+    "dev": "node scripts/start-studio.cjs --reload",
+    "studio": "node scripts/start-studio.cjs --reload",
+    "start": "node scripts/start-studio.cjs"
   }
 }

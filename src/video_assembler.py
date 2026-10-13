@@ -17,10 +17,6 @@ def ffmpeg_exe() -> str | None:
     if found:
         return found
     try:
-        if (os.getenv("VERCEL") or "").strip():
-            home = Path("/tmp/ff-home")
-            home.mkdir(parents=True, exist_ok=True)
-            os.environ["HOME"] = str(home)
         import imageio_ffmpeg
 
         return imageio_ffmpeg.get_ffmpeg_exe()
@@ -442,6 +438,10 @@ def _mix_voice_music(
         cmd.extend(["-c:v", "libx264", "-preset", "ultrafast", "-crf", "18", "-pix_fmt", "yuv420p"])
     else:
         cmd.extend(["-c:v", "copy"])
+    if duration_sec is not None and float(duration_sec) > 0:
+        # -shortest alone can retain buffered video packets well beyond a short
+        # narration (especially with copied H.264 streams and many stills).
+        cmd.extend(["-t", f"{float(duration_sec):.6f}"])
     cmd.extend(
         [
             "-c:a", "aac", "-b:a", "192k",

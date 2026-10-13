@@ -47,10 +47,6 @@ from .scene_visual_intent import enrich_blocks_with_visual_intent
 from .reddit_publication_bundle import generar_bundle_publicacion_youtube
 from .character_video_provider import render_block, reset_heygen_runtime_state
 from .saas_creative_profile import merge_profile_disk, profile_to_script_context
-from .saas_edit_planner import annotate_blocks_with_editing
-from .saas_full_package import write_saas_full_package
-from .saas_subtitles import burn_subtitles_on_video, list_subtitle_style_keys, write_ass_from_block_audios
-from .saas_viral_idea_engine import generate_viral_idea_for_profile, generate_viral_story_idea_three_pick_best
 
 
 def _recortar_audio_por_duracion(audio_path: Path, duracion_max_segundos: float) -> Path:
@@ -590,6 +586,12 @@ def run_saas_mvp(
     skip_support_images: si True (y no hay gameplay), no llama a Replicate por bloque: solo personaje + fondo del catálogo.
         También se fuerza si SAAS_SKIP_SUPPORT_IMAGES=1 en el entorno.
     """
+    # Legacy SaaS helpers are optional; don't break the classic CLI/Studio import.
+    from .saas_edit_planner import annotate_blocks_with_editing
+    from .saas_full_package import write_saas_full_package
+    from .saas_subtitles import burn_subtitles_on_video, list_subtitle_style_keys, write_ass_from_block_audios
+    from .saas_viral_idea_engine import generate_viral_idea_for_profile, generate_viral_story_idea_three_pick_best
+
     print("🚀 [MVP] Iniciando run_saas_mvp...")
     _saas_write_progress(progress_path, "Inicio", 0.0)
     if os.getenv("SAAS_SKIP_SUPPORT_IMAGES", "").strip().lower() in ("1", "true", "yes", "on"):

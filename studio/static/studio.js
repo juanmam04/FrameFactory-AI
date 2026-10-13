@@ -1980,7 +1980,9 @@ function paintCheckStory(ws, p) {
     .join("");
   const flagBits = flags.length
     ? flags.map((f) => `<div class="notice bad">[${esc(f.code)}] ${esc(f.detail || "")} ${f.beat_id ? "· " + esc(f.beat_id) : ""}</div>`).join("")
-    : `<div class="notice ok">Sin flags de calidad.</div>`;
+    : `<div class="notice ok">No se detectaron inconsistencias. Revisá también si la historia engancha.</div>`;
+  const viewerBits = (quality.viewer_review?.findings || [])
+    .map((f) => `<div class="notice">${esc(f.message)}<ul>${(f.evidence || []).map((e) => `<li>${esc(e)}</li>`).join("")}</ul></div>`).join("");
   const loopBits = loops.length
     ? loops
         .map(
@@ -2092,6 +2094,7 @@ function paintCheckStory(ws, p) {
       </details>
       <p class="kicker">Quality flags</p>
       ${flagBits}
+      ${viewerBits}
     </div>`;
 
   $("#gen-check-story").onclick = async () => {
@@ -2288,6 +2291,7 @@ function paintScript(ws, p) {
   ws.innerHTML = `
     <div class="panel workspace">
       ${(p.script_warnings || []).length ? (p.script_warnings || []).map((w) => `<div class="notice">${esc(w)}</div>`).join("") : ""}
+      ${(p.viewer_review?.findings || []).length ? `<details class="notice"><summary>Revisión del guion como espectador</summary>${p.viewer_review.findings.map((f) => `<p>${esc(f.message)}</p><ul>${(f.evidence || []).map((e) => `<li>${esc(e)}</li>`).join("")}</ul>`).join("")}<p>Son señales para revisar el texto. Leé también el arranque, los giros y el cierre; esta revisión no predice visitas.</p></details>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="gen-script">Generate script</button>
         <button class="btn btn-ghost" id="save-script">Save edits</button>

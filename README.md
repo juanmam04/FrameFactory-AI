@@ -1,12 +1,25 @@
 # FrameFactory-AI
 
-Sistema automático de creación de videos con IA. Genera videos largos a partir de un guion: escenas visuales, voz sintética, edición automática y exportación final.
+Studio de producción de videos largos: ideas, historia, guion, plan visual, importación de imágenes, voz, montaje y descarga del MP4. El flujo actual usa imágenes creadas afuera (por ejemplo, Google Flow); no hace falta Stable Diffusion para usar el Studio.
+
+## Sacar el primer video en Studio
+
+1. Instalá Python 3.10+, Node.js y las dependencias con `pip install -r requirements.txt`.
+2. Copiá `.env.example` a `.env.local` y configurá `OPENAI_API_KEY`. Para usar OpenAI TTS, dejá `ELEVENLABS_API_KEY` vacío; para ElevenLabs, configurá su clave y voz.
+3. Ejecutá `npm run dev` y abrí http://127.0.0.1:8787. El launcher encuentra `venv`, `.venv` o Python del sistema en Windows, macOS y Linux.
+4. Elegí el formato, creá el episodio, generá y aprobá su historia, y revisá el guion antes de continuar.
+5. Generá el plan visual, creá las imágenes con sus prompts y subilas al episodio como `001.png`, `002.png`, etc. La app muestra cuáles faltan.
+6. Generá la voz, revisá la vista previa y armá el episodio. Descargá el MP4 en Video y prepará los datos de publicación.
+
+El montaje incluye movimiento de imágenes, música y subtítulos. FFmpeg se incluye como dependencia de respaldo; una instalación del sistema también sirve. Editar el guion obliga a regenerar la voz y el video para evitar una narración vieja. Una voz nueva que falla la verificación no reemplaza la toma anterior.
+
+Las imágenes y la publicación en el canal requieren intervención del usuario. Las claves de IA/voz y su saldo son necesarios para comprobar un episodio real; las pruebas sin claves usan fixtures y no evalúan la calidad creativa del resultado.
 
 ## Requisitos
 
 - **Python 3.10+**
 - **FFmpeg** instalado en el sistema
-- **Stable Diffusion** (Automatic1111 o ComfyUI) en local o en la nube (ej. RunPod)
+- **Stable Diffusion** solo para el pipeline clásico opcional (no para Studio)
 - APIs: modelo de lenguaje (OpenAI/Claude/etc.) y voz IA (ElevenLabs/OpenAI TTS/etc.)
 
 ## Instalación.

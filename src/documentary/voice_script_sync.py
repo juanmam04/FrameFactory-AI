@@ -95,8 +95,9 @@ def require_voice_matches_script(project: dict[str, Any]) -> None:
 
 
 def word_overlap(a: str, b: str, *, limit: int = 100) -> float:
-    wa = re.findall(r"[a-z0-9']+", (a or "").lower())[:limit]
-    wb = set(re.findall(r"[a-z0-9']+", (b or "").lower())[:limit])
+    # Accented Spanish words must remain whole ("años" is not "a" + "os").
+    wa = re.findall(r"[^\W_]+(?:'[^\W_]+)*", (a or "").casefold())[:limit]
+    wb = set(re.findall(r"[^\W_]+(?:'[^\W_]+)*", (b or "").casefold())[:limit])
     if not wa or not wb:
         return 0.0
     hit = sum(1 for w in wa if w in wb)

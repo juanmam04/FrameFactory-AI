@@ -13,6 +13,7 @@ from src.documentary.formats.check_als.storytelling_check import get_check_maste
 from src.documentary.openai_key import openai_api_key
 from src.documentary.project import append_log, project_dir, save_project, set_checkpoint
 from src.script_generator import count_words
+from src.documentary.viewer_editorial import VIEWER_BRIEF, review_script, revision_prompt
 
 TARGET_WORDS = 1800
 MIN_WORDS = 1100
@@ -28,6 +29,7 @@ VOSEO_FIXES = (
     ("mudás", "mudas"),
     ("trabajás", "trabajas"),
     ("vivís", "vives"),
+    ("seguís", "sigues"),
     ("lanzás", "lanzas"),
     ("creás", "creas"),
     ("armás", "armas"),
@@ -187,7 +189,7 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
                 "reward_or_setback": b.get("reward_or_setback"),
             }
         )
-    if mode != "sports_team":
+    if mode not in ("sports_team", "freeform"):
         from src.documentary.formats.check_als.plain_language import clean_non_sports
 
         cleaned = []
@@ -1041,7 +1043,7 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
                 script = _chat_text(
                     client,
                     model,
-                    EXPAND_SYSTEM,
+                    EXPAND_SYSTEM + "\n\n" + VIEWER_BRIEF,
                     json.dumps(
                         {
                             "note": (
@@ -1061,12 +1063,15 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
                 quality["revised"] = True
                 quality["expand_tries"] = 1
         except Exception as e:
-            quality["llm_error"] = str(e)[:400]
-            append_log(str(project.get("id") or ""), f"check_script LLM fallback: {e}")
-            script = apply_tuteo_fixes(_mock_check_script(facts))
-            quality["offline_movie"] = True
+            append_log(str(project.get("id") or ""), f"check_script generation failed: {type(e).__name__}")
+            raise RuntimeError(
+                "No se pudo escribir el guion con IA. Conservamos el anterior; "
+                "no lo reemplazamos por un texto de prueba. Revisá la conexión y volvé a generar."
+            ) from e
 
     if not (script or "").strip():
+        if use_llm:
+            raise ValueError("La IA devolvió un guion vacío. Conservamos el anterior; volvé a generar.")
         script = apply_tuteo_fixes(_mock_check_script(facts))
         quality["offline_movie"] = True
 
@@ -1077,6 +1082,8 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         or re.search(r"(?i)\b(launch_company|advance_time|quit_job)\b", script)
     )
     if broken or count_words(script) < 80:
+        if use_llm:
+            raise ValueError("El borrador no sirve como narración. Volvé a generar la historia; no se completó con relleno.")
         quality["stripped_screenplay_or_ops"] = True
         script = pad_script_from_beats("" if broken else script, facts, min_words=MIN_WORDS)
 
@@ -1089,15 +1096,36 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         and "NO moraleja" not in ln
         and "Edad final del state" not in ln
     ).strip()
-    if count_words(script) < TARGET_WORDS:
+    # Synthetic expansion exists only for offline test fixtures, never published drafts.
+    if not use_llm and count_words(script) < TARGET_WORDS:
         before = count_words(script)
         script = lengthen_life_script(script, min_words=MIN_WORDS, target=TARGET_WORDS)
         if count_words(script) > before:
             quality["lengthened_for_long_video"] = True
 
+    # Lengthening can insert the title/beat text again; normalize that text too.
+    script = apply_tuteo_fixes(strip_script_chrome(script))
+
+    viewer = review_script(script)
+    if use_llm and viewer["needs_rewrite"]:
+        revised = _chat_text(
+            client, model, "You are a demanding YouTube story editor, not a motivational copywriter.",
+            revision_prompt(script, facts_for_llm(facts), viewer, target),
+            temperature=0.5, max_tokens=7000, timeout=90.0,
+        )
+        script = apply_tuteo_fixes(strip_script_chrome(revised))
+        viewer = review_script(script)
+        quality["viewer_revised"] = True
+        if count_words(script) < 80 or viewer["needs_rewrite"]:
+            raise ValueError("El guion sigue teniendo relleno o repeticiones después de revisarlo. Conservamos el anterior; regenerá la historia.")
+    quality["viewer_review"] = viewer
+    quality["offline_fixture"] = not use_llm
+
     ok, hard, warn = validate_check_script(script, facts, strict_length=False)
     wc = count_words(script)
     if not ok:
+        if use_llm:
+            raise ValueError("El guion no pasó la revisión: " + "; ".join(hard))
         append_log(str(project["id"]), "check_script WARN: " + "; ".join(hard))
         quality["validation_soft_fail"] = True
         warn = list(warn) + [f"(revisar) {h}" for h in hard]

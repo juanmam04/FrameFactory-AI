@@ -1375,6 +1375,9 @@ def repair_architecture(
     rows = [dict(b) for b in beats or [] if isinstance(b, dict)]
     if not rows:
         return []
+    if mode == "freeform":
+        # A user premise need not acquire or launch a business.
+        return rows
     has_acq_op = any(
         any(
             str((op or {}).get("op") or (op or {}).get("type") or "") in ("acquire_team", "launch_company")

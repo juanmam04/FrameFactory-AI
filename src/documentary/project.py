@@ -123,10 +123,11 @@ def projects_root() -> Path:
     from src.documentary.runtime import configure_workspace
 
     configure_workspace()
-    raw = (os.getenv("FRAMEFACTORY_PROJECTS_DIR") or "").strip()
-    root = Path(raw) if raw else (BASE / "projects")
-    if not root.is_absolute():
-        root = (BASE / root).resolve()
+    # Keep the configured workspace (and explicit runtime/test overrides).
+    # Falling back to BASE here silently moved projects out of synced folders.
+    workspace = _resolve_dir("FRAMEFACTORY_WORKSPACE", _WORKSPACE)
+    default = workspace / "projects" if workspace != _WORKSPACE else PROJECTS_ROOT
+    root = _resolve_dir("FRAMEFACTORY_PROJECTS_DIR", default)
     globals()["PROJECTS_ROOT"] = root
     root.mkdir(parents=True, exist_ok=True)
     return root

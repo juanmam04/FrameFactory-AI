@@ -380,7 +380,9 @@ def test_persist_and_human_gate_stop(tmp_projects):
         generate_documentary_script({**approved, "check_story_approved": False}, use_llm=False)
     generated = generate_documentary_script(load_project(out["id"]), use_llm=False)
     assert generated.get("script")
-    assert "tienes" in generated["script"].lower()
+    # Second-person narration need not contain a particular conjugation.
+    assert "te " in generated["script"].lower()
+    assert "seguís" not in generated["script"].lower()
     assert "vos" not in generated["script"].lower()
 
 

@@ -168,7 +168,10 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
         # Heuristic quality; one directed revision if clearly failing.
         review = heuristic_script_quality(script, target_words=target)
         quality_meta = {"heuristic": review, "revised": False}
-        needs_rev = (not review.get("pass")) or any(
+        from src.documentary.viewer_editorial import review_script
+
+        viewer = review_script(script)
+        needs_rev = viewer["needs_rewrite"] or (not review.get("pass")) or any(
             "Ending leans" in p or "abrupt" in p.lower() or "filler" in p.lower() or "Repetitive" in p
             for p in (review.get("problems") or [])
         )
@@ -197,7 +200,9 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
             )
             rev_wc = count_words(revised)
             # Never keep a revision that collapses the draft (model often "fixes" by shortening into an essay stub).
-            if rev_wc >= int(pre_wc * 0.85):
+            # A tighter story can be the better edit. Never retain obvious padding
+            # solely because the improved version lost 15% of the word count.
+            if rev_wc >= min(900, int(pre_wc * 0.65)) and not review_script(revised)["needs_rewrite"]:
                 script = revised
                 quality_meta["revised"] = True
                 quality_meta["after"] = heuristic_script_quality(script, target_words=target)
@@ -240,6 +245,9 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
         )
 
     soft = editorial_warnings(script, target_words=target)
+    from src.documentary.viewer_editorial import review_script
+
+    quality_meta["viewer_review"] = review_script(script)
     project["script"] = script
     project["script_approved"] = False
     project["fact_check_status"] = "pending"
