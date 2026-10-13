@@ -2288,6 +2288,7 @@ function paintScript(ws, p) {
   ws.innerHTML = `
     <div class="panel workspace">
       ${(p.script_warnings || []).length ? (p.script_warnings || []).map((w) => `<div class="notice">${esc(w)}</div>`).join("") : ""}
+      ${(p.viewer_review?.findings || []).length ? `<details class="notice"><summary>Revisión del guion como espectador</summary>${p.viewer_review.findings.map((f) => `<p>${esc(f.message)}</p><ul>${(f.evidence || []).map((e) => `<li>${esc(e)}</li>`).join("")}</ul>`).join("")}<p>Son señales para revisar el texto. Leé también el arranque, los giros y el cierre; esta revisión no predice visitas.</p></details>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="gen-script">Generate script</button>
         <button class="btn btn-ghost" id="save-script">Save edits</button>

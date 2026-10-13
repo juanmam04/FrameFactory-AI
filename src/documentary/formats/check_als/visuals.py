@@ -94,10 +94,10 @@ NEW_APT_BIBLE = (
 )
 
 PEAK_LIFESTYLE_IMPACT = (
-    "PEAK LIFESTYLE IMPACT (mandatory when climate is peak / glory / multimillion): "
-    "the FRAME must scream earned success vs day-one poverty — packed venue, private dining, "
-    "parents in better seats, upgraded apartment interior, sharp wardrobe, people waiting on YOU. "
-    "Not a sad cubicle. Not empty arena gloom. One clear envy beat the viewer can screenshot."
+    "PEAK LIFESTYLE IMPACT: show the specific earned reward described in this beat. "
+    "A full venue is not personal wealth. Never add private dining, luxury housing, expensive clothes "
+    "or parents in premium seats unless this scene actually establishes them. "
+    "Preserve its stated location, action and financial constraints."
 )
 
 TEAM_BIBLE = (
@@ -380,7 +380,7 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
     emotion = str(visual.get("emotion") or "").strip() or "lived-in story beat"
     mood_label = str(visual.get("moment_label") or mid)
     peak_block = ""
-    if mid in {"peak", "glory"} or "cima" in mood_label.lower() or "millon" in _low(action + " " + emotion):
+    if mid in {"peak", "glory"} or "cima" in mood_label.lower():
         peak_block = f"{PEAK_LIFESTYLE_IMPACT}\n"
         if "AGE 22 wardrobe only" in wardrobe or "cheap office" in wardrobe.lower():
             wardrobe = (
@@ -390,12 +390,18 @@ def compose_image_prompt(visual: dict[str, Any], meta: dict[str, Any]) -> str:
     return (
         f"{CHECK_STYLE}\n"
         f"STYLE LOCK (Check stickman): {VISUAL_DIRECTION}\n"
-        f"EXACT CHARACTER LOCK: {PROTAGONIST_BIBLE} Age now: {age}. State: {state}. {wardrobe}\n"
+        "EXACT CHARACTER LOCK: same white round head, black-dot eyes, spiky black hair silhouette, "
+        "simple line mouth, thin stick limbs and consistent proportions. "
+        f"Age now: {age}. Current story state: {state}. {wardrobe} "
+        "Use only the clothes established for THIS scene; no future wardrobe or automatic team jacket.\n"
         f"SUPPORT CAST RULE: {SUPPORTING_STICKMAN}\n"
         f"STORY CLIMATE: {mood_label} ({mid}). Emotion beat: {emotion}.\n"
         f"{face}\n"
         f"{peak_block}"
         f"EXACT ACTION: {action}\n"
+        "STAGING: one instant, one clear action; hands touch the relevant prop, gaze follows the action. "
+        "Do not combine before/after events in one frame. Camera must reveal the object or reaction "
+        "that makes this narrated beat understandable. No unrelated decorative activity.\n"
         f"EXACT ENVIRONMENT LOCK: {loc}\n"
         f"STORY TIME: {story_time}\n"
         f"CAMERA: {camera}\n"
@@ -463,6 +469,7 @@ def apply_check_visual_layer(project: dict[str, Any], plan: dict[str, Any]) -> d
 
     seen_prompts: dict[str, int] = {}
     scenes: list[dict[str, Any]] = []
+    current_age = None
     # Tag climates before composing prompts (Spanish VO → rise/peak/crack/…).
     from src.documentary.visual_plan import _tag_moments
 
@@ -470,8 +477,21 @@ def apply_check_visual_layer(project: dict[str, Any], plan: dict[str, Any]) -> d
     for i, v in enumerate(visuals, start=1):
         narr = str(v.get("narration_segment") or v.get("narration") or v.get("script_text") or "").strip()
         meta = infer_story_time(narr + " " + str(v.get("action") or ""), i, total)
+        # Position in the video is not evidence that years passed or wealth grew.
+        explicit_age = re.search(r"(?i)\b(?:tienes|a los|cumples)\s+(\d{1,3})\s*(?:años|a[nñ]os)\b", narr)
+        if explicit_age:
+            current_age = int(explicit_age.group(1))
+        elif v.get("protagonist_age"):
+            current_age = int(v["protagonist_age"])
+        meta["protagonist_age"] = current_age or 22
+        meta["story_time"] = f"AGE {current_age}" if current_age else "Current narrated moment; age not specified"
+        meta["protagonist_state"] = narr[:180] or "Only the current action is established"
         loc_key = meta["location_key"]
-        env = location_from_key(loc_key, int(meta["protagonist_age"]), narr)
+        # A generated scene's concrete location takes precedence over the old
+        # basketball/cubicle keyword fallback (which leaked into creator videos).
+        env = str(v.get("environment") or v.get("location") or "").strip()
+        if not env:
+            env = location_from_key(loc_key, int(meta["protagonist_age"]), narr)
         chars = characters_for(loc_key, narr)
         objects = _objects_for(loc_key, narr)
         lighting = _lighting_for(loc_key, narr)

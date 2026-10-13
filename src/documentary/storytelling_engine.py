@@ -528,12 +528,13 @@ def get_master_prompt(
     target_words: int = 2000
 ) -> str:
     """Generate the master prompt for script generation."""
+    from src.documentary.viewer_editorial import VIEWER_BRIEF
     return MASTER_SCRIPT_PROMPT.format(
         storytelling_principles=FIFTEEN_PRINCIPLES,
         beat_sheet=BEAT_SHEET_TEMPLATE,
         subject_and_research=subject_and_research,
         target_words=target_words
-    )
+    ) + "\n\n" + VIEWER_BRIEF
 
 def get_revision_prompt(
     current_script: str,
@@ -543,10 +544,12 @@ def get_revision_prompt(
     research_notes: str
 ) -> str:
     """Generate revision prompt."""
+    from src.documentary.viewer_editorial import VIEWER_BRIEF
+
     return REVISION_PROMPT.format(
         problems=problems,
         revision_instructions=revision_instructions,
         current_script=current_script,
         story_plan_block=story_plan_block,
         research_notes=research_notes
-    )
+    ) + "\n\n" + VIEWER_BRIEF

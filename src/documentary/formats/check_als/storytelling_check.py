@@ -538,7 +538,8 @@ def get_check_master_prompt(locked_facts: str, vehicle_mode: str = "sports_team"
         if vehicle_mode in UNIVERSAL_VEHICLES and vehicle_mode not in ("sports_team", "business"):
             # Usar prompt universal personalizado
             universal_prompt = get_universal_vehicle_prompt(vehicle_mode, locked_facts)
-            return universal_prompt
+            from src.documentary.viewer_editorial import VIEWER_BRIEF
+            return universal_prompt + "\n\n" + VIEWER_BRIEF
     except ImportError:
         pass
     
@@ -552,8 +553,9 @@ def get_check_master_prompt(locked_facts: str, vehicle_mode: str = "sports_team"
     else:
         vehicle_instructions = VEHICLE_SPORTS if vehicle_mode == "sports_team" else VEHICLE_BUSINESS
     
+    from src.documentary.viewer_editorial import VIEWER_BRIEF
     return MASTER_PROMPT_CHECK.format(
         beat_sheet=BEAT_SHEET_CHECK,
         vehicle_instructions=vehicle_instructions,
         locked_facts=locked_facts
-    )
+    ) + "\n\n" + VIEWER_BRIEF

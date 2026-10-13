@@ -1917,6 +1917,8 @@ def _project_card(p: dict[str, Any]) -> dict[str, Any]:
 
 
 def _project_full(p: dict[str, Any]) -> dict[str, Any]:
+    from src.documentary.viewer_editorial import review_script
+
     prog = derive_progress(p)
     plan = get_story_plan(p)
     return {
@@ -1942,6 +1944,7 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "script_approved": bool(p.get("script_approved")),
         "script_warnings": p.get("script_warnings") or [],
         "script_quality": p.get("script_quality") or {},
+        "viewer_review": review_script(str(p.get("script") or "")),
         "target_words": p.get("target_words") or 2000,
         "voice": _voice_of(p),
         "render": p.get("render") if isinstance(p.get("render"), dict) else {},

@@ -110,7 +110,9 @@ def build_visual_plan(
     bible = _upgrade_bible(bible_raw, visuals, story)
     _purge_stock_locations(bible)
     is_check = str(project.get("content_format") or project.get("mode") or "") == "check_als"
-    _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm and not is_check)
+    if is_check:
+        bible["format"] = "check_als"
+    _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm)
     visuals = _assign_camera_variety(visuals)
     visuals = _assign_durations(visuals)
 
@@ -944,15 +946,19 @@ def _rewrite_stills(
         return
     client = OpenAI(api_key=key)
     cast = [str(c.get("name") or "").strip() for c in (bible.get("characters") or []) if c.get("name")]
+    if bible.get("format") == "check_als":
+        cast = ["YOU (protagonist)"] + cast
     system = (
-        "You are a documentary stills photographer. Convert each narration line into ONE photograph.\n"
+        "You are a storyboard director. Convert each narration line into ONE drawable story moment.\n"
         "Return ONLY a JSON list. Each item: number, action, location, characters (names from the cast only), time_of_day.\n"
         "action = one sentence, a body doing something, a specific place. NEVER copy the narration. "
         "NEVER a rhetorical question. NEVER a crowded office or coworking floor.\n"
-        "If the VO is abstract, invent the honest visual consequence "
-        "(empty floor after the crash, a For Sale sign at night, two cofounders on a sidewalk with a cheap sign).\n"
-        "Locations MUST change across the list: street, apartment, car, jet, empty hallway, restaurant, "
-        "sidewalk, bedroom at 3am, loading dock, courthouse steps — not 'office' twice in a row.\n"
+        "Show the action, obstacle, reaction or visible consequence of THIS narrated beat. "
+        "Use adjacent narration for context. Never invent a sale, luxury, character or plot event. "
+        "For abstract narration show a prop or action grounded in that beat, not generic thinking at a window.\n"
+        "Keep location when the story stays there; vary angle and subject distance instead. "
+        "Only change location when narration warrants it. Possible places, never mandatory: street, apartment, car, empty hallway, restaurant, "
+        "sidewalk, bedroom at 3am, loading dock, courthouse steps. Staying in one office is valid if the scene does.\n"
         "Keep the SAME emotional register as the moment (rise vs collapse). Different camera, same climate."
     )
     for i in range(0, len(flow), 8):
@@ -960,10 +966,13 @@ def _rewrite_stills(
         payload = {
             "topic": topic,
             "cast": cast[:8],
+            "style": _style_text(bible),
             "shots": [
                 {
                     "number": int(v.get("number") or 0),
                     "narration": str(v.get("narration_segment") or v.get("narration") or "")[:400],
+                    "previous_narration": str(flow[max(0, flow.index(v) - 1)].get("narration_segment") or "")[:300] if flow.index(v) else "",
+                    "next_narration": str(flow[flow.index(v) + 1].get("narration_segment") or "")[:300] if flow.index(v) + 1 < len(flow) else "",
                 }
                 for v in chunk
             ],
@@ -1004,6 +1013,7 @@ def _rewrite_stills(
                 v["action"] = action
             if loc and not _GENERIC_LOC.match(loc) and not _STOCKY_DESC.search(loc):
                 v["location"] = loc
+                v["environment"] = loc
             if chars:
                 allowed = {c.lower() for c in cast}
                 v["characters"] = [c for c in chars if c.lower() in allowed][:3] or v.get("characters") or []
@@ -1037,12 +1047,12 @@ def format_batch_prompt(
     lines = [
         f"Create {n} separate 16:9 cinematic documentary stills of ONE STORY MOMENT: {label.upper()}.",
         climate,
-        "They are INTERCHANGEABLE — not a sequence, not 1 then 2 then 3. Different camera and place, SAME climate.",
-        "Do not create a collage. Do not tell a 10-step timeline. Do not repeat the same office/crowd.",
+        "Each numbered still illustrates its OWN narrated event. Never interchange shots merely because their mood matches.",
+        "Create separate images, not a collage. Follow the assigned beats; don't invent a parallel story.",
         "",
         "HARD RULES:",
         "- The same person must look like the same person across images (use character refs).",
-        "- Change location, time of day, and camera every shot.",
+        "- Vary framing to clarify the action; keep location and time unless the story changes them.",
         "- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,",
         "  handshake, CEO portrait, anonymous extras filling the frame.",
         "",
@@ -1059,10 +1069,10 @@ def format_batch_prompt(
     lines.extend(
         [
             "GENERAL RULES:",
-            "- 16:9 photoreal documentary;",
+            "- 16:9; follow the declared STYLE exactly;",
             "- protagonist visible and doing the action;",
             "- period-accurate wardrobe, phones, cars, interiors;",
-            "- every frame is the SAME emotional beat from a new angle;",
+            "- show the specific action and consequence assigned to that number;",
             "- CLEAN plate: NO subtitles, captions, titles, lower-thirds, speech bubbles,",
             "  logos, watermarks, or any readable on-image text (Spanish or English);",
             "  voiceover/subs are added later in editing — never burn words into the frame;",
