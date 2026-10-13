@@ -45,3 +45,31 @@ El momento más atractivo de la premisa tiene que ocurrir dentro de la historia;
 En el plan visual, cada imagen necesita un instante dibujable: alguien haciendo algo, un objeto que importa, una reacción o consecuencia visible. Edad, ropa, ubicación, objetos y resultado deben corresponder a ese punto de la narración. Una imagen linda que cuenta otro evento no aprueba.
 
 Estos criterios mejoran la dirección editorial. Las visitas y la retención se comprueban con episodios publicados y su audiencia; no se infieren de una suite de tests ni de una autoevaluación del modelo.
+
+## Ejemplo de dirección para el arranque del club
+
+Propuesta editorial para una historia ficticia, usando la premisa y cifras del piloto guardado. Es una referencia de escritura para revisar; no un guion nuevo generado por el modelo ni una afirmación histórica.
+
+> Un equipo profesional de básquet cuesta un dólar. Tú tienes veinte mil en la cuenta. Parece la única compra de tu vida para la que te sobra dinero.
+>
+> Entonces abres la carpeta.
+>
+> Seiscientos cincuenta mil dólares de deuda. Proveedores esperando cobrar. Un techo que gotea sobre la tribuna.
+>
+> El dólar no compra un equipo. Compra sus problemas.
+>
+> Tienes veintidós años. Trabajas en una oficina y compartes departamento. Lo sensato sería cerrar la carpeta y volver al trabajo.
+>
+> Firmas.
+>
+> Pones quince mil de tus ahorros. Todavía no sabes cómo llenar el estadio. Ya sabes cuánto te queda para equivocarte.
+
+El arranque presenta la contradicción antes de la biografía, limita las cifras a las que cambian la decisión y termina en una acción. La participación de inversores puede explicarse después, cuando afecte un conflicto concreto.
+
+Dirección visual para ese arranque: una carpeta abierta con facturas acumuladas junto a la mano del protagonista; después el techo goteando sobre una tribuna vacía; finalmente la mano firmando, con la carpeta todavía visible. Mismo protagonista y ropa de oficina. Un instante por imagen. Cifras y palabras se agregan en la edición: el modelo de imagen no debe escribirlas. No hace falta poner al personaje en un restaurante, un auto de lujo o mirando al horizonte.
+
+## Planificación y promesa del título
+
+La dirección de historias se aplica antes del guion, tanto a la idea inicial como a sus escenas: objetivo específico, oposición comprensible, intento, consecuencia, una recompensa temprana y un cierre conectado. No obliga a repetir una compra, una crisis o una fortuna en todos los vehículos.
+
+El generador de títulos y miniaturas ahora recibe el comienzo y el cierre de la narración. La narración manda sobre las ambiciones del concepto: si alguien rechaza una venta al final, el título no puede vender el episodio como una empresa que fue vendida. Los títulos alternativos deben proponer ángulos distintos respaldados por la historia. Sigue siendo necesario revisar que el resultado del modelo cumpla estas instrucciones.

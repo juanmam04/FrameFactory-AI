@@ -472,6 +472,9 @@ def finalize_architecture(project: dict[str, Any], architecture: dict[str, Any])
                 vehicle_mode=vmode,
             )
 
+    from src.documentary.viewer_editorial import review_script
+
+    quality["viewer_review"] = review_script(synopsis + "\n\n" + "\n".join(str(b.get("event") or "") for b in beats))
     quality["review_ready"] = not bool(quality.get("hard_fails"))
     payload = {
         "blueprint": blueprint,

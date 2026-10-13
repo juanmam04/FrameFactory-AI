@@ -97,3 +97,48 @@ def test_online_draft_never_uses_deterministic_length_padding(monkeypatch, tmp_p
     result = scripts.generate_check_script(p, use_llm=True)
     assert not result['script_quality']['offline_fixture']
     assert 'esta vida pide ese sorbo' not in result['script']
+
+
+def test_repeated_visual_changes_framing_not_the_story():
+    from src.documentary.visual_plan import _dedupe_stills
+    shot = dict(visual_type='FLOW_REENACTMENT', action='protagonist opens the overdue invoice',
+                description='protagonist opens the overdue invoice', location='same shop counter')
+    visuals = [dict(shot, number=1), dict(shot, number=2)]
+    _dedupe_stills(visuals, {})
+    assert visuals[1]['action'] == shot['action']
+    assert visuals[1]['location'] == shot['location']
+    assert visuals[1]['description'] != visuals[0]['description']
+
+
+def test_story_design_has_viewer_priority_for_every_vehicle():
+    from src.documentary.formats.check_als.story_vehicle import blueprint_system, beats_system
+    from src.documentary.viewer_editorial import STORY_DESIGN_BRIEF
+    for mode in ['sports_team', 'business', 'creator', 'freeform']:
+        assert blueprint_system(mode).endswith(STORY_DESIGN_BRIEF)
+        assert beats_system(mode).endswith(STORY_DESIGN_BRIEF)
+
+
+def test_packaging_model_sees_actual_ending_and_promise_contract(monkeypatch):
+    import json
+    import openai
+    from types import SimpleNamespace
+    from src.documentary.youtube_pack import _generate_llm_check, _generate_llm
+    from src.documentary.viewer_editorial import PACKAGING_BRIEF
+    calls = []
+    def create(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(
+            content=json.dumps({'title': 'Specific story', 'alt_titles': [], 'description': '',
+                                'thumbnail_text': '', 'thumbnail_prompt': ''})))])
+    monkeypatch.setattr(openai, 'OpenAI', lambda **kwargs: SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=create))))
+    ending = 'EL NEGOCIO NO SE VENDE: EL PROTAGONISTA RECHAZA LA OFERTA.'
+    p = {'title': 'Story', 'script': 'A long opening. ' * 1100 + ending, 'content_format': 'check_als'}
+    _generate_llm_check(p, 'test-key')
+    p['content_format'] = 'documentary'
+    _generate_llm(p, 'test-key')
+    assert len(calls) == 2
+    for call in calls:
+        assert call['messages'][0]['content'].endswith(PACKAGING_BRIEF)
+        data = json.loads(call['messages'][1]['content'])
+        assert ending in data['script_ending']

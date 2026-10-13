@@ -902,20 +902,23 @@ def _concretize_visual(
 
 
 def _dedupe_stills(visuals: list[dict[str, Any]], bible: dict[str, Any] | None) -> None:
-    seen: set[str] = set()
-    used: dict[str, set[int]] = {}
+    seen: dict[str, int] = {}
     for v in visuals:
         if str(v.get("visual_type") or "") != "FLOW_REENACTMENT":
             continue
         key = re.sub(r"[^a-z0-9]+", " ", str(v.get("description") or v.get("action") or "").lower()).strip()
-        if key and key not in seen:
-            seen.add(key)
+        if not key:
             continue
-        still, loc = _unique_beat(v, bible, used)
-        v["description"] = still
-        v["action"] = still
-        v["location"] = loc
-        seen.add(re.sub(r"[^a-z0-9]+", " ", still.lower()).strip())
+        count = seen.get(key, 0)
+        seen[key] = count + 1
+        if count == 0:
+            continue
+        # Repetition is an editing/framing problem, not permission to invent
+        # a different action or move the protagonist to an unrelated location.
+        angle = CAMERA_VARIETY[count % len(CAMERA_VARIETY)]
+        v["camera"] = _CAM_FIX.get(angle, angle.replace("_", " "))
+        v["shot_type"] = angle
+        v["description"] = f"{str(v.get('description') or v.get('action') or '').rstrip('. ')}. {v['camera']} framing of this same action."
 
 
 def _rewrite_stills(

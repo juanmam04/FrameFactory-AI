@@ -1980,7 +1980,9 @@ function paintCheckStory(ws, p) {
     .join("");
   const flagBits = flags.length
     ? flags.map((f) => `<div class="notice bad">[${esc(f.code)}] ${esc(f.detail || "")} ${f.beat_id ? "· " + esc(f.beat_id) : ""}</div>`).join("")
-    : `<div class="notice ok">Sin flags de calidad.</div>`;
+    : `<div class="notice ok">No se detectaron inconsistencias. Revisá también si la historia engancha.</div>`;
+  const viewerBits = (quality.viewer_review?.findings || [])
+    .map((f) => `<div class="notice">${esc(f.message)}<ul>${(f.evidence || []).map((e) => `<li>${esc(e)}</li>`).join("")}</ul></div>`).join("");
   const loopBits = loops.length
     ? loops
         .map(
@@ -2092,6 +2094,7 @@ function paintCheckStory(ws, p) {
       </details>
       <p class="kicker">Quality flags</p>
       ${flagBits}
+      ${viewerBits}
     </div>`;
 
   $("#gen-check-story").onclick = async () => {

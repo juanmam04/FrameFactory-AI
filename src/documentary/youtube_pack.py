@@ -5,6 +5,7 @@ import json
 import os
 from typing import Any
 
+from src.documentary.viewer_editorial import PACKAGING_BRIEF
 from src.documentary.project import project_dir, save_project
 
 
@@ -180,7 +181,7 @@ def _generate_llm(project: dict[str, Any], api_key: str) -> dict[str, Any] | Non
 
     title0 = str(project.get("title") or "").strip()
     topic = str(project.get("topic") or title0).strip()
-    script = str(project.get("script") or "").strip()[:3500]
+    script = str(project.get("script") or "").strip()
     plan = project.get("story_plan") or {}
     central = str(plan.get("central_story") or "").strip()[:800]
     people = [
@@ -214,13 +215,15 @@ def _generate_llm(project: dict[str, Any], api_key: str) -> dict[str, Any] | Non
         "- Forbidden stock: crowded coworking, laptops, handshake, generic skyline, CEO at desk, abstract money.\n"
         "Write the prompt as a single dense paragraph a generator can follow."
     )
+    system += "\n\n" + PACKAGING_BRIEF
     user = json.dumps(
         {
             "working_title": title0,
             "topic": topic,
             "central_story": central,
             "protagonists": people[:6],
-            "script_excerpt": script,
+            "script_excerpt": script[:8000],
+            "script_ending": script[-3500:],
         },
         ensure_ascii=False,
     )
@@ -255,7 +258,7 @@ def _generate_llm_check(project: dict[str, Any], api_key: str) -> dict[str, Any]
     thumb = concept.get("thumbnail_concept") if isinstance(concept.get("thumbnail_concept"), dict) else {}
     title0 = str(concept.get("title") or project.get("title") or "").strip()
     topic = str(project.get("topic") or title0).strip()
-    script = str(project.get("script") or "").strip()[:3000]
+    script = str(project.get("script") or "").strip()
     client = OpenAI(api_key=api_key)
     system = (
         "Escribís el pack de YouTube para Check: fantasías aspiracionales en segunda persona (tú/te), canal español.\n"
@@ -268,6 +271,7 @@ def _generate_llm_check(project: dict[str, Any], api_key: str) -> dict[str, Any]
         "Cara grande ~50% del frame + un objeto/contraste de ESTA historia. "
         "Sin texto quemado, logos ni collage. Dejá un tercio limpio para overlay."
     )
+    system += "\n\n" + PACKAGING_BRIEF
     user = json.dumps(
         {
             "working_title": title0,
@@ -277,7 +281,8 @@ def _generate_llm_check(project: dict[str, Any], api_key: str) -> dict[str, Any]
             "end_state": concept.get("end_state"),
             "life_transformation": concept.get("life_transformation"),
             "thumbnail_concept": thumb,
-            "script_excerpt": script,
+            "script_excerpt": script[:8000],
+            "script_ending": script[-3500:],
         },
         ensure_ascii=False,
     )

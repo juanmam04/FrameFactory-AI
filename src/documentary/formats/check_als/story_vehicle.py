@@ -144,12 +144,15 @@ Return ONLY JSON: {"beats":[...]}
 """.strip()
 
 
+from src.documentary.viewer_editorial import STORY_DESIGN_BRIEF
+
+
 def blueprint_system(mode: str) -> str:
     """Retorna el system prompt de blueprint adaptado al vehículo."""
     if mode == "freeform":
         from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, SIMPLE_STORY_BRIEF
 
-        return SIMPLE_STORY_BRIEF + "\n" + _FREEFORM_BLUEPRINT + "\n" + PUBLIC_EVENT_RULES
+        return SIMPLE_STORY_BRIEF + "\n" + _FREEFORM_BLUEPRINT + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
     try:
         from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES, get_universal_vehicle_prompt
         
@@ -157,7 +160,7 @@ def blueprint_system(mode: str) -> str:
         if vehicle_info and mode not in ("sports_team", "business"):
             from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, SIMPLE_STORY_BRIEF
 
-            return SIMPLE_STORY_BRIEF + "\n" + _generate_universal_blueprint(mode, vehicle_info) + "\n" + PUBLIC_EVENT_RULES
+            return SIMPLE_STORY_BRIEF + "\n" + _generate_universal_blueprint(mode, vehicle_info) + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
     except ImportError:
         pass
     
@@ -165,8 +168,8 @@ def blueprint_system(mode: str) -> str:
 
     # Fallback tradicional
     if mode == "sports_team":
-        return SIMPLE_STORY_BRIEF + "\n" + _BLUEPRINT_SPORTS + "\n" + PUBLIC_EVENT_RULES
-    return SIMPLE_STORY_BRIEF + "\n" + _BLUEPRINT_BUSINESS + "\n" + PUBLIC_EVENT_RULES
+        return SIMPLE_STORY_BRIEF + "\n" + _BLUEPRINT_SPORTS + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
+    return SIMPLE_STORY_BRIEF + "\n" + _BLUEPRINT_BUSINESS + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
 
 
 def beats_system(mode: str) -> str:
@@ -174,7 +177,7 @@ def beats_system(mode: str) -> str:
     if mode == "freeform":
         from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, SIMPLE_STORY_BRIEF
 
-        return SIMPLE_STORY_BRIEF + "\n" + _FREEFORM_BEATS + "\n" + PUBLIC_EVENT_RULES
+        return SIMPLE_STORY_BRIEF + "\n" + _FREEFORM_BEATS + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
     try:
         from src.documentary.formats.check_als.universal_vehicles import UNIVERSAL_VEHICLES
         
@@ -182,7 +185,7 @@ def beats_system(mode: str) -> str:
         if vehicle_info and mode not in ("sports_team", "business"):
             from src.documentary.formats.check_als.plain_language import PUBLIC_EVENT_RULES, SIMPLE_STORY_BRIEF
 
-            return SIMPLE_STORY_BRIEF + "\n" + _generate_universal_beats(mode, vehicle_info) + "\n" + PUBLIC_EVENT_RULES
+            return SIMPLE_STORY_BRIEF + "\n" + _generate_universal_beats(mode, vehicle_info) + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
     except ImportError:
         pass
 
@@ -190,8 +193,8 @@ def beats_system(mode: str) -> str:
 
     # Fallback tradicional
     if mode == "sports_team":
-        return SIMPLE_STORY_BRIEF + "\n" + _BEATS_SPORTS + "\n" + PUBLIC_EVENT_RULES
-    return SIMPLE_STORY_BRIEF + "\n" + _BEATS_BUSINESS + "\n" + PUBLIC_EVENT_RULES
+        return SIMPLE_STORY_BRIEF + "\n" + _BEATS_SPORTS + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
+    return SIMPLE_STORY_BRIEF + "\n" + _BEATS_BUSINESS + "\n" + PUBLIC_EVENT_RULES + "\n\n" + STORY_DESIGN_BRIEF
 
 
 def _generate_universal_blueprint(mode: str, vehicle_info: dict) -> str:
