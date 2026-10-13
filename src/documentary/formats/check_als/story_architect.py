@@ -523,8 +523,9 @@ def approve_check_story(project: dict[str, Any]) -> dict[str, Any]:
     summary["generated"] = True
     project["check_story"] = summary
     project["ui_step"] = "script"
-    # Keep documentary step-gate happy (set_step still checks story_plan_approved).
-    project["story_plan_approved"] = True
+    # Studio checks check_story_approved for this format. A Check architecture
+    # approval must not claim a separate documentary Story Plan was approved.
+    project["story_plan_approved"] = False
     save_project(project)
     append_log(str(project.get("id") or ""), "check_story APPROVED — script unlocked (no voice/render yet)")
     return project

@@ -40,11 +40,14 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
 
     dest = project_dir(str(project["id"])) / "audio" / "narration.mp3"
     dest.parent.mkdir(parents=True, exist_ok=True)
+    # Verify the new take before replacing a usable narration.
+    from src.documentary.captions import captions_language
+
+    _assert_voice_follows_script(
+        str(project["id"]), path, script, language=captions_language(project)
+    )
     shutil.copy2(path, dest)
     save_narration_script(str(project["id"]), script)
-
-    # Prove the take speaks THIS script (catches stale/wrong audio early).
-    _assert_voice_follows_script(str(project["id"]), dest, script)
 
     from src.documentary.pipeline_invalidate import stamp_voice_fingerprint, wipe_voice_derived
 
@@ -72,7 +75,9 @@ def generate_project_voice(project: dict[str, Any], *, velocidad: float | None =
     return dest
 
 
-def _assert_voice_follows_script(project_id: str, audio: Path, script: str) -> None:
+def _assert_voice_follows_script(
+    project_id: str, audio: Path, script: str, *, language: str = "en"
+) -> None:
     """Whisper the opening of the take; refuse if it doesn't track the script."""
     import subprocess
 
@@ -108,7 +113,7 @@ def _assert_voice_follows_script(project_id: str, audio: Path, script: str) -> N
                 timeout=60,
             )
         src = head if head.is_file() and head.stat().st_size > 0 else audio
-        srt = whisper_srt_from_audio(src, language="en")
+        srt = whisper_srt_from_audio(src, language=language)
         spoken = " ".join(
             line
             for block in srt.strip().split("\n\n")

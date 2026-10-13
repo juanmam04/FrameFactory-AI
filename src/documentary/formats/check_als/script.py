@@ -28,6 +28,7 @@ VOSEO_FIXES = (
     ("mudás", "mudas"),
     ("trabajás", "trabajas"),
     ("vivís", "vives"),
+    ("seguís", "sigues"),
     ("lanzás", "lanzas"),
     ("creás", "creas"),
     ("armás", "armas"),
@@ -1094,6 +1095,9 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         script = lengthen_life_script(script, min_words=MIN_WORDS, target=TARGET_WORDS)
         if count_words(script) > before:
             quality["lengthened_for_long_video"] = True
+
+    # Lengthening can insert the title/beat text again; normalize that text too.
+    script = apply_tuteo_fixes(strip_script_chrome(script))
 
     ok, hard, warn = validate_check_script(script, facts, strict_length=False)
     wc = count_words(script)
