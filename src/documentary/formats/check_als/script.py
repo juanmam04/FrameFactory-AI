@@ -189,7 +189,7 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
                 "reward_or_setback": b.get("reward_or_setback"),
             }
         )
-    if mode != "sports_team":
+    if mode not in ("sports_team", "freeform"):
         from src.documentary.formats.check_als.plain_language import clean_non_sports
 
         cleaned = []

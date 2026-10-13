@@ -142,3 +142,25 @@ def test_packaging_model_sees_actual_ending_and_promise_contract(monkeypatch):
         assert call['messages'][0]['content'].endswith(PACKAGING_BRIEF)
         data = json.loads(call['messages'][1]['content'])
         assert ending in data['script_ending']
+
+
+def test_freeform_sports_premise_is_not_rewritten_as_a_creator(monkeypatch, tmp_path):
+    from src.documentary import project
+    from src.documentary.formats.check_als.story_architect import finalize_architecture, public_architecture
+    from src.documentary.formats.check_als.story_sim import repair_architecture
+    monkeypatch.setenv('FRAMEFACTORY_PROJECTS_DIR', str(tmp_path / 'projects'))
+    monkeypatch.setattr(project, 'PROJECTS_ROOT', tmp_path / 'projects')
+    p = project.create_project('Compras un club de básquet', content_format='check_als', project_id='free-club',
+                               concept={'user_proposed': True, 'vehicle_type': 'freeform', 'premise': 'Compras un club de básquet.'})
+    beats = [dict(beat_id=f'b{i:02d}', event=event, cause='Tu decisión anterior', consequence='Debes actuar', ops=[])
+             for i, event in enumerate(['Entras al estadio vacío.', 'El utilero te da las llaves del vestuario.',
+                                       'Los jugadores entrenan en la cancha.', 'Arreglas el techo antes del partido.',
+                                       'La temporada termina y el club sigue abierto.'],1)]
+    assert repair_architecture(blueprint={}, beats=beats, mode='freeform') == beats
+    p = finalize_architecture(p, {'blueprint':{'user_premise':'Compras un club de básquet.', 'freeform':True}, 'beats':beats})
+    shown = public_architecture(p)
+    events = ' '.join(b['event'] for b in shown['beats'])
+    assert 'estadio' in events
+    assert 'vestuario' in events
+    assert 'cancha' in events
+    assert 'sala de edición' not in events
