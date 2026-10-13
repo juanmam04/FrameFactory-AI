@@ -17,10 +17,6 @@ def ffmpeg_exe() -> str | None:
     if found:
         return found
     try:
-        if (os.getenv("VERCEL") or "").strip():
-            home = Path("/tmp/ff-home")
-            home.mkdir(parents=True, exist_ok=True)
-            os.environ["HOME"] = str(home)
         import imageio_ffmpeg
 
         return imageio_ffmpeg.get_ffmpeg_exe()

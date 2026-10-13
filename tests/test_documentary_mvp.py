@@ -117,16 +117,16 @@ def test_script_approve_flow_import_replace(tmp_projects, tmp_path):
     report = import_images(p, src)
     assert "002" in report["missing"]
     assert report["ready"] == len(shots) - 1
-    # Auto-status: imported shots marked generated
+    # Auto-status: imported shots use the current visual-plan READY state
     synced = load_shot_list("doc-a")
-    assert synced["shots"][0]["status"] == "generated"
+    assert synced["shots"][0]["status"] == "READY"
 
     one = tmp_path / "002.png"
     Image.new("RGB", (1280, 720), color=(10, 200, 10)).save(one)
     replace_shot_image(p, 2, one)
     assert (project_dir("doc-a") / "images" / "002.png").exists()
     sync_shot_statuses_from_images("doc-a")
-    assert load_shot_list("doc-a")["shots"][1]["status"] == "generated"
+    assert load_shot_list("doc-a")["shots"][1]["status"] == "READY"
 
     p_b = create_project("Other", project_id="doc-b", target_words=300)
     generate_documentary_script(p_b, use_llm=False)
