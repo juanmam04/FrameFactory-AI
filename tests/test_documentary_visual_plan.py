@@ -68,7 +68,7 @@ def test_batch_grouping_23_flow():
     assert batches[0]["visual_numbers"] == list(range(1, 11))
     assert batches[1]["visual_numbers"] == list(range(11, 21))
     assert batches[2]["visual_numbers"] == [21, 22, 23]
-    assert batches[0].get("interchangeable") is True
+    assert batches[0].get("interchangeable") is False
 
 
 def test_check_spanish_moments_are_not_all_rise():

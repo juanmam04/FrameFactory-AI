@@ -10,7 +10,7 @@ from src.documentary.project import append_log, project_dir, save_project
 from src.documentary.story_bible import build_story_bible
 from src.frame_director import beats_a_frame_specs
 from src.frame_prompt_builder import prompt_desde_frame_spec
-from src.scene_splitter import dividir_en_escenas
+from src.scene_splitter import dividir_en_escenas, compactar_escenas
 from src.visual_beats import generar_beats_para_escenas
 
 
@@ -45,18 +45,7 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
         os.environ["VISUAL_BEATS_LLM_DISABLED"] = "1"
     try:
         escenas = dividir_en_escenas(script, segundos_por_imagen=seg)
-        # Cap scenes if too many — Check must keep the ending, not slice it off.
-        if len(escenas) > max_shots:
-            if is_check and max_shots > 2:
-                idxs = sorted(
-                    {
-                        round(i * (len(escenas) - 1) / (max_shots - 1))
-                        for i in range(max_shots)
-                    }
-                )
-                escenas = [escenas[i] for i in idxs]
-            else:
-                escenas = escenas[:max_shots]
+        escenas = compactar_escenas(escenas, max_shots)
         story = project.get("story_plan") if isinstance(project.get("story_plan"), dict) else {}
         protagonists = [
             str(c.get("name") or "").strip()

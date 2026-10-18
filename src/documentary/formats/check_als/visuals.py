@@ -48,6 +48,7 @@ NO_ON_IMAGE_TEXT = (
 )
 
 _FACE_BY_MOMENT = {
+    "neutral": "Expression follows this scene, not a predetermined rise/fall arc.",
     "rise": (
         "FACE LOCK: slight hopeful smile OR calm determined mouth; open / bright dot eyes; "
         "eyebrows neutral-up. FORBIDDEN: downturned suicidal mouth, dead eyes, crying, hollow despair."
@@ -447,11 +448,11 @@ def format_check_prompt(visual: dict[str, Any], bible: dict[str, Any] | None = N
         "protagonist_state": visual.get("protagonist_state"),
         "story_time": visual.get("story_time"),
     }
+    # Legacy imports may only have a prompt. Structured scene data, when
+    # available, always owns the current action and supersedes cached prose.
     base = str(visual.get("image_prompt") or "").strip()
-    if base and "TEXT HARD BAN" in base:
-        return base
-    if base:
-        return f"{base.rstrip()}\n\n{NO_ON_IMAGE_TEXT}"
+    if base and not (visual.get("action") or visual.get("description")):
+        return base if "TEXT HARD BAN" in base else f"{base}\n\n{NO_ON_IMAGE_TEXT}"
     return compose_image_prompt(visual, meta)
 
 

@@ -128,3 +128,18 @@ def escenas_a_texto_continuo(escenas: list[Escena]) -> str:
     print(f"   Últimos 100 caracteres: ...{texto_completo[-100:]}")
     
     return texto_completo
+
+
+def compactar_escenas(escenas: list[Escena], limite: int) -> list[Escena]:
+    """Merge adjacent scenes to fit a budget without sampling away any narration."""
+    if limite < 1:
+        raise ValueError("El límite de escenas debe ser positivo.")
+    if len(escenas) <= limite:
+        return escenas
+    # Contiguous partitions preserve order, all source words and the ending.
+    groups = []
+    for i in range(limite):
+        chunk = escenas[i * len(escenas) // limite:(i + 1) * len(escenas) // limite]
+        groups.append(Escena(i + 1, " ".join(e.texto for e in chunk),
+                             sum(e.duracion_segundos for e in chunk)))
+    return groups

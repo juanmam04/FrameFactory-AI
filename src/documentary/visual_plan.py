@@ -14,6 +14,7 @@ from typing import Any
 from src.documentary.editorial import FLOW_DIRECTOR_RULES, VISUAL_DIRECTION
 from src.documentary.project import append_log, project_dir, save_project
 from src.documentary.story_plan import get_story_plan, selected_beats
+from src.documentary.voice_script_sync import script_hash
 
 VISUAL_PLAN_VERSION = 1
 
@@ -138,6 +139,7 @@ def build_visual_plan(
 
     plan = {
         "version": VISUAL_PLAN_VERSION,
+        "source_script_hash": script_hash(script),
         "target_visuals": target_visuals,
         "batch_size": batch_size,
         "visuals": visuals,
@@ -153,32 +155,19 @@ def build_visual_plan(
         plan = apply_check_visual_layer(project, plan)
         visuals = plan.get("visuals") or visuals
         bible = plan.get("visual_bible") or bible
-        # Retag climates from Spanish VO + rebuild Flow blocks (rise/peak/crack/…).
-        flow_batches = group_flow_batches(visuals, batch_size=batch_size)
         masters = plan.get("master_references") or masters
+        # Finalize each individual prompt BEFORE composing batch prompts.
+        for v in visuals:
+            if str(v.get("visual_type") or "") == "FLOW_REENACTMENT":
+                v["flow_prompt"] = format_single_prompt(v, bible, masters)
+                v["prompt"] = v["flow_prompt"]
+        flow_batches = group_flow_batches(visuals, batch_size=batch_size)
         for b in flow_batches:
             b["prompt"] = format_batch_prompt(b, visuals, bible, masters)
             b["references_needed"] = batch_references(b, visuals, masters)
         plan["flow_batches"] = flow_batches
-        plan["visuals"] = visuals
         stats = summarize_visuals(visuals, flow_batches, masters)
         plan["stats"] = stats
-        for v in visuals:
-            if str(v.get("visual_type") or "") == "FLOW_REENACTMENT":
-                v["flow_prompt"] = format_single_prompt(v, bible, masters)
-                if v.get("image_prompt"):
-                    # Refresh stored prompt with face lock after moment retag.
-                    from src.documentary.formats.check_als.visuals import compose_image_prompt
-
-                    meta = {
-                        "protagonist_age": v.get("protagonist_age"),
-                        "protagonist_state": v.get("protagonist_state"),
-                        "story_time": v.get("story_time"),
-                    }
-                    prompt = compose_image_prompt(v, meta)
-                    v["image_prompt"] = prompt
-                    v["flow_prompt"] = prompt
-                    v["prompt"] = prompt
         plan["visuals"] = visuals
         stats = plan.get("stats") or stats
 
@@ -296,7 +285,7 @@ def group_flow_batches(visuals: list[dict[str, Any]], *, batch_size: int = 10) -
                     "visual_numbers": nums,
                     "label": label,
                     "count": len(part),
-                    "interchangeable": True,
+                    "interchangeable": False,
                     "status": "ready_to_generate",
                     "imported": 0,
                 }
@@ -615,6 +604,7 @@ _FN_MOMENT = {
     "resolution": "aftermath",
 }
 _MOMENT_LABEL = {
+    "neutral": "Momento de la historia",
     "rise": "Le va bien",
     "peak": "En la cima",
     "crack": "Se resquebraja",
@@ -622,6 +612,7 @@ _MOMENT_LABEL = {
     "aftermath": "Qué quedó",
 }
 _MOMENT_DIRECTOR = {
+    "neutral": "Use the emotion established by each assigned event. Do not invent success, failure or despair.",
     "rise": (
         "ALL stills = the climb. Energy, cheap beginnings, belief. Nobody is ruined yet. "
         "FACE: hopeful / determined — slight smile or calm focus. NEVER depressed or suicidal face."
@@ -644,6 +635,7 @@ _MOMENT_DIRECTOR = {
     ),
 }
 _FACE_BY_MOMENT = {
+    "neutral": "Expression follows the exact action; do not impose hope, wealth or loss from timeline position.",
     "rise": (
         "FACE LOCK: slight hopeful smile OR calm determined mouth; open / bright dot eyes; "
         "eyebrows neutral-up. FORBIDDEN: downturned suicidal mouth, dead eyes, crying, hollow despair."
@@ -806,21 +798,9 @@ def _tag_moments(visuals: list[dict[str, Any]]) -> None:
             if mid:
                 label = _MOMENT_LABEL.get(mid, "Le va bien")
         if not mid:
-            # Arc by position — never dump the whole episode into "Le va bien".
-            frac = (i + 1) / total
-            if frac <= 0.22:
-                mid = "rise"
-            elif frac <= 0.42:
-                mid = "rise"
-            elif frac <= 0.58:
-                mid = "crack"
-            elif frac <= 0.78:
-                mid = "peak"
-            elif frac <= 0.90:
-                mid = "collapse"
-            else:
-                mid = "aftermath"
-            label = _MOMENT_LABEL[mid]
+            # Position in the video does not imply a collapse or a sad ending.
+            mid = "neutral"
+            label = "Momento de la historia"
         v["moment_id"] = mid
         v["moment_label"] = label or _MOMENT_LABEL.get(mid, "Le va bien")
         face = _FACE_BY_MOMENT.get(mid, "")
@@ -877,6 +857,8 @@ def _concretize_visual(
     used: dict[str, set[int]] | set[int] | None = None,
 ) -> None:
     if str(visual.get("visual_type") or "FLOW_REENACTMENT") != "FLOW_REENACTMENT":
+        return
+    if visual.get("direction_source") in ("llm", "user"):
         return
     desc = _FILLER_ACTION.sub("", str(visual.get("description") or visual.get("action") or "")).strip(" .")
     stale = (not desc) or _is_vo(desc) or _STOCKY_DESC.search(desc) or _CANNED_STILL.search(desc)
@@ -940,13 +922,9 @@ def _rewrite_stills(
         return
     import os
 
-    key = (os.getenv("OPENAI_API_KEY") or "").strip()
-    if not key:
-        return
-    try:
-        from openai import OpenAI
-    except Exception:
-        return
+    from src.documentary.openai_key import require_openai_api_key
+    key = require_openai_api_key("Flow storyboard direction")
+    from openai import OpenAI
     client = OpenAI(api_key=key)
     cast = [str(c.get("name") or "").strip() for c in (bible.get("characters") or []) if c.get("name")]
     if bible.get("format") == "check_als":
@@ -964,6 +942,7 @@ def _rewrite_stills(
         "sidewalk, bedroom at 3am, loading dock, courthouse steps. Staying in one office is valid if the scene does.\n"
         "Keep the SAME emotional register as the moment (rise vs collapse). Different camera, same climate."
     )
+    directed: set[int] = set()
     for i in range(0, len(flow), 8):
         chunk = flow[i : i + 8]
         payload = {
@@ -993,10 +972,10 @@ def _rewrite_stills(
             raw = (r.choices[0].message.content or "").strip()
             blob = raw[raw.find("[") : raw.rfind("]") + 1]
             rows = json.loads(blob) if blob else []
-        except Exception:
-            continue
+        except Exception as exc:
+            raise RuntimeError("No se pudo dirigir el storyboard para Flow; el plan anterior se conserva. Reintentá.") from exc
         if not isinstance(rows, list):
-            continue
+            raise ValueError("El storyboard no devolvió una lista de escenas.")
         by_n = {int(v["number"]): v for v in chunk}
         for row in rows:
             if not isinstance(row, dict):
@@ -1011,20 +990,26 @@ def _rewrite_stills(
             action = str(row.get("action") or "").strip()
             loc = str(row.get("location") or "").strip()
             chars = [str(x).strip() for x in (row.get("characters") or []) if str(x).strip()]
-            if action and not _is_vo(action):
+            if action and loc and not _is_vo(action):
+                directed.add(n)
                 v["description"] = action
                 v["action"] = action
-            if loc and not _GENERIC_LOC.match(loc) and not _STOCKY_DESC.search(loc):
+                v["direction_source"] = "llm"
                 v["location"] = loc
                 v["environment"] = loc
             if chars:
                 allowed = {c.lower() for c in cast}
                 v["characters"] = [c for c in chars if c.lower() in allowed][:3] or v.get("characters") or []
+    missing = sorted({int(v["number"]) for v in flow} - directed)
+    if missing:
+        raise ValueError(f"Faltan escenas dirigidas para Flow: {missing}. No se exportaron sustitutos genéricos.")
     _dedupe_stills(flow, bible)
 
 
 def _story_description(visual: dict[str, Any], bible: dict[str, Any] | None = None) -> str:
     raw = str(visual.get("description") or visual.get("action") or "").strip()
+    if raw and visual.get("direction_source") in ("llm", "user"):
+        return raw
     raw = _FILLER_ACTION.sub("", raw).strip(" .")
     if raw.lower().startswith("photograph this exact"):
         raw = ""
@@ -1062,12 +1047,14 @@ def format_batch_prompt(
         f"DIRECTOR: {FLOW_DIRECTOR_RULES}",
         f"STYLE: {_style_text(bible)[:320]}",
         "",
-        f"ANGLES on {label} (same moment, different photograph):",
+        f"ASSIGNED SCENES for {label} (preserve each event and image ID):",
         "",
     ]
-    for i, num in enumerate(nums, start=1):
+    for num in nums:
         v = by_num.get(num) or {}
-        lines.append(f"{i}. {format_scene_line(v, masters, bible)}")
+        scene = (format_single_prompt(v, bible, masters)
+                 if bible.get("format") == "check_als" else format_scene_line(v, masters, bible))
+        lines.append(f"IMAGE {num:03d} — save as {num:03d}.png\n{scene}")
         lines.append("")
     lines.extend(
         [
@@ -1357,6 +1344,8 @@ def sync_ready_from_disk(project_id: str, *, check_remote: bool = True) -> dict[
 
 
 def update_visual_description(project_id: str, number: int, description: str) -> dict[str, Any]:
+    if not description.strip():
+        raise ValueError("La descripción de la escena no puede estar vacía.")
     plan = load_visual_plan(project_id)
     visuals = plan.get("visuals") or []
     bible = plan.get("visual_bible") or {}
@@ -1366,8 +1355,12 @@ def update_visual_description(project_id: str, number: int, description: str) ->
         if int(v.get("number") or 0) == int(number):
             v["description"] = description.strip()
             v["action"] = description.strip()
+            v["direction_source"] = "user"
             if v.get("visual_type") == "FLOW_REENACTMENT":
                 v["flow_prompt"] = format_single_prompt(v, bible, masters)
+                v["prompt"] = v["flow_prompt"]
+                if bible.get("format") == "check_als":
+                    v["image_prompt"] = v["flow_prompt"]
             found = v
             break
     if not found:

@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from .config_loader import BASE, get_duracion_por_imagen
-from .scene_splitter import Escena
+from .scene_splitter import Escena, compactar_escenas
 
 
 @dataclass
@@ -108,7 +108,7 @@ def _beats_por_escena_llm(
         "camera_type MUST be one of: POV, over_the_shoulder, wide_shot, medium_shot, close_up, side_angle, top_down, low_angle, rear_view, environment_shot.\n"
         "HARD RULES:\n"
         "- Name the person in `action` (the real protagonist of this sentence).\n"
-        "- `location` must be SPECIFIC (penthouse at 3am, jet cabin, empty floor after eviction, "
+        "- `location` must be SPECIFIC and grounded in the supplied scene, never invented to create variety. Examples only: "
         "courthouse steps, a printing plant) — never 'office', 'WeWork office', or 'conference room'.\n"
         "- `action` = one physical verb happening NOW (rips a lease, dances on a desk, stares at a For Sale sign alone).\n"
         "- One protagonist, maybe one counterpart. Never a crowd of anonymous workers unless the beat IS a mass event.\n"
@@ -129,7 +129,7 @@ def _beats_por_escena_llm(
     try:
         prompt_usuario = (
             "Turn this scene into 1 visual beat (2 only if the narration truly contains two distinct moments).\n"
-            "Name the protagonist. Pick a unique location. JSON list only.\n\n"
+            "Name the protagonist when established; preserve this scene's actual location and chronology. JSON list only.\n\n"
             + json.dumps(user_payload, ensure_ascii=False)
         )
         r = client.chat.completions.create(
@@ -227,6 +227,8 @@ def generar_beats_para_escenas(
     - Numeración global de beat_id.
     - Usa LLM si hay API, con fallback heurístico.
     """
+    if max_beats_total is not None:
+        escenas = compactar_escenas(escenas, max_beats_total)
     beats: list[VisualBeat] = []
     total_escenas = len(escenas)
     beat_counter = 0
@@ -240,12 +242,14 @@ def generar_beats_para_escenas(
         if not llm_beats:
             llm_beats = _beats_por_escena_fallback(escena, act, beat_counter)
 
-        for b in llm_beats:
-            beat_counter += 1
-            b.beat_id = beat_counter
-            beats.append(b)
-            if max_beats_total is not None and beat_counter >= max_beats_total:
-                break
+        # One image per scene. Never trust a model's scene IDs or rewritten
+        # original_text: these fields bind visuals to the exact spoken narration.
+        b = llm_beats[0]
+        beat_counter += 1
+        b.beat_id = beat_counter
+        b.scene = escena.numero
+        b.original_text = escena.texto
+        beats.append(b)
 
     # Normalizar y suavizar shot_role para evitar repeticiones excesivas y valores fuera de SHOT_ROLES
     prev_role: str | None = None

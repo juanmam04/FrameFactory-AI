@@ -140,7 +140,7 @@ def test_check_image_prompt_is_specific():
     assert "suicidal" in low
 
 
-def test_check_prompt_appends_text_ban_to_cached_prompt():
+def test_check_prompt_refreshes_structured_action_and_keeps_text_ban():
     from src.documentary.formats.check_als.visuals import format_check_prompt
 
     out = format_check_prompt(
@@ -151,7 +151,8 @@ def test_check_prompt_appends_text_ban_to_cached_prompt():
         {},
     )
     assert "TEXT HARD BAN" in out
-    assert "stickman in office" in out
+    assert "stickman in office" not in out
+    assert "primeros días" in out
 
 
 def test_vo_like_action_is_not_painted_literally():

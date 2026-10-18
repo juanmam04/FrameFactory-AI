@@ -525,37 +525,23 @@ PROGRESIÓN:
 """
 
 def get_check_master_prompt(locked_facts: str, vehicle_mode: str = "sports_team") -> str:
-    """Generate master prompt for Check ALS scripts - ahora con soporte universal."""
-    
-    # Intentar usar el sistema universal si está disponible
-    try:
-        from src.documentary.formats.check_als.universal_vehicles import (
-            UNIVERSAL_VEHICLES, 
-            get_universal_vehicle_prompt
-        )
-        
-        # Si el vehículo está en el catálogo universal y NO es sports/business tradicional
-        if vehicle_mode in UNIVERSAL_VEHICLES and vehicle_mode not in ("sports_team", "business"):
-            # Usar prompt universal personalizado
-            universal_prompt = get_universal_vehicle_prompt(vehicle_mode, locked_facts)
-            from src.documentary.viewer_editorial import VIEWER_BRIEF
-            return universal_prompt + "\n\n" + VIEWER_BRIEF
-    except ImportError:
-        pass
-    
-    # Fallback: sistema tradicional sports/business
-    if vehicle_mode == "freeform":
-        vehicle_instructions = (
-            "vehicle_mode=freeform\n"
-            "La premisa del usuario es la película. No la conviertas en empresa, equipo ni otro oficio.\n"
-            "Cuéntala en tú, en escenas, sin porcentajes ni deuda."
-        )
-    else:
-        vehicle_instructions = VEHICLE_SPORTS if vehicle_mode == "sports_team" else VEHICLE_BUSINESS
-    
+    """One coherent brief; the approved architecture owns events and ending."""
     from src.documentary.viewer_editorial import VIEWER_BRIEF
-    return MASTER_PROMPT_CHECK.format(
-        beat_sheet=BEAT_SHEET_CHECK,
-        vehicle_instructions=vehicle_instructions,
-        locked_facts=locked_facts
-    ) + "\n\n" + VIEWER_BRIEF
+    return (
+        "Escribe la narración completa de una historia FICTICIA en segunda persona "
+        "(tú/te), español neutro. Usa la arquitectura aprobada de abajo como única verdad. "
+        "Entrega solo lo que se escucha: sin títulos, markdown ni instrucciones de cámara.\n"
+        f"VEHÍCULO: {vehicle_mode}. Conserva su premisa; no lo conviertas en otro oficio.\n"
+        "Abre con la situación peculiar o decisión que motiva el clic. No fuerces edad, "
+        "ahorros, compra por un dólar ni 'Hay una razón'. No copies ejemplos de otros episodios. "
+        "Entrega temprano una escena que cumpla la promesa de la premisa.\n"
+        "Desarrolla intentos, resistencia, decisiones y consecuencias conectadas. "
+        "Dramatiza los sucesos aprobados sin añadir nuevas ventas, victorias, personajes, "
+        "riqueza, mudanzas o conflictos para llenar minutos. Los detalles de puesta en escena "
+        "deben ser compatibles con lo establecido. Conserva cifras, edades y cronología. "
+        "El éxito se muestra como lo define esta historia; no implica lujo personal.\n"
+        "Respeta el final elegido y resuelve la promesa inicial en una escena concreta. "
+        "Sin moraleja ni CTA. La longitud objetivo viene en el encargo; "
+        "expande únicamente los sucesos disponibles, nunca repitas para llegar al mínimo.\n\n"
+        + locked_facts + "\n\n" + VIEWER_BRIEF
+    )

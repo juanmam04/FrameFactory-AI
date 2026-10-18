@@ -659,10 +659,8 @@ def create_app() -> FastAPI:
         if step == "script" and not story_ok:
             step = "story"
         past_script = step in {"flow", "voice", "music", "preview", "render", "publish", "subs", "images"}
-        if past_script and str(p.get("script") or "").strip() and not p.get("script_approved"):
-            p["script_approved"] = True
-            p["fact_check_status"] = "approved"
-            set_checkpoint(p, "script_ready", True)
+        if past_script and not p.get("script_approved"):
+            step = "script" if story_ok else "story"
         p["ui_step"] = step
         save_project(p)
         return {"project": _project_full(p)}
