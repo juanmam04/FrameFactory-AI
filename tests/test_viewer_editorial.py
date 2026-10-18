@@ -89,6 +89,8 @@ def test_online_draft_never_uses_deterministic_length_padding(monkeypatch, tmp_p
     monkeypatch.setattr(scripts, 'openai_api_key', lambda: 'test-key')
     monkeypatch.setattr(openai, 'OpenAI', lambda **k: object())
     monkeypatch.setattr(scripts, '_chat_text', lambda *a, **k: draft)
+    monkeypatch.setattr('src.documentary.narrative_review.review_narrative',
+                        lambda *a, **k: {'findings': [], 'needs_rewrite': False})
     monkeypatch.setattr(scripts, 'validate_check_script', lambda *a, **k: (True, [], []))
     def forbid(*a, **k):
         raise AssertionError('Online generation must never pad a story')

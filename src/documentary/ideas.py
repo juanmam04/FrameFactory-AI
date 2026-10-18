@@ -52,8 +52,10 @@ def generate_story_ideas(
         return packages
 
     prior = list(prior_videos or [])
-    if not use_llm or not (os.getenv("OPENAI_API_KEY") or "").strip():
+    if not use_llm:
         return _mock_ideas(p, prior, count)
+    from src.documentary.openai_key import require_openai_api_key
+    require_openai_api_key("Documentary idea generation")
 
     from openai import OpenAI
 
@@ -97,15 +99,14 @@ def generate_story_ideas(
     parsed = parse_llm_json_object(raw) or {}
     ideas = parsed.get("ideas") if isinstance(parsed, dict) else None
     if not isinstance(ideas, list) or not ideas:
-        return _mock_ideas(p, prior, count)
+        raise ValueError("La IA no devolvió ideas nuevas. Reintentá; no se usaron ejemplos de prueba.")
     out = []
     for it in ideas[:count]:
         if not isinstance(it, dict):
             continue
         out.append(_normalize_idea(it))
-    while len(out) < count:
-        out.extend(_mock_ideas(p, prior, count - len(out)))
-        break
+    if len(out) < count:
+        raise ValueError("El lote de ideas está incompleto. Reintentá; no se completó con ejemplos de prueba.")
     return out[:count]
 
 

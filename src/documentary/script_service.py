@@ -61,45 +61,11 @@ def build_documentary_tema(project: dict[str, Any]) -> str:
     if plan_block:
         parts.append(plan_block)
     parts.append(
-        "STORYTELLING BRIEF:\n"
-        "Write a CAPTIVATING true story that makes viewers say 'I need to know what happens next!'\n"
-        "\n"
-        "STRUCTURE (mandatory):\n"
-        "1. COLD OPEN (2-3 paragraphs): Start at the most dramatic/shocking moment — a collapse, scandal, huge number, betrayal.\n"
-        "   Make it feel like a thriller. Then say 'But to understand how we got here, we need to go back...'\n"
-        "2. THE RISE (8-12 paragraphs): Show the journey — ambition, decisions, growth. Make us CARE about the people.\n"
-        "   Use specific moments: a meeting, a launch, a quote, a number that changed everything.\n"
-        "3. THE TURN (4-6 paragraphs): When it all starts falling apart. Build tension. Show the cracks.\n"
-        "4. THE ENDING (3-4 paragraphs MANDATORY): What actually happened at the end — concrete facts:\n"
-        "   - Where are they now? (year, numbers, names)\n"
-        "   - How did the story resolve?\n"
-        "   - Final image that echoes the cold open\n"
-        "   DO NOT STOP at 'uncertain future' or 'time will tell' — FINISH THE STORY.\n"
-        "\n"
-        "STORYTELLING:\n"
-        "- Treat people like characters in a movie (use their names, show their decisions & consequences)\n"
-        "- Each paragraph = a scene or specific event (not generic business summary)\n"
-        "- Build curiosity: drop hints, create tension, make viewers wonder 'what happens next?'\n"
-        "- Use irony and contrast (what they promised vs what happened)\n"
-        "- Show don't tell: 'The stock dropped 40% in one day' not 'investors were worried'\n"
-        "\n"
-        "VOICE:\n"
-        "- Spoken English, natural and engaging (like you're telling a friend an insane true story)\n"
-        "- Short paragraphs (2-4 sentences each for pacing)\n"
-        "- Ground facts in research BUT tell them like a story (not a Wikipedia article)\n"
-        "- Third person narrator (no 'I' or 'we')\n"
-        "\n"
-        "HARD BANS:\n"
-        "- 'In today's video', 'Welcome back', 'Here are 5 lessons', 'serves as a reminder'\n"
-        "- 'broader implications', 'in conclusion', 'highlighted the vulnerabilities', 'underscores the'\n"
-        "- Generic business jargon without specifics\n"
-        "- Stopping before showing the actual ending\n"
-        "\n"
-        "FACTUALITY:\n"
-        "- Use real names, dates, numbers from research\n"
-        "- If you don't know a detail, stay high-level (don't invent)\n"
-        "- BUT you CAN describe scenes and emotions implied by documented events\n"
-        "  (e.g. if research says 'IPO cancelled hours before launch' → you can say 'Hours before the IPO, everything collapsed')"
+        "Follow the approved story's causal sequence and chosen ending. "
+        "Open with its specific tension and deliver what that opening promises. "
+        "Use scenes and consequences supported by research, never invented private moments. "
+        "Do not force every subject into rise, scandal and collapse. "
+        "Write spoken narration only, in the declared channel language."
     )
     return "\n\n".join(parts)
 
@@ -227,7 +193,27 @@ def generate_documentary_script(project: dict[str, Any], *, use_llm: bool = True
         wc = count_words(script)
         quality_meta = {"heuristic": heuristic_script_quality(script, target_words=target), "revised": False}
 
+    if use_llm:
+        from src.documentary.narrative_review import review_narrative, narrative_revision_prompt
+
+        source = {"story_plan": get_story_plan(project), "research": notes,
+                  "sources": project.get("sources") or [], "language": lang}
+        editorial = review_narrative(script, source, fiction=False)
+        quality_meta["narrative_reviews"] = [editorial]
+        if editorial["needs_rewrite"]:
+            script = revise_script_once(
+                script, story_plan_block=story_plan_prompt_block(get_story_plan(project)),
+                research_notes=notes, review=review, target_words=target,
+                custom_prompt=narrative_revision_prompt(script, source, editorial, target),
+            )
+            script = strip_essay_tail(strip_metadata_leaks(script))
+            editorial = review_narrative(script, source, fiction=False)
+            quality_meta["narrative_reviews"].append(editorial)
+        if editorial["needs_rewrite"] or review_script(script)["needs_rewrite"]:
+            raise ValueError("El guion sigue fallando en historia o hechos. Conservamos el anterior; revisá investigación e historia.")
+
     script = strip_metadata_leaks(script)
+    wc = count_words(script)
     ok, reasons = validate_documentary_script(
         script,
         language=lang,

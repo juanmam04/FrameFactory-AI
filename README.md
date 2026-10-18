@@ -128,3 +128,15 @@ Colocá una PNG del protagonista en
 10. Regeneración parcial
 11. Script maestro (pipeline)
 12–13. Escala e iteración
+
+## Historia y prompts para Flow
+
+El guion generado pasa una revisión editorial completa contra la historia aprobada:
+gancho, progresión, continuidad y cierre. Si detecta problemas materiales, intenta
+una corrección y vuelve a revisar. Los errores no reemplazan el guion anterior por
+texto de prueba. Esto añade llamadas al modelo; `FRAMEFACTORY_EDITOR_MODEL` permite
+configurar el editor por separado de `OPENAI_MODEL`.
+
+En Flow, usá el prompt individual de cada imagen con su número original y sus
+referencias. Los lotes organizan escenas; no cambian sus eventos ni su numeración.
+Auditoría y límites de la validación: [diez pasadas](docs/story-flow-audit/README.md).

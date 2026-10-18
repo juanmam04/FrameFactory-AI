@@ -27,7 +27,10 @@ def export_flow_pack(
     fp = root / "flow-pack"
     plan_path = fp / "visual-plan.json"
 
-    if rebuild_visuals or not plan_path.exists():
+    from src.documentary.voice_script_sync import script_hash
+    cached = json.loads(plan_path.read_text(encoding="utf-8")) if plan_path.exists() else {}
+    stale = cached.get("source_script_hash") != script_hash(str(project.get("script") or ""))
+    if rebuild_visuals or stale or not plan_path.exists():
         target = 100 if str(project.get("content_format") or project.get("mode") or "") == "check_als" else 80
         plan = build_visual_plan(project, use_llm=use_llm, target_visuals=target)
         from src.documentary.project import load_project
@@ -57,6 +60,8 @@ def export_flow_pack(
 
     batch_size = int(plan.get("batch_size") or project.get("batch_size") or 10)
 
+    for old in (fp / "shots").glob("*.txt"):
+        old.unlink()
     for shot in visuals:
         n = int(shot["number"])
         path = fp / "shots" / f"{n:03d}.txt"
@@ -217,8 +222,8 @@ Topic: {project.get('topic')}
 ## Steps
 
 1. Generate **MASTER REFERENCES** first (`references/masters` + character/location prompts).
-2. For each Flow batch: attach needed references in Google Flow → paste **batch prompt** → generate **separate** images (not collage).
-3. Download and rename using visual numbers (`001.png`, `014.png`, …). Non-consecutive IDs are normal when archival slots exist.
+2. Generate each numbered image with its individual prompt (`shots/NNN.txt`), attaching the listed master references. Batch prompts are an organizational brief, not a guarantee that Flow outputs multiple separate files.
+3. Download and rename using the ORIGINAL image IDs (`001.png`, `014.png`, …), even when batches group non-consecutive moments.
 4. Import into FrameFactory Images (bulk). Truth = file on disk (READY), not a checkbox.
 5. For DOCUMENT / HEADLINE / LOGO slots: import real assets — do not invent them in Flow.
 6. Replace one bad image with its single prompt — do not redo the whole batch.

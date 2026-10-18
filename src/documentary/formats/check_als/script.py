@@ -184,6 +184,7 @@ def locked_story_facts(arch: dict[str, Any], *, mode: str = "sports_team") -> di
                 "time": b.get("time"),
                 "event": b.get("event"),
                 "consequence": b.get("consequence"),
+                "cause": b.get("cause"),
                 "story_purpose": b.get("story_purpose"),
                 "visual_opportunity": b.get("visual_opportunity"),
                 "reward_or_setback": b.get("reward_or_setback"),
@@ -385,7 +386,7 @@ _META_LEAK_RE = re.compile(
 def facts_for_llm(facts: dict[str, Any]) -> dict[str, Any]:
     out = dict(facts)
     beats = []
-    for b in (facts.get("beats") or [])[:40]:
+    for b in (facts.get("beats") or []):
         if not isinstance(b, dict):
             continue
         event = str(b.get("event") or "").strip()
@@ -397,6 +398,8 @@ def facts_for_llm(facts: dict[str, Any]) -> dict[str, Any]:
                 "time": b.get("time"),
                 "event": event,
                 "purpose": b.get("story_purpose"),
+                "cause": b.get("cause"),
+                "consequence": b.get("consequence"),
             }
         )
     out["beats"] = beats
@@ -1020,17 +1023,10 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
             # Use new storytelling engine master prompt
             locked_facts_json = json.dumps(slim, ensure_ascii=False, indent=2)
             master_prompt = get_check_master_prompt(locked_facts_json, vehicle_mode=mode)
+            master_prompt += f"\nObjetivo: {target} palabras si los sucesos lo sostienen."
             
-            # Agregar prompt específico de ending si no es "open"
-            ending_type = facts.get("ending_type", "open")
-            if ending_type != "open":
-                try:
-                    from src.documentary.formats.check_als.ending_types import get_ending_prompt
-                    ending_prompt = get_ending_prompt(ending_type, facts)
-                    master_prompt = master_prompt + "\n\n" + ending_prompt
-                except ImportError:
-                    pass
-            
+            # The approved ending is already in locked facts. Do not append
+            # generic ending templates that can contradict its actual events.
             script = _chat_text(
                 client, model, 
                 "Eres un guionista experto en narrativa viral para YouTube.", 
@@ -1118,6 +1114,25 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
         quality["viewer_revised"] = True
         if count_words(script) < 80 or viewer["needs_rewrite"]:
             raise ValueError("El guion sigue teniendo relleno o repeticiones después de revisarlo. Conservamos el anterior; regenerá la historia.")
+    if use_llm:
+        from src.documentary.narrative_review import review_narrative, narrative_revision_prompt
+
+        source = facts_for_llm(facts)
+        editorial = review_narrative(script, source, fiction=True)
+        quality["narrative_reviews"] = [editorial]
+        if editorial["needs_rewrite"]:
+            revised = _chat_text(
+                client, model, "Revise this fictional narration using only its approved architecture.",
+                narrative_revision_prompt(script, source, editorial, target),
+                temperature=0.4, max_tokens=7000, timeout=90.0,
+            )
+            script = apply_tuteo_fixes(strip_script_chrome(revised))
+            editorial = review_narrative(script, source, fiction=True)
+            quality["narrative_reviews"].append(editorial)
+            quality["narrative_revised"] = True
+        viewer = review_script(script)
+        if not script.strip() or editorial["needs_rewrite"] or viewer["needs_rewrite"]:
+            raise ValueError("El guion sigue fallando en historia o continuidad. Conservamos el anterior; revisá la arquitectura.")
     quality["viewer_review"] = viewer
     quality["offline_fixture"] = not use_llm
 
@@ -1174,7 +1189,7 @@ def _persist_script(
     project["script_quality"] = quality
     project["script_warnings"] = list(hard) + list(warn)
     project["script_editorial_notes"] = warn
-    project["target_words"] = TARGET_WORDS
+    project["target_words"] = int(project.get("target_words") or TARGET_WORDS)
     project["target_duration_min"] = [12, 15]
     set_checkpoint(project, "script_ready", True)
     set_checkpoint(project, "flow_pack_ready", False)
@@ -1186,7 +1201,7 @@ def _persist_script(
     (root / "script" / "script.txt").write_text(script, encoding="utf-8")
     meta = {
         "word_count": wc,
-        "target_words": TARGET_WORDS,
+        "target_words": project["target_words"],
         "target_range": list(WORD_RANGE),
         "estimated_duration_min": estimate_duration_min(wc),
         "template": "check_als_es",

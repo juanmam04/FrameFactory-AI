@@ -97,12 +97,15 @@ def generate_fast_concept_batch(
     target = max(1, min(8, int(count)))
     slots = _slots(target, list(prior_videos or []))
     raw_rows: list[dict[str, Any]] = []
-    if use_llm and (os.getenv("OPENAI_API_KEY") or "").strip():
+    if use_llm:
+        from src.documentary.openai_key import require_openai_api_key
+        require_openai_api_key("Story idea generation")
         try:
             raw_rows = _llm_packages(profile or {}, slots, list(prior_videos or []))
-        except Exception as exc:  # noqa: BLE001
-            print(f"[fast-concepts] llm failed: {exc}", flush=True)
-            raw_rows = []
+        except Exception as exc:
+            raise RuntimeError("No se pudieron generar ideas nuevas. Reintentá; no se usaron plantillas de prueba.") from exc
+        if len(raw_rows) < target or any(not isinstance(r, dict) or _too_thin(r) for r in raw_rows[:target]):
+            raise ValueError("La IA devolvió ideas incompletas. Reintentá para recibir historias desarrollables.")
     packages = []
     for i, slot in enumerate(slots):
         row = raw_rows[i] if i < len(raw_rows) and isinstance(raw_rows[i], dict) else {}

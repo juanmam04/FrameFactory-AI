@@ -529,12 +529,23 @@ def get_master_prompt(
 ) -> str:
     """Generate the master prompt for script generation."""
     from src.documentary.viewer_editorial import VIEWER_BRIEF
-    return MASTER_SCRIPT_PROMPT.format(
-        storytelling_principles=FIFTEEN_PRINCIPLES,
-        beat_sheet=BEAT_SHEET_TEMPLATE,
-        subject_and_research=subject_and_research,
-        target_words=target_words
-    ) + "\n\n" + VIEWER_BRIEF
+    return (
+        "Write a factual documentary narration from the approved story and research below. "
+        "The approved story determines the structure; do not impose rise/fall, fraud, "
+        "a rewind, a financial hook or a predetermined emotional curve.\n"
+        "Open on the specific unresolved situation that earns this story's click. "
+        "Give a meaningful early payoff, then connect attempts, resistance, choices and consequences. "
+        "Vary scene length according to dramatic importance; summarize uneventful time. "
+        "Use callbacks only when their setup exists in the supplied material.\n"
+        "Use exact names, dates and numbers ONLY when supplied. Preserve uncertainty. "
+        "Do not invent private conversations, thoughts, emotions or actions and present them as facts. "
+        "An IPO cancellation alone does not establish that it happened hours before launch. "
+        "End at the documented outcome, not an invented present-day update.\n"
+        f"Aim for {target_words} words when the material supports them. Spoken narration only, "
+        "in the channel language and third person. No headings or production instructions.\n\n"
+        + subject_and_research + "\n\n" + VIEWER_BRIEF
+    )
+
 
 def get_revision_prompt(
     current_script: str,
@@ -543,13 +554,14 @@ def get_revision_prompt(
     story_plan_block: str,
     research_notes: str
 ) -> str:
-    """Generate revision prompt."""
+    """Revise actual weaknesses without imposing a different story or padding."""
     from src.documentary.viewer_editorial import VIEWER_BRIEF
-
-    return REVISION_PROMPT.format(
-        problems=problems,
-        revision_instructions=revision_instructions,
-        current_script=current_script,
-        story_plan_block=story_plan_block,
-        research_notes=research_notes
-    ) + "\n\n" + VIEWER_BRIEF
+    return (
+        "Rewrite the complete narration to fix the cited problems. Preserve the approved "
+        "story, language, documented facts and uncertainty. Never invent dates, money, "
+        "dialogue or present-day outcomes to create specificity. A shorter stronger draft "
+        "is acceptable; do not manufacture a downfall or extend a resolved ending.\n"
+        f"PROBLEMS:\n{problems}\nINSTRUCTIONS:\n{revision_instructions}\n"
+        f"APPROVED STORY:\n{story_plan_block}\nRESEARCH:\n{research_notes}\n"
+        f"DRAFT:\n{current_script}\n\n" + VIEWER_BRIEF
+    )
