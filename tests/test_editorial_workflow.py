@@ -45,7 +45,7 @@ def test_legacy_editorial_read_does_not_mutate_project():
 
 def test_editorial_create_route_registered():
     from studio.server import studio_app
-    paths={route.path for route in studio_app.routes}
+    paths={route.path for route in studio_app.routes if hasattr(route,"path")}
     assert "/api/projects/editorial/create" in paths
     assert "/api/projects/editorial/list" in paths
     assert "/editorial" in paths
