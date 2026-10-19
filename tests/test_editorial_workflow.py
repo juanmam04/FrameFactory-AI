@@ -45,10 +45,11 @@ def test_legacy_editorial_read_does_not_mutate_project():
 
 def test_editorial_create_route_registered():
     from studio.server import studio_app
-    paths={route.path for route in studio_app.routes if hasattr(route,"path")}
-    assert "/api/projects/editorial/create" in paths
-    assert "/api/projects/editorial/list" in paths
-    assert "/editorial" in paths
+    from fastapi.testclient import TestClient
+    client=TestClient(studio_app)
+    assert client.post("/api/projects/editorial/create",json={}).status_code == 422
+    assert client.get("/api/projects/editorial/list").status_code == 200
+    assert client.get("/editorial").status_code == 200
 
 
 def test_editorial_page_has_create_button():
