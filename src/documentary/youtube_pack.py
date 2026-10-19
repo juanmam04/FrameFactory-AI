@@ -34,6 +34,20 @@ def generate_youtube_pack(project: dict[str, Any]) -> dict[str, Any]:
             pack = _generate_llm(project, key) or pack
         except Exception:
             pass
+    if project.get("editorial"):
+        from studio.editorial import current as editorial_current
+        stage = editorial_current(project)["stages"]["packaging"]
+        if stage.get("approved"):
+            selected = str(stage["data"].get("selected") or "")
+            options = stage["data"].get("options") or []
+            approved = next((x for x in options if isinstance(x,dict) and str(x.get("id"))==selected), None)
+            if approved:
+                pack["title"] = str(approved.get("title") or pack.get("title") or "")[:120]
+                pack["alt_titles"] = [str(x.get("title") or "")[:120] for x in options if isinstance(x,dict) and str(x.get("id"))!=selected][:2]
+                pack["thumbnail_prompt"] = str(approved.get("thumbnail") or pack.get("thumbnail_prompt") or "")
+                pack["thumbnail_text"] = str(approved.get("thumbnail_text") or "")[:32]
+                pack["editorial_hook"] = str(approved.get("hook") or "")
+                pack["fictional_story"] = True
     project["youtube"] = pack
     project["ui_step"] = "publish"
     root = project_dir(str(project["id"]))

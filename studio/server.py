@@ -198,6 +198,17 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 def create_app() -> FastAPI:
     app = FastAPI(title="FrameFactory Studio", docs_url="/api/docs")
     app.add_middleware(WorkspaceSyncMiddleware)
+    # Project-specific editorial approval workflow.
+    from studio.editorial import router as editorial_router
+    app.include_router(editorial_router)
+
+    @app.get("/editorial", response_class=HTMLResponse)
+    def editorial_studio():
+        html_path = ROOT / "templates" / "editorial.html"
+        if not html_path.is_file():
+            raise HTTPException(404, "Editorial interface missing")
+        return HTMLResponse(html_path.read_text(encoding="utf-8"), headers={"Cache-Control": "no-store"})
+
     @app.get("/", response_class=HTMLResponse)
     def index():
         html_path = ROOT / "templates" / "index.html"
@@ -656,6 +667,10 @@ def create_app() -> FastAPI:
             p.get("check_story_approved") or (p.get("check_story") or {}).get("approved")
         )
         story_ok = bool(p.get("story_plan_approved") or (p.get("story_plan") or {}).get("approved") or check_ok)
+        if p.get("editorial"):
+            from studio.editorial import current as editorial_current, STAGE_IDS
+            ed = editorial_current(p)
+            story_ok = story_ok or all(ed["stages"][key]["approved"] for key in STAGE_IDS)
         if step == "script" and not story_ok:
             step = "story"
         past_script = step in {"flow", "voice", "music", "preview", "render", "publish", "subs", "images"}
@@ -741,8 +756,24 @@ def create_app() -> FastAPI:
 
                 if cloud_sync.configured():
                     _sync_safe(lambda: cloud_sync.pull_project(project_id, light=True))
-            p = generate_documentary_script(load_project(project_id), use_llm=True)
+            source_project = load_project(project_id)
+            # Legacy projects remain compatible. New editorial projects must pass every approval.
+            if source_project.get("editorial"):
+                from studio.editorial import current as editorial_current, STAGE_IDS
+                ed = editorial_current(source_project)
+                if not all(ed["stages"][key]["approved"] for key in STAGE_IDS):
+                    raise HTTPException(409, "Terminá y aprobá las siete etapas editoriales antes de generar el guion.")
+            if source_project.get("editorial"):
+                from studio.editorial_script import generate as generate_editorial_script
+                p = generate_editorial_script(source_project)
+            else:
+                p = generate_documentary_script(source_project, use_llm=True)
+            if p.get("editorial"):
+                p["editorial_audit"] = {}
+                save_project(p)
             return {"project": _project_full(p)}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
@@ -750,6 +781,9 @@ def create_app() -> FastAPI:
     def script_save(project_id: str, body: ScriptBody):
         try:
             p = save_edited_script(load_project(project_id), body.script or "")
+            if p.get("editorial"):
+                p["editorial_audit"] = {}
+                save_project(p)
             return {"project": _project_full(p)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
@@ -758,10 +792,17 @@ def create_app() -> FastAPI:
     def script_approve(project_id: str):
         try:
             # Approve only — do NOT build Flow pack here (user generates separately).
-            p = approve_script(load_project(project_id))
+            candidate = load_project(project_id)
+            if candidate.get("editorial"):
+                audit = candidate.get("editorial_audit") or {}
+                if audit.get("verdict") != "pass":
+                    raise HTTPException(409, "El guion necesita auditoría editorial aprobada antes de pasar a producción.")
+            p = approve_script(candidate)
             p["ui_step"] = "flow"
             save_project(p)
             return {"project": _project_full(p)}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
