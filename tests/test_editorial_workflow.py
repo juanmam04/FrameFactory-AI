@@ -52,10 +52,12 @@ def test_editorial_create_route_registered():
     assert client.get("/editorial").status_code == 200
 
 
-def test_editorial_page_has_create_button():
+def test_editorial_route_is_part_of_existing_studio():
     from fastapi.testclient import TestClient
     from studio.server import studio_app
-    res=TestClient(studio_app).get("/editorial")
+    client=TestClient(studio_app)
+    res=client.get("/editorial")
     assert res.status_code == 200
-    assert "Nueva producción" in res.text
-    assert 'id="confirmCreate"' in res.text
+    assert res.url.path == "/"
+    assert "Nuevo video" in res.text
+    assert "creative-studio.css" in res.text
