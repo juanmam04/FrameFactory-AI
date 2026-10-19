@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+import json
+import os
 from pydantic import BaseModel, Field
 
 from src.documentary.project import load_project, save_project
@@ -140,3 +142,74 @@ def reopen_editorial(project_id: str, stage: str):
     p["editorial"] = ed
     save_project(p)
     return {"editorial": ed}
+
+class GenerateRequest(BaseModel):
+    guidance: str = ""
+
+def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dict[str, Any]:
+    from openai import OpenAI
+    from src.documentary.openai_key import require_openai_api_key
+    ed = current(p)
+    idx = STAGE_IDS.index(stage)
+    context = {name: ed["stages"][name]["data"] for name in STAGE_IDS[:idx]}
+    locale = str((context.get("brief") or {}).get("language") or p.get("language") or "es")
+    requirement = {
+        "concepts": "Create three distinct original story pitches with credible causal stakes. Each option has id,title,premise,hook,thumbnail,why_it_works,risks. Include selected default A.",
+        "packaging": "Create three DISTINCT title+thumbnail+first-30-second-hook combinations for the selected premise. Each option has id,title,thumbnail,hook,retention,risks. Include selected default A.",
+        "structure": "Create 7-9 acts, each with title,start_min,end_min,events,viewer_reward. Honour requested duration and chosen hook, avoid filler.",
+        "bible": "Make a coherent original story bible: setting,characters array (name,role,arc,visual),timeline,economics (numbers and cash sources logically reconciled),ending,continuity_risks. Distinguish narrative fiction from sourced facts.",
+        "visual": "Produce style modern_2d_animation, characters array with invariant 2D features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
+        "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
+    }[stage]
+    prompt = ("You are FrameFactory senior story editor, audience strategist, continuity supervisor and critical reviewer. "
+              "Write commercially compelling adult longform narrative, not fake documentary. Never promise viral outcome. "
+              "Avoid formulaic manufactured cliffhangers, repetitive motivation, copied plots, magic money, invented verified facts. "
+              "All data must be concrete, coherent and distinctive. Output one JSON object only. "
+              "Respond in "+("native Spanish" if locale=="es" else "native English")+". "
+              +requirement)
+    result = OpenAI(api_key=require_openai_api_key("Generación editorial")).chat.completions.create(
+        model=os.getenv("OPENAI_MODEL","gpt-4o-mini"),temperature=0.75,
+        response_format={"type":"json_object"},messages=[
+            {"role":"system","content":prompt},
+            {"role":"user","content":json.dumps({"previous_approved_stages":context,"guidance":guidance,"project_topic":p.get("topic")},ensure_ascii=False)},
+        ])
+    data=json.loads(result.choices[0].message.content or "{}")
+    if not isinstance(data,dict):
+        raise ValueError("Invalid editorial AI response")
+    _validate(stage,data)
+    return data
+
+@router.post("/{project_id}/editorial/{stage}/generate")
+def generate_editorial(project_id: str,stage: str,body: GenerateRequest):
+    if stage not in STAGE_IDS or stage=="brief":
+        raise HTTPException(404,"Cannot generate this stage")
+    p=_load(project_id)
+    ed=current(p)
+    idx=STAGE_IDS.index(stage)
+    if not ed["stages"][STAGE_IDS[idx-1]]["approved"]:
+        raise HTTPException(409,"Approve preceding stage first")
+    try:
+        data=_generate_stage_content(stage,p,body.guidance[:2000])
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(502,"Editorial generation failed: "+str(exc)[:300]) from exc
+    ed["stages"][stage]={"data":data,"approved":False,"approved_at":None}
+    for later in STAGE_IDS[idx+1:]:
+        ed["stages"][later]["approved"]=False
+        ed["stages"][later]["approved_at"]=None
+    ed["active_stage"]=stage
+    p["editorial"]=ed
+    save_project(p)
+    return {"editorial":ed,"generated":data}
+
+@router.get("/{project_id}/editorial/export")
+def export_editorial(project_id: str):
+    p=_load(project_id)
+    ed=current(p)
+    return {"project_id":project_id,"title":p.get("title"),"language":p.get("language"),
+            "approved":all(ed["stages"][k]["approved"] for k in STAGE_IDS),
+            "brief":ed["stages"]["brief"]["data"],"concepts":ed["stages"]["concepts"]["data"],
+            "packaging":ed["stages"]["packaging"]["data"],"structure":ed["stages"]["structure"]["data"],
+            "narrative_bible":ed["stages"]["bible"]["data"],"visual_bible":ed["stages"]["visual"]["data"],
+            "production_plan":ed["stages"]["production"]["data"]}
