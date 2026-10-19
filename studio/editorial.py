@@ -114,6 +114,7 @@ def update_editorial(project_id: str, stage: str, body: StageUpdate):
             ed["stages"][later]["approved_at"] = None
         p["story_plan_approved"] = False
         p["script_approved"] = False
+        p["editorial_audit"] = {}
     if stage == "brief":
         p["language"] = body.data["language"]
         p["target_duration_min"] = [int(body.data["duration_min"][0]), int(body.data["duration_min"][-1])]
@@ -139,6 +140,7 @@ def reopen_editorial(project_id: str, stage: str):
     ed["active_stage"] = stage
     p["story_plan_approved"] = False
     p["script_approved"] = False
+    p["editorial_audit"] = {}
     p["editorial"] = ed
     save_project(p)
     return {"editorial": ed}
@@ -200,6 +202,8 @@ def generate_editorial(project_id: str,stage: str,body: GenerateRequest):
         ed["stages"][later]["approved_at"]=None
     ed["active_stage"]=stage
     p["editorial"]=ed
+    p["editorial_audit"]={}
+    p["script_approved"]=False
     save_project(p)
     return {"editorial":ed,"generated":data}
 
@@ -230,6 +234,7 @@ def audit_script(project_id: str):
           messages=[{"role":"system","content":"You are a demanding story editor. Analyze factual consistency within fiction, financial logic, opening promise, attention risks and redundancy. Return JSON with verdict (pass or revise), issues list, strengths list, recommended_fixes list. Do not estimate virality probabilities."},
                     {"role":"user","content":json.dumps({"brief":ed["stages"]["brief"]["data"],"bible":ed["stages"]["bible"]["data"],"packaging":ed["stages"]["packaging"]["data"],"script":str(p["script"])[:45000]},ensure_ascii=False)}])
         audit=json.loads(response.choices[0].message.content or "{}")
+        audit["verdict"] = str(audit.get("verdict") or "revise").strip().lower()
         p["editorial_audit"]=audit
         save_project(p)
         return {"audit":audit}
