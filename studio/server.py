@@ -759,7 +759,11 @@ def create_app() -> FastAPI:
                 ed = editorial_current(source_project)
                 if not all(ed["stages"][key]["approved"] for key in STAGE_IDS):
                     raise HTTPException(409, "Terminá y aprobá las siete etapas editoriales antes de generar el guion.")
-            p = generate_documentary_script(source_project, use_llm=True)
+            if source_project.get("editorial"):
+                from studio.editorial_script import generate as generate_editorial_script
+                p = generate_editorial_script(source_project)
+            else:
+                p = generate_documentary_script(source_project, use_llm=True)
             return {"project": _project_full(p)}
         except HTTPException:
             raise
