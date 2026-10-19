@@ -761,6 +761,8 @@ def create_app() -> FastAPI:
                     raise HTTPException(409, "Terminá y aprobá las siete etapas editoriales antes de generar el guion.")
             p = generate_documentary_script(source_project, use_llm=True)
             return {"project": _project_full(p)}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
