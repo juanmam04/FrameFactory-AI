@@ -14,6 +14,26 @@ const guides={brief:{language:"es",premise:"",narration:"segunda persona",tone:"
 let state=null,current="brief",project="";
 const $=id=>document.getElementById(id);
 function show(){const idx=stages.findIndex(x=>x[0]===current);$("stages").innerHTML="";for(let i=0;i<stages.length;i++){const [id,label]=stages[i];let b=document.createElement("button");b.textContent=(i+1)+". "+label;b.className=(current===id?"selected ":"")+(state.stages[id].approved?"done":"");b.disabled=i>0&&!state.stages[stages[i-1][0]].approved;b.onclick=()=>{current=id;show()};$("stages").appendChild(b)}const s=state.stages[current];$("heading").textContent=stages[idx][1];$("help").textContent=stages[idx][2];$("fields").innerHTML="";let t=document.createElement("textarea");t.id="data";t.value=JSON.stringify(Object.keys(s.data).length?s.data:guides[current],null,2);t.spellcheck=false;$("fields").appendChild(t);
+if(current==="brief"){
+  const brief=JSON.parse(t.value), panel=document.createElement("div");
+  const fields=[
+    ["language","Idioma / Canal","select",[["es","Español"],["en","English"]]],
+    ["premise","Idea o situación inicial","textarea"],
+    ["narration","Perspectiva narrativa","select",[["segunda persona","Segunda persona"],["tercera persona","Tercera persona"],["primera persona","Primera persona"]]],
+    ["tone","Tono","select",[["realista y cinematográfico","Realista y cinematográfico"],["emocional","Emocional"],["documental","Documental"],["tenso","Tenso"]]]
+  ];
+  for(const [key,label,type,options] of fields){
+    const l=document.createElement("label");l.textContent=label;panel.appendChild(l);
+    const e=document.createElement(type==="select"?"select":type);
+    if(type==="select"){for(const [value,name] of options){const o=document.createElement("option");o.value=value;o.textContent=name;e.appendChild(o)}}
+    e.value=brief[key]||"";e.onchange=()=>{const d=JSON.parse(t.value);d[key]=e.value;t.value=JSON.stringify(d,null,2)};panel.appendChild(e);
+  }
+  const l=document.createElement("label");l.textContent="Duración objetivo (minutos)";panel.appendChild(l);
+  const durations=document.createElement("div");durations.style.cssText="display:flex;gap:12px";
+  for(let i=0;i<2;i++){const e=document.createElement("input");e.type="number";e.min="3";e.max="120";e.value=brief.duration_min[i];e.onchange=()=>{const d=JSON.parse(t.value);d.duration_min[i]=Number(e.value);t.value=JSON.stringify(d,null,2)};durations.appendChild(e)}
+  panel.appendChild(durations);$("fields").prepend(panel);
+  const details=document.createElement("details");const summary=document.createElement("summary");summary.textContent="Datos estructurados (avanzado)";details.appendChild(summary);t.replaceWith(details);details.appendChild(t);
+}
 if((current==="concepts"||current==="packaging")&&Array.isArray(s.data.options)){
   const panel=document.createElement("div");
   panel.style.cssText="display:grid;gap:12px;margin:16px 0";
