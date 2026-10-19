@@ -162,6 +162,8 @@ def update_editorial(project_id: str, stage: str, body: StageUpdate):
     ed["history"].append({"stage": stage, "action": "approved" if body.approve else "saved",
                           "at": datetime.now(timezone.utc).isoformat()})
     p["editorial"] = ed
+    if all(ed["stages"][key]["approved"] for key in STAGE_IDS):
+        p["ui_step"] = "script"
     save_project(p)
     return {"editorial": ed, "ready_for_script": all(ed["stages"][key]["approved"] for key in STAGE_IDS)}
 

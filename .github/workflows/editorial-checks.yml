@@ -8,6 +8,9 @@ on:
       - 'studio/editorial_script.py'
       - 'studio/server.py'
       - 'studio/templates/editorial.html'
+      - 'studio/static/creative-studio.js'
+      - 'studio/static/studio.js'
+      - 'public/index.html'
       - 'src/documentary/visual_director.py'
       - 'src/documentary/youtube_pack.py'
       - 'tests/test_editorial_workflow.py'
@@ -35,6 +38,7 @@ jobs:
           Path("/tmp/framefactory-editorial.js").write_text(match.group(1), encoding="utf-8")
           PY
           node --check /tmp/framefactory-editorial.js
+          node --check studio/static/creative-studio.js
       - name: Editorial unit tests
         run: python -m pytest tests/test_editorial_workflow.py -q
       - name: Studio import and editorial page smoke check
@@ -45,7 +49,8 @@ jobs:
           client = TestClient(studio_app)
           response = client.get("/editorial")
           assert response.status_code == 200, response.text[:400]
-          assert "Preproducción profesional" in response.text
+          assert response.url.path == "/"
+          assert client.get("/").status_code == 200
           assert client.get("/api/ping").status_code == 200
           print("Editorial Studio smoke checks passed")
           PY

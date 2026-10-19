@@ -10,7 +10,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -202,12 +202,9 @@ def create_app() -> FastAPI:
     from studio.editorial import router as editorial_router
     app.include_router(editorial_router)
 
-    @app.get("/editorial", response_class=HTMLResponse)
-    def editorial_studio():
-        html_path = ROOT / "templates" / "editorial.html"
-        if not html_path.is_file():
-            raise HTTPException(404, "Editorial interface missing")
-        return HTMLResponse(html_path.read_text(encoding="utf-8"), headers={"Cache-Control": "no-store"})
+    @app.get("/editorial")
+    def legacy_editorial_redirect():
+        return RedirectResponse(url="/#ideas",status_code=307)
 
     @app.get("/", response_class=HTMLResponse)
     def index():
