@@ -139,6 +139,17 @@ def update_editorial(project_id: str, stage: str, body: StageUpdate):
     if index and not ed["stages"][STAGE_IDS[index-1]]["approved"]:
         raise HTTPException(409, "Approve the preceding stage first")
     _validate(stage, body.data)
+    if stage == "packaging":
+        chosen_story = ed["stages"]["concepts"]["data"]
+        concept_id = str(chosen_story.get("selected") or "")
+        if not concept_id:
+            raise HTTPException(409, "Primero aprobá una historia.")
+        for option in body.data.get("options") or []:
+            if str(option.get("concept_id") or concept_id) != concept_id:
+                raise HTTPException(422, "El packaging debe pertenecer a la historia aprobada.")
+            thumbnail = str(option.get("thumbnail") or "")
+            if thumbnail.startswith(("http://", "https://")) or "example.com" in thumbnail:
+                raise HTTPException(422, "Describí la miniatura visualmente; no uses enlaces.")
     previous = ed["stages"][stage]
     changed = previous["data"] != body.data
     previous["data"] = body.data
@@ -194,9 +205,43 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
     idx = STAGE_IDS.index(stage)
     context = {name: ed["stages"][name]["data"] for name in STAGE_IDS[:idx]}
     locale = str((context.get("brief") or {}).get("language") or p.get("language") or "es")
+    selected_concept = {}
+    if stage != "concepts":
+        prior = context.get("concepts") or {}
+        selected_concept = next((x for x in prior.get("options", [])
+            if isinstance(x, dict) and str(x.get("id")) == str(prior.get("selected"))), {})
+        if not selected_concept:
+            raise ValueError("No hay historia elegida. Volvé a la etapa de conceptos.")
+    selected_packaging = {}
+    if STAGE_IDS.index(stage) > STAGE_IDS.index("packaging"):
+        pack = context.get("packaging") or {}
+        selected_packaging = next((x for x in pack.get("options", [])
+            if isinstance(x, dict) and str(x.get("id")) == str(pack.get("selected"))), {})
     requirement = {
-        "concepts": "Create three distinct original story pitches with credible causal stakes. Each option has id,title,premise,hook,thumbnail,why_it_works,risks. Include selected default A.",
-        "packaging": "Create three DISTINCT title+thumbnail+first-30-second-hook combinations for the selected premise. Each option has id,title,thumbnail,hook,retention,risks. Include selected default A.",
+        "concepts": (
+            "Create THREE different high-concept POV simulation stories rooted in the selected genre. "
+            "The viewer is making a startling choice: buying a costly asset or distressed large "
+            "company for almost nothing, accepting a dangerous liability, taking over a business "
+            "with a deadline, or turning around an expensive failure. Give concrete credible "
+            "prices, debt, pressure, choices, consequences and earned outcomes. "
+            "Generate striking YouTube-ready titles with specific stakes. No bland abstract "
+            "names, inherited cafes, dead grandparents, family legacy, secret recipes, "
+            "sentimental community rescue or repeated narrative templates. "
+            "Each story must be structurally and commercially distinct, immersive and "
+            "sufficient for 20-35 minutes. Include title,premise,hook,thumbnail,"
+            "why_it_works,retention,risks."
+        ),
+        "packaging": (
+            "PACKAGING ONLY. The previously selected story is LOCKED. DO NOT create a new "
+            "business, protagonist, origin, crisis, purchase price, setting or premise. "
+            "Produce THREE strong YouTube TITLES for the very same selected story, plus "
+            "THREE visually describable thumbnail concepts (descriptions, NEVER URLs), "
+            "THREE first-30-second narration hooks in the approved POV, specific retention "
+            "arguments and editorial risks. Angle A emphasizes the impossible price, "
+            "B emphasizes the deadline/financial risk, C emphasizes the discovery. "
+            "Be cinematic, specific, audience-driven and true to the exact selected pitch. "
+            "Return id,title,thumbnail,hook,retention,risks per option."
+        ),
         "structure": "Create 7-9 acts, each with title,start_min,end_min,events,viewer_reward. Honour requested duration and chosen hook, avoid filler.",
         "bible": "Make a coherent original story bible: setting,characters array (name,role,arc,visual),timeline,economics (numbers and cash sources logically reconciled),ending,continuity_risks. Distinguish narrative fiction from sourced facts.",
         "visual": "Produce style modern_2d_animation, characters array with invariant 2D features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
@@ -228,7 +273,9 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         {"role": "user", "content": json.dumps({
             "previous_approved_stages": context,
             "guidance": guidance,
-            "project_topic": p.get("topic")
+            "project_topic": p.get("topic"),
+            "LOCKED_STORY": selected_concept,
+            "LOCKED_PACKAGING": selected_packaging
         }, ensure_ascii=False)}
     ]
     data = {}
@@ -267,7 +314,14 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
             for field in ("premise", "hook", "thumbnail", "why_it_works", "retention", "risks"):
                 option.setdefault(field, "")
         data["selected"] = ""
-
+        if stage == "packaging":
+            for option in options:
+                thumbnail = str(option.get("thumbnail") or "")
+                if thumbnail.startswith(("https://", "http://")) or "example.com" in thumbnail:
+                    raise ValueError("Miniatura incorrecta: se requiere una descripción, no un enlace.")
+                if len(str(option.get("hook") or "")) < 60:
+                    raise ValueError("El hook necesita una apertura narrada, no una frase genérica.")
+                option["concept_id"] = str(selected_concept.get("id") or "")
     else:
         _validate(stage,data)
     return data
