@@ -667,6 +667,10 @@ def create_app() -> FastAPI:
             p.get("check_story_approved") or (p.get("check_story") or {}).get("approved")
         )
         story_ok = bool(p.get("story_plan_approved") or (p.get("story_plan") or {}).get("approved") or check_ok)
+        if p.get("editorial"):
+            from studio.editorial import current as editorial_current, STAGE_IDS
+            ed = editorial_current(p)
+            story_ok = story_ok or all(ed["stages"][key]["approved"] for key in STAGE_IDS)
         if step == "script" and not story_ok:
             step = "story"
         past_script = step in {"flow", "voice", "music", "preview", "render", "publish", "subs", "images"}
