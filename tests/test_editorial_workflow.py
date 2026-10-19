@@ -61,3 +61,12 @@ def test_editorial_route_is_part_of_existing_studio():
     assert res.url.path == "/"
     assert "Nuevo video" in res.text
     assert "creative-studio.css" in res.text
+
+def test_proposals_allow_unselected_drafts_but_require_human_selection_to_approve():
+    from studio.editorial import StageUpdate
+    assert StageUpdate(data={"options": [{"id": "A"}, {"id": "B"}, {"id": "C"}], "selected": ""}, approve=False)
+    try:
+        _validate("concepts", {"options": [{"id": "A"}, {"id": "B"}, {"id": "C"}], "selected": ""})
+        assert False
+    except HTTPException as exc:
+        assert exc.status_code == 422
