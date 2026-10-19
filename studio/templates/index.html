@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/studio.css?v=20260928-canal"/>
+  <link rel="stylesheet" href="/assets/studio.css?v=20261019-unified"/>
   <!-- Critical: keep top nav + render actions centered (Vercel serves public/) -->
   <style>
     .top-inner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 2.75rem; }
@@ -130,6 +130,7 @@
       to { opacity: 1; transform: none; }
     }
   </style>
+  <link rel="stylesheet" href="/assets/creative-studio.css?v=20261019"/>
 </head>
 <body>
   <div id="app">
@@ -141,8 +142,8 @@
         </div>
         <nav class="top-nav">
           <button type="button" data-go="home" class="nav-link active">Home</button>
-          <a href="/editorial" class="nav-link" style="text-decoration:none;background:#0f766e;color:#fff;border-radius:9px;padding:10px 14px;font-weight:800">✦ Preproducción</a>
-          <button type="button" data-go="ideas" class="nav-link">New episode</button>
+          
+          <button type="button" data-go="ideas" class="nav-link">Nuevo video</button>
           <button type="button" data-go="library" class="nav-link">Library</button>
         </nav>
         <div class="top-status" id="cred-pills"></div>
@@ -187,6 +188,6 @@
       </div>
     </div>
   </div>
-  <script src="/assets/studio.js?v=20260928-seguir" type="module"></script>
+  <script src="/assets/studio.js?v=20261019-unified" type="module"></script>
 </body>
 </html>
