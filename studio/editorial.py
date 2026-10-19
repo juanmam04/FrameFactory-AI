@@ -217,7 +217,21 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
     data=json.loads(result.choices[0].message.content or "{}")
     if not isinstance(data,dict):
         raise ValueError("Invalid editorial AI response")
-    _validate(stage,data)
+    # Models often return the three options but omit `selected`.
+    # Selection belongs to the viewer, not generation; never block rendering.
+    if stage in ("concepts", "packaging"):
+        options = data.get("options")
+        if not isinstance(options, list) or len(options) < 3:
+            raise ValueError("La IA no generó tres opciones válidas. Reintentá.")
+        options = [option for option in options if isinstance(option, dict)]
+        if len(options) < 3:
+            raise ValueError("Las opciones devueltas no tienen el formato esperado.")
+        for i, option in enumerate(options):
+            option["id"] = str(option.get("id") or chr(65 + i))
+        data["options"] = options
+        data["selected"] = ""
+    else:
+        _validate(stage,data)
     return data
 
 @router.post("/{project_id}/editorial/{stage}/generate")
