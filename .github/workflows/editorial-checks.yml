@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt pytest
       - name: Python syntax check
         run: python -m py_compile studio/editorial.py studio/editorial_script.py studio/server.py src/documentary/visual_director.py src/documentary/youtube_pack.py
       - name: Editorial unit tests
