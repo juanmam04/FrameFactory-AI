@@ -198,6 +198,17 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 def create_app() -> FastAPI:
     app = FastAPI(title="FrameFactory Studio", docs_url="/api/docs")
     app.add_middleware(WorkspaceSyncMiddleware)
+    # Project-specific editorial approval workflow.
+    from studio.editorial import router as editorial_router
+    app.include_router(editorial_router)
+
+    @app.get("/editorial", response_class=HTMLResponse)
+    def editorial_studio():
+        html_path = ROOT / "templates" / "editorial.html"
+        if not html_path.is_file():
+            raise HTTPException(404, "Editorial interface missing")
+        return HTMLResponse(html_path.read_text(encoding="utf-8"), headers={"Cache-Control": "no-store"})
+
     @app.get("/", response_class=HTMLResponse)
     def index():
         html_path = ROOT / "templates" / "index.html"
