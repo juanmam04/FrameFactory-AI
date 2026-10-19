@@ -213,3 +213,25 @@ def export_editorial(project_id: str):
             "packaging":ed["stages"]["packaging"]["data"],"structure":ed["stages"]["structure"]["data"],
             "narrative_bible":ed["stages"]["bible"]["data"],"visual_bible":ed["stages"]["visual"]["data"],
             "production_plan":ed["stages"]["production"]["data"]}
+
+@router.post("/{project_id}/editorial/audit")
+def audit_script(project_id: str):
+    p=_load(project_id)
+    if not p.get("script"): raise HTTPException(409,"Generate the script first")
+    ed=current(p)
+    if not all(ed["stages"][k]["approved"] for k in STAGE_IDS):
+        raise HTTPException(409,"Approve preproduction first")
+    try:
+        from openai import OpenAI
+        from src.documentary.openai_key import require_openai_api_key
+        response=OpenAI(api_key=require_openai_api_key("Editorial audit")).chat.completions.create(
+          model=os.getenv("OPENAI_MODEL","gpt-4o-mini"),temperature=0.2,
+          response_format={"type":"json_object"},
+          messages=[{"role":"system","content":"You are a demanding story editor. Analyze factual consistency within fiction, financial logic, opening promise, attention risks and redundancy. Return JSON with verdict (pass or revise), issues list, strengths list, recommended_fixes list. Do not estimate virality probabilities."},
+                    {"role":"user","content":json.dumps({"brief":ed["stages"]["brief"]["data"],"bible":ed["stages"]["bible"]["data"],"packaging":ed["stages"]["packaging"]["data"],"script":str(p["script"])[:45000]},ensure_ascii=False)}])
+        audit=json.loads(response.choices[0].message.content or "{}")
+        p["editorial_audit"]=audit
+        save_project(p)
+        return {"audit":audit}
+    except HTTPException: raise
+    except Exception as exc: raise HTTPException(502,"Audit failed: "+str(exc)[:180]) from exc
