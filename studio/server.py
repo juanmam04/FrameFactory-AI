@@ -786,10 +786,17 @@ def create_app() -> FastAPI:
     def script_approve(project_id: str):
         try:
             # Approve only — do NOT build Flow pack here (user generates separately).
-            p = approve_script(load_project(project_id))
+            candidate = load_project(project_id)
+            if candidate.get("editorial"):
+                audit = candidate.get("editorial_audit") or {}
+                if audit.get("verdict") != "pass":
+                    raise HTTPException(409, "El guion necesita auditoría editorial aprobada antes de pasar a producción.")
+            p = approve_script(candidate)
             p["ui_step"] = "flow"
             save_project(p)
             return {"project": _project_full(p)}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
