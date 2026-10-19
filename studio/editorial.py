@@ -139,6 +139,17 @@ def update_editorial(project_id: str, stage: str, body: StageUpdate):
     if index and not ed["stages"][STAGE_IDS[index-1]]["approved"]:
         raise HTTPException(409, "Approve the preceding stage first")
     _validate(stage, body.data)
+    if stage == "packaging":
+        chosen_story = ed["stages"]["concepts"]["data"]
+        concept_id = str(chosen_story.get("selected") or "")
+        if not concept_id:
+            raise HTTPException(409, "Primero aprobá una historia.")
+        for option in body.data.get("options") or []:
+            if str(option.get("concept_id") or concept_id) != concept_id:
+                raise HTTPException(422, "El packaging debe pertenecer a la historia aprobada.")
+            thumbnail = str(option.get("thumbnail") or "")
+            if thumbnail.startswith(("http://", "https://")) or "example.com" in thumbnail:
+                raise HTTPException(422, "Describí la miniatura visualmente; no uses enlaces.")
     previous = ed["stages"][stage]
     changed = previous["data"] != body.data
     previous["data"] = body.data
