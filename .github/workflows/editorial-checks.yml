@@ -1,0 +1,28 @@
+name: Editorial Studio checks
+on:
+  push:
+    branches: [feature/editorial-preproduction-flow]
+  pull_request:
+    paths:
+      - 'studio/editorial.py'
+      - 'studio/editorial_script.py'
+      - 'studio/server.py'
+      - 'studio/templates/editorial.html'
+      - 'src/documentary/visual_director.py'
+      - 'src/documentary/youtube_pack.py'
+      - 'tests/test_editorial_workflow.py'
+  workflow_dispatch:
+jobs:
+  editorial-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Python syntax check
+        run: python -m py_compile studio/editorial.py studio/editorial_script.py studio/server.py src/documentary/visual_director.py src/documentary/youtube_pack.py
+      - name: Editorial unit tests
+        run: python -m pytest tests/test_editorial_workflow.py -q
