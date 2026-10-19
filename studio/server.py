@@ -768,6 +768,9 @@ def create_app() -> FastAPI:
                 p = generate_editorial_script(source_project)
             else:
                 p = generate_documentary_script(source_project, use_llm=True)
+            if p.get("editorial"):
+                p["editorial_audit"] = {}
+                save_project(p)
             return {"project": _project_full(p)}
         except HTTPException:
             raise
@@ -778,6 +781,9 @@ def create_app() -> FastAPI:
     def script_save(project_id: str, body: ScriptBody):
         try:
             p = save_edited_script(load_project(project_id), body.script or "")
+            if p.get("editorial"):
+                p["editorial_audit"] = {}
+                save_project(p)
             return {"project": _project_full(p)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
