@@ -752,7 +752,14 @@ def create_app() -> FastAPI:
 
                 if cloud_sync.configured():
                     _sync_safe(lambda: cloud_sync.pull_project(project_id, light=True))
-            p = generate_documentary_script(load_project(project_id), use_llm=True)
+            source_project = load_project(project_id)
+            # Legacy projects remain compatible. New editorial projects must pass every approval.
+            if source_project.get("editorial"):
+                from studio.editorial import current as editorial_current, STAGE_IDS
+                ed = editorial_current(source_project)
+                if not all(ed["stages"][key]["approved"] for key in STAGE_IDS):
+                    raise HTTPException(409, "Terminá y aprobá las siete etapas editoriales antes de generar el guion.")
+            p = generate_documentary_script(source_project, use_llm=True)
             return {"project": _project_full(p)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
