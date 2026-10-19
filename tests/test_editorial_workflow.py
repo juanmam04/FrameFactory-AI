@@ -70,3 +70,11 @@ def test_proposals_allow_unselected_drafts_but_require_human_selection_to_approv
         assert False
     except HTTPException as exc:
         assert exc.status_code == 422
+
+def test_editorial_three_option_generator_contract_is_present():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    code = inspect.getsource(_generate_stage_content)
+    assert "REQUIRED TOP-LEVEL JSON SHAPE" in code
+    assert "ideas" in code and "proposals" in code
+    assert "for attempt in range(2)" in code
