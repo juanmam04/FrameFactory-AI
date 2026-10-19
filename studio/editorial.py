@@ -208,28 +208,66 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
               "All data must be concrete, coherent and distinctive. Output one JSON object only. "
               "Respond in "+("native Spanish" if locale=="es" else "native English")+". "
               +requirement)
-    result = OpenAI(api_key=require_openai_api_key("Generación editorial")).chat.completions.create(
-        model=os.getenv("OPENAI_MODEL","gpt-4o-mini"),temperature=0.75,
-        response_format={"type":"json_object"},messages=[
-            {"role":"system","content":prompt},
-            {"role":"user","content":json.dumps({"previous_approved_stages":context,"guidance":guidance,"project_topic":p.get("topic")},ensure_ascii=False)},
-        ])
-    data=json.loads(result.choices[0].message.content or "{}")
-    if not isinstance(data,dict):
-        raise ValueError("Invalid editorial AI response")
-    # Models often return the three options but omit `selected`.
-    # Selection belongs to the viewer, not generation; never block rendering.
+    # Explicit JSON contract, plus a single repair attempt when the model uses
+    # "ideas"/"proposals" instead of "options" or returns too few entries.
+    if stage in ("concepts", "packaging"):
+        schema = {"options": [
+            {"id": "A", "title": "", "premise": "", "hook": "", "thumbnail": "",
+             "why_it_works": "", "retention": "", "risks": ""},
+            {"id": "B", "title": "", "premise": "", "hook": "", "thumbnail": "",
+             "why_it_works": "", "retention": "", "risks": ""},
+            {"id": "C", "title": "", "premise": "", "hook": "", "thumbnail": "",
+             "why_it_works": "", "retention": "", "risks": ""}
+        ], "selected": ""}
+        prompt += (" REQUIRED TOP-LEVEL JSON SHAPE: " + json.dumps(schema) +
+                   ". Exactly three fully developed options. Do not return ideas, stories, "
+                   "proposals, concepts, or variants as the root property.")
+    client = OpenAI(api_key=require_openai_api_key("Generación editorial"))
+    messages = [
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": json.dumps({
+            "previous_approved_stages": context,
+            "guidance": guidance,
+            "project_topic": p.get("topic")
+        }, ensure_ascii=False)}
+    ]
+    data = {}
+    for attempt in range(2):
+        result = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            temperature=0.7 if attempt == 0 else 0.3,
+            response_format={"type": "json_object"},
+            messages=messages)
+        data = json.loads(result.choices[0].message.content or "{}")
+        if not isinstance(data, dict):
+            data = {}
+        if stage not in ("concepts", "packaging"):
+            break
+        raw = next((data.get(key) for key in
+                   ("options", "ideas", "proposals", "stories", "concepts", "variants")
+                   if isinstance(data.get(key), list)), [])
+        if len(raw) >= 3 and all(isinstance(x, dict) for x in raw[:3]):
+            data["options"] = raw[:3]
+            break
+        messages.append({"role": "assistant", "content": json.dumps(data, ensure_ascii=False)})
+        messages.append({"role": "user", "content":
+                         "Repair your output: provide exactly three distinct entries under "
+                         "the top-level options array, each with id, title, premise, hook, "
+                         "thumbnail, why_it_works, retention and risks. Return JSON only."})
     if stage in ("concepts", "packaging"):
         options = data.get("options")
         if not isinstance(options, list) or len(options) < 3:
-            raise ValueError("La IA no generó tres opciones válidas. Reintentá.")
-        options = [option for option in options if isinstance(option, dict)]
-        if len(options) < 3:
-            raise ValueError("Las opciones devueltas no tienen el formato esperado.")
+            raise ValueError("La IA no devolvió tres historias después de dos intentos. "
+                             "No se perdió tu proyecto; podés reintentar.")
         for i, option in enumerate(options):
-            option["id"] = str(option.get("id") or chr(65 + i))
-        data["options"] = options
+            option["id"] = chr(65 + i)
+            option.setdefault("title", str(option.get("title_concept") or
+                          option.get("name") or option.get("premise") or
+                          f"Propuesta {chr(65 + i)}"))
+            for field in ("premise", "hook", "thumbnail", "why_it_works", "retention", "risks"):
+                option.setdefault(field, "")
         data["selected"] = ""
+
     else:
         _validate(stage,data)
     return data
