@@ -1,3 +1,4 @@
+import { renderCreativeStudio } from "./creative-studio.js?v=20261019";
 document.addEventListener("gesturestart", (e) => e.preventDefault());
 document.addEventListener("gesturechange", (e) => e.preventDefault());
 document.addEventListener(
@@ -1007,7 +1008,7 @@ async function boot() {
       await openProject(id);
       return;
     }
-    if (hash === "ideas") return go("ideas");
+    if (hash === "ideas" || hash === "editorial") return go("ideas");
     if (hash === "library") return go("library");
     go("home");
   } catch (e) {
@@ -1051,7 +1052,8 @@ async function openProject(id) {
 function render() {
   const v = state.view;
   if (v === "home") return renderHome();
-  if (v === "ideas") return renderIdeas();
+  if (v === "ideas") return renderCreativeStudio(stage(), openProject);
+  if (v === "editorial") return renderCreativeStudio(stage(), openProject);
   if (v === "library") return renderLibrary();
   if (v === "project") return renderProject();
 }
