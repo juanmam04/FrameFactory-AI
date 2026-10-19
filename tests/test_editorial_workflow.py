@@ -42,3 +42,20 @@ def test_legacy_editorial_read_does_not_mutate_project():
     ed = current(project)
     assert len(ed["stages"]) == 7
     assert "editorial" not in project
+
+def test_editorial_create_route_registered():
+    from studio.server import studio_app
+    from fastapi.testclient import TestClient
+    client=TestClient(studio_app)
+    assert client.post("/api/projects/editorial/create",json={}).status_code == 422
+    assert client.get("/api/projects/editorial/list").status_code == 200
+    assert client.get("/editorial").status_code == 200
+
+
+def test_editorial_page_has_create_button():
+    from fastapi.testclient import TestClient
+    from studio.server import studio_app
+    res=TestClient(studio_app).get("/editorial")
+    assert res.status_code == 200
+    assert "Nueva producción" in res.text
+    assert 'id="confirmCreate"' in res.text

@@ -10,7 +10,7 @@ import json
 import os
 from pydantic import BaseModel, Field
 
-from src.documentary.project import load_project, save_project
+from src.documentary.project import load_project, save_project, create_project, list_projects
 
 router = APIRouter(prefix="/api/projects", tags=["editorial"])
 
@@ -48,6 +48,43 @@ def current(project: dict[str, Any]) -> dict[str, Any]:
     editorial.setdefault("history", [])
     editorial.setdefault("active_stage", "brief")
     return editorial
+
+
+class EditorialCreate(BaseModel):
+    title: str = Field(min_length=3, max_length=160)
+    language: str = "es"
+    premise: str = Field(min_length=8)
+    narration: str = "segunda persona"
+    tone: str = "realista y cinematográfico"
+    duration_min: list[int] = Field(default_factory=lambda: [20, 25])
+
+@router.get("/editorial/list")
+def editorial_project_list():
+    projects = list_projects()
+    return {"projects": [
+        {"id":p.get("id"),"title":p.get("title"),"language":p.get("language"),
+         "active_stage":current(p)["active_stage"],
+         "completed":sum(bool(v["approved"]) for v in current(p)["stages"].values())}
+        for p in projects if p.get("editorial")]}
+
+@router.post("/editorial/create")
+def editorial_project_create(body: EditorialCreate):
+    brief=body.model_dump(exclude={"title"})
+    _validate("brief",brief)
+    if len(body.duration_min)!=2 or not 5<=body.duration_min[0]<=body.duration_min[1]<=90:
+        raise HTTPException(422,"Duración inválida")
+    words=round(sum(body.duration_min)/2*135)
+    try:
+        p=create_project(body.premise,title=body.title,language=body.language,
+           target_duration_min=body.duration_min,target_words=words,content_format="documentary")
+    except FileExistsError as exc:
+        raise HTTPException(409,"Ya existe un proyecto con ese nombre. Usá otro título.") from exc
+    ed=fresh()
+    ed["stages"]["brief"]={"data":brief,"approved":True,"approved_at":datetime.now(timezone.utc).isoformat()}
+    ed["active_stage"]="concepts"
+    p["editorial"]=ed
+    save_project(p)
+    return {"project_id":p["id"],"editorial":ed}
 
 class StageUpdate(BaseModel):
     data: dict[str, Any] = Field(default_factory=dict)
