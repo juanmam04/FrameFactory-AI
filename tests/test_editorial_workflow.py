@@ -78,3 +78,18 @@ def test_editorial_three_option_generator_contract_is_present():
     assert "REQUIRED TOP-LEVEL JSON SHAPE" in code
     assert "ideas" in code and "proposals" in code
     assert "for attempt in range(2)" in code
+
+def test_story_locked_for_packaging_generator():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    source = inspect.getsource(_generate_stage_content)
+    assert "LOCKED_STORY" in source
+    assert "previously selected story is LOCKED" in source
+    assert "grandparents" in source
+    assert "example.com" in source
+
+
+def test_packaging_screen_hides_duplicate_premise():
+    from pathlib import Path
+    js = Path("public/assets/creative-studio.js").read_text(encoding="utf-8")
+    assert 'step==="packaging"?["thumbnail","hook","retention","risks"]' in js
