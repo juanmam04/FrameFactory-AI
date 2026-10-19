@@ -31,6 +31,17 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
 
         style_hint = CHECK_DIR
 
+    if project.get("editorial"):
+        from studio.editorial import current as editorial_current
+        visual = editorial_current(project)["stages"]["visual"]["data"]
+        if visual.get("style") == "modern_2d_animation":
+            style_hint = (
+                "Modern clean 2D animated illustration, expressive stylized 2D cartoon characters, "
+                "consistent character reference silhouettes and outfits, cinematic illustrated environments, "
+                "deliberate framing, flat shading, adult visual storytelling, NO photorealistic people, "
+                "NO 3D, NO live action. " + json.dumps(visual, ensure_ascii=False)[:900]
+            )
+
     words = max(1, len(script.split()))
     is_check = str(project.get("content_format") or project.get("mode") or "") == "check_als"
     if is_check:
@@ -81,7 +92,7 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
     for i, (beat, spec) in enumerate(zip(beats, specs), start=1):
         raw_prompt = prompt_desde_frame_spec(spec)
         prompt = _compose_flow_prompt(
-            global_hint=(style_hint or VISUAL_DIRECTION)[:280],
+            global_hint=(style_hint or VISUAL_DIRECTION)[:1100],
             action=spec.action or beat.action,
             environment=spec.location or beat.location,
             camera=spec.camera_mode or beat.camera_type,
