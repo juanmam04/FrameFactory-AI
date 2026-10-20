@@ -46,8 +46,10 @@ def local_warnings(script,*,first=False,acquisition=False,other_acts=()):
     lower=script.casefold()
     if first and acquisition:
         beginning=lower[:1800]
-        transfer=("compr" ,"adquir","ofrec","entreg","llav","firm","propiet","purchase","bought","handed","keys")
-        if sum(any(stem in beginning for stem in stems) for stems in (transfer[:4],transfer[4:]))<2:
+        acquisition_words=("compr","adquir","ofrec","ofert","entreg","purchase","bought","buy ","offer","handover","transfer")
+        handover_words=("llav","firm","contrato","propiet","keys","sign","contract","deed","handed")
+        if not (any(word in beginning for word in acquisition_words)
+                and any(word in beginning for word in handover_words)):
             warnings.append("El comienzo no desarrolla la adquisición ni la entrega.")
     for phrase in BAD_PHRASES:
         if lower.count(phrase)>=3: warnings.append("Frase repetitiva: "+phrase)
