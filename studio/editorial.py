@@ -27,7 +27,7 @@ STAGE_IDS = tuple(stage for stage, _ in STAGES)
 
 DEFAULT_VISUAL = {
     "style": "modern_2d_animation",
-    "character_design": "expressive_2d_stylized",
+    "character_design": "expressive_2d_stickman",
     "photorealistic_people": False,
     "environment_design": "illustrated_cinematic_2d",
     "continuity_required": True,
@@ -83,8 +83,21 @@ def editorial_project_create(body: EditorialCreate):
     ed["stages"]["brief"]={"data":brief,"approved":True,"approved_at":datetime.now(timezone.utc).isoformat()}
     ed["active_stage"]="concepts"
     p["editorial"]=ed
+    p["target_words"]=words
     save_project(p)
     return {"project_id":p["id"],"editorial":ed}
+
+def invalidate_production(project):
+    from src.documentary.project import CHECKPOINT_KEYS, set_checkpoint
+    project["story_plan_approved"] = False
+    project["script_approved"] = False
+    project["editorial_audit"] = {}
+    for key in CHECKPOINT_KEYS:
+        set_checkpoint(project, key, False)
+    if project.get("voice"):
+        project["voice"] = {**project["voice"], "stale": True, "stale_reason": "Editorial decisions changed"}
+    project["ui_step"] = "script"
+
 
 class StageUpdate(BaseModel):
     data: dict[str, Any] = Field(default_factory=dict)
@@ -96,18 +109,25 @@ def _load(project_id: str) -> dict[str, Any]:
     except FileNotFoundError as exc:
         raise HTTPException(404, "Project not found") from exc
 
-def _validate(stage: str, data: dict[str, Any]):
+def _validate(stage: str, data: dict[str, Any], *, approve: bool = True):
     if stage == "brief":
         for key in ("language", "premise", "narration", "tone", "duration_min"):
             if not data.get(key):
                 raise HTTPException(422, f"Brief requires: {key}")
+        duration = data["duration_min"]
+        if (not isinstance(duration, list) or len(duration) != 2
+                or any(type(v) is not int for v in duration)
+                or not 5 <= duration[0] <= duration[1] <= 90):
+            raise HTTPException(422, "Duración inválida")
         if data["language"] not in ("es", "en"):
             raise HTTPException(422, "Language must be es or en")
     elif stage in ("concepts", "packaging"):
-        if len(data.get("options") or []) < 3 or not data.get("selected"):
+        if len(data.get("options") or []) != 3 or (approve and not data.get("selected")):
             raise HTTPException(422, "Three options and a selected option are required")
         ids = [str(option.get("id", "")) for option in data["options"] if isinstance(option, dict)]
-        if str(data["selected"]) not in ids:
+        if len(ids) != 3 or len(set(ids)) != 3 or not all(ids):
+            raise HTTPException(422, "Las tres opciones requieren identificadores distintos")
+        if data.get("selected") and str(data["selected"]) not in ids:
             raise HTTPException(422, "Selected option must exist")
     elif stage == "structure":
         if len(data.get("acts") or []) < 3:
@@ -138,7 +158,7 @@ def update_editorial(project_id: str, stage: str, body: StageUpdate):
     index = STAGE_IDS.index(stage)
     if index and not ed["stages"][STAGE_IDS[index-1]]["approved"]:
         raise HTTPException(409, "Approve the preceding stage first")
-    _validate(stage, body.data)
+    _validate(stage, body.data, approve=body.approve)
     if stage == "packaging":
         chosen_story = ed["stages"]["concepts"]["data"]
         concept_id = str(chosen_story.get("selected") or "")
@@ -160,12 +180,17 @@ def update_editorial(project_id: str, stage: str, body: StageUpdate):
         for later in STAGE_IDS[index+1:]:
             ed["stages"][later]["approved"] = False
             ed["stages"][later]["approved_at"] = None
-        p["story_plan_approved"] = False
-        p["script_approved"] = False
-        p["editorial_audit"] = {}
+        invalidate_production(p)
     if stage == "brief":
         p["language"] = body.data["language"]
-        p["target_duration_min"] = [int(body.data["duration_min"][0]), int(body.data["duration_min"][-1])]
+        p["target_duration_min"] = list(body.data["duration_min"])
+        p["target_words"] = round(sum(p["target_duration_min"]) / 2 * 135)
+        p["topic"] = body.data["premise"]
+    if body.approve and stage in ("concepts", "packaging"):
+        chosen = next(o for o in body.data["options"] if str(o["id"]) == str(body.data["selected"]))
+        p["title"] = chosen.get("title") or p["title"]
+        if stage == "concepts":
+            p["topic"] = chosen.get("premise") or p["topic"]
     if body.approve and index < len(STAGE_IDS)-1:
         ed["active_stage"] = STAGE_IDS[index+1]
     else:
@@ -188,9 +213,7 @@ def reopen_editorial(project_id: str, stage: str):
         ed["stages"][key]["approved"] = False
         ed["stages"][key]["approved_at"] = None
     ed["active_stage"] = stage
-    p["story_plan_approved"] = False
-    p["script_approved"] = False
-    p["editorial_audit"] = {}
+    invalidate_production(p)
     p["editorial"] = ed
     save_project(p)
     return {"editorial": ed}
@@ -244,7 +267,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         ),
         "structure": "Create 7-9 acts, each with title,start_min,end_min,events,viewer_reward. Honour requested duration and chosen hook, avoid filler.",
         "bible": "Make a coherent original story bible: setting,characters array (name,role,arc,visual),timeline,economics (numbers and cash sources logically reconciled),ending,continuity_risks. Distinguish narrative fiction from sourced facts.",
-        "visual": "Produce style modern_2d_animation, characters array with invariant 2D features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
+        "visual": "Produce style modern_2d_animation, characters array with invariant expressive 2D stickman features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
         "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
     }[stage]
     prompt = ("You are FrameFactory senior story editor, audience strategist, continuity supervisor and critical reviewer. "
@@ -347,8 +370,7 @@ def generate_editorial(project_id: str,stage: str,body: GenerateRequest):
         ed["stages"][later]["approved_at"]=None
     ed["active_stage"]=stage
     p["editorial"]=ed
-    p["editorial_audit"]={}
-    p["script_approved"]=False
+    invalidate_production(p)
     save_project(p)
     return {"editorial":ed,"generated":data}
 

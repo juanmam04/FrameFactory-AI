@@ -1,35 +1,60 @@
-"""Approved editorial workflow script adapter."""
+"""Generate a continuous script from the approved editorial decisions."""
 import json
 import os
 from openai import OpenAI
 from src.documentary.openai_key import require_openai_api_key
 from src.documentary.project import save_project
 
+
+def selected(data):
+    return next((o for o in data.get("options", []) if str(o.get("id")) == str(data.get("selected"))), {})
+
+
 def generate(project):
     from studio.editorial import current, STAGE_IDS
-    ed=current(project)
+    from src.documentary.script_service import save_edited_script
+    ed = current(project)
     if not all(ed["stages"][k]["approved"] for k in STAGE_IDS):
         raise ValueError("Editorial approvals missing")
-    data={k:ed["stages"][k]["data"] for k in STAGE_IDS}
-    lang=data["brief"]["language"]
-    acts=data["structure"]["acts"]
-    model=os.getenv("OPENAI_MODEL","gpt-4o-mini")
-    client=OpenAI(api_key=require_openai_api_key("Editorial script"))
-    output=[]
+    data = {k: ed["stages"][k]["data"] for k in STAGE_IDS}
+    acts = data["structure"]["acts"]
+    duration = data["brief"]["duration_min"]
+    target = round(sum(duration) / 2 * 135)
+    words_per_act = round(target / len(acts))
+    client = OpenAI(api_key=require_openai_api_key("Editorial script"))
+    output = []
     for i, act in enumerate(acts):
-        context={"act":act,"index":i+1,"total":len(acts),"brief":data["brief"],
-                 "narrative_bible":data["bible"],"selected_packaging":data["packaging"],
-                 "preceding_excerpt":output[-1][-1800:] if output else ""}
-        response=client.chat.completions.create(model=model,temperature=0.65,messages=[
-          {"role":"system","content":"Write one substantial act of an original fictional story in natural spoken "+("Spanish" if lang=="es" else "English")+". Respect chronology, numerical constraints, character identities, approved narrative perspective and the chosen hook. No filler or headings. Write approximately 350-500 words per act. Do not present fiction as historical fact."},
-          {"role":"user","content":json.dumps(context,ensure_ascii=False)}])
-        segment=(response.choices[0].message.content or "").strip()
-        if not segment: raise ValueError("Empty act")
+        context = {
+            "act": act, "index": i + 1, "total": len(acts),
+            "brief": data["brief"], "locked_story": selected(data["concepts"]),
+            "selected_packaging": selected(data["packaging"]),
+            "complete_structure": data["structure"], "narrative_bible": data["bible"],
+            "production_plan": data["production"],
+            "preceding_script": "\n\n".join(output),
+            "target_words_this_act": words_per_act,
+            "final_act": i == len(acts) - 1,
+        }
+        response = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=0.65,
+            messages=[{"role": "system", "content":
+                "Write one act of an original fictional story in natural spoken "
+                + ("Spanish" if data["brief"]["language"] == "es" else "English")
+                + f". Target {words_per_act} words for this act. Respect the locked story, chosen "
+                "hook, full chronology, financial constraints, character identities and approved POV. "
+                "Continue the preceding script without recap or repetition. No filler or headings. "
+                "Only the final act resolves the approved ending. Do not present fiction as fact."},
+                {"role": "user", "content": json.dumps(context, ensure_ascii=False)}])
+        segment = (response.choices[0].message.content or "").strip()
+        if not segment:
+            raise ValueError("Empty act; the previous script remains saved")
         output.append(segment)
-    script="\n\n".join(output)
-    project["script"]=script
-    project["script_approved"]=False
-    project["fact_check_status"]="pending"
-    project["editorial_script_quality"]={"word_count":len(script.split()),"requires_human_review":True}
+    script = "\n\n".join(output)
+    words = len(script.split())
+    if words < duration[0] * 110 or words > duration[1] * 165:
+        raise ValueError(f"El guion tiene {words} palabras y no alcanza la duración elegida. Reintentá; conservamos el anterior.")
+    project["target_words"] = target
+    project = save_edited_script(project, script)
+    project["editorial_audit"] = {}
+    project["editorial_script_quality"] = {"word_count": words, "requires_human_review": True}
     save_project(project)
     return project

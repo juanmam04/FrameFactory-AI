@@ -667,11 +667,13 @@ def create_app() -> FastAPI:
         if p.get("editorial"):
             from studio.editorial import current as editorial_current, STAGE_IDS
             ed = editorial_current(p)
-            story_ok = story_ok or all(ed["stages"][key]["approved"] for key in STAGE_IDS)
+            story_ok = all(ed["stages"][key]["approved"] for key in STAGE_IDS)
         if step == "script" and not story_ok:
             step = "story"
         past_script = step in {"flow", "voice", "music", "preview", "render", "publish", "subs", "images"}
-        if past_script and str(p.get("script") or "").strip() and not p.get("script_approved"):
+        if past_script and p.get("editorial") and (not story_ok or not p.get("script_approved")):
+            raise HTTPException(409, "Aprobá la preproducción y auditá y aprobá el guion antes de avanzar.")
+        if past_script and not p.get("editorial") and str(p.get("script") or "").strip() and not p.get("script_approved"):
             p["script_approved"] = True
             p["fact_check_status"] = "approved"
             set_checkpoint(p, "script_ready", True)
@@ -778,9 +780,6 @@ def create_app() -> FastAPI:
     def script_save(project_id: str, body: ScriptBody):
         try:
             p = save_edited_script(load_project(project_id), body.script or "")
-            if p.get("editorial"):
-                p["editorial_audit"] = {}
-                save_project(p)
             return {"project": _project_full(p)}
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
@@ -791,6 +790,9 @@ def create_app() -> FastAPI:
             # Approve only — do NOT build Flow pack here (user generates separately).
             candidate = load_project(project_id)
             if candidate.get("editorial"):
+                from studio.editorial import current, STAGE_IDS
+                if not all(current(candidate)["stages"][k]["approved"] for k in STAGE_IDS):
+                    raise HTTPException(409, "Aprobá todas las etapas de preproducción primero.")
                 audit = candidate.get("editorial_audit") or {}
                 if audit.get("verdict") != "pass":
                     raise HTTPException(409, "El guion necesita auditoría editorial aprobada antes de pasar a producción.")
@@ -1801,6 +1803,8 @@ def create_app() -> FastAPI:
 
 
 def _flow_payload(project_id: str, p: dict[str, Any]) -> dict[str, Any]:
+    if p.get("editorial") and not (p.get("checkpoints") or {}).get("flow_pack_ready"):
+        raise ValueError("Generá de nuevo el plan de imágenes para el guion aprobado actual.")
     try:
         from src.documentary import cloud_sync
 
@@ -1979,6 +1983,10 @@ def _project_full(p: dict[str, Any]) -> dict[str, Any]:
         "check_story": _check_story_public(p),
         "check_story_approved": bool(p.get("check_story_approved")),
         "script": p.get("script") or "",
+        "editorial": p.get("editorial") or {},
+        "editorial_audit": p.get("editorial_audit") or {},
+        "language": p.get("language"),
+        "target_duration_min": p.get("target_duration_min"),
         "script_approved": bool(p.get("script_approved")),
         "script_warnings": p.get("script_warnings") or [],
         "script_quality": p.get("script_quality") or {},

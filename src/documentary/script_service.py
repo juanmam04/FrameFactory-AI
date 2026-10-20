@@ -297,6 +297,26 @@ def save_edited_script(project: dict[str, Any], script: str) -> dict[str, Any]:
         from src.documentary.formats.check_als.script import save_check_script
 
         return save_check_script(project, script)
+    if project.get("editorial"):
+        # Fictional POV scripts must not pass through the nonfiction/third-person validator.
+        text = (script or "").strip()
+        if len(text.split()) < 20:
+            raise ValueError("El guion está vacío o es demasiado corto.")
+        if text == project.get("script"):
+            return project
+        project["script"] = text
+        project["script_approved"] = False
+        project["fact_check_status"] = "pending"
+        project["editorial_audit"] = {}
+        project["ui_step"] = "script"
+        for key in ("flow_pack_ready", "images_imported", "voice_ready", "assembly_ready", "render_ready", "captions_ready"):
+            set_checkpoint(project, key, False)
+        set_checkpoint(project, "script_ready", True)
+        from src.documentary.voice_script_sync import invalidate_voice_for_script_change
+        invalidate_voice_for_script_change(project, reason="editorial script changed")
+        (project_dir(str(project["id"])) / "script/script.txt").write_text(text, encoding="utf-8")
+        save_project(project)
+        return project
     script = strip_essay_tail(strip_metadata_leaks((script or "").strip()))
     if not script:
         raise ValueError("Script is empty.")
