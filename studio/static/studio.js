@@ -1087,9 +1087,8 @@ function renderHome() {
           "Historias originales para tus canales en español e inglés. Elegí una propuesta y desarrollala hasta el video final."
         }</p>
         <p class="lead ws-line" style="font-size:0.9rem;opacity:.85">
-          Datos: <code>${esc((b.workspace && b.workspace.projects_dir) || "projects/")}</code>
           ${b.workspace && b.workspace.supabase
-            ? " · Supabase listo (Subir / Bajar entre PCs)"
+            ? (b.workspace.sync_note ? "Sincronización pendiente. Conservá este navegador para recuperar tus decisiones." : "Conexión a la nube configurada.")
             : b.workspace && b.workspace.synced
               ? " · sync carpeta activo"
               : " · solo esta PC"}
