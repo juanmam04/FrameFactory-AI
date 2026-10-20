@@ -346,3 +346,13 @@ def test_acquisition_detection_does_not_gate_other_pov_genres():
     from studio.story_architect import is_acquisition
     assert is_acquisition({"title":"POV: Comprás un gimnasio por US$1"})
     assert not is_acquisition({"title":"POV: Conseguís un empleo extraordinario"})
+
+def test_retry_uses_failed_act_text_and_editor_feedback():
+    import inspect
+    from studio.editorial_script import generate
+    source=inspect.getsource(generate)
+    assert 'context["rejected_draft_to_rewrite"] = rejected_draft if attempt else ""' in source
+    assert 'rejected_draft = segment' in source
+    assert 'feedback = list(decision.get("issues") or [])' in source
+    assert 'feedback.append(str(decision["revision_instructions"]))' in source
+    assert 'rewrite THAT specific draft' in source
