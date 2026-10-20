@@ -271,3 +271,19 @@ def test_agent_appears_in_both_deployment_frontends():
         src=Path(asset).read_text(encoding="utf-8")
         assert 'agent/chat' not in src or '"chat"' in src
         assert '"revise"' in src and '"rule"' in src
+
+def test_agent_applies_opening_change_only_after_explicit_action(monkeypatch):
+    from studio import creative_agent as agent
+    import src.documentary.script_service as service
+    old=("Entrás al gimnasio ya convertido en dueño. "*110).strip()
+    project={"id":"gym-test","title":"POV: Comprás gimnasio","topic":"Gimnasio","script":old,
+        "creative_rules":["Mostrá la adquisición antes de entrar."],"editorial":{"stages":{}}}
+    monkeypatch.setattr(agent,"_load",lambda pid,snapshot=None:project)
+    monkeypatch.setattr(agent,"_llm",lambda *args,**kw:"Descubrís el anuncio. Te ofrecen el gimnasio por US$1. Aceptás las llaves y firmás el trato. "*85)
+    monkeypatch.setattr(agent,"save_project",lambda p:None)
+    monkeypatch.setattr(service,"save_edited_script",lambda p,script:{**p,"script":script,"script_approved":False,"editorial_audit":{}})
+    result=agent.revise_with_agent("gym-test",agent.AgentRevision(
+        instruction="Mostrá cómo se compra el gimnasio.",scope="opening"))
+    assert result["applied"]
+    assert "Te ofrecen el gimnasio por US$1" in result["script"]
+    assert project["script"]==old  # Server loads and returns a new updated object.
