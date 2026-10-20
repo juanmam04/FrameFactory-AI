@@ -144,3 +144,24 @@ def test_editorial_visual_plan_preserves_approved_stickman_cast(client):
     assert plan['visual_bible']['characters'][0]['name'] == 'Ana'
     assert 'stickman' in plan['visual_bible']['global_style']
     assert load_visual_plan(pid)['visual_bible']['characters'][0]['name'] == 'Ana'
+
+
+def test_new_editorial_project_syncs_real_id(client, monkeypatch):
+    from src.documentary import cloud_sync
+    pushed = []
+    monkeypatch.setattr(cloud_sync, 'configured', lambda:True)
+    monkeypatch.setattr(cloud_sync, 'push_paths', lambda pid, paths:pushed.append((pid,paths)))
+    monkeypatch.setattr(cloud_sync, 'push_project', lambda pid, **kwargs:pushed.append((pid,['all'])))
+    url = create(client)
+    pid = url.split('/')[-1]
+    assert (pid,['project.json']) in pushed
+    assert not any(row[0]=='editorial' for row in pushed)
+
+
+def test_cloud_outage_does_not_lose_created_project(client, monkeypatch):
+    from src.documentary import cloud_sync
+    from src.documentary.project import load_project
+    monkeypatch.setattr(cloud_sync, 'configured', lambda:True)
+    monkeypatch.setattr(cloud_sync, 'push_paths', lambda *a:(_ for _ in ()).throw(RuntimeError('unavailable')))
+    url = create(client)
+    assert load_project(url.split('/')[-1])['editorial']['stages']['brief']['approved']
