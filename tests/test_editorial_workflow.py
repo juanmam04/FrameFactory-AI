@@ -174,8 +174,49 @@ def test_edited_forms_and_404_recovery_cover_every_stage():
     from pathlib import Path
     code=Path("public/assets/creative-studio.js").read_text(encoding="utf8")
     assert 'function details(data)' in code
-    assert 'function restoreMissing(id)' in code
+    assert 'project_snapshot:snapshot' in code
     assert 'async function editorialRequest(' in code
     assert 'editorialRequest(active.id,"/"+step+"/generate"' in code
     assert 'editorialRequest(active.id,"/"+step,"PUT"' in code
     assert 'JSON.stringify(value,null,2)' not in code
+
+def test_missing_project_recovers_inside_same_api_request(monkeypatch):
+    from studio import editorial
+    stored={}
+    def load(pid):
+        if pid not in stored: raise FileNotFoundError(pid)
+        return stored[pid]
+    monkeypatch.setattr(editorial,"load_project",load)
+    monkeypatch.setattr(editorial,"save_project",lambda p:stored.update({p["id"]:p}))
+    original=editorial.fresh()
+    original["stages"]["brief"]["data"]={"language":"es","premise":"Historia","narration":"segunda persona","tone":"cine","duration_min":[20,25]}
+    recovered=editorial._load("same-video",{"id":"same-video","title":"POV: una empresa","editorial":original})
+    assert recovered["id"]=="same-video"
+    assert recovered["topic"]=="Historia"
+    assert editorial._load("same-video")["editorial"]["stages"]["brief"]["data"]["language"]=="es"
+    from fastapi import HTTPException
+    try:
+        editorial._load("other-video",{"id":"wrong-video","title":"Wrong","editorial":original})
+        assert False
+    except HTTPException as err:
+        assert err.status_code==422
+
+
+def test_bible_visual_production_approve_routes(monkeypatch):
+    from studio import editorial
+    project={"id":"sample","title":"POV: un cine","topic":"Cine","editorial":editorial.fresh()}
+    stages=project["editorial"]["stages"]
+    for key in ("brief","concepts","packaging","structure"):
+        stages[key]["approved"]=True
+    monkeypatch.setattr(editorial,"_load",lambda pid,snapshot=None:project)
+    monkeypatch.setattr(editorial,"save_project",lambda p:None)
+    payloads={
+       "bible":{"setting":{"city":"Roma"},"characters":[{"name":"Luz"}],"timeline":[{"day":1}],"economics":{"risk":"grave"},"ending":{"resolution":"reabre"}},
+       "visual":{"style":"modern_2d_animation","characters":[{"name":"Luz"}],"locations":[{"name":"Cine"}]},
+       "production":{"script_plan":{"opening":"Empieza"},"continuity_checks":[{"check":"mismo traje"}]}
+    }
+    for key,payload in payloads.items():
+        result=editorial.update_editorial("sample",key,editorial.StageUpdate(data=payload,approve=True))
+        assert result["editorial"]["stages"][key]["approved"] is True
+    assert result["ready_for_script"] is True
+    assert project["ui_step"]=="script"
