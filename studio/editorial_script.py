@@ -42,6 +42,19 @@ def generate(project):
                 + f". Target {words_per_act} words for this act. Respect the locked story, chosen "
                 "hook, full chronology, financial constraints, character identities and approved POV. "
                 "Continue the preceding script without recap or repetition. No filler or headings. "
+                "For every consequential business turnaround decision, dramatize the full causal chain: "
+                "(1) a specific diagnosed business problem using concrete numbers or evidence, "
+                "(2) at least two plausible alternatives and their tradeoffs, "
+                "(3) the protagonist's strategic choice and why it is preferable under constraints, "
+                "(4) practical execution: negotiations, operational actions, people, contracts and timeline, "
+                "(5) measurable financial/operational result AND unintended consequences. "
+                "Show smart decisions through scenes and causal actions, NEVER empty claims like "
+                "'improved management', 'worked hard', 'secured funding', 'restructured debt' or "
+                "'saved the company' without showing exactly HOW. Some choices should fail and "
+                "force a revised strategy. Do not invent convenient last-minute investors. "
+                "A thirty-day deadline may yield a credible standstill, NOT miraculous complete "
+                "repayment of impossible debts; long-term recovery requires time. "
+                "Make the protagonist's decision logic legible without lecturing or dumping accounting. "
                 "Only the final act resolves the approved ending. Do not present fiction as fact."},
                 {"role": "user", "content": json.dumps(context, ensure_ascii=False)}])
         segment = (response.choices[0].message.content or "").strip()
