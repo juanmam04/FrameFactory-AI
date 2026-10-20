@@ -22,10 +22,11 @@ def generate(project):
     target = round(sum(duration) / 2 * 135)
     words_per_act = round(target / len(acts))
     client = OpenAI(api_key=require_openai_api_key("Editorial script"))
-    from studio.story_architect import architecture, evaluate, local_warnings
+    from studio.story_architect import architecture, evaluate, local_warnings, is_acquisition, final_review
     plan = architecture(client, data, project.get("creative_rules") or [])
     output = []
     reviews = []
+    acquired = is_acquisition(selected(data["concepts"]))
     for i, act in enumerate(acts):
         context = {
             "act": act, "architecture_act": plan["acts"][i],
@@ -71,7 +72,7 @@ def generate(project):
             if not segment:
                 raise ValueError("Acto vacío. Se conserva el guion anterior.")
             decision = evaluate(client,plan=plan,act_number=i,candidate=segment,previous=output,brief=data["brief"],rules=project.get("creative_rules") or [])
-            local = local_warnings(segment,first=i==0,acquisition=any(w in str(selected(data["concepts"])).lower() for w in ("compr","adquir","buy","purchase","us$1")),other_acts=output)
+            local = local_warnings(segment,first=i==0,acquisition=acquired,other_acts=output)
             if local: decision["issues"] = list(decision.get("issues") or []) + local
             reviews.append({"act":i+1,"attempt":attempt+1,**decision})
             if decision.get("verdict")=="pass" and not local: break
@@ -82,10 +83,18 @@ def generate(project):
     words = len(script.split())
     if words < duration[0] * 110 or words > duration[1] * 165:
         raise ValueError(f"El guion tiene {words} palabras y no alcanza la duración elegida. Reintentá; conservamos el anterior.")
+    # A series of individually acceptable acts can still be an incoherent whole.
+    # Block publishing a bad complete story before overwriting the previous script.
+    final_quality = final_review(client, plan=plan, script=script, acts=output,
+                                 brief=data["brief"], rules=project.get("creative_rules") or [])
+    if final_quality["verdict"] != "pass":
+        raise ValueError("El guion completo no pasó el control narrativo: "
+                         + str(final_quality.get("issues") or [])[:450]
+                         + ". Se conservó el guion anterior.")
     project["target_words"] = target
     project["narrative_architecture"] = plan
     project = save_edited_script(project, script)
     project["editorial_audit"] = {}
-    project["editorial_script_quality"] = {"word_count": words, "requires_human_review": True, "act_reviews": reviews, "architecture_complete": True}
+    project["editorial_script_quality"] = {"word_count": words, "requires_human_review": True, "act_reviews": reviews, "architecture_complete": True, "final_review": final_quality}
     save_project(project)
     return project

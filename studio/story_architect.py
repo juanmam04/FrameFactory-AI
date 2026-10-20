@@ -52,17 +52,39 @@ def local_warnings(script,*,first=False,acquisition=False,other_acts=()):
     for phrase in BAD_PHRASES:
         if lower.count(phrase)>=3: warnings.append("Frase repetitiva: "+phrase)
     # Detect long copied passages between acts, not just exact single phrases.
-    words=re.findall(r"\\w+",lower)
+    words=re.findall(r"[a-záéíóúüñ0-9]+",lower)
     if other_acts and len(words)>110:
         sequences={" ".join(words[i:i+18]) for i in range(0,len(words)-17,5)}
         for previous in other_acts[-3:]:
-            prior=re.findall(r"\\w+",previous.casefold())
+            prior=re.findall(r"[a-záéíóúüñ0-9]+",previous.casefold())
             older={" ".join(prior[i:i+18]) for i in range(0,len(prior)-17,5)}
-            if len(sequences.intersection(older))>=3:
+            if len(sequences.intersection(older))>=1:
                 warnings.append("Reutiliza pasajes largos de un acto anterior")
                 break
     if len(script.split())<150: warnings.append("Acto demasiado corto")
     return warnings
+
+def is_acquisition(story):
+    """Avoid requiring a business purchase in unrelated POV stories."""
+    text=" ".join(str(story.get(k,"")) for k in ("title","premise","hook")).casefold()
+    return any(word in text for word in ("compr", "adquir", "compra", "purchase", "bought", "buy a ", "por us$1", "por $1", "por un dólar", "for $1"))
+
+def final_review(client,*,plan,script,acts,brief,rules):
+    """Whole-story continuity check; cannot mark the script ready on a failed verdict."""
+    result=model_json(client,
+      "You are the FINAL independent editor of an entertaining fictional POV film script. "
+      "Return JSON object with verdict exactly 'pass' or 'revise', issues array and "
+      "revision_instructions string. Do not just praise it. Reject skipped transaction/"
+      "keys/price when this story is an acquisition, repeated events across ACTS, contradictions "
+      "in character motivations, no irreversible progress, missing resolution of the opening "
+      "challenge, recycled community events, empty motivational dialogue, and fabricated "
+      "timelines conflicting with the approved outline. Fiction may be extraordinary; "
+      "evaluate gripping storytelling and its OWN internal consistency, not MBA realism.",
+      {"locked_story":plan.get("locked_story"),"approved_acts":plan.get("acts"),
+       "script":script[:45000],"act_texts":acts,"brief":brief,"rules":rules})
+    if result.get("verdict") not in ("pass","revise"):
+        raise ValueError("La revisión final devolvió un veredicto inválido.")
+    return result
 
 def evaluate(client,*,plan,act_number,candidate,previous,brief,rules):
     payload={"act":plan["acts"][act_number],"previous_acts":previous[-3:],
