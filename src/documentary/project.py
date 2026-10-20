@@ -204,7 +204,17 @@ def save_project(data: dict[str, Any]) -> Path:
     data = deepcopy(data)
     data["updated_at"] = _utc_now()
     path = root / "project.json"
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    import tempfile
+    fd, temporary = tempfile.mkstemp(prefix=".project-", suffix=".json", dir=root)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps(data, ensure_ascii=False, indent=2))
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
     return path
 
 

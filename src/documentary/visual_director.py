@@ -10,7 +10,7 @@ from src.documentary.project import append_log, project_dir, save_project
 from src.documentary.story_bible import build_story_bible
 from src.frame_director import beats_a_frame_specs
 from src.frame_prompt_builder import prompt_desde_frame_spec
-from src.scene_splitter import dividir_en_escenas
+from src.scene_splitter import Escena, dividir_en_escenas
 from src.visual_beats import generar_beats_para_escenas
 
 
@@ -36,7 +36,7 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
         visual = editorial_current(project)["stages"]["visual"]["data"]
         if visual.get("style") == "modern_2d_animation":
             style_hint = (
-                "Modern clean 2D animated illustration, expressive stylized 2D cartoon characters, "
+                "Modern clean 2D animated illustration, expressive 2D stickman characters, "
                 "consistent character reference silhouettes and outfits, cinematic illustrated environments, "
                 "deliberate framing, flat shading, adult visual storytelling, NO photorealistic people, "
                 "NO 3D, NO live action. " + json.dumps(visual, ensure_ascii=False)[:900]
@@ -67,7 +67,10 @@ def analyze_visuals(project: dict[str, Any], *, use_llm: bool = True, max_shots:
                 )
                 escenas = [escenas[i] for i in idxs]
             else:
-                escenas = escenas[:max_shots]
+                # Merge contiguous scenes to preserve every word, including the ending.
+                groups = [escenas[i*len(escenas)//max_shots:(i+1)*len(escenas)//max_shots] for i in range(max_shots)]
+                escenas = [Escena(i+1, " ".join(e.texto for e in group), sum(e.duracion_segundos for e in group))
+                           for i, group in enumerate(groups)]
         story = project.get("story_plan") if isinstance(project.get("story_plan"), dict) else {}
         protagonists = [
             str(c.get("name") or "").strip()

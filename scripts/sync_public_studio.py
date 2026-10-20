@@ -6,6 +6,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 pairs = [
+    (ROOT / "studio/static/creative-studio.js", ROOT / "public/assets/creative-studio.js"),
+    (ROOT / "studio/static/creative-studio.css", ROOT / "public/assets/creative-studio.css"),
     (ROOT / "studio" / "templates" / "index.html", ROOT / "public" / "index.html"),
     (ROOT / "studio" / "static" / "studio.css", ROOT / "public" / "assets" / "studio.css"),
     (ROOT / "studio" / "static" / "studio.js", ROOT / "public" / "assets" / "studio.js"),

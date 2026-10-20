@@ -1,4 +1,4 @@
-import { renderCreativeStudio } from "./creative-studio.js?v=20261019-fixed";
+import { renderCreativeStudio } from "./creative-studio.js?v=20261019";
 document.addEventListener("gesturestart", (e) => e.preventDefault());
 document.addEventListener("gesturechange", (e) => e.preventDefault());
 document.addEventListener(
@@ -1053,6 +1053,7 @@ function render() {
   const v = state.view;
   if (v === "home") return renderHome();
   if (v === "ideas") return renderCreativeStudio(stage(), openProject);
+  if (v === "editorial") return renderCreativeStudio(stage(), openProject);
   if (v === "library") return renderLibrary();
   if (v === "project") return renderProject();
 }
@@ -1981,7 +1982,9 @@ function paintCheckStory(ws, p) {
     .join("");
   const flagBits = flags.length
     ? flags.map((f) => `<div class="notice bad">[${esc(f.code)}] ${esc(f.detail || "")} ${f.beat_id ? "· " + esc(f.beat_id) : ""}</div>`).join("")
-    : `<div class="notice ok">Sin flags de calidad.</div>`;
+    : `<div class="notice ok">No se detectaron inconsistencias. Revisá también si la historia engancha.</div>`;
+  const viewerBits = (quality.viewer_review?.findings || [])
+    .map((f) => `<div class="notice">${esc(f.message)}<ul>${(f.evidence || []).map((e) => `<li>${esc(e)}</li>`).join("")}</ul></div>`).join("");
   const loopBits = loops.length
     ? loops
         .map(
@@ -2093,6 +2096,7 @@ function paintCheckStory(ws, p) {
       </details>
       <p class="kicker">Quality flags</p>
       ${flagBits}
+      ${viewerBits}
     </div>`;
 
   $("#gen-check-story").onclick = async () => {
@@ -2243,7 +2247,8 @@ function paintScript(ws, p) {
   const plan = p.story_plan || {};
   const planReady = Boolean(plan.central_story) && Array.isArray(plan.beats) && plan.beats.length > 0;
   const checkApproved = (p.content_format === "check_als" || p.mode === "check_als") && p.check_story_approved;
-  if (!p.story_plan_approved && !checkApproved) {
+  const editorialApproved = p.editorial?.stages && Object.values(p.editorial.stages).every(s => s.approved);
+  if (!p.story_plan_approved && !checkApproved && !editorialApproved) {
     ws.innerHTML = `
       <div class="panel workspace">
         <div class="notice">Falta marcar el Story Plan como aprobado (no es lo mismo que guardar Research).</div>
@@ -2260,7 +2265,7 @@ function paintScript(ws, p) {
                </div>`
         }
         <div class="field">
-          <label>Narration (~${tw} words · flexible 1800–2200)</label>
+          <label>Narration (~${tw} palabras)</label>
           <textarea id="script" class="script-box" disabled>${esc(p.script)}</textarea>
         </div>
       </div>`;
@@ -2288,15 +2293,18 @@ function paintScript(ws, p) {
   }
   ws.innerHTML = `
     <div class="panel workspace">
+      ${p.editorial_audit?.verdict ? `<div class="notice"><strong>Auditoría: ${esc(p.editorial_audit.verdict)}</strong><p>${esc(JSON.stringify(p.editorial_audit.recommended_fixes || p.editorial_audit.issues || []))}</p></div>` : ""}
       ${(p.script_warnings || []).length ? (p.script_warnings || []).map((w) => `<div class="notice">${esc(w)}</div>`).join("") : ""}
+      ${(p.viewer_review?.findings || []).length ? `<details class="notice"><summary>Revisión del guion como espectador</summary>${p.viewer_review.findings.map((f) => `<p>${esc(f.message)}</p><ul>${(f.evidence || []).map((e) => `<li>${esc(e)}</li>`).join("")}</ul>`).join("")}<p>Son señales para revisar el texto. Leé también el arranque, los giros y el cierre; esta revisión no predice visitas.</p></details>` : ""}
       <div class="actions">
         <button class="btn btn-accent" id="gen-script">Generate script</button>
         <button class="btn btn-ghost" id="save-script">Save edits</button>
+        ${p.editorial?.stages ? '<button class="btn btn-ghost" id="audit-script">Auditar guion</button>' : ''}
         <button class="btn btn-primary" id="approve">Seguir a imágenes</button>
       </div>
       <p class="lead" style="margin-top:0.5rem">Cuando el guion te cierre, seguís a las imágenes. Ahí se arma el plan.</p>
       <div class="field">
-        <label>Narration (~${tw} words · flexible 1800–2200)</label>
+        <label>Narration (~${tw} palabras)</label>
         <textarea id="script" class="script-box">${esc(p.script)}</textarea>
       </div>
     </div>`;
@@ -2329,6 +2337,18 @@ function paintScript(ws, p) {
       runGenScript();
     }
   }
+  $("#audit-script")?.addEventListener("click", async () => {
+    try {
+      const saved = await api(`/api/projects/${encodeURIComponent(p.id)}/script`, {
+        method: "PUT", body: JSON.stringify({script: $("#script").value}),
+      });
+      state.project = saved.project;
+      const result = await withBusy("Auditando guion…", () => api(`/api/projects/${encodeURIComponent(p.id)}/editorial/audit`, {method: "POST", timeoutMs: 290000}));
+      state.project.editorial_audit = result.audit;
+      toast(result.audit.verdict === "pass" ? "Auditoría aprobada" : "Revisá las correcciones de la auditoría");
+      renderProject();
+    } catch(e) { toast(e.message); }
+  });
   $("#save-script").onclick = async () => {
     try {
       const data = await api(`/api/projects/${encodeURIComponent(p.id)}/script`, {
@@ -2343,10 +2363,12 @@ function paintScript(ws, p) {
   };
   $("#approve").onclick = async () => {
     try {
-      await api(`/api/projects/${encodeURIComponent(p.id)}/script`, {
-        method: "PUT",
-        body: JSON.stringify({ script: $("#script").value }),
-      });
+      if ($("#script").value !== state.project.script) {
+        const saved = await api(`/api/projects/${encodeURIComponent(p.id)}/script`, {
+          method: "PUT", body: JSON.stringify({ script: $("#script").value }),
+        });
+        state.project = saved.project;
+      }
       const data = await withBusy("Aprobando guion…", () =>
         api(`/api/projects/${encodeURIComponent(p.id)}/script/approve`, { method: "POST" })
       );
