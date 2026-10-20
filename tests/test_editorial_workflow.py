@@ -324,3 +324,25 @@ def test_new_writer_requires_independent_review_before_save():
     assert "evaluate(client" in source
     assert "for attempt in range(3)" in source
     assert "El acto " in source and "Se conservó el guion anterior" in source
+
+def test_repeated_long_passages_between_acts_are_detected():
+    from studio.story_architect import local_warnings
+    repeated=("Entrás al gimnasio y Clara te dice que todas las máquinas están rotas. "
+              "Organizás un evento comunitario y contratás un influencer. " * 20)
+    warnings=local_warnings(repeated,other_acts=[repeated])
+    assert any("pasajes largos" in w for w in warnings)
+
+
+def test_final_review_rejects_full_story_even_if_acts_pass(monkeypatch):
+    from studio import story_architect as arch
+    monkeypatch.setattr(arch,"model_json",lambda *a,**kw:{"verdict":"revise",
+                       "issues":["Se repite el mismo evento y nunca resuelve el desafío"]})
+    result=arch.final_review(object(),plan={"acts":[]},script="Evento repetido",
+                            acts=["Acto 1","Acto 2"],brief={"language":"es"},rules=[])
+    assert result["verdict"]=="revise"
+
+
+def test_acquisition_detection_does_not_gate_other_pov_genres():
+    from studio.story_architect import is_acquisition
+    assert is_acquisition({"title":"POV: Comprás un gimnasio por US$1"})
+    assert not is_acquisition({"title":"POV: Conseguís un empleo extraordinario"})
