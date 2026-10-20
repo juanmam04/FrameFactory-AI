@@ -287,3 +287,40 @@ def test_agent_applies_opening_change_only_after_explicit_action(monkeypatch):
     assert result["applied"]
     assert "Te ofrecen el gimnasio por US$1" in result["script"]
     assert project["script"]==old  # Server loads and returns a new updated object.
+
+def test_story_architecture_rejects_missing_events_and_wrong_act_count(monkeypatch):
+    import studio.story_architect as arch
+    data={"structure":{"acts":[{"title":"Compra"},{"title":"Crisis"},{"title":"Victoria"}]},
+          "concepts":{"options":[{"id":"A","title":"POV: Comprás un gimnasio por US$1"}],"selected":"A"},
+          "packaging":{"options":[{"id":"A","title":"POV: Un gimnasio por US$1"}],"selected":"A"},
+          "bible":{},"brief":{"language":"es","narration":"segunda persona"}}
+    monkeypatch.setattr(arch,"model_json",lambda *args,**kw:{"acts":[{"new_events":["Compra"],"irreversible_change":"Llaves"}]})
+    try:
+        arch.architecture(object(),data,[])
+        assert False
+    except ValueError as e:
+        assert "plan completo" in str(e)
+    monkeypatch.setattr(arch,"model_json",lambda *args,**kw:{"acts":[{"new_events":["Compra"],"irreversible_change":"Llaves"},
+                                                                    {"new_events":["Crisis"],"irreversible_change":"Cierre"},
+                                                                    {"new_events":["Final"],"irreversible_change":"Rescate"}]})
+    plan=arch.architecture(object(),data,["Mostrar la compra"])
+    assert len(plan["acts"])==3
+    assert plan["acts"][0]["approved_outline_act"]["title"]=="Compra"
+
+
+def test_local_script_gate_flags_motivational_loops_and_empty_acquisition():
+    from studio.story_architect import local_warnings
+    repetitive=("Entrás al gimnasio. La presión aumenta. No podemos rendirnos. "*45)
+    issues=local_warnings(repetitive,first=True,acquisition=True)
+    assert any("adquisición" in x for x in issues)
+    assert any("Frase repetitiva" in x for x in issues)
+
+
+def test_new_writer_requires_independent_review_before_save():
+    import inspect
+    from studio.editorial_script import generate
+    source=inspect.getsource(generate)
+    assert "architecture(client" in source
+    assert "evaluate(client" in source
+    assert "for attempt in range(3)" in source
+    assert "El acto " in source and "Se conservó el guion anterior" in source
