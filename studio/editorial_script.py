@@ -40,8 +40,12 @@ def generate(project):
             "permanent_creative_rules": project.get("creative_rules") or [],
             "final_act": i == len(acts) - 1,
         }
+        rejected_draft = ""
+        feedback = []
         for attempt in range(3):
-            context["revision_feedback"] = reviews[-1].get("issues", []) if attempt and reviews else []
+            context["revision_feedback"] = feedback
+            context["rejected_draft_to_rewrite"] = rejected_draft if attempt else ""
+            context["revision_mode"] = "Rewrite rejected draft and correct every issue" if attempt else "First draft"
             response = client.chat.completions.create(
             model=os.getenv("FRAMEFACTORY_WRITER_MODEL", os.getenv("OPENAI_MODEL", "gpt-4o-mini")), temperature=0.65,
             messages=[{"role": "system", "content":
@@ -49,7 +53,9 @@ def generate(project):
                 + ("Spanish" if data["brief"]["language"] == "es" else "English")
                 + f". Target {words_per_act} words for this act. Respect the locked story, chosen "
                 "hook, full chronology, financial constraints, character identities and approved POV. "
-                "Continue the preceding script without recap or repetition. No filler or headings. "
+                 "Continue the preceding script without recap or repetition. No filler or headings. "
+                 "When rejected_draft_to_rewrite is provided, rewrite THAT specific draft, fixing " 
+                "every revision_feedback issue while preserving useful scenes. Do not just repeat it. "
                 "ENTERTAINMENT FIRST. This is a heightened fictional adventure told as POV, not an "
                 "MBA lecture or a realistic case study. Open major scenes with dramatic events, "
                 "unexpected setbacks and a difficult choice. Show HOW the protagonist actually "
@@ -60,7 +66,7 @@ def generate(project):
                 "overexplain accountancy, insist on mundane financing rules or diminish extraordinary "
                 "events to satisfy real-world plausibility. Keep character goals, prior events and "
                 "established story facts consistent. Avoid empty montage summaries of 'worked hard'. "
-                "In act ONE of an acquisition story, show how the protagonist hears about the deal, "
+                 "Only for stories about acquiring a business, in act ONE show how the protagonist hears about the deal, "
                 "why the previous owner hands over the business for one dollar, the offer, "
                 "acceptance, key handover, hidden problems and deadline BEFORE the first arrival. "
                 "Never start inside a business as owner without showing the actual acquisition. "
@@ -75,6 +81,11 @@ def generate(project):
             local = local_warnings(segment,first=i==0,acquisition=acquired,other_acts=output)
             if local: decision["issues"] = list(decision.get("issues") or []) + local
             reviews.append({"act":i+1,"attempt":attempt+1,**decision})
+            if decision.get("verdict")!="pass" or local:
+                rejected_draft = segment
+                feedback = list(decision.get("issues") or [])
+                if decision.get("revision_instructions"):
+                    feedback.append(str(decision["revision_instructions"]))
             if decision.get("verdict")=="pass" and not local: break
             if attempt==2:
                 raise ValueError("El acto "+str(i+1)+" no superó la revisión narrativa: "+str(decision.get("issues") or [])[:260]+". Se conservó el guion anterior.")
