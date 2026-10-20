@@ -75,6 +75,21 @@ def editorial_project_list():
 
 @router.post("/editorial/create")
 def editorial_project_create(body: EditorialCreate):
+    # Also recover reusable rules from previously saved/synced productions.
+    # This avoids making permanent feedback depend solely on one browser.
+    remembered_rules = []
+    try:
+        from src.documentary import cloud_sync
+        if cloud_sync.configured():
+            cloud_sync.pull_home_index(timeout_sec=5.0)
+        for existing in list_projects():
+            if existing.get("editorial"):
+                remembered_rules.extend(existing.get("creative_rules") or [])
+    except Exception:
+        pass
+    shared_rules = list(dict.fromkeys(
+        str(rule).strip()[:700] for rule in [*remembered_rules, *body.creative_rules]
+        if str(rule).strip()))[-35:]
     brief=body.model_dump(exclude={"title", "creative_rules"})
     _validate("brief",brief)
     if len(body.duration_min)!=2 or not 5<=body.duration_min[0]<=body.duration_min[1]<=90:
@@ -89,7 +104,7 @@ def editorial_project_create(body: EditorialCreate):
     ed["stages"]["brief"]={"data":brief,"approved":True,"approved_at":datetime.now(timezone.utc).isoformat()}
     ed["active_stage"]="concepts"
     p["editorial"]=ed
-    p["creative_rules"]=[str(rule)[:700] for rule in body.creative_rules if str(rule).strip()][:35]
+    p["creative_rules"]=shared_rules
     p["target_words"]=words
     save_project(p)
     # This route has no project ID in its URL; middleware cannot sync it by regex.
