@@ -140,3 +140,42 @@ def test_packaging_uses_same_story_but_alternative_titles():
     assert "title B sells the immediate 30-day countdown" in source
     assert "concept_key in keys" in source
     assert "retry_messages = messages +" in source
+
+def test_generated_bible_visual_and_production_work_with_wrappers(monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import studio.editorial as editorial
+    import src.documentary.openai_key as keys
+    import openai
+    ed=editorial.fresh()
+    ed["stages"]["brief"]["data"]={"language":"es","premise":"Rescatar un negocio","duration_min":[20,25]}
+    ed["stages"]["concepts"]["data"]={"options":[{"id":"A","title":"POV: Salvas restaurantes","premise":"Restaurantes"}],"selected":"A"}
+    ed["stages"]["packaging"]["data"]={"options":[{"id":"A","title":"POV: US$1","hook":"Arranque"}],"selected":"A"}
+    project={"id":"test","topic":"Restaurantes","editorial":ed}
+    responses={
+      "bible":{"narrative_bible":{"setting":{"location":"Ciudad"},"characters":[{"name":"Prota"}],"timeline":[{"day":"1"}],"economics":{"debt":"enorme"},"ending":{"resolution":"victoria"}}},
+      "visual":{"visual_bible":{"style":"modern_2d_animation","characters":[{"name":"Prota"}],"locations":[{"name":"Local"}]}},
+      "production":{"production_plan":{"script_plan":{"opening":"Shock"},"continuity_checks":[{"check":"Todos los locales"}]}}
+    }
+    monkeypatch.setattr(keys,"require_openai_api_key",lambda *_:"dummy")
+    for stage,payload in responses.items():
+        class FakeClient:
+            def __init__(self,**kwargs): self.chat=SimpleNamespace(completions=SimpleNamespace(create=lambda **kw:SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=json.dumps(payload)))])))
+        monkeypatch.setattr(openai,"OpenAI",FakeClient)
+        data=editorial._generate_stage_content(stage,project,"")
+        editorial._validate(stage,data)
+        assert data
+        if stage=="bible": assert data["setting"]["location"]=="Ciudad"
+        if stage=="visual": assert data["style"]=="modern_2d_animation"
+        if stage=="production": assert data["script_plan"]["opening"]=="Shock"
+
+
+def test_edited_forms_and_404_recovery_cover_every_stage():
+    from pathlib import Path
+    code=Path("public/assets/creative-studio.js").read_text(encoding="utf8")
+    assert 'function details(data)' in code
+    assert 'function restoreMissing(id)' in code
+    assert 'async function editorialRequest(' in code
+    assert 'editorialRequest(active.id,"/"+step+"/generate"' in code
+    assert 'editorialRequest(active.id,"/"+step,"PUT"' in code
+    assert 'JSON.stringify(value,null,2)' not in code
