@@ -52,11 +52,11 @@ def local_warnings(script,*,first=False,acquisition=False,other_acts=()):
     for phrase in BAD_PHRASES:
         if lower.count(phrase)>=3: warnings.append("Frase repetitiva: "+phrase)
     # Detect long copied passages between acts, not just exact single phrases.
-    words=re.findall(r"\\w+",lower)
+    words=re.findall(r"[a-záéíóúüñ0-9]+",lower)
     if other_acts and len(words)>110:
         sequences={" ".join(words[i:i+18]) for i in range(0,len(words)-17,5)}
         for previous in other_acts[-3:]:
-            prior=re.findall(r"\\w+",previous.casefold())
+            prior=re.findall(r"[a-záéíóúüñ0-9]+",previous.casefold())
             older={" ".join(prior[i:i+18]) for i in range(0,len(prior)-17,5)}
             if len(sequences.intersection(older))>=1:
                 warnings.append("Reutiliza pasajes largos de un acto anterior")
