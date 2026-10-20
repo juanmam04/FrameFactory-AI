@@ -84,7 +84,7 @@ def test_story_locked_for_packaging_generator():
     from studio.editorial import _generate_stage_content
     source = inspect.getsource(_generate_stage_content)
     assert "LOCKED_STORY" in source
-    assert "previously selected story is LOCKED" in source
+    assert "PREVIOUSLY APPROVED FICTIONAL STORY" in source
     assert "grandparents" in source
     assert "example.com" in source
 
@@ -116,8 +116,17 @@ def test_business_turnaround_decisions_are_explicit_in_pipeline():
     generator = inspect.getsource(generate)
     editorial = inspect.getsource(_generate_stage_content)
     audit = inspect.getsource(audit_script)
-    assert "at least two plausible alternatives" in generator
-    assert "measurable financial/operational result" in generator
+    assert "clever concrete actions" in generator
+    assert "ENTERTAINMENT FIRST" in generator
     assert "decision_ledger" in editorial
-    assert "NO miracle turnarounds" in editorial
+    assert "Prioritize surprising entertainment" in editorial
     assert "set verdict to revise" in audit
+
+
+def test_entertainment_first_symbolic_acquisitions():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    from studio.editorial_script import generate
+    assert "SYMBOLIC ONE DOLLAR" in inspect.getsource(_generate_stage_content)
+    assert "real-world financial logic" in inspect.getsource(_generate_stage_content)
+    assert "not an" in inspect.getsource(generate)
