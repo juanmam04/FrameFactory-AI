@@ -123,7 +123,7 @@ def test_script_generation_keeps_locked_story_full_outline_and_duration(client, 
             assert ("Spanish" if language=="es" else "English") in kwargs['messages'][0]['content']
             calls.append(payload)
             # A controlled provider response; real persistence/invalidation remain exercised.
-            text = ('Te ofrecen comprar el hotel por un dólar. Firmás y recibís las llaves. ' + 'Entrás al hotel y abrís el libro de cuentas para revisar la deuda. ' * 78).strip()
+            text = ('Te ofrecen comprar el hotel por un dólar. Firmás y recibís las llaves. ' + (f'En el acto {len(calls)} tomás una decisión nueva con consecuencias irreversibles. ' + 'Entrás al hotel y abrís el libro de cuentas para revisar la deuda. ') * 78).strip()
             return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=text))])
     monkeypatch.setattr(editorial_script, 'require_openai_api_key', lambda *a: 'fixture')
     monkeypatch.setattr(editorial_script, 'OpenAI', lambda **k: SimpleNamespace(chat=SimpleNamespace(completions=Completions())))
