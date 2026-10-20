@@ -65,9 +65,15 @@ def local_warnings(script,*,first=False,acquisition=False,other_acts=()):
     return warnings
 
 def is_acquisition(story):
-    """Avoid requiring a business purchase in unrelated POV stories."""
+    """Require an acquisition opening only when a business/asset takeover drives the story."""
     text=" ".join(str(story.get(k,"")) for k in ("title","premise","hook")).casefold()
-    return any(word in text for word in ("compr", "adquir", "compra", "purchase", "bought", "buy a ", "por us$1", "por $1", "por un dólar", "for $1"))
+    business=("negocio","empresa","gimnasio","hotel","restaurante","fábrica",
+              "cadena de","local comercial","cine","aerolínea","startup",
+              "business","company","gym","restaurant","factory","hotel","airline",
+              "bakery","store","shop","theme park","parque de diversiones")
+    transfer=("compr","adquir","purchase","bought","buy ","take over",
+              "te regalan","te entregan","por un dólar","por us$1","for $1")
+    return any(term in text for term in business) and any(term in text for term in transfer)
 
 def final_review(client,*,plan,script,acts,brief,rules):
     """Whole-story continuity check; cannot mark the script ready on a failed verdict."""
