@@ -196,6 +196,14 @@ def update_editorial(project_id: str, stage: str, body: StageUpdate):
             ed["stages"][later]["approved"] = False
             ed["stages"][later]["approved_at"] = None
         invalidate_production(p)
+    if stage == "packaging" and body.approve:
+        selected_option = next((x for x in body.data.get("options", [])
+            if str(x.get("id")) == str(body.data.get("selected"))), {})
+        title = str(selected_option.get("title") or "").strip()
+        if title:
+            if not title.lower().startswith("pov:"):
+                title = "POV: " + title
+            p["title"] = title
     if stage == "brief":
         p["language"] = body.data["language"]
         p["target_duration_min"] = list(body.data["duration_min"])
