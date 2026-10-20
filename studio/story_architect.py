@@ -58,7 +58,7 @@ def local_warnings(script,*,first=False,acquisition=False,other_acts=()):
         for previous in other_acts[-3:]:
             prior=re.findall(r"\\w+",previous.casefold())
             older={" ".join(prior[i:i+18]) for i in range(0,len(prior)-17,5)}
-            if len(sequences.intersection(older))>=3:
+            if len(sequences.intersection(older))>=1:
                 warnings.append("Reutiliza pasajes largos de un acto anterior")
                 break
     if len(script.split())<150: warnings.append("Acto demasiado corto")
