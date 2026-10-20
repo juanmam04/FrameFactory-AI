@@ -84,7 +84,7 @@ def test_story_locked_for_packaging_generator():
     from studio.editorial import _generate_stage_content
     source = inspect.getsource(_generate_stage_content)
     assert "LOCKED_STORY" in source
-    assert "PREVIOUSLY APPROVED FICTIONAL STORY" in source
+    assert "ONE ALREADY APPROVED STORY" in source
     assert "grandparents" in source
     assert "example.com" in source
 
@@ -130,3 +130,13 @@ def test_entertainment_first_symbolic_acquisitions():
     assert "SYMBOLIC ONE DOLLAR" in inspect.getsource(_generate_stage_content)
     assert "real-world financial logic" in inspect.getsource(_generate_stage_content)
     assert "not an" in inspect.getsource(generate)
+
+
+def test_packaging_uses_same_story_but_alternative_titles():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    source = inspect.getsource(_generate_stage_content)
+    assert "DO NOT REPEAT the exact prior concept title" in source
+    assert "title B sells the immediate 30-day countdown" in source
+    assert "concept_key in keys" in source
+    assert "retry_messages = messages +" in source
