@@ -313,6 +313,23 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
               +requirement)
     # Explicit JSON contract, plus a single repair attempt when the model uses
     # "ideas"/"proposals" instead of "options" or returns too few entries.
+    if stage == "bible":
+        prompt += (' REQUIRED top-level JSON: {"setting":{"location":"", "time_period":"", "atmosphere":""},'
+                   '"characters":[{"name":"","role":"","arc":"","visual":""}],'
+                   '"timeline":[{"day":"","event":""}],"economics":{"resources":"","obstacles":""},'
+                   '"ending":{"resolution":""},"continuity_risks":[],'
+                   '"decision_ledger":[{"problem":"","alternatives":[],"chosen_strategy":"",'
+                   '"implementation":"","time_cost":"","cash_effect":"","result":"","side_effects":""}]}. '
+                   'Do not return only a story or nested bible wrapper.')
+    elif stage == "visual":
+        prompt += (' REQUIRED top-level JSON: {"style":"modern_2d_animation",'
+                   '"characters":[{"name":"","design":"","outfit":"","continuity":""}],'
+                   '"locations":[{"name":"","visual_description":"","continuity":""}],'
+                   '"continuity_rules":[]}. Do not nest in visual_bible.')
+    elif stage == "production":
+        prompt += (' REQUIRED top-level JSON: {"script_plan":{"opening":"","acts":[],"pacing":"",'
+                   '"narration":"","target_duration":""},"continuity_checks":[{"check":"","how":""}],'
+                   '"quality_gate":{"must_pass":[]}}. Do not nest in plan.')
     if stage in ("concepts", "packaging"):
         schema = {"options": [
             {"id": "A", "title": "", "premise": "", "hook": "", "thumbnail": "",
@@ -446,6 +463,44 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
                         if isinstance(fixed.get(key), list)), [])
         data = {"acts": [dict(act) if isinstance(act, dict) else {"title": str(act), "events": str(act)} for act in raw]}
         _validate(stage,data)
+    elif stage in ("bible", "visual", "production"):
+        from fastapi import HTTPException as ValidationError
+        aliases = {
+            "bible": {"narrative_bible": "setting", "world": "setting", "cast": "characters",
+                      "chronology": "timeline", "finances": "economics", "resolution": "ending"},
+            "visual": {"character_designs": "characters", "settings": "locations",
+                       "visual_style": "style"},
+            "production": {"plan": "script_plan", "checks": "continuity_checks"},
+        }[stage]
+        wrappers = ("bible", "narrative_bible", "visual_bible", "visual_plan",
+                    "production_plan", "plan")
+        def normalize(raw):
+            normalized = dict(raw)
+            for wrapper in wrappers:
+                if isinstance(normalized.get(wrapper), dict):
+                    inner = normalized.pop(wrapper)
+                    normalized = {**inner, **normalized}
+            for alternate, canonical in aliases.items():
+                if not normalized.get(canonical) and normalized.get(alternate):
+                    normalized[canonical] = normalized[alternate]
+            return normalized
+        data = normalize(data)
+        for attempt in range(2):
+            try:
+                _validate(stage, data)
+                break
+            except ValidationError:
+                if attempt:
+                    raise
+                repair = client.chat.completions.create(
+                    model=os.getenv("OPENAI_MODEL","gpt-4o-mini"),
+                    temperature=0.2, response_format={"type":"json_object"},
+                    messages=messages+[
+                        {"role":"assistant","content":json.dumps(data,ensure_ascii=False)},
+                        {"role":"user","content":"Repair your output to exactly match the required top-level JSON shape for "
+                         +stage+". Preserve the approved story and all original useful details. JSON only."}])
+                fixed = json.loads(repair.choices[0].message.content or "{}")
+                data = normalize(fixed if isinstance(fixed, dict) else {})
     else:
         _validate(stage,data)
     return data
