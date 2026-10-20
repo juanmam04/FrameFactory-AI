@@ -57,6 +57,7 @@ class EditorialCreate(BaseModel):
     narration: str = "segunda persona"
     tone: str = "realista y cinematográfico"
     duration_min: list[int] = Field(default_factory=lambda: [20, 25])
+    creative_rules: list[str] = Field(default_factory=list)
 
 @router.get("/editorial/list")
 def editorial_project_list():
@@ -74,7 +75,7 @@ def editorial_project_list():
 
 @router.post("/editorial/create")
 def editorial_project_create(body: EditorialCreate):
-    brief=body.model_dump(exclude={"title"})
+    brief=body.model_dump(exclude={"title", "creative_rules"})
     _validate("brief",brief)
     if len(body.duration_min)!=2 or not 5<=body.duration_min[0]<=body.duration_min[1]<=90:
         raise HTTPException(422,"Duración inválida")
@@ -88,6 +89,7 @@ def editorial_project_create(body: EditorialCreate):
     ed["stages"]["brief"]={"data":brief,"approved":True,"approved_at":datetime.now(timezone.utc).isoformat()}
     ed["active_stage"]="concepts"
     p["editorial"]=ed
+    p["creative_rules"]=[str(rule)[:700] for rule in body.creative_rules if str(rule).strip()][:35]
     p["target_words"]=words
     save_project(p)
     # This route has no project ID in its URL; middleware cannot sync it by regex.
@@ -330,6 +332,11 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         "visual": "Produce style modern_2d_animation, characters array with invariant expressive 2D stickman features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
         "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
     }[stage]
+    # Approved feedback from the user's agent is part of every new editorial stage.
+    creative_rules = p.get("creative_rules") or []
+    if stage in ("concepts", "packaging", "structure", "bible", "visual", "production"):
+        requirement += (" Apply these USER-APPROVED EDITORIAL RULES to this stage where relevant: "
+                        +json.dumps(creative_rules,ensure_ascii=False))
     prompt = ("You are FrameFactory senior story editor, audience strategist, continuity supervisor and critical reviewer. "
               "Write astonishing, highly entertaining adult fictional POV narratives, NOT a documentary or a business textbook. Never promise viral outcome. "
               "Use powerful consequential reversals, risky clever tactics and escalating entertaining setbacks. Avoid boring ordinary stakes, repeated clichés and claiming fiction is true. "
@@ -378,6 +385,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
             "previous_approved_stages": context,
             "guidance": guidance,
             "project_topic": p.get("topic"),
+            "PERMANENT_EDITORIAL_RULES": p.get("creative_rules") or [],
             "LOCKED_STORY": selected_concept,
             "LOCKED_PACKAGING": selected_packaging
         }, ensure_ascii=False)}
