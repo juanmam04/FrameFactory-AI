@@ -42,7 +42,7 @@ def generate(project):
         for attempt in range(3):
             context["revision_feedback"] = reviews[-1].get("issues", []) if attempt and reviews else []
             response = client.chat.completions.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=0.65,
+            model=os.getenv("FRAMEFACTORY_WRITER_MODEL", os.getenv("OPENAI_MODEL", "gpt-4o-mini")), temperature=0.65,
             messages=[{"role": "system", "content":
                 "Write one act of an original fictional story in natural spoken "
                 + ("Spanish" if data["brief"]["language"] == "es" else "English")
@@ -71,7 +71,7 @@ def generate(project):
             if not segment:
                 raise ValueError("Acto vacío. Se conserva el guion anterior.")
             decision = evaluate(client,plan=plan,act_number=i,candidate=segment,previous=output,brief=data["brief"],rules=project.get("creative_rules") or [])
-            local = local_warnings(segment,first=i==0,acquisition=any(w in str(selected(data["concepts"])).lower() for w in ("compr","adquir","buy","purchase","us$1")))
+            local = local_warnings(segment,first=i==0,acquisition=any(w in str(selected(data["concepts"])).lower() for w in ("compr","adquir","buy","purchase","us$1")),other_acts=output)
             if local: decision["issues"] = list(decision.get("issues") or []) + local
             reviews.append({"act":i+1,"attempt":attempt+1,**decision})
             if decision.get("verdict")=="pass" and not local: break
