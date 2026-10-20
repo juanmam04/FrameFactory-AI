@@ -115,6 +115,7 @@ def test_script_generation_keeps_locked_story_full_outline_and_duration(client, 
                 {"new_events":["Crisis","Negociación"],"irreversible_change":"Plazo extendido","ending_state":"plazo"},
                 {"new_events":["Reapertura"],"irreversible_change":"Hotel salvado","ending_state":"salvado"}]})
     monkeypatch.setattr(story_architect, "evaluate", lambda *a,**kw:{"verdict":"pass","issues":[]})
+    monkeypatch.setattr(story_architect, "final_review",lambda *a,**kw:{"verdict":"pass","issues":[]})
     calls = []
     class Completions:
         def create(self, **kwargs):
