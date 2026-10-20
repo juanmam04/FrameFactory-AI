@@ -117,12 +117,27 @@ def invalidate_production(project):
 class StageUpdate(BaseModel):
     data: dict[str, Any] = Field(default_factory=dict)
     approve: bool = False
+    project_snapshot: dict[str, Any] | None = None
 
-def _load(project_id: str) -> dict[str, Any]:
+def _load(project_id: str, recovery_snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     try:
         return load_project(project_id)
     except FileNotFoundError as exc:
-        raise HTTPException(404, "Project not found") from exc
+        if not recovery_snapshot:
+            raise HTTPException(404, "Project not found") from exc
+        # A serverless invocation may be on an entirely different ephemeral filesystem.
+        # Rehydrate during THIS request so a second request isn't needed.
+        snapshot = deepcopy(recovery_snapshot)
+        if (snapshot.get("id") != project_id
+                or not isinstance(snapshot.get("editorial"), dict)
+                or not isinstance(snapshot["editorial"].get("stages"), dict)
+                or not isinstance(snapshot.get("title"), str)):
+            raise HTTPException(422, "El respaldo local no coincide con el proyecto") from exc
+        if not snapshot.get("topic"):
+            snapshot["topic"] = (snapshot["editorial"]["stages"].get("brief") or {}).get("data", {}).get("premise") or snapshot["title"]
+        snapshot.setdefault("content_format", "documentary")
+        save_project(snapshot)
+        return load_project(project_id)
 
 def _validate(stage: str, data: dict[str, Any], *, approve: bool = True):
     if stage == "brief":
@@ -158,6 +173,15 @@ def _validate(stage: str, data: dict[str, Any], *, approve: bool = True):
         if not data.get("continuity_checks") or not data.get("script_plan"):
             raise HTTPException(422, "Production requires continuity checks and script plan")
 
+class EditorialLoadRequest(BaseModel):
+    project_snapshot: dict[str, Any] | None = None
+
+@router.post("/{project_id}/editorial/load")
+def restore_and_get_editorial(project_id: str, body: EditorialLoadRequest):
+    p = _load(project_id, body.project_snapshot)
+    return {"project_id": project_id, "editorial": current(p), "stage_labels": dict(STAGES),
+            "default_visual": DEFAULT_VISUAL}
+
 @router.get("/{project_id}/editorial")
 def get_editorial(project_id: str):
     p = _load(project_id)
@@ -168,7 +192,7 @@ def get_editorial(project_id: str):
 def update_editorial(project_id: str, stage: str, body: StageUpdate):
     if stage not in STAGE_IDS:
         raise HTTPException(404, "Unknown editorial stage")
-    p = _load(project_id)
+    p = _load(project_id, body.project_snapshot)
     ed = current(p)
     index = STAGE_IDS.index(stage)
     if index and not ed["stages"][STAGE_IDS[index-1]]["approved"]:
@@ -243,6 +267,7 @@ def reopen_editorial(project_id: str, stage: str):
 
 class GenerateRequest(BaseModel):
     guidance: str = ""
+    project_snapshot: dict[str, Any] | None = None
 
 def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dict[str, Any]:
     from openai import OpenAI
@@ -313,6 +338,23 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
               +requirement)
     # Explicit JSON contract, plus a single repair attempt when the model uses
     # "ideas"/"proposals" instead of "options" or returns too few entries.
+    if stage == "bible":
+        prompt += (' REQUIRED top-level JSON: {"setting":{"location":"", "time_period":"", "atmosphere":""},'
+                   '"characters":[{"name":"","role":"","arc":"","visual":""}],'
+                   '"timeline":[{"day":"","event":""}],"economics":{"resources":"","obstacles":""},'
+                   '"ending":{"resolution":""},"continuity_risks":[],'
+                   '"decision_ledger":[{"problem":"","alternatives":[],"chosen_strategy":"",'
+                   '"implementation":"","time_cost":"","cash_effect":"","result":"","side_effects":""}]}. '
+                   'Do not return only a story or nested bible wrapper.')
+    elif stage == "visual":
+        prompt += (' REQUIRED top-level JSON: {"style":"modern_2d_animation",'
+                   '"characters":[{"name":"","design":"","outfit":"","continuity":""}],'
+                   '"locations":[{"name":"","visual_description":"","continuity":""}],'
+                   '"continuity_rules":[]}. Do not nest in visual_bible.')
+    elif stage == "production":
+        prompt += (' REQUIRED top-level JSON: {"script_plan":{"opening":"","acts":[],"pacing":"",'
+                   '"narration":"","target_duration":""},"continuity_checks":[{"check":"","how":""}],'
+                   '"quality_gate":{"must_pass":[]}}. Do not nest in plan.')
     if stage in ("concepts", "packaging"):
         schema = {"options": [
             {"id": "A", "title": "", "premise": "", "hook": "", "thumbnail": "",
@@ -446,6 +488,44 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
                         if isinstance(fixed.get(key), list)), [])
         data = {"acts": [dict(act) if isinstance(act, dict) else {"title": str(act), "events": str(act)} for act in raw]}
         _validate(stage,data)
+    elif stage in ("bible", "visual", "production"):
+        from fastapi import HTTPException as ValidationError
+        aliases = {
+            "bible": {"narrative_bible": "setting", "world": "setting", "cast": "characters",
+                      "chronology": "timeline", "finances": "economics", "resolution": "ending"},
+            "visual": {"character_designs": "characters", "settings": "locations",
+                       "visual_style": "style"},
+            "production": {"plan": "script_plan", "checks": "continuity_checks"},
+        }[stage]
+        wrappers = ("bible", "narrative_bible", "visual_bible", "visual_plan",
+                    "production_plan", "plan")
+        def normalize(raw):
+            normalized = dict(raw)
+            for wrapper in wrappers:
+                if isinstance(normalized.get(wrapper), dict):
+                    inner = normalized.pop(wrapper)
+                    normalized = {**inner, **normalized}
+            for alternate, canonical in aliases.items():
+                if not normalized.get(canonical) and normalized.get(alternate):
+                    normalized[canonical] = normalized[alternate]
+            return normalized
+        data = normalize(data)
+        for attempt in range(2):
+            try:
+                _validate(stage, data)
+                break
+            except ValidationError:
+                if attempt:
+                    raise
+                repair = client.chat.completions.create(
+                    model=os.getenv("OPENAI_MODEL","gpt-4o-mini"),
+                    temperature=0.2, response_format={"type":"json_object"},
+                    messages=messages+[
+                        {"role":"assistant","content":json.dumps(data,ensure_ascii=False)},
+                        {"role":"user","content":"Repair your output to exactly match the required top-level JSON shape for "
+                         +stage+". Preserve the approved story and all original useful details. JSON only."}])
+                fixed = json.loads(repair.choices[0].message.content or "{}")
+                data = normalize(fixed if isinstance(fixed, dict) else {})
     else:
         _validate(stage,data)
     return data
@@ -454,7 +534,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
 def generate_editorial(project_id: str,stage: str,body: GenerateRequest):
     if stage not in STAGE_IDS or stage=="brief":
         raise HTTPException(404,"Cannot generate this stage")
-    p=_load(project_id)
+    p=_load(project_id,body.project_snapshot)
     ed=current(p)
     idx=STAGE_IDS.index(stage)
     if not ed["stages"][STAGE_IDS[idx-1]]["approved"]:

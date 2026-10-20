@@ -140,3 +140,83 @@ def test_packaging_uses_same_story_but_alternative_titles():
     assert "title B sells the immediate 30-day countdown" in source
     assert "concept_key in keys" in source
     assert "retry_messages = messages +" in source
+
+def test_generated_bible_visual_and_production_work_with_wrappers(monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import studio.editorial as editorial
+    import src.documentary.openai_key as keys
+    import openai
+    ed=editorial.fresh()
+    ed["stages"]["brief"]["data"]={"language":"es","premise":"Rescatar un negocio","duration_min":[20,25]}
+    ed["stages"]["concepts"]["data"]={"options":[{"id":"A","title":"POV: Salvas restaurantes","premise":"Restaurantes"}],"selected":"A"}
+    ed["stages"]["packaging"]["data"]={"options":[{"id":"A","title":"POV: US$1","hook":"Arranque"}],"selected":"A"}
+    project={"id":"test","topic":"Restaurantes","editorial":ed}
+    responses={
+      "bible":{"narrative_bible":{"setting":{"location":"Ciudad"},"characters":[{"name":"Prota"}],"timeline":[{"day":"1"}],"economics":{"debt":"enorme"},"ending":{"resolution":"victoria"}}},
+      "visual":{"visual_bible":{"style":"modern_2d_animation","characters":[{"name":"Prota"}],"locations":[{"name":"Local"}]}},
+      "production":{"production_plan":{"script_plan":{"opening":"Shock"},"continuity_checks":[{"check":"Todos los locales"}]}}
+    }
+    monkeypatch.setattr(keys,"require_openai_api_key",lambda *_:"dummy")
+    for stage,payload in responses.items():
+        class FakeClient:
+            def __init__(self,**kwargs): self.chat=SimpleNamespace(completions=SimpleNamespace(create=lambda **kw:SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=json.dumps(payload)))])))
+        monkeypatch.setattr(openai,"OpenAI",FakeClient)
+        data=editorial._generate_stage_content(stage,project,"")
+        editorial._validate(stage,data)
+        assert data
+        if stage=="bible": assert data["setting"]["location"]=="Ciudad"
+        if stage=="visual": assert data["style"]=="modern_2d_animation"
+        if stage=="production": assert data["script_plan"]["opening"]=="Shock"
+
+
+def test_edited_forms_and_404_recovery_cover_every_stage():
+    from pathlib import Path
+    code=Path("public/assets/creative-studio.js").read_text(encoding="utf8")
+    assert 'function details(data)' in code
+    assert 'project_snapshot:snapshot' in code
+    assert 'async function editorialRequest(' in code
+    assert 'editorialRequest(active.id,"/"+step+"/generate"' in code
+    assert 'editorialRequest(active.id,"/"+step,"PUT"' in code
+    assert 'JSON.stringify(value,null,2)' not in code
+
+def test_missing_project_recovers_inside_same_api_request(monkeypatch):
+    from studio import editorial
+    stored={}
+    def load(pid):
+        if pid not in stored: raise FileNotFoundError(pid)
+        return stored[pid]
+    monkeypatch.setattr(editorial,"load_project",load)
+    monkeypatch.setattr(editorial,"save_project",lambda p:stored.update({p["id"]:p}))
+    original=editorial.fresh()
+    original["stages"]["brief"]["data"]={"language":"es","premise":"Historia","narration":"segunda persona","tone":"cine","duration_min":[20,25]}
+    recovered=editorial._load("same-video",{"id":"same-video","title":"POV: una empresa","editorial":original})
+    assert recovered["id"]=="same-video"
+    assert recovered["topic"]=="Historia"
+    assert editorial._load("same-video")["editorial"]["stages"]["brief"]["data"]["language"]=="es"
+    from fastapi import HTTPException
+    try:
+        editorial._load("other-video",{"id":"wrong-video","title":"Wrong","editorial":original})
+        assert False
+    except HTTPException as err:
+        assert err.status_code==422
+
+
+def test_bible_visual_production_approve_routes(monkeypatch):
+    from studio import editorial
+    project={"id":"sample","title":"POV: un cine","topic":"Cine","editorial":editorial.fresh()}
+    stages=project["editorial"]["stages"]
+    for key in ("brief","concepts","packaging","structure"):
+        stages[key]["approved"]=True
+    monkeypatch.setattr(editorial,"_load",lambda pid,snapshot=None:project)
+    monkeypatch.setattr(editorial,"save_project",lambda p:None)
+    payloads={
+       "bible":{"setting":{"city":"Roma"},"characters":[{"name":"Luz"}],"timeline":[{"day":1}],"economics":{"risk":"grave"},"ending":{"resolution":"reabre"}},
+       "visual":{"style":"modern_2d_animation","characters":[{"name":"Luz"}],"locations":[{"name":"Cine"}]},
+       "production":{"script_plan":{"opening":"Empieza"},"continuity_checks":[{"check":"mismo traje"}]}
+    }
+    for key,payload in payloads.items():
+        result=editorial.update_editorial("sample",key,editorial.StageUpdate(data=payload,approve=True))
+        assert result["editorial"]["stages"][key]["approved"] is True
+    assert result["ready_for_script"] is True
+    assert project["ui_step"]=="script"

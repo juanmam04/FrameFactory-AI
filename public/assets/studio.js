@@ -1,4 +1,4 @@
-import { renderCreativeStudio, openCreativeProject } from "./creative-studio.js?v=20261019";
+import { renderCreativeStudio, openCreativeProject } from "./creative-studio.js?v=20261020-biblefix";
 document.addEventListener("gesturestart", (e) => e.preventDefault());
 document.addEventListener("gesturechange", (e) => e.preventDefault());
 document.addEventListener(
