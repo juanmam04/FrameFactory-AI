@@ -265,27 +265,33 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
             if isinstance(x, dict) and str(x.get("id")) == str(pack.get("selected"))), {})
     requirement = {
         "concepts": (
-            "Create THREE different high-concept POV simulation stories rooted in the selected genre. "
-            "The viewer is making a startling choice: buying a costly asset or distressed large "
-            "company for almost nothing, accepting a dangerous liability, taking over a business "
-            "with a deadline, or turning around an expensive failure. Give concrete credible "
-            "prices, debt, pressure, choices, consequences and earned outcomes. "
-             "Generate YouTube-ready titles that MUST start with POV: and contain specific stakes. No bland abstract "
-            "names, inherited cafes, dead grandparents, family legacy, secret recipes, "
-            "sentimental community rescue or repeated narrative templates. "
-            "Each story must be structurally and commercially distinct, immersive and "
-            "sufficient for 20-35 minutes. Include title,premise,hook,thumbnail,"
-            "why_it_works,retention,risks."
+            "Create exactly THREE hugely entertaining original cinematic POV fictional simulations. "
+            "Entertainment, curiosity, audacious situations, escalating setbacks and satisfying dramatic "
+            "payoffs matter MORE than real-world financial, legal or operational plausibility. "
+            "For the RESCUE A BANKRUPT BUSINESS category specifically, make each initial acquisition "
+            "a SYMBOLIC ONE DOLLAR (US$1) takeover of a major troubled business, never an ordinary "
+            "multimillion-dollar purchase. Example of the energy, NOT a script to copy: "
+            "'POV: Te dan las llaves de 20 restaurantes por US$1… y solo tenés 30 días para salvarlos'. "
+            "The protagonist should face vivid escalating operational chaos, astonishing discoveries, "
+            "bold smart decisions, mistakes, losses, reversals and eventual consequences. "
+            "Examples: banks arrive, staff walkouts, suppliers cut off deliveries, equipment fails, "
+            "major customers cancel. Do not repeat the same industry or problems in all three. "
+            "Never make the story a dry MBA case, dry financial simulation, standard asset valuation, "
+            "or realistic compliance exercise. No inheritance, grandparents, secret family recipe, "
+            "motivational speeches or boring ordinary risks. "
+            "Allow exaggerated numbers and heightened fiction. Preserve INTERNAL narrative continuity; "
+            "do not enforce real-world deal feasibility or real-world financial logic. "
+            "Titles MUST start 'POV:' and foreground the US$1 handover and a startling challenge. "
+            "Provide id,title,premise,hook,thumbnail,why_it_works,retention,risks."
         ),
         "packaging": (
-            "PACKAGING ONLY. The previously selected story is LOCKED. DO NOT create a new "
-            "business, protagonist, origin, crisis, purchase price, setting or premise. "
-             "Produce THREE strong YouTube TITLES starting exactly with POV: for the same story, plus "
-            "THREE visually describable thumbnail concepts (descriptions, NEVER URLs), "
-            "THREE first-30-second narration hooks in the approved POV, specific retention "
-            "arguments and editorial risks. Angle A emphasizes the impossible price, "
-            "B emphasizes the deadline/financial risk, C emphasizes the discovery. "
-            "Be cinematic, specific, audience-driven and true to the exact selected pitch. "
+            "PACKAGE ONLY THE PREVIOUSLY APPROVED FICTIONAL STORY, never invent a different one. "
+            "Entertainment first. Provide THREE unmistakable POV: YouTube titles with sharp contrast, "
+            "symbolic price and enormous stakes when applicable. For a one-dollar business premise "
+            "keep US$1 in the title or immediately obvious in packaging; NEVER inflate the purchase "
+            "price to millions. Pair each with an illustrated thumbnail description (never URL), "
+            "a gripping 30-second POV opening and retention argument. Amplify drama through storytelling, "
+            "not through accidentally changing established facts. "
             "Return id,title,thumbnail,hook,retention,risks per option."
         ),
         "structure": "Return one JSON object containing acts: ARRAY of 7-9 objects, each with title,start_min,end_min,events,viewer_reward. For every major business rescue act specify a concrete obstacle, protagonist decision, alternatives considered, implementation steps, costs/cash flow, measurable outcome and consequences. NO miracle turnarounds or vague summaries. Preserve LOCKED_STORY and LOCKED_PACKAGING. Honour requested duration and chosen hook. Never return chapters, outline or structure as top-level key.",
@@ -294,8 +300,8 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
     }[stage]
     prompt = ("You are FrameFactory senior story editor, audience strategist, continuity supervisor and critical reviewer. "
-              "Write commercially compelling adult longform narrative, not fake documentary. Never promise viral outcome. "
-              "Avoid formulaic manufactured cliffhangers, repetitive motivation, copied plots, magic money, invented verified facts. "
+              "Write astonishing, highly entertaining adult fictional POV narratives, NOT a documentary or a business textbook. Never promise viral outcome. "
+              "Use powerful consequential reversals, risky clever tactics and escalating entertaining setbacks. Avoid boring ordinary stakes, repeated clichés and claiming fiction is true. "
               "All data must be concrete, coherent and distinctive. Output one JSON object only. "
               "Respond in "+("native Spanish" if locale=="es" else "native English")+". "
               +requirement)
