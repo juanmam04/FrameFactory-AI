@@ -14,6 +14,8 @@ on:
       - 'src/documentary/visual_director.py'
       - 'src/documentary/youtube_pack.py'
       - 'tests/test_editorial_workflow.py'
+      - 'tests/test_story_matrix.py'
+      - 'studio/story_architect.py'
       - 'tests/test_editorial_end_to_end.py'
       - 'src/documentary/project.py'
       - 'src/documentary/script_service.py'
@@ -31,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt pytest httpx
       - name: Python syntax check
-        run: python -m py_compile studio/editorial.py studio/editorial_script.py studio/server.py src/documentary/visual_director.py src/documentary/youtube_pack.py
+        run: python -m py_compile studio/editorial.py studio/editorial_script.py studio/story_architect.py studio/server.py src/documentary/visual_director.py src/documentary/youtube_pack.py
       - name: Client JavaScript syntax check
         run: |
           python - <<'PY'
@@ -48,7 +50,7 @@ jobs:
           node --check public/assets/studio.js
           node scripts/test_creative_recovery.mjs
       - name: Editorial unit tests
-        run: python -m pytest tests/test_editorial_workflow.py tests/test_editorial_end_to_end.py tests/test_documentary_visual_plan.py tests/test_studio_episode.py tests/test_studio_voice.py -q
+        run: python -m pytest tests/test_story_matrix.py tests/test_editorial_workflow.py tests/test_editorial_end_to_end.py tests/test_documentary_visual_plan.py tests/test_studio_episode.py tests/test_studio_voice.py -q
       - name: Studio import and editorial page smoke check
         run: |
           python - <<'PY'
