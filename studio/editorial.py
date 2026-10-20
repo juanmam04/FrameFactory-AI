@@ -117,12 +117,27 @@ def invalidate_production(project):
 class StageUpdate(BaseModel):
     data: dict[str, Any] = Field(default_factory=dict)
     approve: bool = False
+    project_snapshot: dict[str, Any] | None = None
 
-def _load(project_id: str) -> dict[str, Any]:
+def _load(project_id: str, recovery_snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     try:
         return load_project(project_id)
     except FileNotFoundError as exc:
-        raise HTTPException(404, "Project not found") from exc
+        if not recovery_snapshot:
+            raise HTTPException(404, "Project not found") from exc
+        # A serverless invocation may be on an entirely different ephemeral filesystem.
+        # Rehydrate during THIS request so a second request isn't needed.
+        snapshot = deepcopy(recovery_snapshot)
+        if (snapshot.get("id") != project_id
+                or not isinstance(snapshot.get("editorial"), dict)
+                or not isinstance(snapshot["editorial"].get("stages"), dict)
+                or not isinstance(snapshot.get("title"), str)):
+            raise HTTPException(422, "El respaldo local no coincide con el proyecto") from exc
+        if not snapshot.get("topic"):
+            snapshot["topic"] = (snapshot["editorial"]["stages"].get("brief") or {}).get("data", {}).get("premise") or snapshot["title"]
+        snapshot.setdefault("content_format", "documentary")
+        save_project(snapshot)
+        return load_project(project_id)
 
 def _validate(stage: str, data: dict[str, Any], *, approve: bool = True):
     if stage == "brief":
@@ -158,6 +173,15 @@ def _validate(stage: str, data: dict[str, Any], *, approve: bool = True):
         if not data.get("continuity_checks") or not data.get("script_plan"):
             raise HTTPException(422, "Production requires continuity checks and script plan")
 
+class EditorialLoadRequest(BaseModel):
+    project_snapshot: dict[str, Any] | None = None
+
+@router.post("/{project_id}/editorial/load")
+def restore_and_get_editorial(project_id: str, body: EditorialLoadRequest):
+    p = _load(project_id, body.project_snapshot)
+    return {"project_id": project_id, "editorial": current(p), "stage_labels": dict(STAGES),
+            "default_visual": DEFAULT_VISUAL}
+
 @router.get("/{project_id}/editorial")
 def get_editorial(project_id: str):
     p = _load(project_id)
@@ -168,7 +192,7 @@ def get_editorial(project_id: str):
 def update_editorial(project_id: str, stage: str, body: StageUpdate):
     if stage not in STAGE_IDS:
         raise HTTPException(404, "Unknown editorial stage")
-    p = _load(project_id)
+    p = _load(project_id, body.project_snapshot)
     ed = current(p)
     index = STAGE_IDS.index(stage)
     if index and not ed["stages"][STAGE_IDS[index-1]]["approved"]:
@@ -243,6 +267,7 @@ def reopen_editorial(project_id: str, stage: str):
 
 class GenerateRequest(BaseModel):
     guidance: str = ""
+    project_snapshot: dict[str, Any] | None = None
 
 def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dict[str, Any]:
     from openai import OpenAI
@@ -509,7 +534,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
 def generate_editorial(project_id: str,stage: str,body: GenerateRequest):
     if stage not in STAGE_IDS or stage=="brief":
         raise HTTPException(404,"Cannot generate this stage")
-    p=_load(project_id)
+    p=_load(project_id,body.project_snapshot)
     ed=current(p)
     idx=STAGE_IDS.index(stage)
     if not ed["stages"][STAGE_IDS[idx-1]]["approved"]:
