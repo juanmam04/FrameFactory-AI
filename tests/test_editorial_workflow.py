@@ -108,3 +108,12 @@ def test_structure_is_displayed_as_act_cards():
     from pathlib import Path
     text=Path("public/assets/creative-studio.js").read_text(encoding="utf-8")
     assert 'step==="structure"&&Array.isArray(draft.acts)' in text
+
+
+def test_stakes_prompt():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    source=inspect.getsource(_generate_stage_content)
+    assert 'symbolic price like $1' in source
+    assert '30-day deadline' in source
+    assert 'creditor standstill' in source
