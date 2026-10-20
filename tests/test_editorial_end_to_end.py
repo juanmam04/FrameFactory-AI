@@ -93,13 +93,17 @@ def test_static_assets_match_source():
         assert Path('studio/static', asset).read_bytes() == Path('public/assets', asset).read_bytes()
 
 
-def test_script_generation_keeps_locked_story_full_outline_and_duration(client, monkeypatch):
+@pytest.mark.parametrize("language", ["es", "en"])
+def test_script_generation_keeps_locked_story_full_outline_and_duration(client, monkeypatch, language):
     import json
     from types import SimpleNamespace
     from studio import editorial_script
     from src.documentary.project import load_project
     url = create(client)
     pid = url.split('/')[-1]
+    brief=client.get(url+'/editorial').json()['editorial']['stages']['brief']['data']
+    brief['language']=language
+    assert client.put(url+'/editorial/brief',json={'data':brief,'approve':True}).status_code==200
     data = stages()
     for stage, value in data.items():
         assert client.put(url+'/editorial/'+stage, json={'data':value, 'approve':True}).status_code == 200
@@ -107,6 +111,7 @@ def test_script_generation_keeps_locked_story_full_outline_and_duration(client, 
     class Completions:
         def create(self, **kwargs):
             payload = json.loads(kwargs['messages'][1]['content'])
+            assert ("Spanish" if language=="es" else "English") in kwargs['messages'][0]['content']
             calls.append(payload)
             # A controlled provider response; real persistence/invalidation remain exercised.
             text = ('Entrás al hotel y abrís el libro de cuentas para revisar la deuda. ' * 78).strip()

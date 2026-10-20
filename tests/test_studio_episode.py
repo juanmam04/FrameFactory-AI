@@ -13,7 +13,8 @@ from PIL import Image
 
 
 @pytest.mark.skipif(not shutil.which('ffmpeg'), reason='requires FFmpeg')
-def test_episode_upload_voice_render_download(monkeypatch, tmp_path):
+@pytest.mark.parametrize('editorial', [False, True])
+def test_episode_upload_voice_render_download(monkeypatch, tmp_path, editorial):
     from src.documentary import project, voice_service, captions, assemble_service
     from src.documentary.channel import business_documentary_profile
     from src.documentary.flow_pack import export_flow_pack, load_shot_list
@@ -29,6 +30,17 @@ def test_episode_upload_voice_render_download(monkeypatch, tmp_path):
     p = project.create_project('WeWork story', project_id='episode-test', target_words=800,
                                creative_profile=business_documentary_profile())
     p = generate_documentary_script(p, use_llm=False)
+    if editorial:
+        from studio.editorial import fresh
+        from tests.test_editorial_end_to_end import stages
+        ed=fresh()
+        ed["stages"]["brief"]={"data":{"language":"es","premise":"Comprás un hotel", "narration":"segunda persona", "tone":"cinematográfico", "duration_min":[20,25]},"approved":True}
+        for stage, data in stages().items():
+            ed["stages"][stage]={"data":data,"approved":True}
+        p["editorial"]=ed
+        p["editorial_audit"]={"verdict":"pass"}
+        p["language"]="es"
+        project.save_project(p)
     approve_script(p)
     export_flow_pack(project.load_project(p['id']), use_llm=False, rebuild_visuals=True)
     shots = load_shot_list(p['id'])['shots']
