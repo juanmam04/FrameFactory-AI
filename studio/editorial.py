@@ -285,14 +285,20 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
             "Provide id,title,premise,hook,thumbnail,why_it_works,retention,risks."
         ),
         "packaging": (
-            "PACKAGE ONLY THE PREVIOUSLY APPROVED FICTIONAL STORY, never invent a different one. "
-            "Entertainment first. Provide THREE unmistakable POV: YouTube titles with sharp contrast, "
-            "symbolic price and enormous stakes when applicable. For a one-dollar business premise "
-            "keep US$1 in the title or immediately obvious in packaging; NEVER inflate the purchase "
-            "price to millions. Pair each with an illustrated thumbnail description (never URL), "
-            "a gripping 30-second POV opening and retention argument. Amplify drama through storytelling, "
-            "not through accidentally changing established facts. "
-            "Return id,title,thumbnail,hook,retention,risks per option."
+            "TITLE AND THUMBNAIL TEST FOR EXACTLY ONE ALREADY APPROVED STORY. "
+            "NEVER suggest other video ideas, new plots, new acquisitions, or change its protagonist, "
+            "industry, purchase price, problems, deadline or ending. Make three DIFFERENT alternative "
+            "YouTube TITLES for the SAME locked story, not three rewordings of its original concept title. "
+            "DO NOT REPEAT the exact prior concept title in any option. Each title MUST start POV:. "
+            "Title A sells the shocking US$1 handover or impossible bargain; "
+            "title B sells the immediate 30-day countdown and danger of losing everything; "
+            "title C sells the scale and unexpected nightmare of running the acquired business. "
+            "Titles MUST emphasize noticeably different hooks and word choices while all remaining "
+            "factually consistent with this same fictional story. "
+            "Pair each title with a distinct illustrated thumbnail DESCRIPTION, no URL, "
+            "and an original gripping 30-second POV narration hook plus retention argument. "
+            "The user is choosing the TITLE, not choosing a different STORY. "
+            "Return id,title,thumbnail,hook,retention,risks for each option."
         ),
         "structure": "Return one JSON object containing acts: ARRAY of 7-9 objects, each with title,start_min,end_min,events,viewer_reward. For every major business rescue act specify a concrete obstacle, protagonist decision, alternatives considered, implementation steps, costs/cash flow, measurable outcome and consequences. Prioritize surprising entertainment and smart choices; do not demand real-world feasibility. Avoid vague summaries. Preserve LOCKED_STORY and LOCKED_PACKAGING. Honour requested duration and chosen hook. Never return chapters, outline or structure as top-level key.",
         "bible": "Make a coherent original story bible: setting,characters array (name,role,arc,visual),timeline,economics (numbers and cash sources logically reconciled),ending,continuity_risks, plus decision_ledger ARRAY with problem, alternatives, chosen_strategy, implementation, time_cost, cash_effect, result and side_effects for each turning-point decision. Fiction can be exaggerated and surprising; keep character and event continuity without forcing real-world financing feasibility. Distinguish narrative fiction from sourced facts.",
@@ -319,6 +325,10 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         prompt += (" REQUIRED TOP-LEVEL JSON SHAPE: " + json.dumps(schema) +
                    ". Exactly three fully developed options. Do not return ideas, stories, "
                    "proposals, concepts, or variants as the root property.")
+    if stage == "packaging":
+        prompt += (" PREVIOUS STORY CONCEPT TITLE (FORBIDDEN TO REUSE): " +
+                   json.dumps(selected_concept.get("title") or "", ensure_ascii=False) +
+                   ". Output three original alternatives with mutually distinct angles.")
     client = OpenAI(api_key=require_openai_api_key("Generación editorial"))
     messages = [
         {"role": "system", "content": prompt},
@@ -371,6 +381,17 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
                 option["title"] = "POV: " + title
         data["selected"] = ""
         if stage == "packaging":
+            import re
+            def title_key(title):
+                return re.sub(r"[^a-z0-9]+", "", str(title).casefold()
+                              .replace("á", "a").replace("é", "e").replace("í", "i")
+                              .replace("ó", "o").replace("ú", "u"))
+            concept_key = title_key(selected_concept.get("title", ""))
+            keys = [title_key(option.get("title", "")) for option in options]
+            if (len(set(keys)) != 3 or concept_key in keys):
+                raise ValueError("Los títulos son repetidos o iguales al concepto elegido. "
+                                 "Regenerá para obtener tres títulos diferentes.")
+
             for option in options:
                 thumbnail = str(option.get("thumbnail") or "")
                 if thumbnail.startswith(("https://", "http://")) or "example.com" in thumbnail:
