@@ -203,6 +203,8 @@ def create_app() -> FastAPI:
     # Project-specific editorial approval workflow.
     from studio.editorial import router as editorial_router
     app.include_router(editorial_router)
+    from studio.creative_agent import router as agent_router
+    app.include_router(agent_router)
 
     @app.get("/editorial")
     def legacy_editorial_redirect():
