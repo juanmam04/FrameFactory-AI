@@ -388,9 +388,37 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
                               .replace("ó", "o").replace("ú", "u"))
             concept_key = title_key(selected_concept.get("title", ""))
             keys = [title_key(option.get("title", "")) for option in options]
-            if (len(set(keys)) != 3 or concept_key in keys):
-                raise ValueError("Los títulos son repetidos o iguales al concepto elegido. "
-                                 "Regenerá para obtener tres títulos diferentes.")
+            if len(set(keys)) != 3 or concept_key in keys:
+                retry_messages = messages + [
+                    {"role": "assistant", "content": json.dumps(data, ensure_ascii=False)},
+                    {"role": "user", "content": (
+                        "Your three titles are duplicates of each other or of the already "
+                        "approved idea title. Rewrite all three titles (and matching hooks) "
+                        "for this SAME story with clearly different angles: A purchase price, "
+                        "B countdown, C operational nightmare. Do not alter story facts. "
+                        "None may equal the original concept title. Return complete JSON "
+                        "with options array and all original fields."
+                    )}]
+                revision = client.chat.completions.create(
+                    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                    temperature=0.8,
+                    response_format={"type": "json_object"},
+                    messages=retry_messages)
+                revised = json.loads(revision.choices[0].message.content or "{}")
+                candidates = revised.get("options") if isinstance(revised, dict) else None
+                if isinstance(candidates, list) and len(candidates) == 3 and all(
+                    isinstance(item, dict) for item in candidates
+                ):
+                    options = candidates
+                    for i, option in enumerate(options):
+                        option["id"] = chr(65 + i)
+                        title = str(option.get("title") or "").strip()
+                        if not title.lower().startswith("pov:"):
+                            option["title"] = "POV: " + title
+                    data["options"] = options
+                    keys = [title_key(option.get("title", "")) for option in options]
+                if len(set(keys)) != 3 or concept_key in keys:
+                    raise ValueError("La IA repitió el título original; volvé a generar los títulos.")
 
             for option in options:
                 thumbnail = str(option.get("thumbnail") or "")
