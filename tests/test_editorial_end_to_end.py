@@ -107,6 +107,14 @@ def test_script_generation_keeps_locked_story_full_outline_and_duration(client, 
     data = stages()
     for stage, value in data.items():
         assert client.put(url+'/editorial/'+stage, json={'data':value, 'approve':True}).status_code == 200
+    # Architect and independent editorial review are exercised in dedicated tests.
+    # This integration test exercises the real HTTP route and persisted writer output.
+    from studio import story_architect
+    monkeypatch.setattr(story_architect, "model_json", lambda client, system, payload: {
+        "acts":[{"new_events":["Compra","Llaves"],"irreversible_change":"Propiedad adquirida","ending_state":"adquirida"},
+                {"new_events":["Crisis","Negociación"],"irreversible_change":"Plazo extendido","ending_state":"plazo"},
+                {"new_events":["Reapertura"],"irreversible_change":"Hotel salvado","ending_state":"salvado"}]})
+    monkeypatch.setattr(story_architect, "evaluate", lambda *a,**kw:{"verdict":"pass","issues":[]})
     calls = []
     class Completions:
         def create(self, **kwargs):
@@ -114,7 +122,7 @@ def test_script_generation_keeps_locked_story_full_outline_and_duration(client, 
             assert ("Spanish" if language=="es" else "English") in kwargs['messages'][0]['content']
             calls.append(payload)
             # A controlled provider response; real persistence/invalidation remain exercised.
-            text = ('Entrás al hotel y abrís el libro de cuentas para revisar la deuda. ' * 78).strip()
+            text = ('Te ofrecen comprar el hotel por un dólar. Firmás y recibís las llaves. ' + 'Entrás al hotel y abrís el libro de cuentas para revisar la deuda. ' * 78).strip()
             return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=text))])
     monkeypatch.setattr(editorial_script, 'require_openai_api_key', lambda *a: 'fixture')
     monkeypatch.setattr(editorial_script, 'OpenAI', lambda **k: SimpleNamespace(chat=SimpleNamespace(completions=Completions())))
