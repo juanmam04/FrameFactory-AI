@@ -93,3 +93,18 @@ def test_packaging_screen_hides_duplicate_premise():
     from pathlib import Path
     js = Path("public/assets/creative-studio.js").read_text(encoding="utf-8")
     assert 'step==="packaging"?["thumbnail","hook","retention","risks"]' in js
+
+def test_pov_titles_and_story_structure_repair_contract():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    source=inspect.getsource(_generate_stage_content)
+    assert 'startswith("pov:")' in source
+    assert 'stage == "structure"' in source
+    assert '"chapters", "segments"' in source
+    assert 'Restructure this exact approved story' in source
+
+
+def test_structure_is_displayed_as_act_cards():
+    from pathlib import Path
+    text=Path("public/assets/creative-studio.js").read_text(encoding="utf-8")
+    assert 'step==="structure"&&Array.isArray(draft.acts)' in text
