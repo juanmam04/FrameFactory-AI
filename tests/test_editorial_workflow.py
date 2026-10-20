@@ -108,3 +108,16 @@ def test_structure_is_displayed_as_act_cards():
     from pathlib import Path
     text=Path("public/assets/creative-studio.js").read_text(encoding="utf-8")
     assert 'step==="structure"&&Array.isArray(draft.acts)' in text
+
+def test_business_turnaround_decisions_are_explicit_in_pipeline():
+    import inspect
+    from studio.editorial import _generate_stage_content, audit_script
+    from studio.editorial_script import generate
+    generator = inspect.getsource(generate)
+    editorial = inspect.getsource(_generate_stage_content)
+    audit = inspect.getsource(audit_script)
+    assert "at least two plausible alternatives" in generator
+    assert "measurable financial/operational result" in generator
+    assert "decision_ledger" in editorial
+    assert "NO miracle turnarounds" in editorial
+    assert "set verdict to revise" in audit
