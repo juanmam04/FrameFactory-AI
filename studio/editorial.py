@@ -66,6 +66,8 @@ def editorial_project_list():
     projects = list_projects()
     return {"projects": [
         {"id":p.get("id"),"title":p.get("title"),"language":p.get("language"),
+         "topic":p.get("topic"),"target_duration_min":p.get("target_duration_min"),
+         "target_words":p.get("target_words"),"editorial":current(p),
          "active_stage":current(p)["active_stage"],
          "completed":sum(bool(v["approved"]) for v in current(p)["stages"].values())}
         for p in projects if p.get("editorial")]}
@@ -91,6 +93,8 @@ def editorial_project_create(body: EditorialCreate):
     # This route has no project ID in its URL; middleware cannot sync it by regex.
     from src.documentary import cloud_sync
     sync_warning = ""
+    if cloud_sync.url_configured() and not cloud_sync.configured():
+        sync_warning = "La sincronización no está disponible. Guardamos un respaldo en este navegador."
     if cloud_sync.configured():
         try:
             cloud_sync.push_paths(str(p["id"]), ["project.json"])
