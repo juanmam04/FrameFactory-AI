@@ -51,6 +51,16 @@ def local_warnings(script,*,first=False,acquisition=False,other_acts=()):
             warnings.append("El comienzo no desarrolla la adquisición ni la entrega.")
     for phrase in BAD_PHRASES:
         if lower.count(phrase)>=3: warnings.append("Frase repetitiva: "+phrase)
+    # Detect long copied passages between acts, not just exact single phrases.
+    words=re.findall(r"\\w+",lower)
+    if other_acts and len(words)>110:
+        sequences={" ".join(words[i:i+18]) for i in range(0,len(words)-17,5)}
+        for previous in other_acts[-3:]:
+            prior=re.findall(r"\\w+",previous.casefold())
+            older={" ".join(prior[i:i+18]) for i in range(0,len(prior)-17,5)}
+            if len(sequences.intersection(older))>=3:
+                warnings.append("Reutiliza pasajes largos de un acto anterior")
+                break
     if len(script.split())<150: warnings.append("Acto demasiado corto")
     return warnings
 
