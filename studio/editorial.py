@@ -262,7 +262,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
             "company for almost nothing, accepting a dangerous liability, taking over a business "
             "with a deadline, or turning around an expensive failure. Give concrete credible "
             "prices, debt, pressure, choices, consequences and earned outcomes. "
-            "Generate striking YouTube-ready titles with specific stakes. No bland abstract "
+             "Generate YouTube-ready titles that MUST start with POV: and contain specific stakes. No bland abstract "
             "names, inherited cafes, dead grandparents, family legacy, secret recipes, "
             "sentimental community rescue or repeated narrative templates. "
             "Each story must be structurally and commercially distinct, immersive and "
@@ -272,7 +272,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         "packaging": (
             "PACKAGING ONLY. The previously selected story is LOCKED. DO NOT create a new "
             "business, protagonist, origin, crisis, purchase price, setting or premise. "
-            "Produce THREE strong YouTube TITLES for the very same selected story, plus "
+             "Produce THREE strong YouTube TITLES starting exactly with POV: for the same story, plus "
             "THREE visually describable thumbnail concepts (descriptions, NEVER URLs), "
             "THREE first-30-second narration hooks in the approved POV, specific retention "
             "arguments and editorial risks. Angle A emphasizes the impossible price, "
@@ -280,7 +280,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
             "Be cinematic, specific, audience-driven and true to the exact selected pitch. "
             "Return id,title,thumbnail,hook,retention,risks per option."
         ),
-        "structure": "Create 7-9 acts, each with title,start_min,end_min,events,viewer_reward. Honour requested duration and chosen hook, avoid filler.",
+        "structure": "Return one JSON object containing acts: ARRAY of 7-9 objects, each with title,start_min,end_min,events,viewer_reward. Preserve the LOCKED_STORY and LOCKED_PACKAGING precisely. Honour requested duration and chosen hook, avoid filler. Never return chapters, outline or structure as the top-level key.",
         "bible": "Make a coherent original story bible: setting,characters array (name,role,arc,visual),timeline,economics (numbers and cash sources logically reconciled),ending,continuity_risks. Distinguish narrative fiction from sourced facts.",
         "visual": "Produce style modern_2d_animation, characters array with invariant expressive 2D stickman features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
         "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
@@ -351,6 +351,10 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
                           f"Propuesta {chr(65 + i)}"))
             for field in ("premise", "hook", "thumbnail", "why_it_works", "retention", "risks"):
                 option.setdefault(field, "")
+        for option in options:
+            title = str(option.get("title") or "").strip()
+            if not title.lower().startswith("pov:"):
+                option["title"] = "POV: " + title
         data["selected"] = ""
         if stage == "packaging":
             for option in options:
@@ -360,6 +364,25 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
                 if len(str(option.get("hook") or "")) < 60:
                     raise ValueError("El hook necesita una apertura narrada, no una frase genérica.")
                 option["concept_id"] = str(selected_concept.get("id") or "")
+    elif stage == "structure":
+        raw = next((data.get(key) for key in ("acts", "chapters", "segments", "outline", "structure", "timeline")
+                    if isinstance(data.get(key), list)), [])
+        if not raw and isinstance(data.get("structure"), dict):
+            raw = data["structure"].get("acts") or data["structure"].get("chapters") or []
+        if not isinstance(raw, list) or len(raw) < 3:
+            # Ask the model to repair invalid chapter structure rather than strand the user.
+            repair = client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=0.2,
+                response_format={"type": "json_object"},
+                messages=messages + [
+                    {"role": "assistant", "content": json.dumps(data, ensure_ascii=False)},
+                    {"role": "user", "content": "Restructure this exact approved story as a JSON object with an acts array of 7 to 9 concrete act objects, each with title,start_min,end_min,events,viewer_reward. JSON only."}
+                ])
+            fixed = json.loads(repair.choices[0].message.content or "{}")
+            raw = next((fixed.get(key) for key in ("acts", "chapters", "segments")
+                        if isinstance(fixed.get(key), list)), [])
+        data = {"acts": [dict(act) if isinstance(act, dict) else {"title": str(act), "events": str(act)} for act in raw]}
+        _validate(stage,data)
     else:
         _validate(stage,data)
     return data
