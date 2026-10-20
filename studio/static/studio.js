@@ -1,4 +1,4 @@
-import { renderCreativeStudio } from "./creative-studio.js?v=20261019";
+import { renderCreativeStudio, openCreativeProject } from "./creative-studio.js?v=20261019";
 document.addEventListener("gesturestart", (e) => e.preventDefault());
 document.addEventListener("gesturechange", (e) => e.preventDefault());
 document.addEventListener(
@@ -1044,6 +1044,11 @@ async function openProject(id) {
   }
   state.project = data.project;
   state.activeProjectId = data.project?.id || id;
+  if (data.project?.editorial?.stages && !Object.values(data.project.editorial.stages).every(s=>s.approved)) {
+    state.view="editorial";
+    location.hash="editorial";
+    return openCreativeProject(stage(),id,openProject);
+  }
   state.shots = null;
   location.hash = `project/${id}`;
   go("project");
@@ -1077,11 +1082,9 @@ function renderHome() {
     <section class="hero">
       <div class="panel soft">
         <p class="kicker">Channel</p>
-        <h1 class="h1">${esc(b.channel.name)}</h1>
+        <h1 class="h1">FrameFactory</h1>
         <p class="lead">${
-          isCheck
-            ? "Simulaciones de vida aspiracional en segunda persona. Concepto → arquitectura → script → visuales → voz."
-            : esc(b.channel.tagline) + " One true story a day. Research → script → Flow → voice → render."
+          "Historias originales para tus canales en español e inglés. Elegí una propuesta y desarrollala hasta el video final."
         }</p>
         <p class="lead ws-line" style="font-size:0.9rem;opacity:.85">
           Datos: <code>${esc((b.workspace && b.workspace.projects_dir) || "projects/")}</code>
@@ -1092,7 +1095,7 @@ function renderHome() {
               : " · solo esta PC"}
         </p>
         <div class="actions">
-          <button class="btn btn-primary" id="cta-new">${isCheck ? "Elegir fantasía de vida" : "Create today's video"}</button>
+          <button class="btn btn-primary" id="cta-new">Nuevo video</button>
           <button class="btn btn-ghost" id="cta-lib">Browse library</button>
           ${b.workspace && b.workspace.supabase ? `
           <button class="btn btn-ghost" id="cta-push">Subir a la nube</button>
@@ -1125,7 +1128,7 @@ function renderHome() {
         </div>
         <p class="day-of">of ${s.goal} cinematic stories</p>
         <div class="day-ticks" aria-hidden="true">${ticks}</div>
-        <p class="day-tagline">One true story a day</p>
+        <p class="day-tagline">Una historia original por producción</p>
         <div class="meta">
           <div><span>Done</span><strong>${s.completed}</strong></div>
           <div><span>Active</span><strong>${s.in_progress}</strong></div>
@@ -1683,7 +1686,9 @@ function renderProject() {
   if (step === "subs") step = "render";
   const isCheck = p.content_format === "check_als" || p.mode === "check_als";
   if (isCheck && (step === "research")) step = "story";
-  const steps = isCheck
+  const isEditorial = Boolean(p.editorial?.stages);
+  if(isEditorial && ["topic","research","story"].includes(step)) step="script";
+  const steps = isEditorial ? ["script","flow","voice","music","preview","render","publish"] : isCheck
     ? ["topic", "story", "script", "flow", "voice", "music", "preview", "render", "publish"]
     : ["topic", "research", "story", "script", "flow", "voice", "music", "preview", "render", "publish"];
   const stepLabel = isCheck
@@ -1716,6 +1721,7 @@ function renderProject() {
     <p class="kicker">Episodio ${String(p.episode_number).padStart(3, "0")}</p>
     <h1 class="h1">${esc(p.title || p.topic)}</h1>
     <p class="lead">${esc(p.topic || "")}</p>
+    ${isEditorial ? '<button class="btn btn-ghost" id="back-editorial">Revisar preproducción</button>' : ''}
     <div class="stepper">
       ${steps
         .map((s) => {
@@ -1744,6 +1750,10 @@ function renderProject() {
         }
       };
     });
+  $("#back-editorial")?.addEventListener("click",()=>{
+    state.view="editorial";location.hash="editorial";
+    openCreativeProject(stage(),p.id,openProject).catch(e=>toast(e.message));
+  });
   const ws = $("#ws");
   queueMicrotask(settleMobileViewport);
   // Check: story must be approved before script/flow. Voice+render are fully unlocked after that.

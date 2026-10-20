@@ -164,6 +164,8 @@ class WorkspaceSyncMiddleware(BaseHTTPMiddleware):
 
         m = _PROJECT_RE.match(path)
         pid = m.group(1) if m else None
+        if pid in {"editorial", "restore"}:
+            pid = None
 
         response = await call_next(request)
 

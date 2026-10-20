@@ -60,6 +60,9 @@ class EditorialCreate(BaseModel):
 
 @router.get("/editorial/list")
 def editorial_project_list():
+    from src.documentary import cloud_sync
+    if cloud_sync.configured():
+        cloud_sync.pull_home_index(timeout_sec=5.0)
     projects = list_projects()
     return {"projects": [
         {"id":p.get("id"),"title":p.get("title"),"language":p.get("language"),
@@ -85,7 +88,15 @@ def editorial_project_create(body: EditorialCreate):
     p["editorial"]=ed
     p["target_words"]=words
     save_project(p)
-    return {"project_id":p["id"],"editorial":ed}
+    # This route has no project ID in its URL; middleware cannot sync it by regex.
+    from src.documentary import cloud_sync
+    sync_warning = ""
+    if cloud_sync.configured():
+        try:
+            cloud_sync.push_paths(str(p["id"]), ["project.json"])
+        except Exception:
+            sync_warning = "No se pudo sincronizar. Conservá este dispositivo hasta reintentar."
+    return {"project_id":p["id"],"editorial":ed,"sync_warning":sync_warning}
 
 def invalidate_production(project):
     from src.documentary.project import CHECKPOINT_KEYS, set_checkpoint
