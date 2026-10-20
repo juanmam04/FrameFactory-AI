@@ -14,8 +14,13 @@ async function restoreMissing(id){
 }
 async function editorialRequest(id,suffix,method="GET",payload){
   const url="/api/projects/"+encodeURIComponent(id)+"/editorial"+suffix;
-  try{return await request(url,method,payload)}
-  catch(e){if(e.status!==404)throw e;await restoreMissing(id);return await request(url,method,payload)}
+  const snapshot=cachedProjects()[id];
+  if(method!=="GET")return request(url,method,{...(payload||{}),project_snapshot:snapshot||null});
+  try{return await request(url,method)}
+  catch(e){
+    if(e.status!==404||!snapshot?.editorial)throw e;
+    return request("/api/projects/"+encodeURIComponent(id)+"/editorial/load","POST",{project_snapshot:snapshot});
+  }
 }
 async function loadEditorial(id){return editorialRequest(id,"")}
 const byId=id=>document.getElementById(id);
