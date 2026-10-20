@@ -57,6 +57,7 @@ class EditorialCreate(BaseModel):
     narration: str = "segunda persona"
     tone: str = "realista y cinematográfico"
     duration_min: list[int] = Field(default_factory=lambda: [20, 25])
+    creative_rules: list[str] = Field(default_factory=list)
 
 @router.get("/editorial/list")
 def editorial_project_list():
@@ -74,7 +75,22 @@ def editorial_project_list():
 
 @router.post("/editorial/create")
 def editorial_project_create(body: EditorialCreate):
-    brief=body.model_dump(exclude={"title"})
+    # Also recover reusable rules from previously saved/synced productions.
+    # This avoids making permanent feedback depend solely on one browser.
+    remembered_rules = []
+    try:
+        from src.documentary import cloud_sync
+        if cloud_sync.configured():
+            cloud_sync.pull_home_index(timeout_sec=5.0)
+        for existing in list_projects():
+            if existing.get("editorial"):
+                remembered_rules.extend(existing.get("creative_rules") or [])
+    except Exception:
+        pass
+    shared_rules = list(dict.fromkeys(
+        str(rule).strip()[:700] for rule in [*remembered_rules, *body.creative_rules]
+        if str(rule).strip()))[-35:]
+    brief=body.model_dump(exclude={"title", "creative_rules"})
     _validate("brief",brief)
     if len(body.duration_min)!=2 or not 5<=body.duration_min[0]<=body.duration_min[1]<=90:
         raise HTTPException(422,"Duración inválida")
@@ -88,6 +104,7 @@ def editorial_project_create(body: EditorialCreate):
     ed["stages"]["brief"]={"data":brief,"approved":True,"approved_at":datetime.now(timezone.utc).isoformat()}
     ed["active_stage"]="concepts"
     p["editorial"]=ed
+    p["creative_rules"]=shared_rules
     p["target_words"]=words
     save_project(p)
     # This route has no project ID in its URL; middleware cannot sync it by regex.
@@ -330,6 +347,11 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         "visual": "Produce style modern_2d_animation, characters array with invariant expressive 2D stickman features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
         "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
     }[stage]
+    # Approved feedback from the user's agent is part of every new editorial stage.
+    creative_rules = p.get("creative_rules") or []
+    if stage in ("concepts", "packaging", "structure", "bible", "visual", "production"):
+        requirement += (" Apply these USER-APPROVED EDITORIAL RULES to this stage where relevant: "
+                        +json.dumps(creative_rules,ensure_ascii=False))
     prompt = ("You are FrameFactory senior story editor, audience strategist, continuity supervisor and critical reviewer. "
               "Write astonishing, highly entertaining adult fictional POV narratives, NOT a documentary or a business textbook. Never promise viral outcome. "
               "Use powerful consequential reversals, risky clever tactics and escalating entertaining setbacks. Avoid boring ordinary stakes, repeated clichés and claiming fiction is true. "
@@ -378,6 +400,7 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
             "previous_approved_stages": context,
             "guidance": guidance,
             "project_topic": p.get("topic"),
+            "PERMANENT_EDITORIAL_RULES": p.get("creative_rules") or [],
             "LOCKED_STORY": selected_concept,
             "LOCKED_PACKAGING": selected_packaging
         }, ensure_ascii=False)}
@@ -579,8 +602,8 @@ def audit_script(project_id: str):
         response=OpenAI(api_key=require_openai_api_key("Editorial audit")).chat.completions.create(
           model=os.getenv("OPENAI_MODEL","gpt-4o-mini"),temperature=0.2,
           response_format={"type":"json_object"},
-          messages=[{"role":"system","content":"You are a demanding story editor. Analyze factual consistency within fiction, financial logic, opening promise, attention risks and redundancy. For EVERY key turnaround strategy check whether the script demonstrates concrete problem/evidence, alternatives and tradeoffs, chosen action, execution mechanics, real cost, quantifiable result and consequences. If major outcomes are explained only as worked hard/improved management/secured funding/negotiated debt, set verdict to revise and identify specific missing causal scenes. Check internal continuity, established debts and deadlines in the fiction; do not downgrade exciting stories merely for being unrealistic. Return JSON with verdict (pass or revise), issues list, strengths list, recommended_fixes list, decision_audit list. Do not estimate virality probabilities."},
-                    {"role":"user","content":json.dumps({"brief":ed["stages"]["brief"]["data"],"bible":ed["stages"]["bible"]["data"],"packaging":ed["stages"]["packaging"]["data"],"script":str(p["script"])[:45000]},ensure_ascii=False)}])
+          messages=[{"role":"system","content":"You are a demanding story editor. Analyze factual consistency within fiction, financial logic, opening promise, attention risks and redundancy. For EVERY key turnaround strategy check whether the script demonstrates concrete problem/evidence, alternatives and tradeoffs, chosen action, execution mechanics, real cost, quantifiable result and consequences. If major outcomes are explained only as worked hard/improved management/secured funding/negotiated debt, set verdict to revise and identify specific missing causal scenes. Check internal continuity, established debts and deadlines in the fiction; do not downgrade exciting stories merely for being unrealistic. Reject a purchased-business script that starts inside the property without showing how the protagonist received the offer, negotiated or accepted the deal, took the keys and discovered the catch. Detect repeated versions of the same event, recycled scenes, sudden influencer rescues, characters reversing their development and unresolved purchase or closure stakes. Apply user-approved creative_rules as mandatory audit criteria. Return JSON with verdict (pass or revise), issues list, strengths list, recommended_fixes list, decision_audit list. Do not estimate virality probabilities."},
+                    {"role":"user","content":json.dumps({"brief":ed["stages"]["brief"]["data"],"bible":ed["stages"]["bible"]["data"],"packaging":ed["stages"]["packaging"]["data"],"script":str(p["script"])[:45000],"creative_rules":p.get("creative_rules") or []},ensure_ascii=False)}])
         audit=json.loads(response.choices[0].message.content or "{}")
         audit["verdict"] = str(audit.get("verdict") or "revise").strip().lower()
         p["editorial_audit"]=audit

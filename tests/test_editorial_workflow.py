@@ -220,3 +220,70 @@ def test_bible_visual_production_approve_routes(monkeypatch):
         assert result["editorial"]["stages"][key]["approved"] is True
     assert result["ready_for_script"] is True
     assert project["ui_step"]=="script"
+
+def test_creative_agent_chat_and_rule_approval(monkeypatch):
+    import json
+    from studio import creative_agent as agent
+    project={"id":"gym-001","title":"POV: Comprás un gimnasio por US$1","topic":"Gimnasio","editorial":{"stages":{}}}
+    monkeypatch.setattr(agent,"_load",lambda pid,snapshot=None: project)
+    monkeypatch.setattr(agent,"save_project",lambda p:None)
+    monkeypatch.setattr(agent,"_llm",lambda *args,**kw:json.dumps({
+        "reply":"El guion entra al gimnasio sin mostrar la compra.",
+        "proposed_rule":"Mostrar el proceso de adquisición antes de entrar al local.",
+        "suggested_edit":"Agregar negociación y entrega de llaves.",
+        "suggested_scope":"opening"}))
+    result=agent.agent_chat("gym-001",agent.AgentMessage(message="Nunca mostrás cómo compro el gimnasio."))
+    assert "sin mostrar la compra" in result["reply"]
+    assert result["suggested_scope"]=="opening"
+    assert project["creative_agent_history"][0]["feedback"].startswith("Nunca")
+    confirmation=agent.approve_creative_rule("gym-001",agent.RuleApproval(rule=result["proposed_rule"]))
+    assert confirmation["approved"]
+    agent.approve_creative_rule("gym-001",agent.RuleApproval(rule=result["proposed_rule"]))
+    assert len(project["creative_rules"])==1
+
+
+def test_agent_revisions_require_actual_script_and_reject_unapproved_short_output(monkeypatch):
+    from studio import creative_agent as agent
+    from fastapi import HTTPException
+    monkeypatch.setattr(agent,"_load",lambda pid,snapshot=None:{"id":pid,"title":"Test"})
+    try:
+        agent.revise_with_agent("one",agent.AgentRevision(instruction="Mostrá la compra del gimnasio"))
+        assert False
+    except HTTPException as error:
+        assert error.status_code==409
+
+
+def test_agent_project_rules_reach_future_generation():
+    import inspect
+    from studio.editorial import editorial_project_create, _generate_stage_content
+    from studio.editorial_script import generate
+    assert "creative_rules" in inspect.getsource(editorial_project_create)
+    assert "PERMANENT_EDITORIAL_RULES" in inspect.getsource(_generate_stage_content)
+    assert "permanent_creative_rules" in inspect.getsource(generate)
+    assert "Do not replay the same event" in inspect.getsource(generate)
+
+
+def test_agent_appears_in_both_deployment_frontends():
+    from pathlib import Path
+    for page in ("public/index.html","studio/templates/index.html"):
+        assert "editorial-agent.js" in Path(page).read_text(encoding="utf-8")
+    for asset in ("public/assets/editorial-agent.js","studio/static/editorial-agent.js"):
+        src=Path(asset).read_text(encoding="utf-8")
+        assert 'agent/chat' not in src or '"chat"' in src
+        assert '"revise"' in src and '"rule"' in src
+
+def test_agent_applies_opening_change_only_after_explicit_action(monkeypatch):
+    from studio import creative_agent as agent
+    import src.documentary.script_service as service
+    old=("Entrás al gimnasio ya convertido en dueño. "*110).strip()
+    project={"id":"gym-test","title":"POV: Comprás gimnasio","topic":"Gimnasio","script":old,
+        "creative_rules":["Mostrá la adquisición antes de entrar."],"editorial":{"stages":{}}}
+    monkeypatch.setattr(agent,"_load",lambda pid,snapshot=None:project)
+    monkeypatch.setattr(agent,"_llm",lambda *args,**kw:"Descubrís el anuncio. Te ofrecen el gimnasio por US$1. Aceptás las llaves y firmás el trato. "*85)
+    monkeypatch.setattr(agent,"save_project",lambda p:None)
+    monkeypatch.setattr(service,"save_edited_script",lambda p,script:{**p,"script":script,"script_approved":False,"editorial_audit":{}})
+    result=agent.revise_with_agent("gym-test",agent.AgentRevision(
+        instruction="Mostrá cómo se compra el gimnasio.",scope="opening"))
+    assert result["applied"]
+    assert "Te ofrecen el gimnasio por US$1" in result["script"]
+    assert project["script"]==old  # Server loads and returns a new updated object.

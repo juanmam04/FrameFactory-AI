@@ -32,6 +32,7 @@ def generate(project):
             "production_plan": data["production"],
             "preceding_script": "\n\n".join(output),
             "target_words_this_act": words_per_act,
+            "permanent_creative_rules": project.get("creative_rules") or [],
             "final_act": i == len(acts) - 1,
         }
         response = client.chat.completions.create(
@@ -52,6 +53,12 @@ def generate(project):
                 "overexplain accountancy, insist on mundane financing rules or diminish extraordinary "
                 "events to satisfy real-world plausibility. Keep character goals, prior events and "
                 "established story facts consistent. Avoid empty montage summaries of 'worked hard'. "
+                "In act ONE of an acquisition story, show how the protagonist hears about the deal, "
+                "why the previous owner hands over the business for one dollar, the offer, "
+                "acceptance, key handover, hidden problems and deadline BEFORE the first arrival. "
+                "Never start inside a business as owner without showing the actual acquisition. "
+                "Do not replay the same event or have characters forget their earlier development. "
+                "Obey every user-approved permanent creative rule in the project. "
                 "Only the final act resolves the approved ending. Do not present fiction as fact."},
                 {"role": "user", "content": json.dumps(context, ensure_ascii=False)}])
         segment = (response.choices[0].message.content or "").strip()
