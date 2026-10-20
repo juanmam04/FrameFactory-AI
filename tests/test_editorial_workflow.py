@@ -84,7 +84,7 @@ def test_story_locked_for_packaging_generator():
     from studio.editorial import _generate_stage_content
     source = inspect.getsource(_generate_stage_content)
     assert "LOCKED_STORY" in source
-    assert "previously selected story is LOCKED" in source
+    assert "ONE ALREADY APPROVED STORY" in source
     assert "grandparents" in source
     assert "example.com" in source
 
