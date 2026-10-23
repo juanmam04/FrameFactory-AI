@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -228,28 +229,82 @@ def _engine_path_allowed(rel: str) -> bool:
     return False
 
 
+_REWRITE_INTENT = re.compile(
+    r"\b(reescrib|regener|rehac[eéi]|arregl[aá]|fix(?:ea|e)|correg[ií]|mejor[aá]|actualiz|"
+    r"rewrite|regenerate|fix)\w*\b",
+    re.I,
+)
+_GREETING_ONLY = re.compile(
+    r"^\s*(hola|hey|buenas|buen[oa]s?\s*(d[ií]as|tardes|noches)?|hello|hi|qué\s*tal|"
+    r"como\s*estas|cómo\s*estás|gracias|ok|dale|listo|sí|si|no)\s*[!.?]*\s*$",
+    re.I,
+)
+_PROBLEM_SIGNAL = re.compile(
+    r"\b(problema|falla|error|roto|no\s+funciona|no\s+genera|vac[ií]o|mal|bug|"
+    r"queda|pasa|cuando|porque|por\s*qu[eé]|necesito|quiero|ayud|guion|biblia|"
+    r"historia|imagen|voz|render|script|bible|story)\b",
+    re.I,
+)
+
+
+def _wants_immediate_rewrite(message: str) -> bool:
+    text = (message or "").strip()
+    if len(text) < 4:
+        return False
+    return bool(_REWRITE_INTENT.search(text))
+
+
+def _conversation_mode(message: str, history: list[dict[str, Any]] | None = None) -> str:
+    """talk | diagnose | propose — never jump to propose on greetings."""
+    text = (message or "").strip()
+    if not text or _GREETING_ONLY.match(text):
+        return "talk"
+    if _wants_immediate_rewrite(text):
+        return "propose"
+    if len(text) < 24 and not _PROBLEM_SIGNAL.search(text):
+        return "talk"
+    # Short follow-ups after we already diagnosed can still be talk/clarify.
+    prior = history or []
+    if len(text) < 40 and prior and not _PROBLEM_SIGNAL.search(text) and not _REWRITE_INTENT.search(text):
+        return "talk"
+    if _PROBLEM_SIGNAL.search(text) or len(text) >= 40:
+        return "diagnose"
+    return "talk"
+
+
 @router.post("/{project_id}/agent/chat")
 def agent_chat(project_id: str, body: AgentMessage):
     p = _load(project_id, body.project_snapshot)
     rules = list(dict.fromkeys([*(p.get("creative_rules") or []), *body.creative_rules]))[:35]
     context = _context(p)
     context["existing_rules"] = rules
+    history = list(p.get("creative_agent_history") or [])
+    mode = _conversation_mode(body.message, history)
     system = (
         "You are the built-in FrameFactory creative/technical director inside Studio. "
         "Respond in the user's language. "
         "You can discuss ANY layer: premise, story architecture, narrative bible, visual plan, "
         "script, creative rules, or engine prompt/validation code under the allowlist. "
-        "First understand the user's problem, explain clearly what is wrong and why, then propose "
-        "concrete changes. DO NOT claim you already applied changes. "
+        "CONVERSATION FIRST. Mode for THIS turn is: "
+        + mode
+        + ". "
+        "If mode=talk: greet, ask clarifying questions, explore the issue. "
+        "proposed_changes MUST be []. proposed_rule MUST be \"\". diagnosis can be empty. "
+        "Do NOT invent problems or push script edits on 'hola' / small talk. "
+        "If mode=diagnose: explain what seems wrong and WHY, ask if they want a concrete fix. "
+        "proposed_changes SHOULD stay [] unless they already asked to fix/rewrite. "
+        "If mode=propose: they asked to rewrite/fix something — proposed_changes MUST include "
+        "that target with a precise executable instruction (not vague advice). "
+        "For 'reescribí el guion' use target=script. For bible/structure/visual use that stage id. "
+        "DO NOT claim you already applied changes. "
         "Treat entertainment POV / Check ALS fiction as designed stories, not documentaries of fact. "
-        "If the issue is engine behavior (prompts, tags, validation), propose target=engine_file "
-        "with a path from engine_allowlist. Prefer project-layer fixes when possible. "
+        "If the issue is engine behavior, propose target=engine_file with a path from engine_allowlist. "
         "Always return JSON with: "
-        "reply (clear explanation + advice), "
-        "diagnosis (which layer fails), "
+        "reply (conversational), "
+        "diagnosis (layer or empty), "
         "proposed_changes (array of {target, summary, preview, instruction, path?}), "
         "proposed_rule (reusable rule or empty), "
-        "needs_approval (always true). "
+        "needs_approval (true). "
         "Valid targets: brief, structure, bible, visual, production, concepts, packaging, "
         "script, story, visual_plan, creative_rule, engine_file. "
         "Never execute repository writes in this step."
@@ -260,7 +315,11 @@ def agent_chat(project_id: str, body: AgentMessage):
         {
             "role": "user",
             "content": json.dumps(
-                {"feedback": body.message, "project": {k: v for k, v in context.items() if k != "conversation_turns"}},
+                {
+                    "feedback": body.message,
+                    "conversation_mode": mode,
+                    "project": {k: v for k, v in context.items() if k != "conversation_turns"},
+                },
                 ensure_ascii=False,
                 default=str,
             ),
@@ -269,6 +328,16 @@ def agent_chat(project_id: str, body: AgentMessage):
     try:
         result = json.loads(_llm(messages, json_mode=True))
         proposals = _normalize_proposals(result.get("proposed_changes"))
+        proposed_rule = str(result.get("proposed_rule") or "")[:700]
+        # Hard gate: greetings / talk mode never surface apply buttons.
+        if mode == "talk":
+            proposals = []
+            proposed_rule = ""
+        elif mode == "diagnose" and not _wants_immediate_rewrite(body.message):
+            proposals = []
+            # Keep proposed_rule empty while diagnosing unless they asked for a rule.
+            if "regla" not in body.message.casefold() and "rule" not in body.message.casefold():
+                proposed_rule = ""
         # Back-compat: older clients expected suggested_edit for script-only revise.
         suggested_edit = ""
         suggested_scope = "opening"
@@ -277,7 +346,7 @@ def agent_chat(project_id: str, body: AgentMessage):
                 suggested_edit = ch.get("instruction") or ch.get("summary") or ""
                 suggested_scope = "full" if "full" in (ch.get("summary") or "").lower() else "opening"
                 break
-        if not suggested_edit:
+        if mode == "propose" and not suggested_edit:
             suggested_edit = str(result.get("suggested_edit") or "")[:3000]
             suggested_scope = (
                 result.get("suggested_scope")
@@ -294,14 +363,22 @@ def agent_chat(project_id: str, body: AgentMessage):
                         "path": "",
                     }
                 )
+        reply = str(result.get("reply") or "").strip()
+        if not reply:
+            reply = (
+                "Contame qué está fallando (guion vacío, biblia, imágenes, voz…) y lo vemos juntos."
+                if mode == "talk"
+                else "Revisá los problemas señalados."
+            )
         answer = {
-            "reply": str(result.get("reply") or "Revisá los problemas señalados."),
-            "diagnosis": str(result.get("diagnosis") or "")[:800],
+            "reply": reply,
+            "diagnosis": "" if mode == "talk" else str(result.get("diagnosis") or "")[:800],
             "proposed_changes": proposals,
-            "proposed_rule": str(result.get("proposed_rule") or "")[:700],
-            "suggested_edit": suggested_edit,
+            "proposed_rule": proposed_rule,
+            "suggested_edit": suggested_edit if mode == "propose" else "",
             "suggested_scope": suggested_scope,
             "needs_approval": True,
+            "mode": mode,
         }
         p.setdefault("creative_agent_history", []).append(
             {
@@ -310,6 +387,7 @@ def agent_chat(project_id: str, body: AgentMessage):
                 "reply": answer["reply"],
                 "diagnosis": answer["diagnosis"],
                 "proposed_changes": proposals,
+                "mode": mode,
             }
         )
         p["creative_agent_history"] = p["creative_agent_history"][-30:]
@@ -317,6 +395,7 @@ def agent_chat(project_id: str, body: AgentMessage):
             "at": datetime.now(timezone.utc).isoformat(),
             "proposed_changes": proposals,
             "proposed_rule": answer["proposed_rule"],
+            "mode": mode,
         }
         save_project(p)
         return answer
@@ -390,32 +469,26 @@ def _apply_editorial_stage(project: dict[str, Any], stage: str, instruction: str
     return f"editorial.stages.{stage}"
 
 
-def _apply_script(project: dict[str, Any], instruction: str, scope: str = "full") -> str:
-    script = str(project.get("script") or "").strip()
-    if not script:
-        raise HTTPException(409, "Este proyecto todavía no tiene un guion.")
-    if project.get("script_approved"):
-        project["script_approved"] = False
-    scope = scope if scope in ("opening", "full") else "full"
-    if scope == "full" and len(script) > 13500:
-        scope = "opening"
-    cut = min(len(script), 6500)
-    if scope == "opening":
-        boundary = script.rfind("\n\n", 0, cut)
-        if boundary > 1200:
-            cut = boundary
-    original = script if scope == "full" else script[:cut]
-    rest = "" if scope == "full" else script[cut:]
-    context = _context(project)
-    context.pop("script", None)
+def _rewrite_script_chunk(
+    *,
+    instruction: str,
+    rules: list[str],
+    context: dict[str, Any],
+    chunk: str,
+    previous_tail: str,
+    next_head: str,
+    part: int,
+    total: int,
+) -> str:
     edited = _llm(
         [
             {
                 "role": "system",
                 "content": (
-                    "Rewrite the given fictional POV narrative according to the user's requested edit. "
-                    "Return ONLY revised narration, not commentary. Keep perspective and characters. "
-                    "Comparable length; smooth transition into any untouched remainder."
+                    "Rewrite this chunk of a fictional POV narration according to the user's edit. "
+                    "Return ONLY revised narration for THIS chunk, no commentary or headings. "
+                    "Keep POV, character names and continuity with previous_tail. "
+                    "Similar length to the input chunk. Smooth handoff into next_head if present."
                 ),
             },
             {
@@ -423,25 +496,97 @@ def _apply_script(project: dict[str, Any], instruction: str, scope: str = "full"
                 "content": json.dumps(
                     {
                         "user_instruction": instruction,
-                        "permanent_rules": project.get("creative_rules") or [],
+                        "permanent_rules": rules,
+                        "chunk_index": part,
+                        "chunk_total": total,
                         "project": context,
-                        "text_to_rewrite": original,
-                        "next_untouched_text": rest[:700],
+                        "previous_tail": previous_tail,
+                        "text_to_rewrite": chunk,
+                        "next_head": next_head,
                     },
                     ensure_ascii=False,
                     default=str,
                 ),
             },
         ],
-        temperature=0.6,
+        temperature=0.55,
     )
-    if len(edited.split()) < max(60, int(len(original.split()) * 0.45)):
+    return (edited or "").strip()
+
+
+def _split_script_chunks(script: str, *, max_chars: int = 5500) -> list[str]:
+    if len(script) <= max_chars:
+        return [script]
+    parts: list[str] = []
+    start = 0
+    while start < len(script):
+        end = min(len(script), start + max_chars)
+        if end < len(script):
+            boundary = script.rfind("\n\n", start + 800, end)
+            if boundary <= start:
+                boundary = script.rfind(". ", start + 800, end)
+            if boundary > start:
+                end = boundary + (2 if script[boundary : boundary + 2] == "\n\n" else 1)
+        chunk = script[start:end].strip()
+        if chunk:
+            parts.append(chunk)
+        start = end
+    return parts or [script]
+
+
+def _apply_script(project: dict[str, Any], instruction: str, scope: str = "full") -> str:
+    script = str(project.get("script") or "").strip()
+    if not script:
+        raise HTTPException(409, "Este proyecto todavía no tiene un guion.")
+    if project.get("script_approved"):
+        project["script_approved"] = False
+    scope = scope if scope in ("opening", "full") else "full"
+    context = _context(project)
+    context.pop("script", None)
+    rules = list(project.get("creative_rules") or [])
+
+    if scope == "opening":
+        cut = min(len(script), 6500)
+        boundary = script.rfind("\n\n", 0, cut)
+        if boundary > 1200:
+            cut = boundary
+        chunks = [script[:cut]]
+        rest = script[cut:]
+    else:
+        chunks = _split_script_chunks(script)
+        rest = ""
+
+    rewritten: list[str] = []
+    for i, chunk in enumerate(chunks):
+        prev_tail = rewritten[-1][-500:] if rewritten else ""
+        next_head = chunks[i + 1][:400] if i + 1 < len(chunks) else rest[:400]
+        piece = _rewrite_script_chunk(
+            instruction=instruction,
+            rules=rules,
+            context=context,
+            chunk=chunk,
+            previous_tail=prev_tail,
+            next_head=next_head,
+            part=i + 1,
+            total=len(chunks),
+        )
+        if len(piece.split()) < max(40, int(len(chunk.split()) * 0.4)):
+            raise HTTPException(
+                502,
+                f"La corrección del tramo {i + 1}/{len(chunks)} quedó demasiado corta. Se conservó el guion.",
+            )
+        rewritten.append(piece)
+
+    new_script = "\n\n".join(rewritten) + (rest if scope == "opening" else "")
+    if len(new_script.split()) < max(80, int(len(script.split()) * 0.4)):
         raise HTTPException(502, "La corrección quedó demasiado corta. Se conservó el guion.")
     from src.documentary.script_service import save_edited_script
 
-    updated = save_edited_script(project, edited + rest)
+    updated = save_edited_script(project, new_script)
     if updated is not project:
         project.update(updated)
+    project["editorial_audit"] = {}
+    _invalidate_after_narrative(project, touch_script=True)
     return "script"
 
 

@@ -141,10 +141,12 @@ def _sync_safe(fn) -> None:
 _SKIP_SYNC = {
     "/health",
     "/",
+    "/voice-lab",
     "/sw.js",
     "/api/ping",
     "/api/bootstrap",  # must stay instant — never block Home on Supabase pull
     "/api/ideas",
+    "/api/voice-lab/status",
     "/api/credentials/recheck",
     "/api/sync/status",
     "/api/sync/push",
@@ -222,6 +224,115 @@ def create_app() -> FastAPI:
             html_path.read_text(encoding="utf-8"),
             headers={"Cache-Control": "no-store, max-age=0"},
         )
+
+    @app.get("/voice-lab", response_class=HTMLResponse)
+    def voice_lab_page():
+        html_path = ROOT / "templates" / "voice-lab.html"
+        if not html_path.is_file():
+            raise HTTPException(404, "voice-lab.html missing")
+        return HTMLResponse(
+            html_path.read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
+
+    @app.get("/api/voice-lab/status")
+    def voice_lab_status():
+        import os
+
+        from src.documentary.openai_key import reload_env
+
+        reload_env()
+        key = (os.getenv("ELEVENLABS_API_KEY") or "").strip()
+        ok = bool(key) and len(key) >= 20 and "your-elevenlabs" not in key.lower()
+        return {
+            "elevenlabs_ok": ok,
+            "default_voice": (os.getenv("ELEVENLABS_VOICE_ID") or "").strip() or "21m00Tcm4TlvDq8ikWAM",
+            "detail": "" if ok else "Configurá ELEVENLABS_API_KEY en .env",
+        }
+
+    @app.post("/api/voice-lab/generate")
+    def voice_lab_generate(body: VoiceLabBody):
+        """Standalone TTS: paste script → ElevenLabs MP3. No episode / Flow / render."""
+        import hashlib
+        import os
+        import re as _re
+        import time
+
+        from src.documentary.openai_key import reload_env
+        from src.voice_generator import generar_voz
+
+        reload_env()
+        text = (body.script or "").strip()
+        if len(text) < 20:
+            raise HTTPException(422, "El guion es demasiado corto.")
+        if len(text) > 120_000:
+            raise HTTPException(422, "Máximo ~120k caracteres por pedido.")
+        api_key = (os.getenv("ELEVENLABS_API_KEY") or "").strip()
+        if not api_key or len(api_key) < 20:
+            raise HTTPException(400, "Falta ELEVENLABS_API_KEY en el entorno.")
+        voice_id = (body.voice_id or os.getenv("ELEVENLABS_VOICE_ID") or "21m00Tcm4TlvDq8ikWAM").strip()
+        speed = float(body.speed or 1.1)
+        speed = max(0.7, min(1.5, speed))
+        stem = _re.sub(r"[^a-zA-Z0-9_-]+", "-", (body.filename or "narracion").strip())[:50].strip("-") or "narracion"
+        job = hashlib.sha1(f"{time.time()}-{stem}-{len(text)}".encode()).hexdigest()[:12]
+        out_name = f"voice-lab-{job}-{stem}"
+        try:
+            # Force ElevenLabs path (no OpenAI fallback for this tool).
+            prev_solo = os.environ.get("ELEVENLABS_SOLO")
+            os.environ["ELEVENLABS_SOLO"] = "1"
+            try:
+                path = generar_voz(
+                    text,
+                    nombre_archivo=out_name,
+                    formato="mp3",
+                    velocidad=speed,
+                    elevenlabs_voice_id=voice_id,
+                    voice_catalog={"provider": "elevenlabs", "elevenlabs_voice_id": voice_id},
+                )
+            finally:
+                if prev_solo is None:
+                    os.environ.pop("ELEVENLABS_SOLO", None)
+                else:
+                    os.environ["ELEVENLABS_SOLO"] = prev_solo
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+        if not path or not Path(path).is_file() or Path(path).stat().st_size <= 0:
+            raise HTTPException(502, "ElevenLabs no devolvió audio.")
+        return {
+            "ok": True,
+            "job": job,
+            "filename": f"{stem}.mp3",
+            "url": f"/api/voice-lab/audio/{job}",
+            "words": len(text.split()),
+            "bytes": Path(path).stat().st_size,
+            "path": str(path.name),
+        }
+
+    @app.get("/api/voice-lab/audio/{job_id}")
+    def voice_lab_audio(job_id: str):
+        from src.voice_generator import OUTPUT_AUDIO, _audio_root
+
+        job_id = re.sub(r"[^a-zA-Z0-9_-]", "", job_id)[:24]
+        if not job_id:
+            raise HTTPException(404, "Audio no encontrado")
+        roots = []
+        try:
+            roots.append(_audio_root())
+        except Exception:
+            pass
+        roots.append(OUTPUT_AUDIO)
+        for root in roots:
+            if not root.is_dir():
+                continue
+            matches = sorted(root.glob(f"voice-lab-{job_id}-*.mp3"), key=lambda p: p.stat().st_mtime, reverse=True)
+            if matches:
+                return FileResponse(
+                    matches[0],
+                    media_type="audio/mpeg",
+                    filename=matches[0].name,
+                    headers={"Cache-Control": "no-store"},
+                )
+        raise HTTPException(404, "Audio no encontrado (se borró o expiró).")
 
     @app.get("/sw.js")
     def service_worker():
@@ -1913,6 +2024,13 @@ class StoryPlanBody(BaseModel):
 
 class ScriptBody(BaseModel):
     script: str = ""
+
+
+class VoiceLabBody(BaseModel):
+    script: str = Field(min_length=20, max_length=120_000)
+    voice_id: str | None = None
+    speed: float = 1.1
+    filename: str = "narracion"
 
 
 class VisualEditBody(BaseModel):

@@ -57,7 +57,7 @@ panel.id = "ff-agent-panel";
 panel.hidden = true;
 panel.setAttribute("aria-label", "Agente FrameFactory");
 panel.innerHTML =
-  '<div id="ff-agent-top"><div><strong>✦ Agente Studio</strong><div style="font-size:12px;color:#5c7485">Conversá sobre historia, biblia, guion o el motor. Nada se modifica sin tu aprobación.</div></div><button type="button" id="ff-agent-close" aria-label="Cerrar">×</button></div><div id="ff-agent-log" aria-live="polite"><div class="ff-agent-msg agent">Decime qué está fallando. Te explico el problema, propongo cambios por capa (biblia, guion, plan visual, código del motor…) y solo aplico cuando digas que sí o “hacelo”.</div></div><div id="ff-agent-entry"><textarea id="ff-agent-feedback" placeholder="Ej: la biblia no marca el punto de no retorno / el mood del stickman siempre queda depresivo / hacelo"></textarea><div class="ff-agent-foot"><span id="ff-agent-status">Reglas futuras: ' +
+  '<div id="ff-agent-top"><div><strong>✦ Agente Studio</strong><div style="font-size:12px;color:#5c7485">Primero charlamos del problema. Los cambios se proponen después, y solo se aplican con tu OK.</div></div><button type="button" id="ff-agent-close" aria-label="Cerrar">×</button></div><div id="ff-agent-log" aria-live="polite"><div class="ff-agent-msg agent">Hola. Contame qué te está pasando (guion vacío, historia floja, imágenes, voz…). Cuando estemos claros, te propongo un arreglo concreto y lo aplico solo si decís que sí.</div></div><div id="ff-agent-entry"><textarea id="ff-agent-feedback" placeholder="Ej: hola / el guion quedó vacío / reescribí el acto 1 con más urgencia"></textarea><div class="ff-agent-foot"><span id="ff-agent-status">Reglas futuras: ' +
   rules().length +
   '</span><button id="ff-agent-send" type="button">Enviar</button></div></div>';
 document.body.appendChild(panel);
@@ -127,6 +127,17 @@ const APPLY_HINT = /\b(hacelo|hace\s*lo|aplic[aá]|aplícalo|aplique|dale\s*ya|a
 
 function renderProposals(id, response) {
   const changes = Array.isArray(response.proposed_changes) ? response.proposed_changes : [];
+  // Talk/diagnose turns: only chat text, no apply cards.
+  if (!changes.length && !response.proposed_rule && !response.suggested_edit) {
+    if (response.diagnosis && response.mode !== "talk") {
+      const d = document.createElement("div");
+      d.className = "ff-agent-diagnosis";
+      d.textContent = "Diagnóstico: " + response.diagnosis;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+    }
+    return;
+  }
   const actions = document.createElement("div");
   actions.className = "ff-agent-proposal";
 
