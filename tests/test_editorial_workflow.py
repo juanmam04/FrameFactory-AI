@@ -235,7 +235,7 @@ def test_creative_agent_chat_and_rule_approval(monkeypatch):
     result=agent.agent_chat("gym-001",agent.AgentMessage(message="Corregí el guion: nunca mostrás cómo compro el gimnasio."))
     assert "sin mostrar la compra" in result["reply"]
     assert result["suggested_scope"]=="opening"
-    assert project["creative_agent_history"][0]["feedback"].startswith("Nunca")
+    assert project["creative_agent_history"][0]["feedback"].startswith("Corregí el guion")
     confirmation=agent.approve_creative_rule("gym-001",agent.RuleApproval(rule=result["proposed_rule"]))
     assert confirmation["approved"]
     agent.approve_creative_rule("gym-001",agent.RuleApproval(rule=result["proposed_rule"]))
