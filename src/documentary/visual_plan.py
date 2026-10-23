@@ -1292,7 +1292,10 @@ def format_single_prompt(
 
         # Stickman / Check: always go through format_check_prompt (TEXT HARD BAN + YOU lock).
         try:
-            return format_check_prompt(visual, bible)
+            base_prompt = format_check_prompt(visual, bible)
+            if bible.get("character_style_lock"):
+                return FRAMEFACTORY_CINEMATIC_STYLE + "\\n" + base_prompt
+            return base_prompt
         except Exception:
             pass
         body = (
