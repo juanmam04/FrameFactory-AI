@@ -941,7 +941,23 @@ def create_app() -> FastAPI:
             p = approve_script(candidate)
             p["ui_step"] = "flow"
             save_project(p)
-            return {"project": _project_full(p)}
+            # Auto-build Flow pack so "Seguir a imágenes" actually produces the plan.
+            flow_warning = ""
+            try:
+                export_flow_pack(p, use_llm=True, rebuild_visuals=True)
+                p = load_project(project_id)
+            except Exception as flow_err:
+                flow_warning = str(flow_err)[:300]
+                try:
+                    export_flow_pack(load_project(project_id), use_llm=False, rebuild_visuals=True)
+                    p = load_project(project_id)
+                    flow_warning = (flow_warning + " · plan offline OK").strip(" ·")
+                except Exception as offline_err:
+                    flow_warning = f"{flow_warning} | offline: {offline_err}"[:400]
+            out = {"project": _project_full(p)}
+            if flow_warning:
+                out["flow_warning"] = flow_warning
+            return out
         except HTTPException:
             raise
         except Exception as e:
@@ -949,13 +965,33 @@ def create_app() -> FastAPI:
 
     # ── flow / images / voice / render ──────────────────────────────
     @app.post("/api/projects/{project_id}/flow")
-    def flow_build(project_id: str):
+    async def flow_build(project_id: str, request: Request):
         try:
-            export_flow_pack(load_project(project_id), use_llm=True, rebuild_visuals=True)
+            recovery = None
+            try:
+                body = await request.json()
+                if isinstance(body, dict):
+                    recovery = body.get("project_snapshot")
+            except Exception:
+                recovery = None
+            try:
+                source = load_project(project_id)
+            except FileNotFoundError:
+                if not isinstance(recovery, dict):
+                    raise HTTPException(404, "Proyecto no encontrado. Reabrí el episodio desde Library.") from None
+                from studio.editorial import _load as editorial_load
+
+                source = editorial_load(project_id, recovery)
+            try:
+                export_flow_pack(source, use_llm=True, rebuild_visuals=True)
+            except Exception:
+                export_flow_pack(load_project(project_id), use_llm=False, rebuild_visuals=True)
             p = load_project(project_id)
             p["ui_step"] = "flow"
             save_project(p)
             return _flow_payload(project_id, p)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(400, _err(e)) from e
 
@@ -1087,6 +1123,51 @@ def create_app() -> FastAPI:
                 headers={"Cache-Control": "private, max-age=60, must-revalidate"},
             )
         raise HTTPException(404, f"No image {n:03d}")
+
+    @app.post("/api/projects/{project_id}/images/placeholders")
+    def images_placeholders(project_id: str):
+        """Black PNG stills so you can continue to voice/render without Google Flow today."""
+        try:
+            from src.documentary.assemble_service import _ensure_black_placeholder_stills
+            from src.documentary.flow_pack import export_flow_pack, load_shot_list
+
+            p = load_project(project_id)
+            if not p.get("script_approved") and str(p.get("script") or "").strip():
+                from src.documentary.script_service import approve_script
+
+                p = approve_script(p)
+            # Need a shot list / visual plan first so import maps to slots.
+            try:
+                load_shot_list(project_id)
+            except Exception:
+                export_flow_pack(p, use_llm=False, rebuild_visuals=True)
+                p = load_project(project_id)
+            n = _ensure_black_placeholder_stills(p, duration_sec=float((p.get("voice") or {}).get("duration_sec") or 0))
+            if n < 1:
+                # Force even if some images exist but user asked for placeholders.
+                from PIL import Image
+
+                from src.documentary.import_images import import_images
+
+                try:
+                    shots = load_shot_list(project_id).get("shots") or []
+                except Exception:
+                    shots = []
+                count = max(len(shots), 12)
+                src = project_dir(project_id) / "flow-import-auto"
+                src.mkdir(parents=True, exist_ok=True)
+                for i in range(1, count + 1):
+                    Image.new("RGB", (1920, 1080), color=(0, 0, 0)).save(src / f"{i:03d}.png")
+                import_images(load_project(project_id), src)
+                n = count
+            sync_ready_from_disk(project_id)
+            p = load_project(project_id)
+            p["ui_step"] = "voice"
+            set_checkpoint(p, "images_imported", True)
+            save_project(p)
+            return {"ok": True, "count": n, "project": _project_full(p)}
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
 
     @app.post("/api/projects/{project_id}/images/import")
     def images_import(project_id: str, body: ImportBody):

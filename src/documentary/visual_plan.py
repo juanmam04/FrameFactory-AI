@@ -110,17 +110,39 @@ def build_visual_plan(
     bible = _upgrade_bible(bible_raw, visuals, story)
     _purge_stock_locations(bible)
     if project.get("editorial"):
-        from studio.editorial import current
-        approved = current(project)["stages"]["visual"]["data"]
-        bible["global_style"] = "Modern cinematic 2D animation with expressive stickman characters. No photorealistic people, no 3D."
-        bible["visual_style"] = bible["global_style"]
-        for key, prefix in (("characters", "CHAR"), ("locations", "LOC")):
-            entries = approved.get(key) or []
-            bible[key] = [{**entry, "id": entry.get("id") or f"{prefix}_{i:03d}",
-                           "visual_description": entry.get("visual_description") or json.dumps(entry, ensure_ascii=False),
-                           "appears_in_shots": entry.get("appears_in_shots") or []}
-                          for i, entry in enumerate(entries, 1) if isinstance(entry, dict)]
-        bible["continuity_rules"] = approved.get("continuity_rules") or []
+        try:
+            from studio.editorial import current
+
+            approved = ((current(project).get("stages") or {}).get("visual") or {}).get("data") or {}
+            if not isinstance(approved, dict):
+                approved = {}
+            bible["global_style"] = (
+                "Modern cinematic 2D animation with expressive stickman characters. "
+                "No photorealistic people, no 3D."
+            )
+            bible["visual_style"] = bible["global_style"]
+            for key, prefix in (("characters", "CHAR"), ("locations", "LOC")):
+                entries = approved.get(key) or []
+                if not isinstance(entries, list):
+                    continue
+                bible[key] = [
+                    {
+                        **entry,
+                        "id": entry.get("id") or f"{prefix}_{i:03d}",
+                        "visual_description": entry.get("visual_description")
+                        or json.dumps(entry, ensure_ascii=False),
+                        "appears_in_shots": entry.get("appears_in_shots") or [],
+                    }
+                    for i, entry in enumerate(entries, 1)
+                    if isinstance(entry, dict)
+                ]
+            bible["continuity_rules"] = approved.get("continuity_rules") or []
+        except Exception as ed_err:
+            append_log(str(project.get("id") or ""), f"editorial visual merge soft: {ed_err}")
+            bible.setdefault(
+                "global_style",
+                "Modern cinematic 2D animation with expressive stickman characters.",
+            )
     is_check = str(project.get("content_format") or project.get("mode") or "") == "check_als"
     if is_check:
         bible["format"] = "check_als"

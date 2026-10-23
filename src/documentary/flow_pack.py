@@ -20,8 +20,14 @@ def export_flow_pack(
     rebuild_visuals: bool = True,
 ) -> dict[str, Any]:
     """Approve-script gate → Visual Plan → shot-list + batch prompts on disk."""
+    # Soft: if there is a usable script, approve on the fly so Flow isn't a dead end.
     if not project.get("script_approved"):
-        raise ValueError("Approve the script first — then we can build Flow references and shots.")
+        if str(project.get("script") or "").strip():
+            from src.documentary.script_service import approve_script
+
+            project = approve_script(project)
+        else:
+            raise ValueError("Approve the script first — then we can build Flow references and shots.")
 
     root = project_dir(str(project["id"]))
     fp = root / "flow-pack"
@@ -29,7 +35,13 @@ def export_flow_pack(
 
     if rebuild_visuals or not plan_path.exists():
         target = 100 if str(project.get("content_format") or project.get("mode") or "") == "check_als" else 80
-        plan = build_visual_plan(project, use_llm=use_llm, target_visuals=target)
+        try:
+            plan = build_visual_plan(project, use_llm=use_llm, target_visuals=target)
+        except Exception as llm_err:
+            if not use_llm:
+                raise
+            append_log(str(project["id"]), f"flow LLM failed, offline fallback: {llm_err}")
+            plan = build_visual_plan(project, use_llm=False, target_visuals=target)
         from src.documentary.project import load_project
 
         project = load_project(str(project["id"]))

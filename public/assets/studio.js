@@ -2393,11 +2393,15 @@ function paintScript(ws, p) {
         });
         state.project = saved.project;
       }
-      const data = await withBusy("Aprobando guion…", () =>
-        api(`/api/projects/${encodeURIComponent(p.id)}/script/approve`, { method: "POST" })
+      const data = await withBusy("Aprobando guion y armando plan de imágenes…", () =>
+        api(`/api/projects/${encodeURIComponent(p.id)}/script/approve`, {
+          method: "POST",
+          timeoutMs: 600000,
+        })
       );
       state.project = data.project;
-      toast("Guion listo. Seguís con las imágenes.");
+      if (data.flow_warning) toast("Plan de imágenes con avisos — revisá Flow");
+      else toast("Guion listo. Plan de imágenes generado.");
       renderProject();
     } catch (e) {
       toast(e.message);
@@ -2427,13 +2431,15 @@ async function paintFlow(ws, p) {
     ws.innerHTML = `
       <div class="panel workspace">
         <h2>Imágenes</h2>
-        <p class="lead">El guion ya quedó atrás. Acá generás el plan de imágenes.</p>
+        <p class="lead">Acá el Studio arma el <strong>plan + prompts</strong> para Google Flow. No dibuja las fotos solo: vos generás los stills en Flow (o usá placeholders negros para seguir hoy).</p>
         <div class="actions">
-          <button class="btn btn-accent" id="rebuild">Generar Flow</button>
+          <button class="btn btn-accent" id="rebuild">Generar plan Flow</button>
+          <button class="btn btn-ghost" id="black-stills">Rellenar stills negros</button>
         </div>
         ${e.message ? `<div class="notice">${esc(e.message)}</div>` : ""}
       </div>`;
     $("#rebuild").onclick = () => rebuildFlow();
+    $("#black-stills").onclick = () => fillBlackStills();
     return;
   }
 
@@ -2493,9 +2499,11 @@ async function paintFlow(ws, p) {
       <div id="reuse-review"></div>` : ""}
       <div class="actions">
         <button class="btn btn-ghost" id="rebuild">Rehacer plan de imágenes</button>
+        <button class="btn btn-ghost" id="black-stills">Rellenar stills negros</button>
         <button class="btn btn-danger" id="delete-all-stills">Eliminar todas</button>
         <button class="btn btn-primary" id="to-voice">Seguir a la voz</button>
       </div>
+      <p class="lead" style="margin-top:0.4rem">Studio genera <strong>prompts</strong>. Las fotos reales salen de Google Flow (o usá stills negros para seguir hoy).</p>
 
       <h2 style="margin-top:1.6rem">A) Caras que se repiten</h2>
       <p class="lead">Copiá el texto → Google Flow → descargá → <strong>subí acá</strong>. El nombre que ponga Flow no importa.</p>
@@ -2508,6 +2516,7 @@ async function paintFlow(ws, p) {
     </div>`;
 
   $("#rebuild").onclick = () => rebuildFlow();
+  $("#black-stills")?.addEventListener("click", () => fillBlackStills());
   if (isCheckFlow) {
     const pack = coverage.production_batch || {};
     const shots = pack.shots || [];
@@ -2816,13 +2825,36 @@ function bindMasterUploads(root, projectId, masters) {
 
 async function rebuildFlow() {
   try {
-    const data = await withBusy("Armando el plan de imágenes…", () =>
-      api(`/api/projects/${encodeURIComponent(state.project.id)}/flow`, { method: "POST" })
+    const id = state.project?.id;
+    const cached = loadLibraryCache().projects?.[id]?.project || null;
+    const data = await withBusy("Armando el plan de imágenes (puede tardar varios minutos)…", () =>
+      api(`/api/projects/${encodeURIComponent(id)}/flow`, {
+        method: "POST",
+        timeoutMs: 600000,
+        body: JSON.stringify(cached ? { project_snapshot: cached } : {}),
+      })
     );
     state.project = data.project;
     state.shots = data.shots;
     state.visualPlan = data.visual_plan;
-    toast("Plan listo");
+    toast("Plan listo — copiá prompts a Google Flow o subí stills");
+    renderProject();
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+async function fillBlackStills() {
+  try {
+    const id = state.project?.id;
+    const data = await withBusy("Creando stills negros de placeholder…", () =>
+      api(`/api/projects/${encodeURIComponent(id)}/images/placeholders`, {
+        method: "POST",
+        timeoutMs: 120000,
+      })
+    );
+    if (data.project) state.project = data.project;
+    toast(`Placeholders listos (${data.count || "?"} stills). Ya podés ir a la voz.`);
     renderProject();
   } catch (e) {
     toast(e.message);
