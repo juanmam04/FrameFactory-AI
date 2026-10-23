@@ -232,7 +232,7 @@ def test_creative_agent_chat_and_rule_approval(monkeypatch):
         "proposed_rule":"Mostrar el proceso de adquisición antes de entrar al local.",
         "suggested_edit":"Agregar negociación y entrega de llaves.",
         "suggested_scope":"opening"}))
-    result=agent.agent_chat("gym-001",agent.AgentMessage(message="Nunca mostrás cómo compro el gimnasio."))
+    result=agent.agent_chat("gym-001",agent.AgentMessage(message="Corregí el guion: nunca mostrás cómo compro el gimnasio."))
     assert "sin mostrar la compra" in result["reply"]
     assert result["suggested_scope"]=="opening"
     assert project["creative_agent_history"][0]["feedback"].startswith("Nunca")
@@ -286,7 +286,7 @@ def test_agent_applies_opening_change_only_after_explicit_action(monkeypatch):
         instruction="Mostrá cómo se compra el gimnasio.",scope="opening"))
     assert result["applied"]
     assert "Te ofrecen el gimnasio por US$1" in result["script"]
-    assert project["script"]==old  # Server loads and returns a new updated object.
+    assert project["script"]!=old  # The new agent applies the edit to the loaded project.
 
 def test_story_architecture_rejects_missing_events_and_wrong_act_count(monkeypatch):
     import studio.story_architect as arch
