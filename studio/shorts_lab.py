@@ -80,9 +80,14 @@ def _llm_pack(script: str, *, language: str, duration_sec: float, still_count: i
         "flow_prompts (array of {n, beat, prompt} — exactly still_count items), "
         "hashtags (array of 8), "
         "cta (one short end CTA). "
-        "Visual style LOCK: modern 2D stickman animation, round white head, black-dot eyes, bold outlines, "
-        "cinematic lighting, vertical 9:16, no photoreal people, no readable tiny text. "
-        "Each Flow prompt must be a single copy-paste paragraph for Google Flow / image gen. "
+        "WORLD LOCK (critical): this is a STICKMAN universe. Every person is a 2D stickman. "
+        "YOU are the protagonist stickman in EVERY still — same large round WHITE head, black-dot eyes, "
+        "simple line mouth, thin stick limbs, bold outlines, flat cel color, consistent hair silhouette. "
+        "Supporting cast are stickmen too. Environments are detailed 2D illustration. "
+        "FORBIDDEN: photoreal humans, live-action, 3D, anime, redesigning YOU mid-pack. "
+        "Vertical 9:16. No readable tiny text on image. "
+        "Each Flow prompt must be a single copy-paste paragraph for Google Flow / image gen "
+        "and must explicitly say YOU the stickman protagonist is in frame. "
         "Language of captions/hooks/cta: " + lang + "."
     )
     user = {
@@ -156,9 +161,10 @@ def _normalize_pack(data: dict[str, Any], script: str, *, duration_sec: float, s
         prompt = str(row.get("prompt") or "").strip()
         if not prompt:
             prompt = (
-                f"Vertical 9:16 modern 2D stickman cinematic still, beat {i}/{still_count}: {beat}. "
-                "Round white head, black-dot eyes, bold outlines, dramatic light, no photoreal people, "
-                "no tiny readable text. Single clear subject, high contrast."
+                f"Vertical 9:16 high-quality 2D STICKMAN cartoon still, beat {i}/{still_count}: {beat}. "
+                "WORLD: stickman universe. YOU are the locked protagonist stickman "
+                "(large round white head, black-dot eyes, thin stick limbs, bold outlines) in frame. "
+                "Detailed 2D environment. NEVER photoreal humans. No tiny readable text."
             )
         prompts.append({"n": i, "beat": beat, "prompt": prompt})
 
@@ -215,8 +221,9 @@ def build_shorts_pack(
                 "n": i,
                 "beat": f"Momento {i}",
                 "prompt": (
-                    f"Vertical 9:16 2D stickman short still {i}/{n}, dramatic cinematic light, "
-                    f"story beat from narration chunk {i}. Bold outlines, no photoreal people."
+                    f"Vertical 9:16 2D STICKMAN short still {i}/{n}. Stickman world. "
+                    f"YOU the protagonist stickman (round white head, black-dot eyes) in frame. "
+                    f"Beat from narration chunk {i}. Bold outlines. NEVER photoreal humans."
                 ),
             }
             for i in range(1, n + 1)

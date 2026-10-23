@@ -344,7 +344,12 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         ),
         "structure": "Return one JSON object containing acts: ARRAY of 7-9 objects, each with title,start_min,end_min,events,viewer_reward. For every major business rescue act specify a concrete obstacle, protagonist decision, alternatives considered, implementation steps, costs/cash flow, measurable outcome and consequences. Prioritize surprising entertainment and smart choices; do not demand real-world feasibility. Avoid vague summaries. Preserve LOCKED_STORY and LOCKED_PACKAGING. Honour requested duration and chosen hook. Never return chapters, outline or structure as top-level key.",
         "bible": "Make a coherent original story bible: setting,characters array (name,role,arc,visual),timeline,economics (numbers and cash sources logically reconciled),ending,continuity_risks, plus decision_ledger ARRAY with problem, alternatives, chosen_strategy, implementation, time_cost, cash_effect, result and side_effects for each turning-point decision. Fiction can be exaggerated and surprising; keep character and event continuity without forcing real-world financing feasibility. Distinguish narrative fiction from sourced facts.",
-        "visual": "Produce style modern_2d_animation, characters array with invariant expressive 2D stickman features, locations array with architecture, props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. Visual environments are 2D illustrated.",
+        "visual": "WORLD LOCK: stickman universe. Produce style modern_2d_animation. "
+        "characters array MUST include YOU as the locked protagonist stickman "
+        "(round white head, black-dot eyes, thin stick limbs, bold outlines, consistent hair) "
+        "plus supporting stickman cast with invariant designs. locations array with architecture, "
+        "props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. "
+        "Every person is a stickman. Visual environments are detailed 2D illustrated.",
         "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
     }[stage]
     # Approved feedback from the user's agent is part of every new editorial stage.

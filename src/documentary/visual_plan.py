@@ -116,11 +116,6 @@ def build_visual_plan(
             approved = ((current(project).get("stages") or {}).get("visual") or {}).get("data") or {}
             if not isinstance(approved, dict):
                 approved = {}
-            bible["global_style"] = (
-                "Modern cinematic 2D animation with expressive stickman characters. "
-                "No photorealistic people, no 3D."
-            )
-            bible["visual_style"] = bible["global_style"]
             for key, prefix in (("characters", "CHAR"), ("locations", "LOC")):
                 entries = approved.get(key) or []
                 if not isinstance(entries, list):
@@ -139,22 +134,18 @@ def build_visual_plan(
             bible["continuity_rules"] = approved.get("continuity_rules") or []
         except Exception as ed_err:
             append_log(str(project.get("id") or ""), f"editorial visual merge soft: {ed_err}")
-            bible.setdefault(
-                "global_style",
-                "Modern cinematic 2D animation with expressive stickman characters.",
-            )
+        bible = ensure_stickman_bible(bible, project=project)
     is_check = str(project.get("content_format") or project.get("mode") or "") == "check_als"
     if is_check:
         bible["format"] = "check_als"
+    if is_stickman_world(bible, project):
+        bible = ensure_stickman_bible(bible, project=project)
     _rewrite_stills(visuals, bible, str(project.get("topic") or ""), use_llm=use_llm)
     visuals = _assign_camera_variety(visuals)
     visuals = _assign_durations(visuals)
 
-    if is_check:
-        from src.documentary.formats.check_als.editorial import VISUAL_DIRECTION as CHECK_DIR
-
-        bible["global_style"] = CHECK_DIR
-        bible["format"] = "check_als"
+    if is_check or is_stickman_world(bible, project):
+        bible = ensure_stickman_bible(bible, project=project)
 
     masters = select_master_references(bible, visuals)
     # Attach flow prompts with master hints
@@ -347,6 +338,72 @@ def _style_text(bible: dict[str, Any]) -> str:
     if not text or text.startswith("{") or text.startswith("{'"):
         return VISUAL_DIRECTION
     return text
+
+
+STICKMAN_WORLD_LOCK = (
+    "WORLD LOCK: this is a STICKMAN universe — every person is a 2D stickman "
+    "(large round WHITE head, tiny black-dot eyes, simple line mouth, thin stick limbs, "
+    "bold black outlines, flat cel color). Environments are detailed 2D illustration, "
+    "NOT photoreal, NOT live-action, NOT 3D, NOT anime. "
+    "YOU are the protagonist stickman in every frame (same face, same hair silhouette, same proportions). "
+    "Supporting cast are also stickmen with locked designs. Never draw realistic humans."
+)
+
+STICKMAN_FLOW_DIRECTOR = (
+    "You are the DIRECTOR for Google Flow in a stickman POV channel. "
+    "One still = one story moment. Put YOU (the locked stickman protagonist) in the frame "
+    "doing something specific that cannot be swapped into another episode. "
+    "Same stickman identity across shots. Detailed environments stay consistent. "
+    "CLEAN plate: no subtitles, captions, titles, or on-image lettering."
+)
+
+
+def is_stickman_world(bible: dict[str, Any] | None = None, project: dict[str, Any] | None = None) -> bool:
+    b = bible or {}
+    fmt = str(b.get("format") or "").casefold()
+    if fmt in {"check_als", "stickman_pov", "stickman"}:
+        return True
+    if b.get("stickman_world") is True:
+        return True
+    style = str(b.get("global_style") or b.get("visual_style") or "").casefold()
+    if "stickman" in style or "stick man" in style:
+        return True
+    if project:
+        # Empty editorial dict {} is falsy — still means stickman POV project.
+        if "editorial" in project and project.get("editorial") is not None:
+            return True
+        if str(project.get("content_format") or project.get("mode") or "").casefold() == "check_als":
+            return True
+    return False
+
+
+def ensure_stickman_bible(bible: dict[str, Any] | None, *, project: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Force stickman world + YOU protagonist for POV / editorial / Check packs."""
+    out = dict(bible or {})
+    if not is_stickman_world(out, project):
+        return out
+    from src.documentary.formats.check_als.editorial import VISUAL_DIRECTION as CHECK_DIR
+    from src.documentary.formats.check_als.visuals import CHECK_STYLE, PROTAGONIST_BIBLE
+
+    out["format"] = out.get("format") or ("check_als" if project and str(project.get("content_format") or "") == "check_als" else "stickman_pov")
+    out["stickman_world"] = True
+    out["global_style"] = CHECK_STYLE
+    out["visual_style"] = CHECK_DIR
+    out["protagonist_bible"] = PROTAGONIST_BIBLE
+    chars = list(out.get("characters") or [])
+    has_you = any(str(c.get("id") or "").upper() in {"CHAR_YOU", "YOU"} or "you" in str(c.get("name") or "").casefold() for c in chars if isinstance(c, dict))
+    if not has_you:
+        chars.insert(
+            0,
+            {
+                "id": "CHAR_YOU",
+                "name": "YOU",
+                "role": "protagonist",
+                "visual_description": PROTAGONIST_BIBLE,
+            },
+        )
+        out["characters"] = chars
+    return out
 
 
 _STOCKY_DESC = re.compile(
@@ -1073,6 +1130,7 @@ def format_batch_prompt(
     bible: dict[str, Any],
     masters: list[dict[str, Any]] | None = None,
 ) -> str:
+    bible = ensure_stickman_bible(bible) if is_stickman_world(bible) else (bible or {})
     by_num = {int(v["number"]): v for v in visuals}
     nums = [int(n) for n in (batch.get("visual_numbers") or [])]
     n = len(nums)
@@ -1081,41 +1139,74 @@ def format_batch_prompt(
         mid = str((by_num.get(nums[0]) or {}).get("moment_id") or "rise")
     label = str(batch.get("moment_label") or _MOMENT_LABEL.get(mid, "this moment"))
     climate = _MOMENT_DIRECTOR.get(mid, "ALL stills share the same emotional register.")
-    lines = [
-        f"Create {n} separate 16:9 cinematic documentary stills of ONE STORY MOMENT: {label.upper()}.",
-        climate,
-        "Each numbered still illustrates its OWN narrated event. Never interchange shots merely because their mood matches.",
-        "Create separate images, not a collage. Follow the assigned beats; don't invent a parallel story.",
-        "",
-        "HARD RULES:",
-        "- The same person must look like the same person across images (use character refs).",
-        "- Vary framing to clarify the action; keep location and time unless the story changes them.",
-        "- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,",
-        "  handshake, CEO portrait, anonymous extras filling the frame.",
-        "",
-        f"DIRECTOR: {FLOW_DIRECTOR_RULES}",
-        f"STYLE: {_style_text(bible)[:320]}",
-        "",
-        f"ANGLES on {label} (same moment, different photograph):",
-        "",
-    ]
+    stick = is_stickman_world(bible)
+    if stick:
+        lines = [
+            f"Create {n} separate 16:9 high-quality 2D STICKMAN cartoon stills of ONE STORY MOMENT: {label.upper()}.",
+            STICKMAN_WORLD_LOCK,
+            climate,
+            "YOU (CHAR_YOU) are the same stickman protagonist in every frame. Supporting people are stickmen too.",
+            "Each numbered still illustrates its OWN narrated event. Create separate images, not a collage.",
+            "",
+            "HARD RULES:",
+            "- Same stickman face/hair/proportions across images (use CHAR_YOU master).",
+            "- Detailed 2D environments; never photoreal humans.",
+            "- Forbidden: live-action, 3D, anime eyes, redesigning YOU mid-batch.",
+            "",
+            f"DIRECTOR: {STICKMAN_FLOW_DIRECTOR}",
+            f"STYLE: {_style_text(bible)[:360]}",
+            "",
+            f"ANGLES on {label} (same moment, different stickman shot):",
+            "",
+        ]
+    else:
+        lines = [
+            f"Create {n} separate 16:9 cinematic documentary stills of ONE STORY MOMENT: {label.upper()}.",
+            climate,
+            "Each numbered still illustrates its OWN narrated event. Never interchange shots merely because their mood matches.",
+            "Create separate images, not a collage. Follow the assigned beats; don't invent a parallel story.",
+            "",
+            "HARD RULES:",
+            "- The same person must look like the same person across images (use character refs).",
+            "- Vary framing to clarify the action; keep location and time unless the story changes them.",
+            "- Forbidden: crowded coworking, rows of laptops, generic glass conference rooms,",
+            "  handshake, CEO portrait, anonymous extras filling the frame.",
+            "",
+            f"DIRECTOR: {FLOW_DIRECTOR_RULES}",
+            f"STYLE: {_style_text(bible)[:320]}",
+            "",
+            f"ANGLES on {label} (same moment, different photograph):",
+            "",
+        ]
     for i, num in enumerate(nums, start=1):
         v = by_num.get(num) or {}
         lines.append(f"{i}. {format_scene_line(v, masters, bible)}")
         lines.append("")
-    lines.extend(
-        [
-            "GENERAL RULES:",
-            "- 16:9; follow the declared STYLE exactly;",
-            "- protagonist visible and doing the action;",
-            "- period-accurate wardrobe, phones, cars, interiors;",
-            "- show the specific action and consequence assigned to that number;",
-            "- CLEAN plate: NO subtitles, captions, titles, lower-thirds, speech bubbles,",
-            "  logos, watermarks, or any readable on-image text (Spanish or English);",
-            "  voiceover/subs are added later in editing — never burn words into the frame;",
-            "- no collage; no stock office crowd.",
-        ]
-    )
+    if stick:
+        lines.extend(
+            [
+                "GENERAL RULES:",
+                "- 16:9 stickman cartoon; follow STYLE + WORLD LOCK;",
+                "- YOU the stickman visible and doing the action;",
+                "- show the specific action and consequence assigned to that number;",
+                "- CLEAN plate: NO subtitles, captions, titles, or readable on-image text;",
+                "- no collage; no photoreal people.",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "GENERAL RULES:",
+                "- 16:9; follow the declared STYLE exactly;",
+                "- protagonist visible and doing the action;",
+                "- period-accurate wardrobe, phones, cars, interiors;",
+                "- show the specific action and consequence assigned to that number;",
+                "- CLEAN plate: NO subtitles, captions, titles, lower-thirds, speech bubbles,",
+                "  logos, watermarks, or any readable on-image text (Spanish or English);",
+                "  voiceover/subs are added later in editing — never burn words into the frame;",
+                "- no collage; no stock office crowd.",
+            ]
+        )
     return "\n".join(lines).strip() + "\n"
 
 
@@ -1147,6 +1238,17 @@ def format_scene_line(
         master_hint = " Use " + ", ".join(refs) + " as identity reference."
     when = f" {period}." if period else ""
     place = f" {loc}." if loc else ""
+    if is_stickman_world(bible):
+        who = (
+            " Protagonist: YOU the locked stickman (CHAR_YOU) — round white head, black-dot eyes, "
+            "same hair silhouette and proportions in every shot. Supporting cast = stickmen only."
+        )
+        return (
+            f"{when}{place} {desc}{who} "
+            f"{cam} high-quality 2D stickman cartoon still, detailed environment, flat cel color. "
+            f"Same stickman climate, new angle — NEVER photoreal humans."
+            f"{master_hint}"
+        ).strip()
     people = _cast_names(visual, bible)
     who = (
         f" Protagonist in frame: {', '.join(people[:3])} — same face as their master reference."
@@ -1165,11 +1267,25 @@ def format_single_prompt(
     bible: dict[str, Any],
     masters: list[dict[str, Any]] | None = None,
 ) -> str:
-    if str((bible or {}).get("format") or "") == "check_als":
+    bible = ensure_stickman_bible(bible) if is_stickman_world(bible) else (bible or {})
+    fmt = str((bible or {}).get("format") or "")
+    if fmt in {"check_als", "stickman_pov", "stickman"} or is_stickman_world(bible):
         from src.documentary.formats.check_als.visuals import format_check_prompt
 
-        # Always go through format_check_prompt so TEXT HARD BAN is appended to cached prompts.
-        return format_check_prompt(visual, bible)
+        # Stickman / Check: always go through format_check_prompt (TEXT HARD BAN + YOU lock).
+        try:
+            return format_check_prompt(visual, bible)
+        except Exception:
+            pass
+        body = (
+            "Create ONE 16:9 high-quality 2D STICKMAN cartoon still. One story beat.\n"
+            f"{STICKMAN_WORLD_LOCK}\n"
+            "CLEAN plate: no subtitles, captions, titles, or any burned-in text.\n"
+            f"STYLE: {_style_text(bible)[:320]}\n"
+            f"DIRECTOR: {STICKMAN_FLOW_DIRECTOR}\n\n"
+            f"{format_scene_line(visual, bible=bible, masters=masters)}\n"
+        )
+        return body
     body = (
         "Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.\n"
         "Photoreal. No collage. No crowded office stock.\n"
