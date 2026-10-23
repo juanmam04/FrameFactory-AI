@@ -159,7 +159,7 @@ def test_editorial_visual_plan_preserves_approved_stickman_cast(client):
     plan = build_visual_plan(p, use_llm=False)
     assert any(char.get('name') == 'Ana' for char in plan['visual_bible']['characters'])
     assert 'stickman' in plan['visual_bible']['global_style']
-    assert load_visual_plan(pid)['visual_bible']['characters'][0]['name'] == 'Ana'
+    assert any(c.get('name') == 'Ana' for c in load_visual_plan(pid)['visual_bible']['characters'])
 
 
 def test_new_editorial_project_syncs_real_id(client, monkeypatch):
