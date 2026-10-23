@@ -349,6 +349,18 @@ STICKMAN_WORLD_LOCK = (
     "Supporting cast are also stickmen with locked designs. Never draw realistic humans."
 )
 
+FRAMEFACTORY_CINEMATIC_STYLE = (
+    "FRAMEFACTORY VISUAL IDENTITY LOCK: premium modern 2D illustrated animation. "
+    "Expressive recognizable stickman characters with consistent head shape, face, "
+    "hair, clothes, palette and proportions in every shot, adult acting and natural poses. "
+    "Detailed illustrated 2D environments with foreground, midground, background, "
+    "atmospheric depth, cinematic lighting and dramatic shadows. "
+    "Recurring locations MUST retain architecture, colors, doors, props and layout. "
+    "Every frame belongs to ONE cohesive animated film. Cinematic angles and composition. "
+    "No photos, photorealistic humans, live action, 3D, anime, cheap generic stick figures, "
+    "random redesigns, stock images or burned-in text."
+)
+
 STICKMAN_FLOW_DIRECTOR = (
     "You are the DIRECTOR for Google Flow in a stickman POV channel. "
     "One still = one story moment. Put YOU (the locked stickman protagonist) in the frame "
@@ -387,9 +399,15 @@ def ensure_stickman_bible(bible: dict[str, Any] | None, *, project: dict[str, An
 
     out["format"] = out.get("format") or ("check_als" if project and str(project.get("content_format") or "") == "check_als" else "stickman_pov")
     out["stickman_world"] = True
-    out["global_style"] = CHECK_STYLE
-    out["visual_style"] = CHECK_DIR
+    editorial_style = bool(project and project.get("editorial") is not None
+                           and str(project.get("content_format") or "") != "check_als")
+    out["global_style"] = FRAMEFACTORY_CINEMATIC_STYLE if editorial_style else CHECK_STYLE
+    out["visual_style"] = FRAMEFACTORY_CINEMATIC_STYLE if editorial_style else CHECK_DIR
     out["protagonist_bible"] = PROTAGONIST_BIBLE
+    if editorial_style:
+        out["character_style_lock"] = FRAMEFACTORY_CINEMATIC_STYLE
+        out["environment_style_lock"] = FRAMEFACTORY_CINEMATIC_STYLE
+        out["continuity_required"] = True
     chars = list(out.get("characters") or [])
     has_you = any(str(c.get("id") or "").upper() in {"CHAR_YOU", "YOU"} or "you" in str(c.get("name") or "").casefold() for c in chars if isinstance(c, dict))
     if not has_you:
@@ -1274,7 +1292,10 @@ def format_single_prompt(
 
         # Stickman / Check: always go through format_check_prompt (TEXT HARD BAN + YOU lock).
         try:
-            return format_check_prompt(visual, bible)
+            base_prompt = format_check_prompt(visual, bible)
+            if bible.get("character_style_lock"):
+                return FRAMEFACTORY_CINEMATIC_STYLE + "\\n" + base_prompt
+            return base_prompt
         except Exception:
             pass
         body = (

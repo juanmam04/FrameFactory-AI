@@ -349,7 +349,12 @@ def _generate_stage_content(stage: str, p: dict[str, Any], guidance: str) -> dic
         "(round white head, black-dot eyes, thin stick limbs, bold outlines, consistent hair) "
         "plus supporting stickman cast with invariant designs. locations array with architecture, "
         "props, time periods and continuity_rules array. STRICTLY no photorealistic human characters. "
-        "Every person is a stickman. Visual environments are detailed 2D illustrated.",
+        "Every person is a stickman. Visual environments are detailed 2D illustrated. "
+        "Keep each character head, hair, outfit, proportions, silhouette and palette identical "
+        "between scenes. Give every recurring location a locked layout, colors and props. "
+        "Use cinematic lighting, atmosphere, foreground/midground/background depth, purposeful "
+        "angles and adult expressive acting; avoid generic childish stick figures. "
+        "All images must look like frames of the same premium modern 2D animated film.",
         "production": "Produce script_plan with intended pacing, scenes and narration strategy; continuity_checks array and quality_gate describing meaningful editorial tests and visual asset requirements.",
     }[stage]
     # Approved feedback from the user's agent is part of every new editorial stage.

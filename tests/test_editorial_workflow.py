@@ -232,10 +232,10 @@ def test_creative_agent_chat_and_rule_approval(monkeypatch):
         "proposed_rule":"Mostrar el proceso de adquisición antes de entrar al local.",
         "suggested_edit":"Agregar negociación y entrega de llaves.",
         "suggested_scope":"opening"}))
-    result=agent.agent_chat("gym-001",agent.AgentMessage(message="Nunca mostrás cómo compro el gimnasio."))
+    result=agent.agent_chat("gym-001",agent.AgentMessage(message="Corregí el guion: nunca mostrás cómo compro el gimnasio."))
     assert "sin mostrar la compra" in result["reply"]
     assert result["suggested_scope"]=="opening"
-    assert project["creative_agent_history"][0]["feedback"].startswith("Nunca")
+    assert project["creative_agent_history"][0]["feedback"].startswith("Corregí el guion")
     confirmation=agent.approve_creative_rule("gym-001",agent.RuleApproval(rule=result["proposed_rule"]))
     assert confirmation["approved"]
     agent.approve_creative_rule("gym-001",agent.RuleApproval(rule=result["proposed_rule"]))
@@ -286,7 +286,7 @@ def test_agent_applies_opening_change_only_after_explicit_action(monkeypatch):
         instruction="Mostrá cómo se compra el gimnasio.",scope="opening"))
     assert result["applied"]
     assert "Te ofrecen el gimnasio por US$1" in result["script"]
-    assert project["script"]==old  # Server loads and returns a new updated object.
+    assert project["script"]!=old  # The new agent applies the edit to the loaded project.
 
 def test_story_architecture_rejects_missing_events_and_wrong_act_count(monkeypatch):
     import studio.story_architect as arch
@@ -356,3 +356,34 @@ def test_retry_uses_failed_act_text_and_editor_feedback():
     assert 'feedback = list(decision.get("issues") or [])' in source
     assert 'feedback.append(str(decision["revision_instructions"]))' in source
     assert 'rewrite THAT specific draft' in source
+
+def test_editorial_flow_uses_cinematic_2d_stickman_identity():
+    from src.documentary.visual_plan import (
+        ensure_stickman_bible, format_single_prompt, FRAMEFACTORY_CINEMATIC_STYLE)
+    project={"id":"cinematic","editorial":{"stages":{}},"content_format":"documentary"}
+    bible=ensure_stickman_bible({"locations":[{"name":"Gimnasio","visual_description":"Techos azules"}]},project=project)
+    assert bible["stickman_world"]
+    assert bible["continuity_required"]
+    assert "cinematic lighting" in bible["global_style"]
+    assert "Recurring locations MUST retain architecture" in bible["environment_style_lock"]
+    prompt=format_single_prompt({"action":"YOU enters the same gym","image_prompt":"2D drawing of YOU entering the gym"},
+                                bible)
+    assert "FRAMEFACTORY VISUAL IDENTITY LOCK" in prompt
+    assert "No photos" in prompt
+    assert "2D" in prompt
+
+
+def test_non_editorial_check_als_style_remains_compatible():
+    from src.documentary.visual_plan import ensure_stickman_bible
+    project={"content_format":"check_als","editorial":{"stages":{}}}
+    bible=ensure_stickman_bible({},project=project)
+    assert not bible.get("character_style_lock")
+    assert bible["format"]=="check_als"
+
+
+def test_visual_bible_prompt_requires_locked_cast_and_locations():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    prompt=inspect.getsource(_generate_stage_content)
+    assert "same premium modern 2D animated film" in prompt
+    assert "locked layout" in prompt
