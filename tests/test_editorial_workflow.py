@@ -356,3 +356,34 @@ def test_retry_uses_failed_act_text_and_editor_feedback():
     assert 'feedback = list(decision.get("issues") or [])' in source
     assert 'feedback.append(str(decision["revision_instructions"]))' in source
     assert 'rewrite THAT specific draft' in source
+
+def test_editorial_flow_uses_cinematic_2d_stickman_identity():
+    from src.documentary.visual_plan import (
+        ensure_stickman_bible, format_single_prompt, FRAMEFACTORY_CINEMATIC_STYLE)
+    project={"id":"cinematic","editorial":{"stages":{}},"content_format":"documentary"}
+    bible=ensure_stickman_bible({"locations":[{"name":"Gimnasio","visual_description":"Techos azules"}]},project=project)
+    assert bible["stickman_world"]
+    assert bible["continuity_required"]
+    assert "cinematic lighting" in bible["global_style"]
+    assert "Recurring locations MUST retain architecture" in bible["environment_style_lock"]
+    prompt=format_single_prompt({"action":"YOU enters the same gym","image_prompt":"2D drawing of YOU entering the gym"},
+                                bible)
+    assert "FRAMEFACTORY VISUAL IDENTITY LOCK" in prompt
+    assert "No photos" in prompt
+    assert "2D" in prompt
+
+
+def test_non_editorial_check_als_style_remains_compatible():
+    from src.documentary.visual_plan import ensure_stickman_bible
+    project={"content_format":"check_als","editorial":{"stages":{}}}
+    bible=ensure_stickman_bible({},project=project)
+    assert not bible.get("character_style_lock")
+    assert bible["format"]=="check_als"
+
+
+def test_visual_bible_prompt_requires_locked_cast_and_locations():
+    import inspect
+    from studio.editorial import _generate_stage_content
+    prompt=inspect.getsource(_generate_stage_content)
+    assert "same premium modern 2D animated film" in prompt
+    assert "locked layout" in prompt
