@@ -2133,10 +2133,12 @@ function paintCheckStory(ws, p) {
       toast("Historia aprobada — escribiendo guion…");
       renderProject();
       try {
+        const cached = loadLibraryCache().projects?.[p.id]?.project || null;
         const scripted = await withBusy("Escribiendo guion desde la historia…", () =>
           api(`/api/projects/${encodeURIComponent(p.id)}/script/generate`, {
             method: "POST",
             timeoutMs: 290000,
+            body: JSON.stringify(cached ? { project_snapshot: cached } : {}),
           })
         );
         state.project = scripted.project;
@@ -2319,10 +2321,12 @@ function paintScript(ws, p) {
     </div>`;
   const runGenScript = async () => {
     try {
-      const data = await withBusy("Escribiendo guion (puede tardar ~2 min)…", () =>
+      const cached = loadLibraryCache().projects?.[p.id]?.project || null;
+      const data = await withBusy("Escribiendo guion (puede tardar ~2–5 min)…", () =>
         api(`/api/projects/${encodeURIComponent(p.id)}/script/generate`, {
           method: "POST",
           timeoutMs: 290000,
+          body: JSON.stringify(cached ? { project_snapshot: cached } : {}),
         })
       );
       state.project = data.project;
@@ -2330,10 +2334,21 @@ function paintScript(ws, p) {
         .trim()
         .split(/\s+/)
         .filter(Boolean).length;
-      toast(words ? `Guion listo (~${words} palabras)` : "Guion vacío — reintentá");
+      const warns = (data.project?.script_warnings || []).filter(Boolean);
+      if (words) {
+        toast(
+          warns.length
+            ? `Guion listo (~${words} palabras) — hay avisos, revisalo`
+            : `Guion listo (~${words} palabras)`
+        );
+      } else {
+        toast("El servidor devolvió guion vacío — mirá el toast de error o reintentá");
+      }
       renderProject();
     } catch (e) {
-      toast(e.message || "Error al generar guion");
+      const msg = String(e.message || e.detail || "Error al generar guion");
+      toast(msg.length > 220 ? msg.slice(0, 220) + "…" : msg);
+      console.error("[Generate script]", e);
     }
   };
   $("#gen-script").onclick = () => runGenScript();

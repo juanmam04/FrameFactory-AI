@@ -46,8 +46,9 @@ def local_warnings(script,*,first=False,acquisition=False,other_acts=()):
     lower=script.casefold()
     if first and acquisition:
         beginning=lower[:1800]
-        acquisition_words=("compr","adquir","ofrec","ofert","entreg","purchase","bought","buy ","offer","handover","transfer")
-        handover_words=("llav","firm","contrato","propiet","keys","sign","contract","deed","handed")
+        acquisition_words=("compr","adquir","ofrec","ofert","entreg","hered","inherit",
+                           "purchase","bought","buy ","offer","handover","transfer","testament")
+        handover_words=("llav","firm","contrato","propiet","keys","sign","contract","deed","handed","herencia")
         if not (any(word in beginning for word in acquisition_words)
                 and any(word in beginning for word in handover_words)):
             warnings.append("El comienzo no desarrolla la adquisición ni la entrega.")
@@ -74,7 +75,8 @@ def is_acquisition(story):
               "business","company","gym","restaurant","factory","hotel","airline",
               "bakery","store","shop","theme park","parque de diversiones")
     transfer=("compr","adquir","purchase","bought","buy ","take over",
-              "te regalan","te entregan","por un dólar","por us$1","for $1")
+              "te regalan","te entregan","hered","inherit","te dejan",
+              "por un dólar","por us$1","for $1")
     return any(term in text for term in business) and any(term in text for term in transfer)
 
 def final_review(client,*,plan,script,acts,brief,rules):

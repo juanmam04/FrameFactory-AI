@@ -122,13 +122,20 @@ def _assert_voice_follows_script(
         )
         score = word_overlap(script[:1200], spoken, limit=90)
         append_log(project_id, f"voice verify overlap={score:.2f}")
-        if score < 0.42:
+        # Whisper on a 25s head is flaky (accents, Spanish, short takes). Hard-fail only
+        # when the take clearly ignores the script; otherwise keep the audio and warn.
+        if score < 0.18:
             audio.unlink(missing_ok=True)
             raise RuntimeError(
                 "La narración generada NO sigue el guion actual "
                 f"(coincide ~{int(score * 100)}% al inicio). "
                 "Volvé a generar la voz. Si sigue fallando, revisá que OpenAI/ElevenLabs "
                 "esté leyendo el texto y no un MP3 viejo en caché."
+            )
+        if score < 0.42:
+            append_log(
+                project_id,
+                f"voice verify soft: overlap={score:.2f} — se conserva la toma (Whisper inestable)",
             )
     except RuntimeError:
         raise

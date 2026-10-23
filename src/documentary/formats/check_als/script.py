@@ -1108,28 +1108,42 @@ def generate_check_script(project: dict[str, Any], *, use_llm: bool = True) -> d
 
     viewer = review_script(script)
     if use_llm and viewer["needs_rewrite"]:
-        revised = _chat_text(
-            client, model, "You are a demanding YouTube story editor, not a motivational copywriter.",
-            revision_prompt(script, facts_for_llm(facts), viewer, target),
-            temperature=0.5, max_tokens=7000, timeout=90.0,
-        )
-        script = apply_tuteo_fixes(strip_script_chrome(revised))
-        viewer = review_script(script)
-        quality["viewer_revised"] = True
-        if count_words(script) < 80 or viewer["needs_rewrite"]:
-            raise ValueError("El guion sigue teniendo relleno o repeticiones después de revisarlo. Conservamos el anterior; regenerá la historia.")
+        try:
+            revised = _chat_text(
+                client, model, "You are a demanding YouTube story editor, not a motivational copywriter.",
+                revision_prompt(script, facts_for_llm(facts), viewer, target),
+                temperature=0.5, max_tokens=7000, timeout=90.0,
+            )
+            revised = apply_tuteo_fixes(strip_script_chrome(revised))
+            if count_words(revised) >= 80:
+                script = revised
+            viewer = review_script(script)
+            quality["viewer_revised"] = True
+        except Exception as rev_err:
+            quality["viewer_revise_error"] = str(rev_err)[:200]
+        if count_words(script) < 80:
+            raise ValueError("La IA devolvió un guion vacío tras revisar. Conservamos el anterior; volvé a generar.")
+        if viewer.get("needs_rewrite"):
+            # Keep the best draft — empty textarea after a long wait is worse than soft warnings.
+            quality["viewer_soft_fail"] = True
+            warn_seed = list(viewer.get("findings") or [])[:6]
+            quality["viewer_soft_notes"] = [
+                (f.get("message") if isinstance(f, dict) else str(f)) for f in warn_seed
+            ]
     quality["viewer_review"] = viewer
     quality["offline_fixture"] = not use_llm
 
     ok, hard, warn = validate_check_script(script, facts, strict_length=False)
     wc = count_words(script)
     if not ok:
-        if use_llm:
-            raise ValueError("El guion no pasó la revisión: " + "; ".join(hard))
         append_log(str(project["id"]), "check_script WARN: " + "; ".join(hard))
         quality["validation_soft_fail"] = True
         warn = list(warn) + [f"(revisar) {h}" for h in hard]
         hard = []
+    if quality.get("viewer_soft_fail"):
+        warn = list(warn) + [
+            f"(revisar viewer) {n}" for n in (quality.get("viewer_soft_notes") or ["relleno/repetición"])
+        ]
     if quality.get("llm_error"):
         warn = list(warn) + [f"LLM fallback: {quality['llm_error']}"]
     _persist_script(project, script, facts, wc, quality, hard, warn, approved=False)

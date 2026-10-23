@@ -412,6 +412,49 @@ def _push_clip_dir(project_id: str) -> None:
             raise
 
 
+def _ensure_black_placeholder_stills(project: dict[str, Any], *, duration_sec: float = 0) -> int:
+    """If the episode has no stills yet, write black PNGs so render can finish today.
+
+    Uses shot-list count when available; otherwise covers ~6s of voice per frame.
+    Returns how many files were written (0 if stills already exist or Pillow missing).
+    """
+    pid = str(project.get("id") or "")
+    if not pid:
+        return 0
+    existing, _ = ordered_images_for_render(pid)
+    if existing:
+        return 0
+    n = 0
+    try:
+        from src.documentary.flow_pack import load_shot_list
+
+        n = len(load_shot_list(pid).get("shots") or [])
+    except Exception:
+        n = 0
+    if n < 1:
+        n = max(8, int(math.ceil(max(float(duration_sec or 0), 48.0) / 6.0)))
+    n = min(n, 120)
+    try:
+        from PIL import Image
+
+        from src.documentary.import_images import import_images
+    except Exception as err:
+        append_log(pid, f"black stills skipped: {err}")
+        return 0
+    src = project_dir(pid) / "flow-import-auto"
+    src.mkdir(parents=True, exist_ok=True)
+    for i in range(1, n + 1):
+        Image.new("RGB", (1920, 1080), color=(0, 0, 0)).save(src / f"{i:03d}.png")
+    try:
+        import_images(project, src)
+    except Exception as err:
+        append_log(pid, f"black stills import failed: {err}")
+        return 0
+    set_checkpoint(project, "images_imported", True)
+    save_project(project)
+    return n
+
+
 def assemble_and_render(
     project: dict[str, Any],
     *,
@@ -549,7 +592,13 @@ def assemble_and_render(
         if not preview["voice_ok"]:
             raise RuntimeError("Voice is not ready yet. Generate voice before rendering.")
         if not preview["image_count"] and not allow_missing:
-            raise RuntimeError("No images found to assemble. Import Flow stills first.")
+            filled = _ensure_black_placeholder_stills(project, duration_sec=float(duration or 0))
+            if filled:
+                append_log(pid, f"render: auto black stills ×{filled} (sin Flow)")
+                project = load_project(pid)
+                preview = build_preview(project)
+            if not preview["image_count"]:
+                raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
         music = _resolve_music(project)
         edit = edit_settings(project)
@@ -566,7 +615,15 @@ def assemble_and_render(
                 project, duration, max_sec=float(edit["seconds_per_image"])
             )
         if not images:
-            raise RuntimeError("No images found to assemble. Import Flow stills first.")
+            filled = _ensure_black_placeholder_stills(project, duration_sec=float(duration or 0))
+            if filled:
+                append_log(pid, f"render: retry black stills ×{filled}")
+                project = load_project(pid)
+                from src.documentary.reuse_stills import plan_still_timeline as _plan
+
+                images, sec, reuse = _plan(project, duration, max_sec=float(edit["seconds_per_image"]))
+            if not images:
+                raise RuntimeError("No images found to assemble. Import Flow stills first.")
 
         if not resume:
             _wipe_old_render(pid, wipe_clips=True)

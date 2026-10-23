@@ -676,7 +676,7 @@ def create_app() -> FastAPI:
             step = "story"
         past_script = step in {"flow", "voice", "music", "preview", "render", "publish", "subs", "images"}
         if past_script and p.get("editorial") and (not story_ok or not p.get("script_approved")):
-            raise HTTPException(409, "Aprobá la preproducción y auditá y aprobá el guion antes de avanzar.")
+            raise HTTPException(409, "Aprobá la preproducción y el guion (Seguir a imágenes) antes de avanzar.")
         if past_script and not p.get("editorial") and str(p.get("script") or "").strip() and not p.get("script_approved"):
             p["script_approved"] = True
             p["fact_check_status"] = "approved"
@@ -752,14 +752,28 @@ def create_app() -> FastAPI:
 
     # ── script ──────────────────────────────────────────────────────
     @app.post("/api/projects/{project_id}/script/generate")
-    def script_generate(project_id: str):
+    async def script_generate(project_id: str, request: Request):
         try:
             if on_vercel():
                 from src.documentary import cloud_sync
 
                 if cloud_sync.configured():
                     _sync_safe(lambda: cloud_sync.pull_project(project_id, light=True))
-            source_project = load_project(project_id)
+            recovery = None
+            try:
+                body = await request.json()
+                if isinstance(body, dict):
+                    recovery = body.get("project_snapshot")
+            except Exception:
+                recovery = None
+            try:
+                source_project = load_project(project_id)
+            except FileNotFoundError:
+                if not isinstance(recovery, dict):
+                    raise HTTPException(404, "Proyecto no encontrado en disco. Reabrí el episodio desde Library.") from None
+                from studio.editorial import _load as editorial_load
+
+                source_project = editorial_load(project_id, recovery)
             # Legacy projects remain compatible. New editorial projects must pass every approval.
             if source_project.get("editorial"):
                 from studio.editorial import current as editorial_current, STAGE_IDS
@@ -774,6 +788,8 @@ def create_app() -> FastAPI:
             if p.get("editorial"):
                 p["editorial_audit"] = {}
                 save_project(p)
+            if not str(p.get("script") or "").strip():
+                raise HTTPException(400, "Generate script terminó sin texto. Revisá la API key de OpenAI y reintentá.")
             return {"project": _project_full(p)}
         except HTTPException:
             raise
@@ -797,9 +813,20 @@ def create_app() -> FastAPI:
                 from studio.editorial import current, STAGE_IDS
                 if not all(current(candidate)["stages"][k]["approved"] for k in STAGE_IDS):
                     raise HTTPException(409, "Aprobá todas las etapas de preproducción primero.")
+                if not str(candidate.get("script") or "").strip():
+                    raise HTTPException(409, "No hay guion. Tocá Generate script primero.")
                 audit = candidate.get("editorial_audit") or {}
-                if audit.get("verdict") != "pass":
-                    raise HTTPException(409, "El guion necesita auditoría editorial aprobada antes de pasar a producción.")
+                # Soft gate: missing/failed audit becomes a warning, not a dead end.
+                if audit.get("verdict") and audit.get("verdict") != "pass":
+                    warns = list(candidate.get("script_warnings") or [])
+                    warns.append(
+                        "Seguiste a imágenes sin auditoría en pass — revisá el guion cuando puedas."
+                    )
+                    candidate["script_warnings"] = list(dict.fromkeys(warns))[:12]
+                elif not audit.get("verdict"):
+                    warns = list(candidate.get("script_warnings") or [])
+                    warns.append("Pasaste a imágenes sin auditar el guion.")
+                    candidate["script_warnings"] = list(dict.fromkeys(warns))[:12]
             p = approve_script(candidate)
             p["ui_step"] = "flow"
             save_project(p)
