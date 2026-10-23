@@ -1,0 +1,11 @@
+=== STILL 001 · intro ===
+Un hotel en quiebra aparece en pantalla, con un stickman preocupado viendo el letrero de 'CERRADO'.
+
+=== STILL 002 · conflict ===
+El personal se agrupa en huelga, con pancartas que dicen '¡No más!' mientras el stickman intenta dialogar.
+
+=== STILL 003 · action ===
+Los huéspedes huyen del hotel, dejando solo al stickman en la entrada, luciendo frustrado.
+
+=== STILL 004 · decision ===
+El stickman se enfrenta a una bifurcación: un camino hacia 'PELEAR' y otro hacia 'VENDER', luciendo indeciso.

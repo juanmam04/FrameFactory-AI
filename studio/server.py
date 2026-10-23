@@ -142,11 +142,13 @@ _SKIP_SYNC = {
     "/health",
     "/",
     "/voice-lab",
+    "/shorts-lab",
     "/sw.js",
     "/api/ping",
     "/api/bootstrap",  # must stay instant — never block Home on Supabase pull
     "/api/ideas",
     "/api/voice-lab/status",
+    "/api/shorts-lab/generate",
     "/api/credentials/recheck",
     "/api/sync/status",
     "/api/sync/push",
@@ -333,6 +335,67 @@ def create_app() -> FastAPI:
                     headers={"Cache-Control": "no-store"},
                 )
         raise HTTPException(404, "Audio no encontrado (se borró o expiró).")
+
+    @app.get("/shorts-lab", response_class=HTMLResponse)
+    def shorts_lab_page():
+        html_path = ROOT / "templates" / "shorts-lab.html"
+        if not html_path.is_file():
+            raise HTTPException(404, "shorts-lab.html missing")
+        return HTMLResponse(
+            html_path.read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
+
+    @app.post("/api/shorts-lab/generate")
+    def shorts_lab_generate(body: ShortsLabBody):
+        try:
+            from studio.shorts_lab import build_shorts_pack
+
+            pack = build_shorts_pack(
+                body.script,
+                language=body.language or "es",
+                still_count=body.still_count,
+                duration_sec=body.duration_sec,
+            )
+            return pack
+        except Exception as e:
+            raise HTTPException(400, _err(e)) from e
+
+    @app.get("/api/shorts-lab/file/{job_id}/{name}")
+    def shorts_lab_file(job_id: str, name: str):
+        from studio.shorts_lab import job_dir
+
+        try:
+            root = job_dir(job_id)
+        except FileNotFoundError as exc:
+            raise HTTPException(404, "Pack no encontrado") from exc
+        safe = Path(name).name
+        if safe not in {"captions.srt", "ALL-PROMPTS.txt", "hooks.txt", "hashtags.txt", "script.txt", "pack.json"}:
+            raise HTTPException(404, "Archivo no permitido")
+        path = root / safe
+        if not path.is_file():
+            raise HTTPException(404, "Archivo no encontrado")
+        media = "application/json" if safe.endswith(".json") else "text/plain; charset=utf-8"
+        return FileResponse(path, media_type=media, filename=safe, headers={"Cache-Control": "no-store"})
+
+    @app.get("/api/shorts-lab/zip/{job_id}")
+    def shorts_lab_zip(job_id: str):
+        from studio.shorts_lab import zip_job
+
+        try:
+            raw = zip_job(job_id)
+        except FileNotFoundError as exc:
+            raise HTTPException(404, "Pack no encontrado") from exc
+        from fastapi.responses import Response
+
+        return Response(
+            content=raw,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f'attachment; filename="shorts-{job_id}.zip"',
+                "Cache-Control": "no-store",
+            },
+        )
 
     @app.get("/sw.js")
     def service_worker():
@@ -2112,6 +2175,13 @@ class VoiceLabBody(BaseModel):
     voice_id: str | None = None
     speed: float = 1.1
     filename: str = "narracion"
+
+
+class ShortsLabBody(BaseModel):
+    script: str = Field(min_length=40, max_length=80_000)
+    language: str = "es"
+    still_count: int | None = None
+    duration_sec: float | None = None
 
 
 class VisualEditBody(BaseModel):

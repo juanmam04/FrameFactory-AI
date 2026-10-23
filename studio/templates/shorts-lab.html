@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Shorts Lab — FrameFactory</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg"/>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0c141c; --panel: #14202b; --ink: #e8f0f5; --muted: #8aa0b0;
+      --line: #243746; --accent: #2dd4bf; --accent-ink: #042f2e; --warn: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ink);
+      background:
+        radial-gradient(900px 500px at 12% -8%, #3a1a4a 0%, transparent 55%),
+        radial-gradient(700px 420px at 100% 0%, #163028 0%, transparent 50%),
+        var(--bg);
+    }
+    header {
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+      padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--line);
+      background: rgba(12,20,28,.88); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5;
+    }
+    .brand strong { font-family: Fraunces, Georgia, serif; font-size: 1.25rem; }
+    .brand small { display: block; color: var(--muted); font-size: .78rem; margin-top: .15rem; }
+    .links { display: flex; gap: .55rem; flex-wrap: wrap; }
+    .links a {
+      color: var(--ink); text-decoration: none; border: 1px solid var(--line);
+      padding: .5rem .85rem; border-radius: 999px; font-weight: 600; font-size: .88rem;
+    }
+    .links a:hover { border-color: var(--accent); color: var(--accent); }
+    main { width: min(980px, calc(100% - 2rem)); margin: 1.6rem auto 3rem; display: grid; gap: 1.1rem; }
+    h1 { font-family: Fraunces, Georgia, serif; font-size: clamp(1.7rem, 4vw, 2.4rem); margin: 0 0 .35rem; letter-spacing: -.03em; }
+    .lead { margin: 0; color: var(--muted); line-height: 1.5; max-width: 44rem; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+      padding: 1.1rem 1.15rem 1.25rem; display: grid; gap: .85rem;
+    }
+    label { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    textarea, input, select {
+      width: 100%; background: #0d1620; color: var(--ink); border: 1px solid var(--line);
+      border-radius: 12px; padding: .85rem .95rem; font: inherit; line-height: 1.45;
+    }
+    textarea { min-height: 220px; resize: vertical; }
+    textarea:focus, input:focus, select:focus { outline: 2px solid rgba(45,212,191,.35); border-color: var(--accent); }
+    .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .7rem; }
+    @media (max-width: 720px) { .row { grid-template-columns: 1fr; } }
+    .field { display: grid; gap: .35rem; }
+    .actions { display: flex; gap: .65rem; flex-wrap: wrap; align-items: center; }
+    button {
+      border: 0; border-radius: 12px; padding: .85rem 1.1rem; font: inherit; font-weight: 700; cursor: pointer;
+    }
+    button:disabled { opacity: .55; cursor: wait; }
+    .primary { background: var(--accent); color: var(--accent-ink); }
+    .ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); text-decoration: none; display: inline-flex; align-items: center; }
+    .status { color: var(--muted); font-size: .92rem; }
+    .status.err { color: #fca5a5; }
+    .status.ok { color: var(--accent); }
+    .out { display: none; gap: 1rem; }
+    .out.on { display: grid; }
+    .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .chip { background: #0d1620; border: 1px solid var(--line); border-radius: 999px; padding: .35rem .7rem; font-size: .85rem; }
+    pre, .cue-box {
+      background: #0d1620; border: 1px solid var(--line); border-radius: 12px;
+      padding: .85rem; max-height: 280px; overflow: auto; white-space: pre-wrap; font-size: .88rem; line-height: 1.45; margin: 0;
+    }
+    .prompt-card { border: 1px solid var(--line); border-radius: 12px; padding: .8rem; background: #0d1620; display: grid; gap: .45rem; }
+    .prompt-card strong { font-size: .8rem; color: var(--muted); letter-spacing: .03em; text-transform: uppercase; }
+    .prompt-list { display: grid; gap: .65rem; max-height: 420px; overflow: auto; }
+    .note { font-size: .85rem; color: var(--muted); border-left: 3px solid var(--warn); padding-left: .75rem; line-height: 1.45; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <strong>Shorts Lab</strong>
+      <small>Guion → prompts Flow + subtítulos virales · aparte del episodio largo</small>
+    </div>
+    <div class="links">
+      <a href="/voice-lab">Voice Lab</a>
+      <a href="/">← Studio</a>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h1>Armá el short en un paso</h1>
+      <p class="lead">Pegá el guion. Te devuelvo hooks, subtítulos cortos (SRT), prompts verticales 9:16 para Google Flow y el pack descargable. La voz opcional está en Voice Lab.</p>
+    </section>
+    <section class="panel">
+      <div class="field">
+        <label for="script">Guion del short</label>
+        <textarea id="script" placeholder="Pegá acá la narración del short…"></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="lang">Idioma</label>
+          <select id="lang">
+            <option value="es" selected>Español</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="stills">Stills / prompts</label>
+          <select id="stills">
+            <option value="auto" selected>Auto</option>
+            <option value="6">6</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="duration">Duración objetivo (seg)</label>
+          <input id="duration" type="number" min="8" max="180" placeholder="Auto desde el texto"/>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="go" type="button">Generar pack Short</button>
+        <a class="ghost" id="dl-zip" hidden>Descargar ZIP</a>
+        <a class="ghost" id="dl-srt" hidden>Descargar SRT</a>
+        <a class="ghost" id="dl-prompts" hidden>Descargar prompts</a>
+        <span class="status" id="status"></span>
+      </div>
+      <p class="note">No monta el MP4. Vos generás las imágenes en Flow con los prompts, ponés los subtítulos en CapCut/Premiere y (si querés) la voz desde Voice Lab.</p>
+    </section>
+    <section class="out" id="out">
+      <div class="panel">
+        <label>Hooks</label>
+        <div class="chips" id="hooks"></div>
+        <label>CTA</label>
+        <div id="cta" class="chip"></div>
+        <label>Hashtags</label>
+        <div class="chips" id="tags"></div>
+      </div>
+      <div class="panel">
+        <label>Subtítulos virales</label>
+        <div class="cue-box" id="cues"></div>
+      </div>
+      <div class="panel">
+        <label>Prompts Flow (9:16)</label>
+        <div class="prompt-list" id="prompts"></div>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/shorts-lab.js?v=20261023-s1" type="module"></script>
+</body>
+</html>

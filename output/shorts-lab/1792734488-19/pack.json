@@ -1,0 +1,67 @@
+{
+  "hooks": [
+    "¿Salvarás el hotel en quiebra?",
+    "72 horas para tomar una decisión",
+    "¿Peleas o vendes? ¡Descúbrelo!"
+  ],
+  "captions": [
+    {
+      "start": 0.0,
+      "end": 5.0,
+      "text": "Heredas un hotel en quiebra."
+    },
+    {
+      "start": 5.0,
+      "end": 10.0,
+      "text": "Tienes 72 horas."
+    },
+    {
+      "start": 10.0,
+      "end": 15.0,
+      "text": "El personal hace huelga."
+    },
+    {
+      "start": 15.0,
+      "end": 20.0,
+      "text": "¿Peleas o vendes?"
+    }
+  ],
+  "srt": "1\n00:00:00,000 --> 00:00:05,000\nHeredas un hotel en quiebra.\n\n2\n00:00:05,000 --> 00:00:10,000\nTienes 72 horas.\n\n3\n00:00:10,000 --> 00:00:15,000\nEl personal hace huelga.\n\n4\n00:00:15,000 --> 00:00:20,000\n¿Peleas o vendes?\n",
+  "flow_prompts": [
+    {
+      "n": 1,
+      "beat": "intro",
+      "prompt": "Un hotel en quiebra aparece en pantalla, con un stickman preocupado viendo el letrero de 'CERRADO'."
+    },
+    {
+      "n": 2,
+      "beat": "conflict",
+      "prompt": "El personal se agrupa en huelga, con pancartas que dicen '¡No más!' mientras el stickman intenta dialogar."
+    },
+    {
+      "n": 3,
+      "beat": "action",
+      "prompt": "Los huéspedes huyen del hotel, dejando solo al stickman en la entrada, luciendo frustrado."
+    },
+    {
+      "n": 4,
+      "beat": "decision",
+      "prompt": "El stickman se enfrenta a una bifurcación: un camino hacia 'PELEAR' y otro hacia 'VENDER', luciendo indeciso."
+    }
+  ],
+  "hashtags": [
+    "HotelEnQuiebra",
+    "72Horas",
+    "DecisiónCrucial",
+    "Huelga",
+    "PeleaOVende",
+    "Aventura",
+    "Drama",
+    "Retos"
+  ],
+  "cta": "¡Descubre qué harías tú!",
+  "duration_sec": 20.0,
+  "still_count": 4,
+  "word_count": 19,
+  "source": "llm"
+}
