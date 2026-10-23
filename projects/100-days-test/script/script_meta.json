@@ -1,4 +1,51 @@
 {
-  "word_count": 240,
-  "target_words": 800
+  "word_count": 252,
+  "target_words": 800,
+  "target_range": [
+    1800,
+    2200
+  ],
+  "template": "business_documentary_en",
+  "language": "en",
+  "workflow": "documentary",
+  "pov": "third_person",
+  "factuality": "nonfiction",
+  "research_thin": false,
+  "story_plan": true,
+  "quality": {
+    "heuristic": {
+      "pass": false,
+      "scores": {
+        "filler_language": 1.0,
+        "specificity": 0.9444444444444445,
+        "repetition": 1.0,
+        "ending": 0.4,
+        "length": 0.4,
+        "overall": 0.7488888888888889
+      },
+      "problems": [
+        "Ending is abrupt \u2014 story stops mid-aftermath instead of landing.",
+        "Script is short (~252 words)."
+      ],
+      "revision_instructions": [
+        "Replace generalizations with concrete events, names, amounts, and decisions from the Story Plan beats.",
+        "Cut repeated morals / identical conclusions.",
+        "Land the Story Plan ending_state as events (year, number), then answer the cold open. Do not stop mid-aftermath.",
+        "Keep spoken English; short paragraphs; causality (A enables B)."
+      ],
+      "word_count": 252,
+      "banned_hits": [],
+      "generic_hits": []
+    },
+    "revised": false,
+    "viewer_review": {
+      "method": "editorial_heuristics",
+      "findings": [],
+      "needs_rewrite": false,
+      "opening": "[DOGFOOD MOCK \u2014 NOT FOR PUBLICATION] The Rise and Fall of WeWork. This is a placeholder third-person English documentary narration used only to verify the pipeline. In production, replace with a fact-checked English script grounded in research and an approved Story Plan. Research notes were provided and must constrain any real generation. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later",
+      "word_count": 252,
+      "requires_human_review": true
+    }
+  },
+  "legacy_storytime_context": false
 }

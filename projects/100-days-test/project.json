@@ -2,40 +2,53 @@
   "id": "100-days-test",
   "slug": "the-rise-and-fall-of-wework",
   "mode": "documentary",
+  "content_format": "documentary",
   "title": "The Rise and Fall of WeWork",
   "topic": "The Rise and Fall of WeWork",
   "language": "en",
   "target_words": 800,
   "target_duration_min": [
-    8,
-    12
+    11,
+    15
   ],
   "research_notes": "WeWork was co-founded by Adam Neumann. SoftBank was a major investor. The 2019 IPO attempt collapsed amid governance and valuation concerns. UNKNOWN: exact private valuation peaks — do not invent.",
   "sources": [
     "Public reporting on WeWork IPO attempt (2019)"
   ],
-  "script": "[DOGFOOD MOCK — NOT FOR PUBLICATION] The Rise and Fall of WeWork. This is a placeholder documentary narration used only to verify the pipeline. In production, replace with a fact-checked English script. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.",
+  "research_skipped": false,
+  "script": "[DOGFOOD MOCK — NOT FOR PUBLICATION] The Rise and Fall of WeWork. This is a placeholder third-person English documentary narration used only to verify the pipeline. In production, replace with a fact-checked English script grounded in research and an approved Story Plan. Research notes were provided and must constrain any real generation. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later restructuring followed.",
   "fact_check_status": "approved",
   "script_approved": true,
-  "voice_speed": 1.0,
+  "story_plan": {},
+  "story_plan_approved": false,
+  "check_story": {},
+  "check_story_approved": false,
+  "voice_speed": 1.2,
   "music_path": "",
-  "music_volume": 0.12,
+  "music_volume": 0.08,
   "subtitles_enabled": true,
   "batch_size": 10,
   "flow_shot_index": 0,
   "flow_batch_index": 0,
+  "session_id": "",
+  "episode_number": 114,
+  "idea": {},
+  "concept": {},
+  "creative_profile_snapshot": {},
+  "ui_step": "voice",
   "checkpoints": {
     "script_ready": true,
     "flow_pack_ready": true,
     "images_imported": true,
     "voice_ready": true,
     "assembly_ready": true,
-    "render_ready": true
+    "render_ready": true,
+    "captions_ready": true
   },
   "import_report": {
-    "expected": 11,
-    "ready": 11,
-    "imported_files": 11,
+    "expected": 20,
+    "ready": 20,
+    "imported_files": 20,
     "missing": [],
     "duplicates": [],
     "unknown_numbers": [],
@@ -43,33 +56,152 @@
     "dimension_issues": [],
     "source_dir": "/Users/juanmamartinez/FrameFactory-AI/projects/100-days-test/flow-import"
   },
+  "youtube": {},
   "preview": {
-    "image_count": 11,
+    "image_count": 20,
     "missing_images": [],
     "voice_ok": true,
-    "voice_duration_sec": 4.4,
-    "seconds_per_image": 0.4,
+    "voice_duration_sec": 8.0,
+    "seconds_per_image": 2.8,
     "warnings": [],
     "ready_to_assemble": true
   },
   "errors": [],
-  "created_at": "2026-08-12T03:55:56Z",
-  "updated_at": "2026-08-12T03:55:59Z",
+  "created_at": "2026-10-23T05:20:19Z",
+  "updated_at": "2026-10-23T05:20:36Z",
+  "script_quality": {
+    "heuristic": {
+      "pass": false,
+      "scores": {
+        "filler_language": 1.0,
+        "specificity": 0.9444444444444445,
+        "repetition": 1.0,
+        "ending": 0.4,
+        "length": 0.4,
+        "overall": 0.7488888888888889
+      },
+      "problems": [
+        "Ending is abrupt — story stops mid-aftermath instead of landing.",
+        "Script is short (~252 words)."
+      ],
+      "revision_instructions": [
+        "Replace generalizations with concrete events, names, amounts, and decisions from the Story Plan beats.",
+        "Cut repeated morals / identical conclusions.",
+        "Land the Story Plan ending_state as events (year, number), then answer the cold open. Do not stop mid-aftermath.",
+        "Keep spoken English; short paragraphs; causality (A enables B)."
+      ],
+      "word_count": 252,
+      "banned_hits": [],
+      "generic_hits": []
+    },
+    "revised": false,
+    "viewer_review": {
+      "method": "editorial_heuristics",
+      "findings": [],
+      "needs_rewrite": false,
+      "opening": "[DOGFOOD MOCK — NOT FOR PUBLICATION] The Rise and Fall of WeWork. This is a placeholder third-person English documentary narration used only to verify the pipeline. In production, replace with a fact-checked English script grounded in research and an approved Story Plan. Research notes were provided and must constrain any real generation. Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses. The public listing was withdrawn. SoftBank arranged a rescue. Later",
+      "word_count": 252,
+      "requires_human_review": true
+    }
+  },
+  "script_editorial_notes": [],
+  "script_warnings": [],
   "visual_analysis": {
-    "shot_count": 11,
+    "shot_count": 20,
     "path": "flow-pack/visual_analysis.json"
   },
+  "visual_plan": {
+    "stats": {
+      "total": 20,
+      "flow": 20,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 20
+      },
+      "flow_batches": 3,
+      "master_references": 2
+    },
+    "batch_count": 3,
+    "path": "flow-pack/visual-plan.json"
+  },
   "flow_pack": {
-    "shot_count": 11,
-    "batch_size": 10
+    "shot_count": 20,
+    "batch_size": 10,
+    "stats": {
+      "total": 20,
+      "flow": 20,
+      "real_or_other": 0,
+      "by_type": {
+        "FLOW_REENACTMENT": 20
+      },
+      "flow_batches": 3,
+      "master_references": 2
+    }
   },
   "voice": {
     "path": "audio/narration.mp3",
-    "duration_sec": 4.4,
-    "speed": 1.0
+    "duration_sec": 8.0,
+    "speed": 1.0,
+    "script_hash": "9730b5b89375eb6690cd",
+    "stale": false,
+    "stale_reason": "",
+    "audio_sha": "1a3199aca79986f44b891fac",
+    "audio_bytes": 32258
   },
   "render": {
+    "need_continue": false,
+    "still_relpaths": [
+      "images/001.png",
+      "images/002.png",
+      "images/003.png",
+      "images/004.png",
+      "images/005.png",
+      "images/006.png",
+      "images/007.png",
+      "images/008.png",
+      "images/009.png",
+      "images/010.png",
+      "images/011.png",
+      "images/012.png",
+      "images/013.png",
+      "images/014.png",
+      "images/015.png",
+      "images/016.png",
+      "images/017.png",
+      "images/018.png",
+      "images/019.png",
+      "images/020.png"
+    ],
+    "seconds_per_image": 2.8,
+    "reuse": {
+      "available": 20,
+      "needed": 20,
+      "gaps": 0,
+      "method": "own",
+      "filled": 0
+    },
+    "kb_total": 20,
+    "width": 1920,
+    "height": 1080,
+    "kb_done": 20,
+    "percent": 100,
+    "stage": "done",
+    "message": "Terminado · Full HD 1080p · subtítulos incluidos.",
+    "updated_at": "2026-10-23T05:20:34Z",
+    "whisper_attempts": 1,
+    "state": "done",
     "path": "render/final.mp4",
-    "seconds_per_image": 2.5
+    "fps": 24,
+    "error": "",
+    "finished_at": "2026-10-23T05:20:36Z"
+  },
+  "captions": {
+    "path": "render/captions.srt",
+    "cues": 1,
+    "burned": true,
+    "source": "whisper",
+    "voice_fp": "8.00:32258",
+    "voice_duration_sec": 8.0,
+    "video": "render/final.mp4"
   }
 }

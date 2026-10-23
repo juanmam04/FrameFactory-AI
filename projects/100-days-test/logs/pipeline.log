@@ -1,6 +1,13 @@
-2026-08-12T03:55:56Z script generated words=240
-2026-08-12T03:55:56Z script APPROVED
-2026-08-12T03:55:56Z visual analysis shots=11
-2026-08-12T03:55:56Z flow pack exported shots=11
-2026-08-12T03:55:57Z import ready=11/11 missing=0
-2026-08-12T03:55:59Z render ok → /Users/juanmamartinez/FrameFactory-AI/projects/100-days-test/render/final.mp4
+2026-10-23T05:20:19Z Workflow: documentary | Template: business_documentary_en | Language: en | POV: third_person | Factuality: nonfiction | StoryPlan: False approved=False beats=0 | Topic: 'The Rise and Fall of WeWork' | Target words: 800 | Research chars: 196 | Sources: 1 | Legacy storytime context: NONE
+2026-10-23T05:20:19Z script generated words=252 template=business_documentary_en
+2026-10-23T05:20:19Z script APPROVED
+2026-10-23T05:20:19Z visual analysis shots=20
+2026-10-23T05:20:19Z visual_plan visuals=20 flow=20 batches=3
+2026-10-23T05:20:19Z flow pack exported visuals=20 flow=20 batches=3
+2026-10-23T05:20:19Z sync READY from images ready=20
+2026-10-23T05:20:19Z import ready=20/20 missing=0
+2026-10-23T05:20:22Z captions aligned via whisper cues=1
+2026-10-23T05:20:22Z captions srt cues=1 source=whisper
+2026-10-23T05:20:22Z captions srt ready source=whisper
+2026-10-23T05:20:36Z captions burned into final.mp4
+2026-10-23T05:20:36Z render ok → /Users/juanmamartinez/FrameFactory-AI/projects/100-days-test/render/final.mp4 Full HD 1080p captions=True

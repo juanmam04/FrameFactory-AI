@@ -1,31 +1,26 @@
-SHOT 009
+VISUAL 009
 
+TYPE: FLOW_REENACTMENT
 EXPECTED FILE: 009.png
+STORY BEAT: 
+DURATION TARGET: 7s
+KEN BURNS: pan_right
 
 NARRATION:
-The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press.
+Adam Neumann co-founded the company. SoftBank invested. The 2019 IPO filing exposed losses.
+
+DESCRIPTION:
+Adam Neumann co-founded the company. close up framing of this same action.
 
 REFERENCES:
-LOC_001, LOC_002
-
-CONTINUITY:
-same location as previous; follow from shot 008
-
-SHOT TYPE:
-medium_shot
-
-CAMERA:
-close-up
-
-ACTION:
-The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interacción con objeto/persona y gesto de urgencia en progreso.
+CHAR_001
 
 PROMPT:
-GLOBAL STYLE: Documentary cinematic realism, 16:9.
-CURRENT ACTION: The company grew quickly, raised capital, expanded offices, then faced a public reckoning as numbers failed to match the story sold to investors and the press. Acción física visible: movimiento corporal concreto, interac
-ENVIRONMENT: lugar principal de la historia
-CAMERA: close-up
-LIGHTING: indefinido
-CONTINUITY: same location as previous; follow from shot 008
-REFERENCE: Prefer previously generated master refs for recurring people/places; do not reinvent wardrobe or architecture.
-DETAIL: STRUCTURAL CORE (MANDATORY, FIRST): Main character or focal subject clearly visible Physical action in progress (mid-action, not a static poster shot) Environment readable and tied to the location (not a blank studio) Story-relevant props and characters on screen no empty white background no generic poster pose — show a real story moment CONTEXT LAYER (SECOND): location: lugar principal de la historia camera: close-up composition: foreground action + readable context movement: Movimiento físico 
+Create ONE 16:9 cinematic documentary still. One story beat. One protagonist.
+Photoreal. No collage. No crowded office stock.
+CLEAN plate: no subtitles, captions, titles, or any burned-in text (added later in edit).
+STYLE: Cinematic true-story documentary stills, 16:9. Each frame is a STORY BEAT with a named protagonist doing one specific action in a specific place at a specific time. Faces, hands, consequences. Vary locations hard: street, apartment, jet, empty hallway, printing plant, bedroom at 
+DIRECTOR: You are the DIRECTOR for Google Flow. One still = one story moment. Put the PROTAGONIST in the frame (named person from the story) doing something that cannot be swapped into another episode. If the beat is Adam Neumann dancing on a desk, show THAT, not 'busy office'. If the beat is a filing, show the document in someone's hands, not a room of extras. Never fill the frame with anonymous office workers. Never repeat the same location unless the story returns there. No collage. No readable logos. Not a stock photo. CLEAN plate only: never burn subtitles, captions, titles, or any on-image lettering — those come in editing.
+
+2019. Adam Neumann co-founded the company. close up framing of this same action Protagonist in frame: Adam Neumann — same face as their master reference. intimate moment candid documentary still, photoreal, period-accurate. Same story climate, new angle, not stock. Use CHAR_001.png as identity reference.
+

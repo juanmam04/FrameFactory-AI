@@ -2,13 +2,21 @@
 
 Topic: The Rise and Fall of WeWork
 
+## Totals
+
+- Total visuals: 20
+- Flow reenactments: 20
+- Archival / document / other: 0
+- Master references: 2
+- Flow batches: 3 (size 10)
+
 ## Steps
 
-1. Read `global-style.txt` and keep it consistent in Google Flow.
-2. Generate **MASTER REFERENCES** first (`references/characters|locations|objects`).
-3. Work in batches of 10 (`BATCH_01` = shots 001–010, …). Total shots: 11.
-4. For each shot, copy the PROMPT from FrameFactory Flow Workspace (or `shots/NNN.txt`).
-5. Download images as zero-padded files: `001.png`, `002.png`, …
-6. Import the folder into FrameFactory → Images (bulk import).
+1. Generate **MASTER REFERENCES** first (`references/masters` + character/location prompts).
+2. For each Flow batch: attach needed references in Google Flow → paste **batch prompt** → generate **separate** images (not collage).
+3. Download and rename using visual numbers (`001.png`, `014.png`, …). Non-consecutive IDs are normal when archival slots exist.
+4. Import into FrameFactory Images (bulk). Truth = file on disk (READY), not a checkbox.
+5. For DOCUMENT / HEADLINE / LOGO slots: import real assets — do not invent them in Flow.
+6. Replace one bad image with its single prompt — do not redo the whole batch.
 
-Do **not** invent new wardrobe/architecture when a CHAR/LOC reference exists.
+Illustrate the EVENT, not the sentence.
