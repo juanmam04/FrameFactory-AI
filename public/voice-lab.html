@@ -153,7 +153,10 @@
       <div class="row">
         <div class="field">
           <label for="voice">Voice ID ElevenLabs</label>
-          <input id="voice" placeholder="Vacío = ELEVENLABS_VOICE_ID del .env"/>
+          <input id="voice" list="saved-voices" placeholder="Vacío = ELEVENLABS_VOICE_ID del .env"/>
+          <datalist id="saved-voices">
+            <option value="YKUjKbMlejgvkOZlnnvt" label="Voz guardada — ElevenLabs"></option>
+          </datalist>
         </div>
         <div class="field">
           <label for="speed">Velocidad</label>
