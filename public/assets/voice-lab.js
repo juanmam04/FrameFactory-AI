@@ -47,20 +47,30 @@ go.onclick = async () => {
   status.textContent = "Generando con ElevenLabs (puede tardar)…";
   player.hidden = true;
   dl.hidden = true;
+  const labKey = () => { try { return localStorage.getItem("voiceLabKey") || ""; } catch (_) { return ""; } };
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 600000);
-    const res = await fetch("/api/voice-lab/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: ctrl.signal,
-      body: JSON.stringify({
-        script: text,
-        voice_id: $("voice").value.trim() || null,
-        speed: Number($("speed").value) || 1.1,
-        filename: $("name").value.trim() || "narracion",
-      }),
+    const payload = JSON.stringify({
+      script: text,
+      voice_id: $("voice").value.trim() || null,
+      speed: Number($("speed").value) || 1.1,
+      filename: $("name").value.trim() || "narracion",
     });
+    const send = () => fetch("/api/voice-lab/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Voice-Lab-Key": labKey() },
+      signal: ctrl.signal,
+      body: payload,
+    });
+    let res = await send();
+    if (res.status === 401) {
+      const k = window.prompt("Clave de Voice Lab");
+      if (k) {
+        try { localStorage.setItem("voiceLabKey", k.trim()); } catch (_) {}
+        res = await send();
+      }
+    }
     clearTimeout(timer);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "No se pudo generar la voz.");
