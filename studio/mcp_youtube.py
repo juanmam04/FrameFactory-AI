@@ -170,11 +170,13 @@ def estado() -> dict:
     try:
         tok = _access_token()
         r = requests.get(f"{API}/channels", params={"part": "snippet", "mine": "true"}, headers={"Authorization": f"Bearer {tok}"}, timeout=20)
-        items = (r.json().get("items") or []) if r.status_code == 200 else []
+        if r.status_code != 200:
+            return _text(f"YouTube respondió {r.status_code}: {r.text[:400]}", {"ok": False, "http": r.status_code, "detalle": r.text[:400]}, error=True)
+        items = r.json().get("items") or []
     except Exception as e:  # noqa: BLE001
-        return _text(f"YouTube configurado pero falló: {e}", {"ok": False}, error=True)
+        return _text(f"YouTube configurado pero falló: {e}", {"ok": False, "detalle": str(e)[:400]}, error=True)
     if not items:
-        return _text("La cuenta conectada no tiene canal.", {"ok": False})
+        return _text("La cuenta de Google conectada no tiene canal de YouTube. Si CHECK es una cuenta de marca, volvé a conectar y elegí el canal CHECK cuando Google pregunte qué cuenta o canal usar.", {"ok": False, "motivo": "sin_canal"})
     ch = items[0]
     return _text(f"Listo para subir a «{ch['snippet']['title']}».", {"ok": True, "canal": ch["snippet"]["title"], "canal_id": ch["id"]})
 
