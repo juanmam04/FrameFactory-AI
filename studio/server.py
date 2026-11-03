@@ -209,6 +209,8 @@ def create_app() -> FastAPI:
     app.include_router(editorial_router)
     from studio.creative_agent import router as agent_router
     app.include_router(agent_router)
+    from studio.mcp_voice import router as mcp_voice_router
+    app.include_router(mcp_voice_router)
 
     @app.get("/editorial")
     def legacy_editorial_redirect():
@@ -253,10 +255,15 @@ def create_app() -> FastAPI:
         }
 
     @app.post("/api/voice-lab/generate")
-    def voice_lab_generate(body: VoiceLabBody):
+    def voice_lab_generate(body: VoiceLabBody, request: Request):
         """Standalone TTS: paste script → ElevenLabs MP3. No episode / Flow / render."""
         import hashlib
+        import hmac
         import os
+
+        lab_key = (os.getenv("VOICE_LAB_KEY") or "").strip()
+        if lab_key and not hmac.compare_digest((request.headers.get("x-voice-lab-key") or "").encode(), lab_key.encode()):
+            raise HTTPException(401, "Clave de Voice Lab incorrecta.")
         import re as _re
         import time
 
