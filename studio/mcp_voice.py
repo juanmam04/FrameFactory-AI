@@ -20,7 +20,7 @@ from fastapi.responses import JSONResponse, Response
 
 router = APIRouter()
 
-SERVER_INFO = {"name": "framefactory-voces", "version": "1.0.0"}
+SERVER_INFO = {"name": "framefactory-voces", "version": "1.1.0"}
 PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")
 MAX_CHARS = 4000  # ~4-5 minutos de narración; el MP3 vuelve en base64 dentro de la respuesta
 
@@ -52,6 +52,11 @@ TOOLS = [
         "annotations": {"readOnlyHint": True},
     },
 ]
+
+
+from studio import mcp_youtube  # noqa: E402
+
+TOOLS = TOOLS + mcp_youtube.TOOLS
 
 
 def _token_ok(token: str) -> bool:
@@ -160,7 +165,7 @@ def _handle(msg: Any) -> dict | None:
             "protocolVersion": asked if asked in PROTOCOLS else PROTOCOLS[0],
             "capabilities": {"tools": {"listChanged": False}},
             "serverInfo": SERVER_INFO,
-            "instructions": "Voces de FrameFactory (ElevenLabs). Usá generar_voz con el texto exacto de la narración.",
+            "instructions": "Voces de FrameFactory (ElevenLabs) y subida a YouTube. Usá generar_voz con el texto exacto de la narración. Para subir un video: youtube_iniciar_subida y después youtube_subir_parte por partes.",
         })
     if method == "ping":
         return _ok(rid, {})
@@ -172,6 +177,8 @@ def _handle(msg: Any) -> dict | None:
             return _ok(rid, _generar(args))
         if name == "estado_voces":
             return _ok(rid, _estado())
+        if name in mcp_youtube.NAMES:
+            return _ok(rid, mcp_youtube.call(name, args))
         return _err(rid, -32602, f"Herramienta desconocida: {name}")
     return _err(rid, -32601, f"Método no soportado: {method}")
 

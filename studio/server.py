@@ -211,6 +211,8 @@ def create_app() -> FastAPI:
     app.include_router(agent_router)
     from studio.mcp_voice import router as mcp_voice_router
     app.include_router(mcp_voice_router)
+    from studio.mcp_youtube import router as mcp_youtube_router
+    app.include_router(mcp_youtube_router)
 
     @app.get("/editorial")
     def legacy_editorial_redirect():
