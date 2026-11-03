@@ -90,6 +90,16 @@ TOOLS = [
         "annotations": {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": True},
     },
     {
+        "name": "youtube_listar",
+        "title": "Videos del canal",
+        "description": (
+            "Lista los últimos videos del canal conectado, incluidos los privados, ocultos y programados, con "
+            "privacidad, fecha de publicación programada, duración, vistas, likes y comentarios. Gasta ~3 unidades de cuota."
+        ),
+        "inputSchema": {"type": "object", "properties": {"cantidad": {"type": "integer", "description": "1 a 50, por defecto 30."}}},
+        "annotations": {"readOnlyHint": True},
+    },
+    {
         "name": "youtube_cambiar_privacidad",
         "title": "Cambiar privacidad",
         "description": "Cambia la privacidad de un video del canal (private, unlisted, public) o lo programa con publicar_en.",
@@ -266,7 +276,60 @@ def cambiar_privacidad(args: dict) -> dict:
     return _text(f"Listo: {s.get('privacyStatus')}" + (f", programado para {s.get('publishAt')}" if s.get("publishAt") else "") + ".", {"ok": True, **s})
 
 
+def _dur(iso: str) -> int:
+    m = re.match(r"P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", iso or "")
+    if not m:
+        return 0
+    d, h, mi, se = (int(x or 0) for x in m.groups())
+    return d * 86400 + h * 3600 + mi * 60 + se
+
+
+def listar(args: dict) -> dict:
+    try:
+        n = max(1, min(50, int(args.get("cantidad") or 30)))
+    except (TypeError, ValueError):
+        n = 30
+    try:
+        tok = _access_token()
+        H = {"Authorization": f"Bearer {tok}"}
+        r = requests.get(f"{API}/channels", params={"part": "contentDetails", "mine": "true"}, headers=H, timeout=20)
+        if r.status_code != 200:
+            return _text(f"YouTube respondió {r.status_code}: {r.text[:300]}", {"ok": False}, error=True)
+        items = r.json().get("items") or []
+        if not items:
+            return _text("La cuenta conectada no tiene canal.", {"ok": False})
+        up = items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        r = requests.get(f"{API}/playlistItems", params={"part": "contentDetails", "playlistId": up, "maxResults": n}, headers=H, timeout=20)
+        if r.status_code != 200:
+            return _text(f"YouTube respondió {r.status_code}: {r.text[:300]}", {"ok": False}, error=True)
+        ids = [it["contentDetails"]["videoId"] for it in r.json().get("items") or []]
+        if not ids:
+            return _text("El canal no tiene videos.", {"ok": True, "videos": []})
+        r = requests.get(f"{API}/videos", params={"part": "snippet,status,statistics,contentDetails", "id": ",".join(ids), "maxResults": 50}, headers=H, timeout=20)
+        if r.status_code != 200:
+            return _text(f"YouTube respondió {r.status_code}: {r.text[:300]}", {"ok": False}, error=True)
+    except Exception as e:  # noqa: BLE001
+        return _text(f"No se pudo listar: {e}", {"ok": False}, error=True)
+    out = []
+    for v in r.json().get("items") or []:
+        sn, st, stt, cd = v.get("snippet") or {}, v.get("status") or {}, v.get("statistics") or {}, v.get("contentDetails") or {}
+        dur = _dur(cd.get("duration", ""))
+        th = (sn.get("thumbnails") or {})
+        thumb = (th.get("medium") or th.get("default") or {}).get("url")
+        out.append({
+            "id": v["id"], "titulo": sn.get("title"), "publicado": sn.get("publishedAt"), "privacidad": st.get("privacyStatus"),
+            "programado": st.get("publishAt"), "estado_subida": st.get("uploadStatus"), "duracion": dur, "short": 0 < dur <= 180,
+            "vistas": int(stt.get("viewCount", 0) or 0), "likes": int(stt.get("likeCount", 0) or 0), "comentarios": int(stt.get("commentCount", 0) or 0),
+            "comentarios_activos": "commentCount" in stt, "miniatura": thumb, "url": f"https://youtu.be/{v['id']}",
+        })
+    order = {i: k for k, i in enumerate(ids)}
+    out.sort(key=lambda x: order.get(x["id"], 999))
+    return _text(f"{len(out)} videos del canal.", {"ok": True, "videos": out})
+
+
 def call(name: str, args: dict) -> dict:
+    if name == "youtube_listar":
+        return listar(args)
     if name == "youtube_estado":
         return estado()
     if name == "youtube_iniciar_subida":

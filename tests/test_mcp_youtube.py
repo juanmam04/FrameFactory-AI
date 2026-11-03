@@ -129,3 +129,22 @@ def test_conectar_y_callback(env):
     assert c.get("/youtube/callback?code=a&state=malo").status_code == 400
     ok = c.get(f"/youtube/callback?code=a&state={mcp_youtube._state_sig()}", headers={"host": "ff.example"})
     assert "nuevo" in ok.text
+
+
+def test_listar(env, monkeypatch):
+    c, _ = env
+
+    def get(url, **kw):
+        if url.endswith("/channels"):
+            return R(200, {"items": [{"id": "UC1", "contentDetails": {"relatedPlaylists": {"uploads": "UU1"}}}]})
+        if url.endswith("/playlistItems"):
+            return R(200, {"items": [{"contentDetails": {"videoId": "A"}}, {"contentDetails": {"videoId": "B"}}]})
+        return R(200, {"items": [
+            {"id": "B", "snippet": {"title": "Largo"}, "status": {"privacyStatus": "public"}, "statistics": {"viewCount": "10"}, "contentDetails": {"duration": "PT12M3S"}},
+            {"id": "A", "snippet": {"title": "Short"}, "status": {"privacyStatus": "private", "publishAt": "2026-11-04T21:00:00Z"}, "statistics": {"viewCount": "0", "commentCount": "0"}, "contentDetails": {"duration": "PT45S"}},
+        ]})
+
+    monkeypatch.setattr(mcp_youtube.requests, "get", get)
+    v = call(c, "youtube_listar", {"cantidad": 5})["structuredContent"]["videos"]
+    assert [x["id"] for x in v] == ["A", "B"]
+    assert v[0]["short"] and v[0]["programado"] and not v[1]["short"] and v[1]["duracion"] == 723
