@@ -54,9 +54,9 @@ TOOLS = [
 ]
 
 
-from studio import mcp_youtube  # noqa: E402
+from studio import mcp_claude, mcp_youtube  # noqa: E402
 
-TOOLS = TOOLS + mcp_youtube.TOOLS
+TOOLS = TOOLS + mcp_youtube.TOOLS + mcp_claude.TOOLS
 
 
 def _token_ok(token: str) -> bool:
@@ -179,6 +179,8 @@ def _handle(msg: Any) -> dict | None:
             return _ok(rid, _estado())
         if name in mcp_youtube.NAMES:
             return _ok(rid, mcp_youtube.call(name, args))
+        if name in mcp_claude.NAMES:
+            return _ok(rid, mcp_claude.call(name, args))
         return _err(rid, -32602, f"Herramienta desconocida: {name}")
     return _err(rid, -32601, f"Método no soportado: {method}")
 
