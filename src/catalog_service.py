@@ -38,6 +38,12 @@ VOICES = {
         "provider": "elevenlabs",
         "elevenlabs_voice_id": None,
     },
+    "elevenlabs_rioplatense": {
+        "id": "elevenlabs_rioplatense",
+        "name": "ElevenLabs · Rioplatense",
+        "provider": "elevenlabs",
+        "elevenlabs_voice_id": "egU71dk5aIh964xo4BOG",
+    },
     "openai_alloy": {
         "id": "openai_alloy",
         "name": "OpenAI · Alloy",
