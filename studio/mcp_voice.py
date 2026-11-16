@@ -39,6 +39,13 @@ TOOLS = [
                 "texto": {"type": "string", "description": "Texto exacto a narrar."},
                 "voice_id": {"type": "string", "description": "ID de voz de ElevenLabs. Si se omite, usa la voz por defecto."},
                 "velocidad": {"type": "number", "description": "0.7 a 1.5. Por defecto 1.1."},
+                "base64_en_texto": {
+                    "type": "boolean",
+                    "description": (
+                        "Si es true, además devuelve el MP3 en base64 dentro de un bloque de texto "
+                        "(para clientes que no leen structuredContent). Por defecto false."
+                    ),
+                },
             },
             "required": ["texto"],
         },
@@ -147,10 +154,10 @@ def _generar(args: dict) -> dict:
         "velocidad": speed,
         "audio_base64": base64.b64encode(raw).decode("ascii"),
     }
-    return {
-        "content": [{"type": "text", "text": f"Voz generada: {len(raw)} bytes, {data['palabras']} palabras. El MP3 está en structuredContent.audio_base64."}],
-        "structuredContent": data,
-    }
+    content = [{"type": "text", "text": f"Voz generada: {len(raw)} bytes, {data['palabras']} palabras. El MP3 está en structuredContent.audio_base64."}]
+    if args.get("base64_en_texto") is True:
+        content.append({"type": "text", "text": "AUDIO_MP3_BASE64:" + data["audio_base64"]})
+    return {"content": content, "structuredContent": data}
 
 
 def _handle(msg: Any) -> dict | None:

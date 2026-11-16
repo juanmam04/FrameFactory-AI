@@ -62,3 +62,12 @@ def test_generar_voz_returns_base64(client):
 def test_too_long_is_tool_error(client):
     r = rpc(client, "tools/call", {"name": "generar_voz", "arguments": {"texto": "a" * 5000}}).json()
     assert r["result"]["isError"] is True
+
+
+def test_generar_voz_base64_en_texto_opcional(client):
+    r = rpc(client, "tools/call", {"name": "generar_voz", "arguments": {"texto": "Hola, esto es una prueba de voz."}}).json()
+    assert len(r["result"]["content"]) == 1
+    r = rpc(client, "tools/call", {"name": "generar_voz", "arguments": {"texto": "Hola, esto es una prueba de voz.", "base64_en_texto": True}}).json()
+    blocks = r["result"]["content"]
+    assert blocks[1]["text"].startswith("AUDIO_MP3_BASE64:")
+    assert base64.b64decode(blocks[1]["text"].split(":", 1)[1]) == b"ID3fakeaudio"
