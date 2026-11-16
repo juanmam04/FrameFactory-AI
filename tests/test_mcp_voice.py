@@ -69,5 +69,5 @@ def test_generar_voz_base64_en_texto_opcional(client):
     assert len(r["result"]["content"]) == 1
     r = rpc(client, "tools/call", {"name": "generar_voz", "arguments": {"texto": "Hola, esto es una prueba de voz.", "base64_en_texto": True}}).json()
     blocks = r["result"]["content"]
-    assert blocks[1]["text"].startswith("AUDIO_MP3_BASE64:")
-    assert base64.b64decode(blocks[1]["text"].split(":", 1)[1]) == b"ID3fakeaudio"
+    assert len(blocks) == 1 and "AUDIO_MP3_BASE64:" in blocks[0]["text"]
+    assert base64.b64decode(blocks[0]["text"].split("AUDIO_MP3_BASE64:", 1)[1]) == b"ID3fakeaudio"

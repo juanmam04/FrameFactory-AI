@@ -154,10 +154,13 @@ def _generar(args: dict) -> dict:
         "velocidad": speed,
         "audio_base64": base64.b64encode(raw).decode("ascii"),
     }
-    content = [{"type": "text", "text": f"Voz generada: {len(raw)} bytes, {data['palabras']} palabras. El MP3 está en structuredContent.audio_base64."}]
-    if args.get("base64_en_texto") is True:
-        content.append({"type": "text", "text": "AUDIO_MP3_BASE64:" + data["audio_base64"]})
-    return {"content": content, "structuredContent": data}
+    resumen = f"Voz generada: {len(raw)} bytes, {data['palabras']} palabras."
+    if args.get("base64_en_texto") in (True, "true", "True", 1, "1"):
+        # Un solo bloque de texto: algunos clientes solo muestran el primero.
+        text = f"{resumen} AUDIO_MP3_BASE64:{data['audio_base64']}"
+    else:
+        text = f"{resumen} El MP3 está en structuredContent.audio_base64."
+    return {"content": [{"type": "text", "text": text}], "structuredContent": data}
 
 
 def _handle(msg: Any) -> dict | None:
