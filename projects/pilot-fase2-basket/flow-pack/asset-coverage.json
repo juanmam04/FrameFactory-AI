@@ -2415,7 +2415,7 @@
     "path": "flow-pack/batches/all-stills",
     "total_slots": 100,
     "prompts_ready": 100,
-    "imported_exact": 0,
+    "imported_exact": 100,
     "policy": "Each visual slot targets its own still (NNN.png). P0–P3 = generation order only, not permission to skip slots. Smart reuse activates only when the exact asset is missing."
   }
 }

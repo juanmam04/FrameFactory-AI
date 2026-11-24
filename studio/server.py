@@ -148,6 +148,7 @@ _SKIP_SYNC = {
     "/api/bootstrap",  # must stay instant — never block Home on Supabase pull
     "/api/ideas",
     "/api/voice-lab/status",
+    "/api/voice-lab/voices",
     "/api/shorts-lab/generate",
     "/api/credentials/recheck",
     "/api/sync/status",
@@ -255,6 +256,15 @@ def create_app() -> FastAPI:
             "default_voice": (os.getenv("ELEVENLABS_VOICE_ID") or "").strip() or "21m00Tcm4TlvDq8ikWAM",
             "detail": "" if ok else "Configurá ELEVENLABS_API_KEY en .env",
         }
+
+    @app.get("/api/voice-lab/voices")
+    def voice_lab_voices():
+        from studio import voice_store
+
+        try:
+            return {"voices": voice_store.listar_voces()}
+        except Exception as e:  # noqa: BLE001 - la página sigue con la lista fija del HTML
+            return {"voices": [], "detail": str(e)[:200]}
 
     @app.post("/api/voice-lab/generate")
     def voice_lab_generate(body: VoiceLabBody, request: Request):
