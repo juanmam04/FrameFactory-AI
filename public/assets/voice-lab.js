@@ -35,6 +35,26 @@ async function pingKeys() {
 }
 pingKeys();
 
+async function loadVoices() {
+  try {
+    const r = await fetch("/api/voice-lab/voices");
+    const j = await r.json();
+    const list = $("saved-voices");
+    const have = new Set([...list.options].map((o) => o.value));
+    for (const v of j.voices || []) {
+      if (have.has(v.voice_id)) continue;
+      const o = document.createElement("option");
+      o.value = v.voice_id;
+      o.label = v.nombre;
+      list.appendChild(o);
+      have.add(v.voice_id);
+    }
+  } catch {
+    /* queda la lista fija del HTML */
+  }
+}
+loadVoices();
+
 go.onclick = async () => {
   const text = script.value.trim();
   if (text.length < 20) {

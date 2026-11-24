@@ -474,3 +474,112 @@ def _openai_tts(texto: str, path: Path, formato: str, voice: str | None = None) 
         path = path.with_suffix(f".{ext}")
         response.stream_to_file(path)
         return path
+
+
+ELEVENLABS_DEFAULT_MODEL = "eleven_multilingual_v2"
+_V3_STABILITY = (0.0, 0.5, 1.0)  # eleven_v3 solo acepta Creative / Natural / Robust
+
+
+def elevenlabs_tts_con_tiempos(
+    texto: str,
+    voice_id: str,
+    api_key: str,
+    *,
+    model_id: str | None = None,
+    voice_settings: dict | None = None,
+    timeout: int | None = None,
+) -> tuple[bytes, dict | None, dict]:
+    """Un pedido a /v1/text-to-speech/{voice_id}/with-timestamps.
+
+    Devuelve (mp3, alignment, ajustes_enviados). alignment trae characters,
+    character_start_times_seconds y character_end_times_seconds del texto original.
+    """
+    import requests
+
+    model = (model_id or os.getenv("ELEVENLABS_MODEL_ID") or ELEVENLABS_DEFAULT_MODEL).strip()
+    settings = dict(voice_settings or {})
+    if model == "eleven_v3" and "stability" in settings:
+        s = float(settings["stability"])
+        settings["stability"] = min(_V3_STABILITY, key=lambda v: abs(v - s))
+    body: dict = {"text": texto, "model_id": model}
+    if settings:
+        body["voice_settings"] = settings
+    base = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+    t = timeout or min(300, max(60, int(len(texto) / 100) + 30))
+    headers = {"xi-api-key": api_key, "Content-Type": "application/json"}
+    params = {"output_format": "mp3_44100_128"}
+    enviados = {"model_id": model, **settings}
+
+    def _detail(r) -> str:
+        detail = r.text[:400]
+        try:
+            j = r.json().get("detail")
+            if isinstance(j, dict):
+                detail = f"{j.get('status') or ''} {j.get('message') or ''}".strip() or detail
+            elif j:
+                detail = str(j)
+        except Exception:  # noqa: BLE001
+            pass
+        return f"HTTP {r.status_code}: {detail}"
+
+    r = requests.post(f"{base}/with-timestamps", params=params, json=body, headers=headers, timeout=t)
+    if r.status_code < 400:
+        import base64 as _b64
+
+        j = r.json()
+        audio = _b64.b64decode(j.get("audio_base64") or "")
+        return audio, j.get("alignment") or j.get("normalized_alignment"), enviados
+    err = _detail(r)
+    if r.status_code not in (400, 405, 422) or "voice_not_found" in err:
+        raise Exception(err)
+    # Por si algún modelo no soporta tiempos: probar el endpoint común (sin alineación).
+    r2 = requests.post(base, params=params, json=body, headers={**headers, "Accept": "audio/mpeg"}, timeout=t)
+    if r2.status_code >= 400:
+        raise Exception(err)
+    return r2.content, None, {**enviados, "sin_tiempos": err[:200]}
+
+
+def palabras_desde_alineacion(alignment: dict | None, factor: float = 1.0) -> list[dict]:
+    """Agrupa la alineación por carácter en palabras con inicio y fin (segundos).
+
+    factor: multiplica los tiempos (1/velocidad si el audio se aceleró con atempo).
+    Las marcas de v3 como [laughs] quedan como un solo elemento con "marca": True.
+    """
+    if not alignment:
+        return []
+    chars = alignment.get("characters") or []
+    starts = alignment.get("character_start_times_seconds") or []
+    ends = alignment.get("character_end_times_seconds") or []
+    out: list[dict] = []
+    cur: list[int] = []
+    in_tag = False
+
+    def flush() -> None:
+        if not cur:
+            return
+        w = "".join(chars[i] for i in cur)
+        item = {
+            "palabra": w,
+            "inicio": round(float(starts[cur[0]]) * factor, 3),
+            "fin": round(float(ends[cur[-1]]) * factor, 3),
+        }
+        if w.startswith("[") and w.endswith("]"):
+            item["marca"] = True
+        out.append(item)
+        cur.clear()
+
+    n = min(len(chars), len(starts), len(ends))
+    for i in range(n):
+        c = chars[i]
+        if c == "[" and not in_tag:
+            flush()
+            in_tag = True
+        if c.isspace() and not in_tag:
+            flush()
+            continue
+        cur.append(i)
+        if c == "]" and in_tag:
+            in_tag = False
+            flush()
+    flush()
+    return out

@@ -44,6 +44,18 @@ VOICES = {
         "provider": "elevenlabs",
         "elevenlabs_voice_id": "egU71dk5aIh964xo4BOG",
     },
+    "voz_reels_servo_hombre": {
+        "id": "voz_reels_servo_hombre",
+        "name": "Voz reels servo hombre",
+        "provider": "elevenlabs",
+        "elevenlabs_voice_id": "TiySrlWKKU0DJXlzSyO0",
+    },
+    "voz_reels_servo_mujer": {
+        "id": "voz_reels_servo_mujer",
+        "name": "Voz reels servo mujer",
+        "provider": "elevenlabs",
+        "elevenlabs_voice_id": "oq8K6jJPiW08295EbH2y",
+    },
     "openai_alloy": {
         "id": "openai_alloy",
         "name": "OpenAI · Alloy",
